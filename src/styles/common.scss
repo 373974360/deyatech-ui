@@ -1,0 +1,75 @@
+// 全局变量
+@import './variables.scss';
+// ele样式覆盖
+@import './element-ui.scss';
+// 顶部右侧显示
+@import './top.scss';
+// 导航标签
+@import './tags.scss';
+// 工具类函数
+@import './mixin.scss';
+// 侧面导航栏
+@import './sidebar.scss';
+// 动画
+@import './animate/vue-transition.scss';
+//主题
+@import './theme/index.scss';
+//适配
+@import './media.scss';
+//通用配置
+@import './normalize.scss';
+
+a{
+  text-decoration: none;
+  color:#333;
+}
+*{
+  outline: none;
+}
+.deyatech-container {
+  margin: 0 auto;
+  width: 99%;
+}
+.deyatech-menu {
+  position: relative;
+  width: 100%;
+  min-height: 40px;
+  height: auto;
+  overflow: hidden;
+  margin-bottom: 12px;
+  .deyatech-menu_left,
+  .deyatech-menu_right {
+    position: absolute;
+    height: auto;
+    overflow: hidden;
+  }
+  .deyatech-menu_left {
+    left: 0;
+    .el-button {
+    }
+  }
+  .deyatech-menu_right {
+    right: 0;
+    .el-button {
+      margin-left: 5px;
+    }
+  }
+}
+.deyatech-pagination {
+  margin-top: 15px;
+  padding: 10px 20px;
+}
+.deyatech-form {
+  padding: 0 8px;
+}
+.deyatech-header {
+  & > .el-button {
+    padding: 12px 25px;
+  }
+}
+.deyatech--overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
