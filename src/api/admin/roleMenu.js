@@ -1,4 +1,5 @@
 import request from '@/router/axios';
+
 export function getRoleMenu(id) {
     return request({
         url: '/manage/admin/roleMenu/getByRoleMenu',
@@ -7,7 +8,7 @@ export function getRoleMenu(id) {
     })
 }
 
-export function createOrUpdateRoleMenu(roleMenuVo){
+export function createOrUpdateRoleMenu(roleMenuVo) {
     const data = roleMenuVo;
     return request({
         url: '/manage/admin/roleMenu/saveOrUpdate',
@@ -24,6 +25,7 @@ export function delRoleMenu(id) {
         data
     })
 }
+
 export function delRoleMenus(ids) {
     const data = {ids};
     return request({
@@ -32,6 +34,7 @@ export function delRoleMenus(ids) {
         data
     })
 }
+
 export function getRoleMenuList(query) {
     return request({
         url: '/manage/admin/roleMenu/pageByRoleMenu',

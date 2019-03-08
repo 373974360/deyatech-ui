@@ -1,4 +1,5 @@
 import request from '@/router/axios';
+
 export function getHoliday(id) {
     return request({
         url: '/manage/admin/holiday/getByHoliday',
@@ -7,7 +8,7 @@ export function getHoliday(id) {
     })
 }
 
-export function createOrUpdateHoliday(holidayVo){
+export function createOrUpdateHoliday(holidayVo) {
     const data = holidayVo;
     return request({
         url: '/manage/admin/holiday/saveOrUpdate',
@@ -24,6 +25,7 @@ export function delHoliday(id) {
         data
     })
 }
+
 export function delHolidays(ids) {
     const data = {ids};
     return request({
@@ -32,6 +34,7 @@ export function delHolidays(ids) {
         data
     })
 }
+
 export function getHolidayList(query) {
     return request({
         url: '/manage/admin/holiday/pageByHoliday',

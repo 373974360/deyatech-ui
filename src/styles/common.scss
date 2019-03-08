@@ -19,57 +19,69 @@
 //通用配置
 @import './normalize.scss';
 
-a{
-  text-decoration: none;
-  color:#333;
+a {
+    text-decoration: none;
+    color: #333;
 }
-*{
-  outline: none;
+
+* {
+    outline: none;
 }
+
 .deyatech-container {
-  margin: 0 auto;
-  width: 99%;
+    margin: 0 auto;
+    width: 99%;
 }
+
 .deyatech-menu {
-  position: relative;
-  width: 100%;
-  min-height: 40px;
-  height: auto;
-  overflow: hidden;
-  margin-bottom: 12px;
-  .deyatech-menu_left,
-  .deyatech-menu_right {
-    position: absolute;
+    position: relative;
+    width: 100%;
+    min-height: 40px;
     height: auto;
     overflow: hidden;
-  }
-  .deyatech-menu_left {
-    left: 0;
-    .el-button {
+    margin-bottom: 12px;
+
+    .deyatech-menu_left,
+    .deyatech-menu_right {
+        position: absolute;
+        height: auto;
+        overflow: hidden;
     }
-  }
-  .deyatech-menu_right {
-    right: 0;
-    .el-button {
-      margin-left: 5px;
+
+    .deyatech-menu_left {
+        left: 0;
+
+        .el-button {
+        }
     }
-  }
+
+    .deyatech-menu_right {
+        right: 0;
+
+        .el-button {
+            margin-left: 5px;
+        }
+    }
 }
+
 .deyatech-pagination {
-  margin-top: 15px;
-  padding: 10px 20px;
+    margin-top: 15px;
+    padding: 10px 20px;
 }
+
 .deyatech-form {
-  padding: 0 8px;
+    padding: 0 8px;
 }
+
 .deyatech-header {
-  & > .el-button {
-    padding: 12px 25px;
-  }
+    & > .el-button {
+        padding: 12px 25px;
+    }
 }
+
 .deyatech--overflow {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
 }

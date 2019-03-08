@@ -1,4 +1,4 @@
-import { validatenull } from './validate'
+import {validatenull} from './validate'
 //表单序列化
 export const serialize = data => {
     let list = [];
@@ -110,6 +110,7 @@ export const listenfullscreen = (callback) => {
     function listen() {
         callback()
     }
+
     document.addEventListener("fullscreenchange", function () {
         listen();
     });

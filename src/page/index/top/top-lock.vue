@@ -26,46 +26,49 @@
 </template>
 
 <script>
-import { validatenull } from "@/util/validate";
-import { mapGetters } from "vuex";
-export default {
-  name: "top-lock",
-  data() {
-    return {
-      box: false,
-      form: {
-        passwd: ""
-      }
+    import {validatenull} from "@/util/validate";
+    import {mapGetters} from "vuex";
+
+    export default {
+        name: "top-lock",
+        data() {
+            return {
+                box: false,
+                form: {
+                    passwd: ""
+                }
+            };
+        },
+        created() {
+        },
+        mounted() {
+        },
+        computed: {
+            ...mapGetters(["lockPasswd"])
+        },
+        props: [],
+        methods: {
+            handleSetLock() {
+                this.$refs["form"].validate(valid => {
+                    if (valid) {
+                        this.$store.commit("SET_LOCK_PASSWD", this.form.passwd);
+                        this.handleLock();
+                    }
+                });
+            },
+            handleLock() {
+                if (validatenull(this.lockPasswd)) {
+                    this.box = true;
+                    return;
+                }
+                this.$store.commit("SET_LOCK");
+                setTimeout(() => {
+                    this.$router.push({path: "/lock"});
+                }, 100);
+            }
+        },
+        components: {}
     };
-  },
-  created() {},
-  mounted() {},
-  computed: {
-    ...mapGetters(["lockPasswd"])
-  },
-  props: [],
-  methods: {
-    handleSetLock() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          this.$store.commit("SET_LOCK_PASSWD", this.form.passwd);
-          this.handleLock();
-        }
-      });
-    },
-    handleLock() {
-      if (validatenull(this.lockPasswd)) {
-        this.box = true;
-        return;
-      }
-      this.$store.commit("SET_LOCK");
-      setTimeout(() => {
-        this.$router.push({ path: "/lock" });
-      }, 100);
-    }
-  },
-  components: {}
-};
 </script>
 
 <style lang="scss" scoped>

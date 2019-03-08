@@ -2,6 +2,7 @@
     font-size: 12px !important;
     line-height: 28px !important;
 }
+
 .el-card.is-always-shadow {
     box-shadow: none;
     border: none !important;
@@ -20,15 +21,15 @@
 }
 
 .el-menu--display,
-.el-menu--display+.el-submenu__icon-arrow {
+.el-menu--display + .el-submenu__icon-arrow {
     display: none;
 }
 
 .el-dropdown-menu__item--divided:before,
 .el-menu,
-.el-menu--horizontal>.el-menu-item:not(.is-disabled):focus,
-.el-menu--horizontal>.el-menu-item:not(.is-disabled):hover,
-.el-menu--horizontal>.el-submenu .el-submenu__title:hover {
+.el-menu--horizontal > .el-menu-item:not(.is-disabled):focus,
+.el-menu--horizontal > .el-menu-item:not(.is-disabled):hover,
+.el-menu--horizontal > .el-submenu .el-submenu__title:hover {
     background-color: transparent;
 }
 
@@ -59,6 +60,6 @@
     padding: 0 !important;
 }
 
-.el-dropdown-menu__item--divided:before, .el-menu, .el-menu--horizontal>.el-menu-item:not(.is-disabled):focus, .el-menu--horizontal>.el-menu-item:not(.is-disabled):hover, .el-menu--horizontal>.el-submenu .el-submenu__title:hover{
+.el-dropdown-menu__item--divided:before, .el-menu, .el-menu--horizontal > .el-menu-item:not(.is-disabled):focus, .el-menu--horizontal > .el-menu-item:not(.is-disabled):hover, .el-menu--horizontal > .el-submenu .el-submenu__title:hover {
     background-color: transparent !important;
 }

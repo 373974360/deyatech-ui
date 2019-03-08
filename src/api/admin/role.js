@@ -1,4 +1,5 @@
 import request from '@/router/axios';
+
 export function getRole(id) {
     return request({
         url: '/manage/admin/role/getByRole',
@@ -7,7 +8,7 @@ export function getRole(id) {
     })
 }
 
-export function createOrUpdateRole(roleVo){
+export function createOrUpdateRole(roleVo) {
     const data = roleVo;
     return request({
         url: '/manage/admin/role/saveOrUpdate',
@@ -24,6 +25,7 @@ export function delRole(id) {
         data
     })
 }
+
 export function delRoles(ids) {
     const data = {ids};
     return request({
@@ -32,6 +34,7 @@ export function delRoles(ids) {
         data
     })
 }
+
 export function getRoleList(query) {
     return request({
         url: '/manage/admin/role/pageByRole',

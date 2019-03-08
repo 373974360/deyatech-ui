@@ -15,28 +15,25 @@
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
+     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
         </div>
 
-        <el-table :data="menuList" v-loading.body="listLoading" stripe border highlight-current-row
+        <el-table :data="departmentList" v-loading.body="listLoading" stripe border highlight-current-row
                   @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center"/>
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
-                                  parentKey="parentId" prop="name" label="菜单名称" width="200">
+                                  parentKey="parentId" prop="name" label="部门名称" width="200">
                 <template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                 </template>
             </el-table-tree-column>
-            <el-table-column align="center" label="菜单类型(0:CURD;1:系统菜单;2:业务菜单;)" prop="type"/>
-            <el-table-column align="center" label="上级菜单编号" prop="parentId"/>
+            <el-table-column align="center" label="部门名称简称" prop="shortName"/>
+            <el-table-column align="center" label="部门编码" prop="code"/>
+            <el-table-column align="center" label="上级部门编号" prop="parentId"/>
             <el-table-column align="center" label="树结构中的索引位置" prop="treePosition"/>
-            <el-table-column align="center" label="节点图标CSS类名" prop="icon"/>
-            <el-table-column align="center" label="前台地址" prop="path"/>
-            <el-table-column align="center" label="后台地址" prop="request"/>
-            <el-table-column align="center" label="权限标识" prop="permission"/>
             <el-table-column align="center" label="排序号" prop="sortNo"/>
             <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                 <template slot-scope="scope">
@@ -63,69 +60,50 @@
 
         <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                    :close-on-click-modal="closeOnClickModal">
-            <el-form ref="menuDialogForm" class="deyatech-form" :model="menu" label-position="right"
-                     label-width="80px" :rules="menuRules">
+            <el-form ref="departmentDialogForm" class="deyatech-form" :model="department" label-position="right"
+                     label-width="80px" :rules="departmentRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item :label="$t('table.parent')">
-                            <el-cascader :options="menuCascader" v-model="menuTreePosition"
+                            <el-cascader :options="departmentCascader" v-model="departmentTreePosition"
                                          show-all-levels expand-trigger="hover" clearable
                                          change-on-select></el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item :label="$t('table.searchName')" prop="name">
-                            <el-input v-model="menu.name"/>
+                            <el-input v-model="department.name"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item label="菜单类型(0:CURD;1:系统菜单;2:业务菜单;)" prop="type">
-                            <el-input v-model="menu.type"></el-input>
+                        <el-form-item label="部门编码" prop="code">
+                            <el-input v-model="department.code"></el-input>
                         </el-form-item>
                     </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="部门名称简称" prop="shortName">
+                            <el-input v-model="department.shortName"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="树结构中的索引位置" prop="treePosition">
-                            <el-input v-model="menu.treePosition"></el-input>
+                            <el-input v-model="department.treePosition"></el-input>
                         </el-form-item>
                     </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="节点图标CSS类名" prop="icon">
-                            <el-input v-model="menu.icon"></el-input>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="前台地址" prop="path">
-                            <el-input v-model="menu.path"></el-input>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="后台地址" prop="request">
-                            <el-input v-model="menu.request"></el-input>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="权限标识" prop="permission">
-                            <el-input v-model="menu.permission"></el-input>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="排序号" prop="sortNo">
-                            <el-input v-model="menu.sortNo"></el-input>
+                            <el-input v-model="department.sortNo"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item :label="$t('table.remark')">
-                            <el-input type="textarea" v-model="menu.remark" :rows="3"/>
+                            <el-input type="textarea" v-model="department.remark" :rows="3"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -142,61 +120,49 @@
 
 <script>
     import {
-        getMenuTree,
-        getMenuCascader,
-        createOrUpdateMenu,
-        delMenus
-    } from '@/api/admin/menu';
+        getDepartmentTree,
+        getDepartmentCascader,
+        createOrUpdateDepartment,
+        delDepartments
+    } from '@/api/admin/department';
     import {deepClone} from '@/util/util';
     import {mapGetters} from 'vuex';
 
     export default {
-        name: 'menu',
+        name: 'department',
         data() {
             return {
-                menuList: undefined,
+                departmentList: undefined,
                 listLoading: true,
-                menu: {
+                department: {
                     id: undefined,
                     name: undefined,
-                    type: undefined,
+                    shortName: undefined,
+                    code: undefined,
                     parentId: undefined,
                     treePosition: undefined,
-                    icon: undefined,
-                    path: undefined,
-                    request: undefined,
-                    permission: undefined,
                     sortNo: undefined
                 },
-                menuCascader: [],
+                departmentCascader: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
                 selectedRows: [],
-                menuRules: {
+                departmentRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '菜单名称'}
+                        {required: true, message: this.$t("table.pleaseInput") + '部门名称'}
                     ],
-                    type: [
-                        {required: true, message: this.$t("table.pleaseInput") + '菜单类型(0:CURD;1:系统菜单;2:业务菜单;)'}
+                    shortName: [
+                        {required: true, message: this.$t("table.pleaseInput") + '部门名称简称'}
+                    ],
+                    code: [
+                        {required: true, message: this.$t("table.pleaseInput") + '部门编码'}
                     ],
                     parentId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '上级菜单编号'}
+                        {required: true, message: this.$t("table.pleaseInput") + '上级部门编号'}
                     ],
                     treePosition: [
                         {required: true, message: this.$t("table.pleaseInput") + '树结构中的索引位置'}
-                    ],
-                    icon: [
-                        {required: true, message: this.$t("table.pleaseInput") + '节点图标CSS类名'}
-                    ],
-                    path: [
-                        {required: true, message: this.$t("table.pleaseInput") + '前台地址'}
-                    ],
-                    request: [
-                        {required: true, message: this.$t("table.pleaseInput") + '后台地址'}
-                    ],
-                    permission: [
-                        {required: true, message: this.$t("table.pleaseInput") + '权限标识'}
                     ],
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'}
@@ -208,19 +174,19 @@
             this.reloadList();
         },
         computed: {
-            menuTreePosition: {
+            departmentTreePosition: {
                 get() {
-                    if (this.menu.treePosition) {
-                        return this.menu.treePosition.split('&');
+                    if (this.department.treePosition) {
+                        return this.department.treePosition.split('&');
                     }
                 },
                 set(v) {
                     if (v.length > 0) {
-                        this.menu.parentId = v[v.length - 1];
-                        this.menu.treePosition = v.join('&') + "&" + this.menu.parentId;
+                        this.department.parentId = v[v.length - 1];
+                        this.department.treePosition = v.join('&') + "&" + this.department.parentId;
                     } else {
-                        this.menu.parentId = 0;
-                        this.menu.treePosition = undefined;
+                        this.department.parentId = 0;
+                        this.department.treePosition = undefined;
                     }
                 }
             },
@@ -234,61 +200,61 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.menu_create,
-                    update: this.permission.menu_update,
-                    delete: this.permission.menu_delete
+                    create: this.permission.department_create,
+                    update: this.permission.department_update,
+                    delete: this.permission.department_delete
                 };
             }
         },
         methods: {
             reloadList() {
                 this.listLoading = true;
-                getMenuTree().then(response => {
-                    this.menuList = response.data;
+                getDepartmentTree().then(response => {
+                    this.departmentList = response.data;
                     this.listLoading = false;
                 })
             },
-            getMenuCascader(id) {
+            getDepartmentCascader(id) {
                 this.submitLoading = true;
-                getMenuCascader(id).then(response => {
+                getDepartmentCascader(id).then(response => {
                     this.submitLoading = false;
-                    this.menuCascader = response.data;
+                    this.departmentCascader = response.data;
                 })
             },
             handleSelectionChange(rows) {
                 this.selectedRows = rows;
             },
             btnCreate(row) {
-                this.resetMenu();
+                this.resetDepartment();
                 if (row.id) {
                     if (row.treePosition != null) {
-                        this.menu.treePosition = row.treePosition + "&" + row.id;
+                        this.department.treePosition = row.treePosition + "&" + row.id;
                     } else {
-                        this.menu.treePosition = "&" + row.id;
+                        this.department.treePosition = "&" + row.id;
                     }
-                    this.menu.parentId = row.id;
+                    this.department.parentId = row.id;
                 } else {
                     if (this.selectedRows.length == 1) {
                         if (this.selectedRows[0].treePosition != null) {
-                            this.menu.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
+                            this.department.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
                         } else {
-                            this.menu.treePosition = "&" + this.selectedRows[0].id;
+                            this.department.treePosition = "&" + this.selectedRows[0].id;
                         }
-                        this.menu.parentId = this.selectedRows[0].id;
+                        this.department.parentId = this.selectedRows[0].id;
                     }
                 }
-                this.getMenuCascader(null);
+                this.getDepartmentCascader(null);
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
             btnUpdate(row) {
-                this.resetMenu();
+                this.resetDepartment();
                 if (row.id) {
-                    this.menu = deepClone(row);
+                    this.department = deepClone(row);
                 } else {
-                    this.menu = deepClone(this.selectedRows[0]);
+                    this.department = deepClone(this.selectedRows[0]);
                 }
-                this.getMenuCascader(this.menu.id);
+                this.getDepartmentCascader(this.department.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -309,11 +275,11 @@
                 }
             },
             doCreate() {
-                this.$refs['menuDialogForm'].validate(valid => {
+                this.$refs['departmentDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateMenu(this.menu).then(response => {
-                            this.resetMenuDialog();
+                        createOrUpdateDepartment(this.department).then(response => {
+                            this.resetDepartmentDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -322,11 +288,11 @@
                 })
             },
             doUpdate() {
-                this.$refs['menuDialogForm'].validate(valid => {
+                this.$refs['departmentDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateMenu(this.menu).then(response => {
-                            this.resetMenuDialog();
+                        createOrUpdateDepartment(this.department).then(response => {
+                            this.resetDepartmentDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -336,28 +302,25 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delMenus(ids).then(response => {
+                delDepartments(ids).then(response => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetMenu() {
-                this.menu = {
+            resetDepartment() {
+                this.department = {
                     id: undefined,
                     name: undefined,
-                    type: undefined,
+                    shortName: undefined,
+                    code: undefined,
                     parentId: undefined,
                     treePosition: undefined,
-                    icon: undefined,
-                    path: undefined,
-                    request: undefined,
-                    permission: undefined,
                     sortNo: undefined
                 }
             },
-            resetMenuDialog() {
+            resetDepartmentDialog() {
                 this.dialogVisible = false;
-                this.resetMenu();
+                this.resetDepartment();
                 this.reloadList();
                 this.submitLoading = false;
             }

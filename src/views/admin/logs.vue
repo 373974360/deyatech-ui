@@ -4,19 +4,29 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')"
+                                  v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
+                            {{$t('table.search')}}
+                        </el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
+                        </el-button>
                     </el-form-item>
                 </el-form>
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
-                    <el-button type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">
+                        {{$t('table.create')}}
+                    </el-button>
+                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate"
+                               :disabled="selectedRows.length != 1">{{$t('table.update')}}
+                    </el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete"
+                               :disabled="selectedRows.length < 1">{{$t('table.delete')}}
+                    </el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -36,16 +46,19 @@
                 <el-table-column align="center" label="请求者ip地址" prop="ip"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
-                        <el-tag :type="scope.row.enable | enums('Enable') | statusFilter">
-                            {{scope.row.enable | enums('Enable')}}
+                        <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                            {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
+                                 width="100">
                     <template slot-scope="scope">
-                        <el-button :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
+                                   icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
+                                   icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
                 </el-table-column>
@@ -113,7 +126,8 @@
                     </el-row>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
                 </span>
@@ -125,7 +139,7 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {copyProperties} from '@/util/util';
+    import {deepClone} from '@/util/util';
     import {
         getLogsList,
         createOrUpdateLogs,
@@ -185,21 +199,29 @@
         },
         computed: {
             ...mapGetters([
+                'permission',
                 'titleMap',
                 'enums',
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
             ]),
+            btnEnable() {
+                return {
+                    create: this.permission.logs_create,
+                    update: this.permission.logs_update,
+                    delete: this.permission.logs_delete
+                };
+            }
         },
-        created(){
+        created() {
             this.reloadList();
         },
         methods: {
-            resetSearch(){
+            resetSearch() {
                 this.listQuery.name = undefined;
             },
-            reloadList(){
+            reloadList() {
                 this.listLoading = true;
                 this.logsList = undefined;
                 this.total = undefined;
@@ -209,33 +231,33 @@
                     this.total = response.data.total;
                 })
             },
-            handleSizeChange(val){
+            handleSizeChange(val) {
                 this.listQuery.rows = val;
                 this.reloadList();
             },
-            handleCurrentChange(val){
+            handleCurrentChange(val) {
                 this.listQuery.page = val;
                 this.reloadList();
             },
-            handleSelectionChange(rows){
+            handleSelectionChange(rows) {
                 this.selectedRows = rows;
             },
-            btnCreate(){
+            btnCreate() {
                 this.resetLogs();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
-            btnUpdate(row){
+            btnUpdate(row) {
                 this.resetLogs();
                 if (row.id) {
-                    this.logs = copyProperties(this.logs, row);
+                    this.logs = deepClone(row);
                 } else {
-                    this.logs = copyProperties(this.logs, this.selectedRows[0]);
+                    this.logs = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
-            btnDelete(row){
+            btnDelete(row) {
                 let ids = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
@@ -244,16 +266,16 @@
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        for(const deleteRow of this.selectedRows){
+                        for (const deleteRow of this.selectedRows) {
                             ids.push(deleteRow.id);
                         }
                         this.doDelete(ids);
                     })
                 }
             },
-            doCreate(){
+            doCreate() {
                 this.$refs['logsDialogForm'].validate(valid => {
-                    if(valid) {
+                    if (valid) {
                         this.submitLoading = true;
                         createOrUpdateLogs(this.logs).then(response => {
                             this.resetLogsDialog();
@@ -264,9 +286,9 @@
                     }
                 });
             },
-            doUpdate(){
+            doUpdate() {
                 this.$refs['logsDialogForm'].validate(valid => {
-                    if(valid) {
+                    if (valid) {
                         this.submitLoading = true;
                         createOrUpdateLogs(this.logs).then(response => {
                             this.resetLogsDialog();
@@ -277,14 +299,14 @@
                     }
                 })
             },
-            doDelete(ids){
+            doDelete(ids) {
                 this.listLoading = true;
                 delLogss(ids).then(response => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetLogs(){
+            resetLogs() {
                 this.logs = {
                     id: undefined,
                     notes: undefined,
@@ -296,7 +318,7 @@
                     ip: undefined
                 }
             },
-            resetLogsDialog(){
+            resetLogsDialog() {
                 this.dialogVisible = false;
                 this.submitLoading = false;
                 this.resetLogs();

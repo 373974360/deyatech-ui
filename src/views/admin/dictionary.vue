@@ -4,19 +4,29 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')"
+                                  v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
+                            {{$t('table.search')}}
+                        </el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
+                        </el-button>
                     </el-form-item>
                 </el-form>
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
-                    <el-button type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">
+                        {{$t('table.create')}}
+                    </el-button>
+                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate"
+                               :disabled="selectedRows.length != 1">{{$t('table.update')}}
+                    </el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete"
+                               :disabled="selectedRows.length < 1">{{$t('table.delete')}}
+                    </el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -24,7 +34,7 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="dictList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table :data="dictionaryList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="center" label="数据字典索引编号" prop="indexId"/>
@@ -34,16 +44,19 @@
                 <el-table-column align="center" label="是否可编辑" prop="editable"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
-                        <el-tag :type="scope.row.enable | enums('Enable') | statusFilter">
-                            {{scope.row.enable | enums('Enable')}}
+                        <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                            {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
+                                 width="100">
                     <template slot-scope="scope">
-                        <el-button :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
+                                   icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
+                                   icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
                 </el-table-column>
@@ -57,49 +70,50 @@
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal">
-                <el-form ref="dictDialogForm" class="deyatech-form" :model="dict" label-position="right"
-                         label-width="80px" :rules="dictRules">
+                <el-form ref="dictionaryDialogForm" class="deyatech-form" :model="dictionary" label-position="right"
+                         label-width="80px" :rules="dictionaryRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="数据字典索引编号" prop="indexId">
-                                <el-input v-model="dict.indexId"></el-input>
+                                <el-input v-model="dictionary.indexId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文代码" prop="code">
-                                <el-input v-model="dict.code"></el-input>
+                                <el-input v-model="dictionary.code"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="文字说明" prop="codeText">
-                                <el-input v-model="dict.codeText"></el-input>
+                                <el-input v-model="dictionary.codeText"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
-                                <el-input v-model="dict.sortNo"></el-input>
+                                <el-input v-model="dictionary.sortNo"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否可编辑" prop="editable">
-                                <el-input v-model="dict.editable"></el-input>
+                                <el-input v-model="dictionary.editable"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="dict.remark" :rows="3"/>
+                                <el-input type="textarea" v-model="dictionary.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
                 </span>
@@ -111,18 +125,18 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {copyProperties} from '@/util/util';
+    import {deepClone} from '@/util/util';
     import {
-        getDictList,
-        createOrUpdateDict,
-        delDicts
-    } from '@/api/admin/dict';
+        getDictionaryList,
+        createOrUpdateDictionary,
+        delDictionarys
+    } from '@/api/admin/dictionary';
 
     export default {
-        name: 'dict',
+        name: 'dictionary',
         data() {
             return {
-                dictList: undefined,
+                dictionaryList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
@@ -130,7 +144,7 @@
                     rows: this.$store.state.common.rows,
                     name: undefined
                 },
-                dict: {
+                dictionary: {
                     id: undefined,
                     indexId: undefined,
                     code: undefined,
@@ -138,7 +152,7 @@
                     sortNo: undefined,
                     editable: undefined
                 },
-                dictRules: {
+                dictionaryRules: {
                     indexId: [
                         {required: true, message: this.$t("table.pleaseInput") + '数据字典索引编号'}
                     ],
@@ -163,57 +177,65 @@
         },
         computed: {
             ...mapGetters([
+                'permission',
                 'titleMap',
                 'enums',
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
             ]),
+            btnEnable() {
+                return {
+                    create: this.permission.dictionary_create,
+                    update: this.permission.dictionary_update,
+                    delete: this.permission.dictionary_delete
+                };
+            }
         },
-        created(){
+        created() {
             this.reloadList();
         },
         methods: {
-            resetSearch(){
+            resetSearch() {
                 this.listQuery.name = undefined;
             },
-            reloadList(){
+            reloadList() {
                 this.listLoading = true;
-                this.dictList = undefined;
+                this.dictionaryList = undefined;
                 this.total = undefined;
-                getDictList(this.listQuery).then(response => {
+                getDictionaryList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.dictList = response.data.records;
+                    this.dictionaryList = response.data.records;
                     this.total = response.data.total;
                 })
             },
-            handleSizeChange(val){
+            handleSizeChange(val) {
                 this.listQuery.rows = val;
                 this.reloadList();
             },
-            handleCurrentChange(val){
+            handleCurrentChange(val) {
                 this.listQuery.page = val;
                 this.reloadList();
             },
-            handleSelectionChange(rows){
+            handleSelectionChange(rows) {
                 this.selectedRows = rows;
             },
-            btnCreate(){
-                this.resetDict();
+            btnCreate() {
+                this.resetDictionary();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
-            btnUpdate(row){
-                this.resetDict();
+            btnUpdate(row) {
+                this.resetDictionary();
                 if (row.id) {
-                    this.dict = copyProperties(this.dict, row);
+                    this.dictionary = deepClone(row);
                 } else {
-                    this.dict = copyProperties(this.dict, this.selectedRows[0]);
+                    this.dictionary = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
-            btnDelete(row){
+            btnDelete(row) {
                 let ids = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
@@ -222,19 +244,19 @@
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        for(const deleteRow of this.selectedRows){
+                        for (const deleteRow of this.selectedRows) {
                             ids.push(deleteRow.id);
                         }
                         this.doDelete(ids);
                     })
                 }
             },
-            doCreate(){
-                this.$refs['dictDialogForm'].validate(valid => {
-                    if(valid) {
+            doCreate() {
+                this.$refs['dictionaryDialogForm'].validate(valid => {
+                    if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateDict(this.dict).then(response => {
-                            this.resetDictDialog();
+                        createOrUpdateDictionary(this.dictionary).then(response => {
+                            this.resetDictionaryDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -242,12 +264,12 @@
                     }
                 });
             },
-            doUpdate(){
-                this.$refs['dictDialogForm'].validate(valid => {
-                    if(valid) {
+            doUpdate() {
+                this.$refs['dictionaryDialogForm'].validate(valid => {
+                    if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateDict(this.dict).then(response => {
-                            this.resetDictDialog();
+                        createOrUpdateDictionary(this.dictionary).then(response => {
+                            this.resetDictionaryDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -255,15 +277,15 @@
                     }
                 })
             },
-            doDelete(ids){
+            doDelete(ids) {
                 this.listLoading = true;
-                delDicts(ids).then(response => {
+                delDictionarys(ids).then(response => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetDict(){
-                this.dict = {
+            resetDictionary() {
+                this.dictionary = {
                     id: undefined,
                     indexId: undefined,
                     code: undefined,
@@ -272,10 +294,10 @@
                     editable: undefined
                 }
             },
-            resetDictDialog(){
+            resetDictionaryDialog() {
                 this.dialogVisible = false;
                 this.submitLoading = false;
-                this.resetDict();
+                this.resetDictionary();
                 this.reloadList();
             }
         }

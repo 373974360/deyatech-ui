@@ -4,11 +4,11 @@
  */
 import router from './router/router'
 import store from './store'
-import { validatenull } from '@/util/validate'
-import { getToken } from '@/util/auth'
+import {validatenull} from '@/util/validate'
+import {getToken} from '@/util/auth'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
-NProgress.configure({ showSpinner: false });
+NProgress.configure({showSpinner: false});
 const lockPage = store.getters.website.lockPage; //锁屏页
 router.beforeEach((to, from, next) => {
     //缓冲设置
@@ -27,14 +27,14 @@ router.beforeEach((to, from, next) => {
     const meta = to.meta || {};
     if (getToken()) {
         if (store.getters.isLock && to.path != lockPage) { //如果系统激活锁屏，全部跳转到锁屏页
-            next({ path: lockPage })
+            next({path: lockPage})
         } else if (to.path === '/login') { //如果登录成功访问登录页跳转到主页
-            next({ path: '/' })
+            next({path: '/'})
         } else {
             //如果用户信息为空则获取用户信息，获取用户信息失败，跳转到登录页
             if (store.getters.token.length === 0) {
                 store.dispatch('FedLogOut').then(() => {
-                    next({ path: '/login' })
+                    next({path: '/login'})
                 })
             } else {
                 const value = to.query.src || to.fullPath;

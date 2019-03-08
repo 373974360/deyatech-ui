@@ -1,4 +1,5 @@
 import request from '@/router/axios';
+
 export function getLogs(id) {
     return request({
         url: '/manage/admin/logs/getByLogs',
@@ -7,7 +8,7 @@ export function getLogs(id) {
     })
 }
 
-export function createOrUpdateLogs(logsVo){
+export function createOrUpdateLogs(logsVo) {
     const data = logsVo;
     return request({
         url: '/manage/admin/logs/saveOrUpdate',
@@ -24,6 +25,7 @@ export function delLogs(id) {
         data
     })
 }
+
 export function delLogss(ids) {
     const data = {ids};
     return request({
@@ -32,6 +34,7 @@ export function delLogss(ids) {
         data
     })
 }
+
 export function getLogsList(query) {
     return request({
         url: '/manage/admin/logs/pageByLogs',

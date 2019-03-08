@@ -1,4 +1,5 @@
 import request from '@/router/axios';
+
 export function getMenu(id) {
     return request({
         url: '/manage/admin/menu/getByMenu',
@@ -7,7 +8,7 @@ export function getMenu(id) {
     })
 }
 
-export function createOrUpdateMenu(menuVo){
+export function createOrUpdateMenu(menuVo) {
     const data = menuVo;
     return request({
         url: '/manage/admin/menu/saveOrUpdate',
@@ -24,6 +25,7 @@ export function delMenu(id) {
         data
     })
 }
+
 export function delMenus(ids) {
     const data = {ids};
     return request({
@@ -32,6 +34,7 @@ export function delMenus(ids) {
         data
     })
 }
+
 export function getMenuTree(query) {
     return request({
         url: '/manage/admin/menu/getTree',

@@ -40,7 +40,7 @@ export const getStore = (params = {}) => {
     if (validatenull(obj)) return;
     try {
         obj = JSON.parse(obj);
-    } catch{
+    } catch {
         return obj;
     }
     if (debug) {
@@ -111,7 +111,7 @@ export const getAllStore = (params = {}) => {
  * 清空全部localStorage
  */
 export const clearStore = (params = {}) => {
-    let { type } = params;
+    let {type} = params;
     if (type) {
         window.sessionStorage.clear();
     } else {

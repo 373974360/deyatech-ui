@@ -15,28 +15,31 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import logs from "@/page/logs/index";
-export default {
-  name: "top-logs",
-  components: { logs },
-  data() {
-    return {
-      box: false
+    import {mapGetters} from "vuex";
+    import logs from "@/page/logs/index";
+
+    export default {
+        name: "top-logs",
+        components: {logs},
+        data() {
+            return {
+                box: false
+            };
+        },
+        created() {
+        },
+        mounted() {
+        },
+        computed: {
+            ...mapGetters(["logsFlag", "logsLen"])
+        },
+        props: [],
+        methods: {
+            handleOpen() {
+                this.box = true;
+            }
+        }
     };
-  },
-  created() {},
-  mounted() {},
-  computed: {
-    ...mapGetters(["logsFlag", "logsLen"])
-  },
-  props: [],
-  methods: {
-    handleOpen() {
-      this.box = true;
-    }
-  }
-};
 </script>
 
 <style lang="scss" scoped>

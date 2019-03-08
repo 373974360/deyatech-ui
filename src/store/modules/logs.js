@@ -1,13 +1,14 @@
-import { setStore, getStore } from '@/util/store'
-import { dateFormat } from '@/util/date'
-import { sendLogs } from '@/api/logs'
+import {setStore, getStore} from '@/util/store'
+import {dateFormat} from '@/util/date'
+import {sendLogs} from '@/api/logs'
+
 const logs = {
     state: {
-        logsList: getStore({ name: 'logsList' }) || [],
+        logsList: getStore({name: 'logsList'}) || [],
     },
     actions: {
         //发送错误日志
-        SendLogs({ state, commit }) {
+        SendLogs({state, commit}) {
             return new Promise((resolve, reject) => {
                 sendLogs(state.logsList).then(() => {
                     commit('CLEAR_LOGS');
@@ -19,21 +20,21 @@ const logs = {
         },
     },
     mutations: {
-        ADD_LOGS: (state, { type, message, stack, info }) => {
+        ADD_LOGS: (state, {type, message, stack, info}) => {
             state.logsList.push(Object.assign({
                 url: window.location.href,
                 time: dateFormat(new Date())
             }, {
-                    type,
-                    message,
-                    stack,
-                    info: info.toString()
-                }))
-            setStore({ name: 'logsList', content: state.logsList })
+                type,
+                message,
+                stack,
+                info: info.toString()
+            }))
+            setStore({name: 'logsList', content: state.logsList})
         },
         CLEAR_LOGS: (state) => {
             state.logsList = [];
-            setStore({ name: 'logsList', content: state.logsList })
+            setStore({name: 'logsList', content: state.logsList})
         }
     }
 

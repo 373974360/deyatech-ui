@@ -6,7 +6,7 @@ import router from './router/router';
 import './permission'; // 权限
 import './error'; // 日志
 import store from './store';
-import { loadStyle } from './util/util'
+import {loadStyle} from './util/util'
 import * as urls from '@/config/env';
 import Element from 'element-ui';
 import ElTreeGrid from 'element-tree-grid'
@@ -17,10 +17,6 @@ import {
 import i18n from './lang' // Internationalization
 import './styles/common.scss';
 import * as filters from './filters' // 全局filter
-
-Object.keys(filters).forEach(key => {
-  Vue.filter(key, filters[key])
-})
 
 import basicContainer from './components/basic-container/main'
 
@@ -34,7 +30,7 @@ Vue.use(window.AVUE, {
 })
 //注册全局容器
 Vue.component('basicContainer', basicContainer)
-Vue.component('elTreeGrid',ElTreeGrid)
+Vue.component('elTreeGrid', ElTreeGrid)
 // 加载相关url地址
 Object.keys(urls).forEach(key => {
     Vue.prototype[key] = urls[key];
@@ -43,6 +39,10 @@ Object.keys(urls).forEach(key => {
 // 动态加载阿里云字体库
 iconfontVersion.forEach(ele => {
     loadStyle(iconfontUrl.replace('$key', ele));
+})
+
+Object.keys(filters).forEach(key => {
+    Vue.filter(key, filters[key])
 })
 
 Vue.config.productionTip = false;

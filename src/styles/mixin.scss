@@ -7,15 +7,15 @@
 }
 
 @mixin scrollBar {
-     ::-webkit-scrollbar-track-piece {
+    ::-webkit-scrollbar-track-piece {
         background-color: transparent;
     }
-     ::-webkit-scrollbar {
+    ::-webkit-scrollbar {
         width: 7px;
         height: 7px;
         background-color: transparent;
     }
-     ::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar-thumb {
         border-radius: 5px;
         background-color: hsla(220, 4%, 58%, .3);
     }
@@ -54,18 +54,15 @@
         border-bottom: $color-border-style;
         border-left: $transparent-border-style;
         border-right: $transparent-border-style;
-    }
-    @else if $direction==right {
+    } @else if $direction==right {
         border-left: $color-border-style;
         border-top: $transparent-border-style;
         border-bottom: $transparent-border-style;
-    }
-    @else if $direction==down {
+    } @else if $direction==down {
         border-top: $color-border-style;
         border-left: $transparent-border-style;
         border-right: $transparent-border-style;
-    }
-    @else if $direction==left {
+    } @else if $direction==left {
         border-right: $color-border-style;
         border-top: $transparent-border-style;
         border-bottom: $transparent-border-style;

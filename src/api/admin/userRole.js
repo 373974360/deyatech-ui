@@ -1,4 +1,5 @@
 import request from '@/router/axios';
+
 export function getUserRole(id) {
     return request({
         url: '/manage/admin/userRole/getByUserRole',
@@ -7,7 +8,7 @@ export function getUserRole(id) {
     })
 }
 
-export function createOrUpdateUserRole(userRoleVo){
+export function createOrUpdateUserRole(userRoleVo) {
     const data = userRoleVo;
     return request({
         url: '/manage/admin/userRole/saveOrUpdate',
@@ -24,6 +25,7 @@ export function delUserRole(id) {
         data
     })
 }
+
 export function delUserRoles(ids) {
     const data = {ids};
     return request({
@@ -32,6 +34,7 @@ export function delUserRoles(ids) {
         data
     })
 }
+
 export function getUserRoleList(query) {
     return request({
         url: '/manage/admin/userRole/pageByUserRole',

@@ -13,6 +13,7 @@ import AvueRouter from './avue-router';
 import Vue from 'vue';
 import i18n from '@/lang' // Internationalization
 import Store from '../store/';
+
 let Router = new VueRouter({
     scrollBehavior(to, from, savedPosition) {
         if (savedPosition) {

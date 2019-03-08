@@ -1,27 +1,27 @@
 <template>
-  <div id="app">
-    <router-view />
-  </div>
+    <div id="app">
+        <router-view/>
+    </div>
 </template>
 
 <script>
-export default {
-  name: "app",
-  data() {
-    return {};
-  },
-  watch: {},
-  created() {
+    export default {
+        name: "app",
+        data() {
+            return {};
+        },
+        watch: {},
+        created() {
 
-  },
-  methods: {},
-  computed: {}
-};
+        },
+        methods: {},
+        computed: {}
+    };
 </script>
 <style lang="scss">
-#app {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+    #app {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
 </style>

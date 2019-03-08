@@ -1,4 +1,3 @@
-
 let RouterPlugin = function () {
     this.$router = null;
     this.$store = null;
@@ -7,10 +6,12 @@ let RouterPlugin = function () {
 RouterPlugin.install = function (vue, router, store, i18n) {
     this.$router = router;
     this.$store = store;
-    this.$vue = new vue({ i18n });
+    this.$vue = new vue({i18n});
+
     function isURL(s) {
         return /^http[s]?:\/\/.*/.test(s)
     }
+
     function objToform(obj) {
         let result = [];
         Object.keys(obj).forEach(ele => {
@@ -18,6 +19,7 @@ RouterPlugin.install = function (vue, router, store, i18n) {
         })
         return result.join('&');
     }
+
     this.$router.$avueRouter = {
         //全局配置
         $website: this.$store.getters.website,
@@ -51,7 +53,7 @@ RouterPlugin.install = function (vue, router, store, i18n) {
         },
         //处理路由
         getPath: function (params) {
-            let { src } = params;
+            let {src} = params;
             let result = src || '/';
             if (src.includes("http") || src.includes("https")) {
                 result = `/myiframe/urlPath?${objToform(params)}`;
@@ -95,12 +97,12 @@ RouterPlugin.install = function (vue, router, store, i18n) {
                 const oMenu = aMenu[i];
                 if (this.routerList.includes(oMenu[propsDefault.path])) return;
                 const path = (() => {
-                    if (first) {
-                        return oMenu[propsDefault.path].replace('/index', '')
-                    } else {
-                        return oMenu[propsDefault.path]
-                    }
-                })(),
+                        if (first) {
+                            return oMenu[propsDefault.path].replace('/index', '')
+                        } else {
+                            return oMenu[propsDefault.path]
+                        }
+                    })(),
                     //特殊处理组件
                     component = 'views' + oMenu.path,
                     name = oMenu[propsDefault.label],
@@ -137,7 +139,9 @@ RouterPlugin.install = function (vue, router, store, i18n) {
                         if (first) {
                             if (!isURL(path)) oMenu[propsDefault.path] = `${path}/index`;
                             return [{
-                                component(resolve) { require([`../${component}.vue`], resolve) },
+                                component(resolve) {
+                                    require([`../${component}.vue`], resolve)
+                                },
                                 icon: icon,
                                 name: name,
                                 meta: meta,

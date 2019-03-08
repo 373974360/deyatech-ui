@@ -1,4 +1,5 @@
 import request from '@/router/axios';
+
 export function getUser(id) {
     return request({
         url: '/manage/admin/user/getByUser',
@@ -7,7 +8,7 @@ export function getUser(id) {
     })
 }
 
-export function createOrUpdateUser(userVo){
+export function createOrUpdateUser(userVo) {
     const data = userVo;
     return request({
         url: '/manage/admin/user/saveOrUpdate',
@@ -24,6 +25,7 @@ export function delUser(id) {
         data
     })
 }
+
 export function delUsers(ids) {
     const data = {ids};
     return request({
@@ -32,6 +34,7 @@ export function delUsers(ids) {
         data
     })
 }
+
 export function getUserList(query) {
     return request({
         url: '/manage/admin/user/pageByUser',
