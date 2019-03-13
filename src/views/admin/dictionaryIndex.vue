@@ -130,7 +130,12 @@
                     <el-table-column align="center" label="索引" prop="indexId"/>
                     <el-table-column align="center" label="英文代码" prop="code"/>
                     <el-table-column align="center" label="中文名称" prop="codeText"/>
-                    <el-table-column align="center" label="排序" prop="sortNo"/>
+                    <el-table-column align="center" label="是否可编辑" prop="editable">
+                        <template slot-scope="scope">
+                            <el-tag v-if="scope.row.editable==1">可编辑</el-tag>
+                            <el-tag type="info" v-else-if="scope.row.editable==2">不可编辑</el-tag>
+                        </template>
+                    </el-table-column>
                     <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                         <template slot-scope="scope">
                             <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -138,10 +143,10 @@
                             </el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
+                    <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="left"
                                      width="150">
                         <template slot-scope="scope">
-                            <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
+                            <el-button v-if="btnEnable.update && scope.row.editable==1" :title="$t('table.update')" type="primary"
                                        icon="el-icon-edit" :size="btnSize" circle
                                        @click.stop.safe="btnDictionaryUpdate(scope.row)"></el-button>
                             <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
@@ -177,8 +182,11 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="是否可编辑" prop="editable">
-                                <el-input v-model="dictionary.editable"></el-input>
+                            <el-form-item label="编辑选项" prop="editable">
+                                <el-radio-group v-model="dictionary.editable">
+                                    <el-radio :label="1">可编辑</el-radio>
+                                    <el-radio :label="2">不可编辑</el-radio>
+                                </el-radio-group>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -259,7 +267,7 @@
                     code: undefined,
                     codeText: undefined,
                     sortNo: undefined,
-                    editable: undefined
+                    editable: 1
                 },
                 dictionarySelectedRows: [],
                 dictionaryDialogVisible: false,
@@ -371,7 +379,6 @@
                     } else {
                         return false;
                     }
-                    this.submitLoading = false;
                 });
             },
             doUpdate() {
@@ -385,7 +392,6 @@
                     } else {
                         return false;
                     }
-                    this.submitLoading = false;
                 })
             },
             doDelete(ids) {
@@ -471,7 +477,6 @@
                     } else {
                         return false;
                     }
-                    this.dictionarySubmitLoading = false;
                 });
             },
             doDictionaryUpdate() {
@@ -485,7 +490,6 @@
                     } else {
                         return false;
                     }
-                    this.dictionarySubmitLoading = false;
                 })
             },
             doDictionaryDelete(ids) {
@@ -502,7 +506,7 @@
                     code: undefined,
                     codeText: undefined,
                     sortNo: undefined,
-                    editable: undefined
+                    editable: 1
                 }
             },
             resetDictionaryDialog() {
