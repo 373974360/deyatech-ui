@@ -38,7 +38,7 @@
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="center" label="年份" prop="year"/>
-                <el-table-column align="center" label="节假日日期，格式为 yyyy-mm-dd" prop="date"/>
+                <el-table-column align="center" label="日期" prop="date"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -72,12 +72,20 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="年份" prop="year">
-                                <el-input v-model="holiday.year"></el-input>
+                                <el-date-picker
+                                  v-model="holiday.year"
+                                  type="year"
+                                  placeholder="选择年" value-format="yyyy">
+                                </el-date-picker>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="节假日日期，格式为 yyyy-mm-dd" prop="date">
-                                <el-input v-model="holiday.date"></el-input>
+                            <el-form-item label="日期" prop="date">
+                                <el-date-picker
+                                  v-model="holiday.date"
+                                  type="date"
+                                  placeholder="选择日期" value-format="yyyy-MM-dd">
+                                </el-date-picker>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -198,6 +206,7 @@
                 } else {
                     this.holiday = deepClone(this.selectedRows[0]);
                 }
+                console.dir(this.holiday)
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },

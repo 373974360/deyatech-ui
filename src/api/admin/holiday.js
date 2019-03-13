@@ -27,7 +27,7 @@ export function delHoliday(id) {
 }
 
 export function delHolidays(ids) {
-    const data = {ids};
+    const data = ids;
     return request({
         url: '/manage/admin/holiday/removeByIds',
         method: 'post',

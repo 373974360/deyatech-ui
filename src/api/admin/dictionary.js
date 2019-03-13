@@ -37,7 +37,7 @@ export function delDictionarys(ids) {
 
 export function getDictionaryList(query) {
     return request({
-        url: '/manage/admin/dictionary/pageByDictionary',
+        url: '/manage/admin/dictionary/listByDictionary',
         method: 'get',
         params: query
     });
