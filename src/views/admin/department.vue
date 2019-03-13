@@ -22,7 +22,7 @@
         </div>
 
         <el-table :data="departmentList" v-loading.body="listLoading" stripe border highlight-current-row
-                  @selection-change="handleSelectionChange">
+                  @selection-change="handleSelectionChange" v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
                                   parentKey="parentId" prop="name" label="部门名称" width="200">
@@ -125,7 +125,7 @@
         createOrUpdateDepartment,
         delDepartments
     } from '@/api/admin/department';
-    import {deepClone} from '@/util/util';
+    import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
 
     export default {
@@ -167,7 +167,9 @@
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'}
                     ]
-                }
+                },
+                lastExpanded: undefined,
+                tableReset: false
             }
         },
         created() {
@@ -210,7 +212,14 @@
             reloadList() {
                 this.listLoading = true;
                 getDepartmentTree().then(response => {
+                    this.tableReset = false;
                     this.departmentList = response.data;
+                    if (this.lastExpanded) {
+                        this.departmentList = setExpanded(this.departmentList, this.lastExpanded);
+                    }
+                    this.$nextTick(() => {
+                        this.tableReset = true
+                    })
                     this.listLoading = false;
                 })
             },
@@ -263,12 +272,14 @@
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push(row.id);
+                        this.lastExpanded = row.treePosition;
                         this.doDelete(ids);
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for (const deleteRow of this.selectedRows) {
                             ids.push(deleteRow.id);
+                            this.lastExpanded = deleteRow.treePosition;
                         }
                         this.doDelete(ids);
                     })
@@ -278,7 +289,8 @@
                 this.$refs['departmentDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateDepartment(this.department).then(response => {
+                        createOrUpdateDepartment(this.department).then(() => {
+                            this.lastExpanded = this.department.treePosition;
                             this.resetDepartmentDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -291,7 +303,8 @@
                 this.$refs['departmentDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateDepartment(this.department).then(response => {
+                        createOrUpdateDepartment(this.department).then(() => {
+                            this.lastExpanded = this.department.treePosition;
                             this.resetDepartmentDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -302,7 +315,7 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delDepartments(ids).then(response => {
+                delDepartments(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

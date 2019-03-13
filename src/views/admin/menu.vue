@@ -22,7 +22,7 @@
         </div>
 
         <el-table :data="menuList" v-loading.body="listLoading" stripe border highlight-current-row
-                  @selection-change="handleSelectionChange">
+                  @selection-change="handleSelectionChange"  v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
                                   parentKey="parentId" prop="name" label="菜单名称" width="200">
@@ -148,7 +148,7 @@
 
 <script>
     import {createOrUpdateMenu, delMenus, getMenuCascader, getMenuTree} from '@/api/admin/menu';
-    import {deepClone} from '@/util/util';
+    import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
 
     export default {
@@ -187,7 +187,9 @@
                     permission: [
                         {required: true, message: this.$t("table.pleaseInput") + '权限标识'}
                     ]
-                }
+                },
+                lastExpanded: undefined,
+                tableReset: false
             }
         },
         created() {
@@ -230,7 +232,14 @@
             reloadList() {
                 this.listLoading = true;
                 getMenuTree().then(response => {
+                    this.tableReset = false;
                     this.menuList = response.data;
+                    if (this.lastExpanded) {
+                        this.menuList = setExpanded(this.menuList, this.lastExpanded);
+                    }
+                    this.$nextTick(() => {
+                        this.tableReset = true
+                    })
                     this.listLoading = false;
                 })
             },
@@ -288,11 +297,13 @@
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push(row.id);
+                        this.lastExpanded = row.treePosition;
                         this.doDelete(ids);
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for (const deleteRow of this.selectedRows) {
+                            this.lastExpanded = deleteRow.treePosition;
                             ids.push(deleteRow.id);
                         }
                         this.doDelete(ids);
@@ -303,7 +314,8 @@
                 this.$refs['menuDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateMenu(this.menu).then(response => {
+                        createOrUpdateMenu(this.menu).then(() => {
+                            this.lastExpanded = this.menu.treePosition;
                             this.resetMenuDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -316,7 +328,8 @@
                 this.$refs['menuDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateMenu(this.menu).then(response => {
+                        createOrUpdateMenu(this.menu).then(() => {
+                            this.lastExpanded = this.menu.treePosition;
                             this.resetMenuDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -327,7 +340,7 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delMenus(ids).then(response => {
+                delMenus(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

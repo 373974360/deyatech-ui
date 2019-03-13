@@ -221,7 +221,7 @@
                 this.$refs['holidayDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateHoliday(this.holiday).then(response => {
+                        createOrUpdateHoliday(this.holiday).then(() => {
                             this.resetHolidayDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -234,7 +234,7 @@
                 this.$refs['holidayDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateHoliday(this.holiday).then(response => {
+                        createOrUpdateHoliday(this.holiday).then(() => {
                             this.resetHolidayDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -245,7 +245,7 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delHolidays(ids).then(response => {
+                delHolidays(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

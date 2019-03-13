@@ -255,7 +255,7 @@
                 this.$refs['dictionaryDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateDictionary(this.dictionary).then(response => {
+                        createOrUpdateDictionary(this.dictionary).then(() => {
                             this.resetDictionaryDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -268,7 +268,7 @@
                 this.$refs['dictionaryDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateDictionary(this.dictionary).then(response => {
+                        createOrUpdateDictionary(this.dictionary).then(() => {
                             this.resetDictionaryDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -279,7 +279,7 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delDictionarys(ids).then(response => {
+                delDictionarys(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

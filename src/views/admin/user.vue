@@ -281,7 +281,7 @@
                 this.$refs['userDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateUser(this.user).then(response => {
+                        createOrUpdateUser(this.user).then(() => {
                             this.resetUserDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -294,7 +294,7 @@
                 this.$refs['userDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateUser(this.user).then(response => {
+                        createOrUpdateUser(this.user).then(() => {
                             this.resetUserDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -305,7 +305,7 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delUsers(ids).then(response => {
+                delUsers(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

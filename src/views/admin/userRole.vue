@@ -221,7 +221,7 @@
                 this.$refs['userRoleDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateUserRole(this.userRole).then(response => {
+                        createOrUpdateUserRole(this.userRole).then(() => {
                             this.resetUserRoleDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -234,7 +234,7 @@
                 this.$refs['userRoleDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateUserRole(this.userRole).then(response => {
+                        createOrUpdateUserRole(this.userRole).then(() => {
                             this.resetUserRoleDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -245,7 +245,7 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delUserRoles(ids).then(response => {
+                delUserRoles(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

@@ -175,6 +175,27 @@ export const findParent = (menu, id) => {
         }
     }
 };
+
+/**
+ * 递归寻找子类的父类
+ */
+
+export const setExpanded = (menuList, treePosition) => {
+    for (let i = 0; i < menuList.length; i++) {
+        if (menuList[i].children) {
+            menuList[i].children = setExpanded(menuList[i].children, treePosition);
+        }
+        const parentIds = treePosition.split('&');
+        for (let j = 0; j < parentIds.length; j++) {
+            if (parentIds[j] != '' && menuList[i].id == parentIds[j]) {
+                console.dir("12312313")
+                menuList[i].expanded = 1;
+            }
+        }
+    }
+    return menuList;
+};
+
 /**
  * 判断2个对象属性和值是否相等
  */

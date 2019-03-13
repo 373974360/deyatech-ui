@@ -277,7 +277,7 @@
                 this.$refs['logsDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateLogs(this.logs).then(response => {
+                        createOrUpdateLogs(this.logs).then(() => {
                             this.resetLogsDialog();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -290,7 +290,7 @@
                 this.$refs['logsDialogForm'].validate(valid => {
                     if (valid) {
                         this.submitLoading = true;
-                        createOrUpdateLogs(this.logs).then(response => {
+                        createOrUpdateLogs(this.logs).then(() => {
                             this.resetLogsDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -301,7 +301,7 @@
             },
             doDelete(ids) {
                 this.listLoading = true;
-                delLogss(ids).then(response => {
+                delLogss(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
