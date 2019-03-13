@@ -18,7 +18,7 @@ export function refeshToken() {
 export function logout() {
     return request({
         url: '/manage/auth/userJwt/invalid',
-        method: 'post'
+        method: 'get'
     });
 }
 

@@ -9,10 +9,10 @@
             </div>
         </div>
         <div class="top-bar__title">
-            <!--<span class="top-bar__item"
+            <span class="top-bar__item"
                   v-if="showSearch">
               <top-search></top-search>
-            </span>-->
+            </span>
         </div>
         <div class="top-bar__right">
             <el-tooltip v-if="showColor"
@@ -123,7 +123,8 @@
                 showCollapse: state => state.common.showCollapse,
                 showSearch: state => state.common.showSearch,
                 showMenu: state => state.common.showMenu,
-                showColor: state => state.common.showColor
+                showColor: state => state.common.showColor,
+                isFullScren: state => state.common.isFullScren
             }),
             ...mapGetters([
                 "userInfo",
