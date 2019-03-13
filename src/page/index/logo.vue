@@ -56,8 +56,7 @@
     .avue-logo {
         position: fixed;
         top: 0;
-        left: 0;
-        width: 240px;
+        left: 15px;
         height: 64px;
         line-height: 64px;
         background-color: #20222a;
