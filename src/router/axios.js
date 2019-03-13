@@ -13,6 +13,7 @@ import {getToken} from '@/util/auth'
 import {Message} from 'element-ui'
 import website from '@/config/website';
 import NProgress from 'nprogress' // progress bar
+import Qs from 'qs'
 import 'nprogress/nprogress.css' // progress bar style
 axios.defaults.timeout = 10000;
 //返回其他状态吗
@@ -34,8 +35,9 @@ axios.interceptors.request.use(config => {
         config.headers['Deyatech-Token'] = getToken() // 让每个请求携带token--['Authorization']为自定义key 请根据实际情况自行修改
     }
     //headers中配置serialize为true开启序列化
-    if (config.method === 'post' && meta.isSerialize === true) {
-        config.data = serialize(config.data);
+    if (config.method === 'post') {
+        // config.data = serialize(config.data);
+        config.data = Qs.stringify(config.data, {arrayFormat: 'brackets', allowDots: true})
     }
     return config
 }, error => {

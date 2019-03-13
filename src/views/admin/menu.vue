@@ -30,10 +30,16 @@
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                 </template>
             </el-table-tree-column>
-            <el-table-column align="center" label="菜单类型(0:CURD;1:系统菜单;2:业务菜单;)" prop="type"/>
-            <el-table-column align="center" label="上级菜单编号" prop="parentId"/>
-            <el-table-column align="center" label="树结构中的索引位置" prop="treePosition"/>
-            <el-table-column align="center" label="节点图标CSS类名" prop="icon"/>
+            <el-table-column align="center" label="菜单类型" prop="type">
+                <template slot-scope="scope">
+                    {{scope.row.type | enums('MenuTypeEnum')}}
+                </template>
+            </el-table-column>
+            <el-table-column align="center" label="图标" prop="icon">
+                <template slot-scope="scope">
+                    <i :class="scope.row.icon"></i>
+                </template>
+            </el-table-column>
             <el-table-column align="center" label="前台地址" prop="path"/>
             <el-table-column align="center" label="后台地址" prop="request"/>
             <el-table-column align="center" label="权限标识" prop="permission"/>
@@ -67,58 +73,58 @@
                      label-width="80px" :rules="menuRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item :label="$t('table.parent')">
+                        <el-form-item label="上级菜单">
                             <el-cascader :options="menuCascader" v-model="menuTreePosition"
-                                         show-all-levels expand-trigger="hover" clearable
+                                         show-all-levels expand-trigger="click" clearable
                                          change-on-select></el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item :label="$t('table.searchName')" prop="name">
+                        <el-form-item label="菜单名称" prop="name">
                             <el-input v-model="menu.name"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item label="菜单类型(0:CURD;1:系统菜单;2:业务菜单;)" prop="type">
-                            <el-input v-model="menu.type"></el-input>
+                        <el-form-item label="菜单类型" prop="type">
+                            <el-radio-group v-model="menu.type">
+                                <el-radio v-for="item in enums['MenuTypeEnum']"
+                                          :key="item.code"
+                                          :label="item.code"
+                                          :value="item.code">
+                                    <span>{{item.value}}</span>
+                                </el-radio>
+                            </el-radio-group>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="树结构中的索引位置" prop="treePosition">
-                            <el-input v-model="menu.treePosition"></el-input>
+                        <el-form-item label="图标" prop="icon">
+                            <icon-select v-model="menu.icon"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="节点图标CSS类名" prop="icon">
-                            <el-input v-model="menu.icon"></el-input>
-                        </el-form-item>
-                    </el-col>
                     <el-col :span="12">
                         <el-form-item label="前台地址" prop="path">
                             <el-input v-model="menu.path"></el-input>
                         </el-form-item>
                     </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="后台地址" prop="request">
                             <el-input v-model="menu.request"></el-input>
                         </el-form-item>
                     </el-col>
+                </el-row>
+                <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="权限标识" prop="permission">
                             <el-input v-model="menu.permission"></el-input>
                         </el-form-item>
                     </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="排序号" prop="sortNo">
-                            <el-input v-model="menu.sortNo"></el-input>
+                            <el-input-number v-model="menu.sortNo" :min="1" :max="100"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -141,12 +147,7 @@
 </template>
 
 <script>
-    import {
-        getMenuTree,
-        getMenuCascader,
-        createOrUpdateMenu,
-        delMenus
-    } from '@/api/admin/menu';
+    import {createOrUpdateMenu, delMenus, getMenuCascader, getMenuTree} from '@/api/admin/menu';
     import {deepClone} from '@/util/util';
     import {mapGetters} from 'vuex';
 
@@ -180,26 +181,11 @@
                     type: [
                         {required: true, message: this.$t("table.pleaseInput") + '菜单类型(0:CURD;1:系统菜单;2:业务菜单;)'}
                     ],
-                    parentId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '上级菜单编号'}
-                    ],
-                    treePosition: [
-                        {required: true, message: this.$t("table.pleaseInput") + '树结构中的索引位置'}
-                    ],
-                    icon: [
-                        {required: true, message: this.$t("table.pleaseInput") + '节点图标CSS类名'}
-                    ],
-                    path: [
-                        {required: true, message: this.$t("table.pleaseInput") + '前台地址'}
-                    ],
                     request: [
                         {required: true, message: this.$t("table.pleaseInput") + '后台地址'}
                     ],
                     permission: [
                         {required: true, message: this.$t("table.pleaseInput") + '权限标识'}
-                    ],
-                    sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'}
                     ]
                 }
             }
@@ -277,9 +263,13 @@
                         this.menu.parentId = this.selectedRows[0].id;
                     }
                 }
+                this.menu.children = undefined;
                 this.getMenuCascader(null);
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+            },
+            selectedIcon(name) {
+                this.menu.icon = name;
             },
             btnUpdate(row) {
                 this.resetMenu();
@@ -288,6 +278,7 @@
                 } else {
                     this.menu = deepClone(this.selectedRows[0]);
                 }
+                this.menu.children = undefined;
                 this.getMenuCascader(this.menu.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;

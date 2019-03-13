@@ -19,11 +19,11 @@
     height: 100%;
 
     i {
-        font-size: 30px !important;
+        font-size: 25px !important;
     }
 
     &--active {
-        transform: rotate(90deg);
+        transform: rotate(180deg);
     }
 }
 
@@ -69,6 +69,7 @@
 
     i {
         line-height: 64px;
+        font-size: 23px !important;
     }
 }
 

@@ -12,7 +12,7 @@
                       auto-complete="off"
                       :placeholder="$t('login.account')">
                 <i slot="prefix"
-                   class="icon-yonghu"></i>
+                   class="iconaccount"></i>
             </el-input>
         </el-form-item>
         <el-form-item prop="password">
@@ -26,7 +26,7 @@
                    slot="suffix"
                    @click="showPassword"></i>
                 <i slot="prefix"
-                   class="icon-mima"></i>
+                   class="iconpassword"></i>
             </el-input>
         </el-form-item>
         <el-form-item prop="verifyCode">
@@ -35,7 +35,7 @@
                     <el-input size="small" @keyup.enter.native="handleLogin" :maxlength="imgCode.len"
                               v-model="loginForm.verifyCode"
                               auto-complete="off" :placeholder="$t('login.verifyCode')">
-                        <i slot="prefix" class="icon-yanzhengma"></i>
+                        <i slot="prefix" class="iconsecurity"></i>
                     </el-input>
                 </el-col>
                 <el-col :span="10">

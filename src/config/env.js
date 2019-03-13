@@ -1,8 +1,9 @@
 // 配置编译环境和线上环境之间的切换
 
 let baseUrl = '';
-let iconfontVersion = ['567566_pwc3oottzol'];
-let iconfontUrl = `//at.alicdn.com/t/font_$key.css`;
+let iconfontVersion = ['font_1073104_rssy0gfzan'];
+let iconfontCssUrl = `//at.alicdn.com/t/$key.css`;
+let iconfontJsUrl = `//at.alicdn.com/t/$key.js`;
 let codeUrl = `${baseUrl}/code`
 const env = process.env
 if (env.NODE_ENV == 'development') {
@@ -14,7 +15,8 @@ if (env.NODE_ENV == 'development') {
 }
 export {
     baseUrl,
-    iconfontUrl,
+    iconfontCssUrl,
+    iconfontJsUrl,
     iconfontVersion,
     codeUrl,
     env

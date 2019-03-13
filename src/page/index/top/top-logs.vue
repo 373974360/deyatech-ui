@@ -2,9 +2,9 @@
   <span @click="logsFlag?'':handleOpen()">
     <el-badge :value="logsFlag?'':logsLen"
               :max="99">
-      <i class="icon-rizhi1"></i>
+      <i class="iconcuowutishi"></i>
     </el-badge>
-    <el-dialog title="日志"
+    <el-dialog title="错误日志"
                fullscreen
                :visible.sync="box"
                width="100%"

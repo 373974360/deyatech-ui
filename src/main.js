@@ -6,19 +6,16 @@ import router from './router/router';
 import './permission'; // 权限
 import './error'; // 日志
 import store from './store';
-import {loadStyle} from './util/util'
+import {loadJs, loadStyle} from './util/util'
 import * as urls from '@/config/env';
+import {iconfontCssUrl, iconfontJsUrl, iconfontVersion} from '@/config/env';
 import Element from 'element-ui';
 import ElTreeGrid from 'element-tree-grid'
-import {
-    iconfontUrl,
-    iconfontVersion
-} from '@/config/env';
 import i18n from './lang' // Internationalization
 import './styles/common.scss';
 import * as filters from './filters' // 全局filter
-
 import basicContainer from './components/basic-container/main'
+import iconSelect from './components/icon-select/main'
 
 Vue.use(router)
 Vue.use(VueAxios, axios)
@@ -31,6 +28,7 @@ Vue.use(window.AVUE, {
 //注册全局容器
 Vue.component('basicContainer', basicContainer)
 Vue.component('elTreeGrid', ElTreeGrid)
+Vue.component('iconSelect', iconSelect)
 // 加载相关url地址
 Object.keys(urls).forEach(key => {
     Vue.prototype[key] = urls[key];
@@ -38,7 +36,8 @@ Object.keys(urls).forEach(key => {
 
 // 动态加载阿里云字体库
 iconfontVersion.forEach(ele => {
-    loadStyle(iconfontUrl.replace('$key', ele));
+    loadStyle(iconfontCssUrl.replace('$key', ele));
+    loadJs(iconfontJsUrl.replace('$key', ele));
 })
 
 Object.keys(filters).forEach(key => {

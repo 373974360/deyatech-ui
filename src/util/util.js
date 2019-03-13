@@ -191,6 +191,18 @@ export const loadStyle = url => {
     const head = document.getElementsByTagName('head')[0];
     head.appendChild(link);
 };
+
+/**
+ * 动态插入js
+ */
+
+export const loadJs = url => {
+    const script = document.createElement('script');
+    script.src = url;
+    const head = document.getElementsByTagName('head')[0];
+    head.appendChild(script);
+};
+
 /**
  * 判断路由是否相等
  */
