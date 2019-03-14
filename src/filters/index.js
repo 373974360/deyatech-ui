@@ -28,7 +28,7 @@ export function dicts(value, type) {
         return result[0].value || value;
     } else {
         result = array.filter(function (item) {
-            return item.code === type + '_' + value;
+            return item.code === value;
         });
         if (result[0]) {
             return result[0].value || value;
