@@ -37,7 +37,7 @@ axios.interceptors.request.use(config => {
     //headers中配置serialize为true开启序列化
     if (config.method === 'post') {
         // config.data = serialize(config.data);
-        config.data = Qs.stringify(config.data, {arrayFormat: 'brackets', allowDots: true})
+        config.data = Qs.stringify(config.data, {arrayFormat: 'brackets', allowDots: true, skipNulls: true})
     }
     return config
 }, error => {
