@@ -59,14 +59,14 @@
         </el-table>
 
         <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                   :close-on-click-modal="closeOnClickModal">
+                   :close-on-click-modal="closeOnClickModal" @close="closeDepartmentDialog">
             <el-form ref="departmentDialogForm" class="deyatech-form" :model="department" label-position="right"
                      label-width="80px" :rules="departmentRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item :label="$t('table.parent')">
                             <el-cascader :options="departmentCascader" v-model="departmentTreePosition"
-                                         show-all-levels expand-trigger="hover" clearable
+                                         :show-all-levels="false" expand-trigger="hover" clearable
                                          change-on-select></el-cascader>
                         </el-form-item>
                     </el-col>
@@ -112,7 +112,7 @@
                 <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
                            :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                 <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
+                <el-button :size="btnSize" @click="closeDepartmentDialog">{{$t('table.cancel')}}</el-button>
             </span>
         </el-dialog>
     </basic-container>
@@ -124,8 +124,8 @@
         getDepartmentCascader,
         createOrUpdateDepartment,
         delDepartments
-    } from '@/api/admin/department';
-    import {deepClone, setExpanded} from '@/util/util';
+    } from '../../api/admin/department';
+    import {deepClone, setExpanded} from '../../util/util';
     import {mapGetters} from 'vuex';
 
     export default {
@@ -161,9 +161,6 @@
                     parentId: [
                         {required: true, message: this.$t("table.pleaseInput") + '上级部门编号'}
                     ],
-                    treePosition: [
-                        {required: true, message: this.$t("table.pleaseInput") + '树结构中的索引位置'}
-                    ],
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'}
                     ]
@@ -179,13 +176,13 @@
             departmentTreePosition: {
                 get() {
                     if (this.department.treePosition) {
-                        return this.department.treePosition.split('&');
+                        return this.department.treePosition.substr(1).split('&')
                     }
                 },
                 set(v) {
                     if (v.length > 0) {
                         this.department.parentId = v[v.length - 1];
-                        this.department.treePosition = v.join('&') + "&" + this.department.parentId;
+                        this.department.treePosition = '&' + v.join('&');
                     } else {
                         this.department.parentId = 0;
                         this.department.treePosition = undefined;
@@ -250,6 +247,8 @@
                             this.department.treePosition = "&" + this.selectedRows[0].id;
                         }
                         this.department.parentId = this.selectedRows[0].id;
+                    } else {
+                        this.department.parentId = 0
                     }
                 }
                 this.getDepartmentCascader(null);
@@ -293,6 +292,8 @@
                             this.lastExpanded = this.department.treePosition;
                             this.resetDepartmentDialog();
                             this.$message.success(this.$t("table.createSuccess"));
+                        }).catch(() => {
+                            this.submitLoading = false;
                         })
                     } else {
                         return false;
@@ -307,6 +308,8 @@
                             this.lastExpanded = this.department.treePosition;
                             this.resetDepartmentDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
+                        }).catch(() => {
+                            this.submitLoading = false;
                         })
                     } else {
                         return false;
@@ -332,10 +335,14 @@
                 }
             },
             resetDepartmentDialog() {
-                this.dialogVisible = false;
-                this.resetDepartment();
+                this.closeDepartmentDialog()
                 this.reloadList();
                 this.submitLoading = false;
+            },
+            closeDepartmentDialog() {
+                this.dialogVisible = false;
+                this.resetDepartment();
+                this.$refs['departmentDialogForm'].resetFields()
             }
         }
     }
