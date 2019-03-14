@@ -178,7 +178,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="排序" prop="sortNo">
-                                <el-input v-model="dictionary.sortNo"></el-input>
+                                <el-input-number v-model="dictionary.sortNo" :min="1"></el-input-number>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -213,6 +213,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
+    import {validateLowerCase} from '@/util/validate';
     import {
         getDictionaryIndexList,
         createOrUpdateDictionaryIndex,
@@ -227,6 +228,13 @@
     export default {
         name: 'dictionaryIndex',
         data() {
+            const validateCode = (rule, value, callback) => {
+                if (!validateLowerCase(value)) {
+                    callback(new Error(''));
+                } else {
+                    callback();
+                }
+            };
             return {
                 dictionaryIndexList: undefined,
                 total: undefined,
@@ -243,7 +251,8 @@
                 },
                 dictionaryIndexRules: {
                     key: [
-                        {required: true, message: this.$t("table.pleaseInput") + '索引关键字'}
+                        {required: true, message: this.$t("table.pleaseInput") + '索引关键字'},
+                        {validator: validateCode,message:'索引必须为小写字母',trigger:'blur'}
                     ],
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '索引名称'}
@@ -266,7 +275,7 @@
                     indexId: this.dictionaryIndexValues,
                     code: undefined,
                     codeText: undefined,
-                    sortNo: undefined,
+                    sortNo: 1,
                     editable: 1
                 },
                 dictionarySelectedRows: [],
@@ -278,7 +287,8 @@
                         {required: true, message: this.$t("table.pleaseInput") + '索引关键字'}
                     ],
                     code: [
-                        {required: true, message: this.$t("table.pleaseInput") + '英文代码'}
+                        {required: true, message: this.$t("table.pleaseInput") + '英文代码'},
+                        {validator: validateCode,message:'请输入英文字母',trigger:'blur'}
                     ],
                     codeText: [
                         {required: true, message: this.$t("table.pleaseInput") + '中文名称'}
@@ -297,6 +307,7 @@
                 'permission',
                 'titleMap',
                 'enums',
+                'dicts',
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
@@ -505,7 +516,7 @@
                     indexId: this.dictionaryIndexValues,
                     code: undefined,
                     codeText: undefined,
-                    sortNo: undefined,
+                    sortNo: 1,
                     editable: 1
                 }
             },
