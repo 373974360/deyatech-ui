@@ -8,10 +8,10 @@ export function getHoliday(id) {
     })
 }
 
-export function createOrUpdateHoliday(holidayVo) {
+export function saveOrUpdateBatch(holidayVo) {
     const data = holidayVo;
     return request({
-        url: '/manage/admin/holiday/saveOrUpdate',
+        url: '/manage/admin/holiday/saveOrUpdateBatch',
         method: 'post',
         data
     })
@@ -37,7 +37,7 @@ export function delHolidays(ids) {
 
 export function getHolidayList(query) {
     return request({
-        url: '/manage/admin/holiday/pageByHoliday',
+        url: '/manage/admin/holiday/listByHoliday',
         method: 'get',
         params: query
     });
