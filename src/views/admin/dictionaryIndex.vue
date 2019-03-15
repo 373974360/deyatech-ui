@@ -56,7 +56,7 @@
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
                                    icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button title="子项目" type="success" icon="el-icon-share" :size="btnSize" @click.stop.safe="btnDictionarye(scope.row)" circle></el-button>
+                        <el-button v-if="btnEnable.dictionarymanager" title="子项目" type="success" icon="el-icon-share" :size="btnSize" @click.stop.safe="btnDictionarye(scope.row)" circle></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                    icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -108,13 +108,13 @@
                        :close-on-click-modal="closeOnClickModal">
                 <div class="deyatech-menu">
                     <div class="deyatech-menu_left">
-                        <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnDictionaryCreate">
+                        <el-button v-if="btnEnable.create_d" type="primary" :size="btnSize" @click="btnDictionaryCreate">
                             {{$t('table.create')}}
                         </el-button>
-                        <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnDictionaryUpdate"
+                        <el-button v-if="btnEnable.update_d" type="primary" :size="btnSize" @click="btnDictionaryUpdate"
                                    :disabled="dictionarySelectedRows.length != 1">{{$t('table.update')}}
                         </el-button>
-                        <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDictionaryDelete"
+                        <el-button v-if="btnEnable.delete_d" type="danger" :size="btnSize" @click="btnDictionaryDelete"
                                    :disabled="dictionarySelectedRows.length < 1">{{$t('table.delete')}}
                         </el-button>
                     </div>
@@ -146,10 +146,10 @@
                     <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="left"
                                      width="150">
                         <template slot-scope="scope">
-                            <el-button v-if="btnEnable.update && scope.row.editable==1" :title="$t('table.update')" type="primary"
+                            <el-button v-if="btnEnable.update_d && scope.row.editable==1" :title="$t('table.update')" type="primary"
                                        icon="el-icon-edit" :size="btnSize" circle
                                        @click.stop.safe="btnDictionaryUpdate(scope.row)"></el-button>
-                            <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
+                            <el-button v-if="btnEnable.delete_d" :title="$t('table.delete')" type="danger"
                                        icon="el-icon-delete" :size="btnSize" circle
                                        @click.stop.safe="btnDictionaryDelete(scope.row)"></el-button>
                         </template>
@@ -316,7 +316,11 @@
                 return {
                     create: this.permission.dictionaryIndex_create,
                     update: this.permission.dictionaryIndex_update,
-                    delete: this.permission.dictionaryIndex_delete
+                    delete: this.permission.dictionaryIndex_delete,
+                    dictionarymanager: this.permission.dictionary_manager,
+                    create_d: this.permission.dictionary_create,
+                    update_d: this.permission.dictionary_update,
+                    delete_d: this.permission.dictionary_delete,
                 };
             }
         },
