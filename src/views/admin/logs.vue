@@ -4,8 +4,18 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')"
-                                  v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" placeholder="方法说明"
+                                  v-model="listQuery.notes"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select :size="searchSize" v-model="listQuery.userId" placeholder="选择用户">
+                            <el-option
+                                v-for="item in userList"
+                                :key="item.id"
+                                :label="item.name"
+                                :value="item.id">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
@@ -16,50 +26,21 @@
                     </el-form-item>
                 </el-form>
             </div>
-            <div class="deyatech-menu">
-                <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">
-                        {{$t('table.create')}}
-                    </el-button>
-                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate"
-                               :disabled="selectedRows.length != 1">{{$t('table.update')}}
-                    </el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete"
-                               :disabled="selectedRows.length < 1">{{$t('table.delete')}}
-                    </el-button>
-                </div>
-                <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
-                </div>
-            </div>
             <el-table :data="logsList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="执行方法说明" prop="notes"/>
-                <el-table-column align="center" label="执行的类跟方法" prop="method"/>
-                <el-table-column align="center" label="请求url" prop="requestUrl"/>
-                <el-table-column align="center" label="用户id" prop="userId"/>
-                <el-table-column align="center" label="请求参数" prop="params"/>
-                <el-table-column align="center" label="消耗时间  毫秒" prop="time"/>
-                <el-table-column align="center" label="请求者ip地址" prop="ip"/>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <el-table-column align="left" label="执行方法说明" prop="notes">
                     <template slot-scope="scope">
-                        <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                            {{scope.row.enable | enums('EnableEnum')}}
-                        </el-tag>
+                        <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.notes}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
-                                 width="100">
+                <el-table-column align="left" label="请求URL" prop="requestUrl" width="380"/>
+                <el-table-column align="center" label="用户" prop="userName" width="130"/>
+                <el-table-column align="center" label="IP地址" prop="ip" width="150"/>
+                <el-table-column align="center" label="时间" prop="createTime" width="180"/>
+                <el-table-column align="center" label="耗时" width="120">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
-                                   icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
-                                   icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        {{scope.row.time}}毫秒
                     </template>
                 </el-table-column>
             </el-table>
@@ -70,156 +51,128 @@
             </el-pagination>
 
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
+            <el-dialog :title="dialogTitle" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal">
                 <el-form ref="logsDialogForm" class="deyatech-form" :model="logs" label-position="right"
-                         label-width="80px" :rules="logsRules">
+                         label-width="80px">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="执行方法说明" prop="notes">
-                                <el-input v-model="logs.notes"></el-input>
+                            <el-form-item label="执行说明" prop="notes">
+                                <el-input v-model="logs.notes" disabled></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="执行的类跟方法" prop="method">
-                                <el-input v-model="logs.method"></el-input>
+                            <el-form-item label="类和方法" prop="method">
+                                <el-input v-model="logs.method" disabled></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="请求url" prop="requestUrl">
-                                <el-input v-model="logs.requestUrl"></el-input>
+                            <el-form-item label="请求URL" prop="requestUrl">
+                                <el-input v-model="logs.requestUrl" disabled></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="用户id" prop="userId">
-                                <el-input v-model="logs.userId"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="请求参数" prop="params">
-                                <el-input v-model="logs.params"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="消耗时间  毫秒" prop="time">
-                                <el-input v-model="logs.time"></el-input>
+                            <el-form-item label="用户名称" prop="userName">
+                                <el-input v-model="logs.userName" disabled></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="请求者ip地址" prop="ip">
-                                <el-input v-model="logs.ip"></el-input>
+                            <el-form-item label="请求时间" prop="createTime">
+                                <el-input v-model="logs.createTime" disabled></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="用户ID" prop="userId">
+                                <el-input v-model="logs.userId" disabled></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="消耗时间" prop="time">
+                                <el-input v-model="logs.time" disabled></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="用户IP" prop="ip">
+                                <el-input v-model="logs.ip" disabled></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="logs.remark" :rows="3"/>
+                            <el-form-item label="请求参数">
+                                <el-input type="textarea" v-model="logs.params" :rows="5" disabled/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                 </el-form>
-                <span slot="footer" class="dialog-footer">
-                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
-                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
-                </span>
             </el-dialog>
         </div>
     </basic-container>
 </template>
-
-
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
         getLogsList,
         createOrUpdateLogs,
-        delLogss
+        delLogss,
+        getUserList
     } from '@/api/admin/logs';
 
     export default {
         name: 'logs',
         data() {
             return {
+                userList: [],
                 logsList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     rows: this.$store.state.common.rows,
-                    name: undefined
+                    notes: undefined,
+                    userId: undefined
                 },
                 logs: {
                     id: undefined,
                     notes: undefined,
                     method: undefined,
                     requestUrl: undefined,
-                    userId: undefined,
+                    userName: undefined,
                     params: undefined,
                     time: undefined,
                     ip: undefined
                 },
-                logsRules: {
-                    notes: [
-                        {required: true, message: this.$t("table.pleaseInput") + '执行方法说明'}
-                    ],
-                    method: [
-                        {required: true, message: this.$t("table.pleaseInput") + '执行的类跟方法'}
-                    ],
-                    requestUrl: [
-                        {required: true, message: this.$t("table.pleaseInput") + '请求url'}
-                    ],
-                    userId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '用户id'}
-                    ],
-                    params: [
-                        {required: true, message: this.$t("table.pleaseInput") + '请求参数'}
-                    ],
-                    time: [
-                        {required: true, message: this.$t("table.pleaseInput") + '消耗时间  毫秒'}
-                    ],
-                    ip: [
-                        {required: true, message: this.$t("table.pleaseInput") + '请求者ip地址'}
-                    ]
-                },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
             }
         },
         computed: {
             ...mapGetters([
-                'permission',
-                'titleMap',
-                'enums',
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
-            ]),
-            btnEnable() {
-                return {
-                    create: this.permission.logs_create,
-                    update: this.permission.logs_update,
-                    delete: this.permission.logs_delete
-                };
-            }
+            ])
         },
         created() {
             this.reloadList();
+            this.rloadUserList();
         },
         methods: {
             resetSearch() {
-                this.listQuery.name = undefined;
+                this.listQuery.notes = undefined;
+            },
+            rloadUserList() {
+                getUserList().then(response => {
+                    this.userList = response.data;
+                })
             },
             reloadList() {
                 this.listLoading = true;
@@ -242,11 +195,6 @@
             handleSelectionChange(rows) {
                 this.selectedRows = rows;
             },
-            btnCreate() {
-                this.resetLogs();
-                this.dialogTitle = 'create';
-                this.dialogVisible = true;
-            },
             btnUpdate(row) {
                 this.resetLogs();
                 if (row.id) {
@@ -254,57 +202,8 @@
                 } else {
                     this.logs = deepClone(this.selectedRows[0]);
                 }
-                this.dialogTitle = 'update';
+                this.dialogTitle = '详情';
                 this.dialogVisible = true;
-            },
-            btnDelete(row) {
-                let ids = [];
-                if (row.id) {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        ids.push(row.id);
-                        this.doDelete(ids);
-                    })
-                } else {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        for (const deleteRow of this.selectedRows) {
-                            ids.push(deleteRow.id);
-                        }
-                        this.doDelete(ids);
-                    })
-                }
-            },
-            doCreate() {
-                this.$refs['logsDialogForm'].validate(valid => {
-                    if (valid) {
-                        this.submitLoading = true;
-                        createOrUpdateLogs(this.logs).then(() => {
-                            this.resetLogsDialog();
-                            this.$message.success(this.$t("table.createSuccess"));
-                        })
-                    } else {
-                        return false;
-                    }
-                });
-            },
-            doUpdate() {
-                this.$refs['logsDialogForm'].validate(valid => {
-                    if (valid) {
-                        this.submitLoading = true;
-                        createOrUpdateLogs(this.logs).then(() => {
-                            this.resetLogsDialog();
-                            this.$message.success(this.$t("table.updateSuccess"));
-                        })
-                    } else {
-                        return false;
-                    }
-                })
-            },
-            doDelete(ids) {
-                this.listLoading = true;
-                delLogss(ids).then(() => {
-                    this.reloadList();
-                    this.$message.success(this.$t("table.deleteSuccess"));
-                })
             },
             resetLogs() {
                 this.logs = {
@@ -312,17 +211,11 @@
                     notes: undefined,
                     method: undefined,
                     requestUrl: undefined,
-                    userId: undefined,
+                    userName: undefined,
                     params: undefined,
                     time: undefined,
                     ip: undefined
                 }
-            },
-            resetLogsDialog() {
-                this.dialogVisible = false;
-                this.submitLoading = false;
-                this.resetLogs();
-                this.reloadList();
             }
         }
     }

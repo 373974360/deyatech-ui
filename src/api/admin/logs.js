@@ -44,3 +44,13 @@ export function getLogsList(query) {
 }
 
 
+
+export function getUserList(query) {
+    return request({
+        url: '/manage/admin/user/listByUser',
+        method: 'get',
+        params: query
+    });
+}
+
+
