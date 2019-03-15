@@ -335,7 +335,7 @@
                 }
             },
             resetDepartmentDialog() {
-                this.closeDepartmentDialog()
+                this.closeDepartmentDialog();
                 this.reloadList();
                 this.submitLoading = false;
             },

@@ -37,17 +37,26 @@
             <el-table :data="userList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="部门编号" prop="departmentId"/>
+                <el-table-column align="center" label="部门" prop="departmentName"/>
                 <el-table-column align="center" label="姓名" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="性别(2:未知;1:男;0:女)" prop="gender"/>
-                <el-table-column align="center" label="电话" prop="phone"/>
-                <el-table-column align="center" label="头像" prop="avatar"/>
-                <el-table-column align="center" label="登陆帐户" prop="account"/>
-                <el-table-column align="center" label="密码" prop="password"/>
+                <el-table-column align="center" label="性别(2:未知;1:男;0:女)" prop="gender">
+                    <template slot-scope="scope">
+                        <span>{{scope.row.gender | dicts('sex')}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="手机号码" prop="phone"/>
+                <el-table-column align="center" label="头像" prop="avatar">
+                    <template slot-scope="scope">
+                        <img v-if="scope.row.avatar" :src="$store.state.common.showPicImgUrl + scope.row.avatar"
+                             width="30" height="30px">
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="登录帐户" prop="account"/>
+                <!--<el-table-column align="center" label="密码" prop="password"/>-->
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -75,13 +84,15 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal">
+                       :close-on-click-modal="closeOnClickModal" @close="closeUserDialog">
                 <el-form ref="userDialogForm" class="deyatech-form" :model="user" label-position="right"
                          label-width="80px" :rules="userRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="部门编号" prop="departmentId">
-                                <el-input v-model="user.departmentId"></el-input>
+                            <el-form-item label="部门" prop="departmentId">
+                                <el-cascader :options="departmentCascader" v-model="departmentTreePosition"
+                                             :show-all-levels="false" expand-trigger="hover" clearable
+                                             change-on-select></el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -92,24 +103,35 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="性别(2:未知;1:男;0:女)" prop="gender">
-                                <el-input v-model="user.gender"></el-input>
+                            <el-form-item label="性别" prop="gender">
+                                <el-radio-group v-model="user.gender">
+                                    <el-radio v-for="item in dicts['sex']" :label="item.code">{{item.value}}</el-radio>
+                                </el-radio-group>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="电话" prop="phone">
-                                <el-input v-model="user.phone"></el-input>
+                            <el-form-item label="手机号码" prop="phone">
+                                <el-input v-model.trim="user.phone"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="头像" prop="avatar">
-                                <el-input v-model="user.avatar"></el-input>
+                                <el-upload class="avatar-uploader" name="file"
+                                           :action="this.$store.state.common.uploadUrl"
+                                           :accept="this.$store.state.common.imageAccepts"
+                                           :show-file-list="false"
+                                           :on-success="handleAvatarSuccess"
+                                           :on-error="handlerAvatarError"
+                                           :before-upload="beforeAvatarUpload">
+                                    <img v-if="user.avatar" :src="this.$store.state.common.showPicImgUrl + user.avatar" class="avatar">
+                                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                </el-upload>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="登陆帐户" prop="account">
+                            <el-form-item label="登录帐户" prop="account">
                                 <el-input v-model="user.account"></el-input>
                             </el-form-item>
                         </el-col>
@@ -117,7 +139,12 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="密码" prop="password">
-                                <el-input v-model="user.password"></el-input>
+                                <el-input type="password" v-model="user.password" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="确认密码" prop="passwordConfirm">
+                                <el-input type="password" v-model="user.passwordConfirm" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -133,7 +160,7 @@
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
                                :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeUserDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -143,23 +170,61 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {deepClone} from '@/util/util';
+    import {deepClone} from '../../util/util';
     import {
         getUserList,
         createOrUpdateUser,
-        delUsers
-    } from '@/api/admin/user';
+        delUsers,
+        checkAccountExist
+    } from '../../api/admin/user';
+    import {getDepartmentCascader} from '../../api/admin/department';
+    import {isvalidatemobile} from '../../util/validate';
 
     export default {
         name: 'user',
         data() {
+            const validateMobile = (rule, value, callback) => {
+                let result = isvalidatemobile(value)
+                if (result[0]) {
+                    callback(new Error(result[1]))
+                } else {
+                    callback()
+                }
+            };
+            const validateAccount = (rule, value, callback) => {
+                checkAccountExist(this.user.id, value).then(res => {
+                    if (res.data) {
+                        callback(new Error('登录账户名已存在'))
+                    } else {
+                        callback()
+                    }
+                }).catch(() => {
+                    callback(new Error('检查登录账户名时出错'))
+                })
+            };
+            const validatePwd = (rule, value, callback) => {
+                if (this.user.passwordConfirm) {
+                    this.$refs['userDialogForm'].validateField('passwordConfirm')
+                }
+                callback()
+            };
+            const validatePwdConfirm = (rule, value, callback) => {
+                if (this.user.password && this.user.password !== this.user.passwordConfirm) {
+                    if (!this.user.passwordConfirm) {
+                        callback(new Error('请再次输入密码'))
+                    } else {
+                        callback(new Error('两次输入密码不一致！'))
+                    }
+                }
+                callback()
+            };
             return {
                 userList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    rows: this.$store.state.common.rows,
+                    size: this.$store.state.common.rows,
                     name: undefined
                 },
                 user: {
@@ -170,35 +235,47 @@
                     phone: undefined,
                     avatar: undefined,
                     account: undefined,
-                    password: undefined
+                    password: undefined,
+                    passwordConfirm: undefined
                 },
                 userRules: {
                     departmentId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '部门编号'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '部门'}
                     ],
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '姓名'}
                     ],
                     gender: [
-                        {required: true, message: this.$t("table.pleaseInput") + '性别(2:未知;1:男;0:女)'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '性别'}
                     ],
                     phone: [
-                        {required: true, message: this.$t("table.pleaseInput") + '电话'}
+                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '手机号码'},
+                        {validator: validateMobile, trigger: 'blur'}
                     ],
                     avatar: [
                         {required: true, message: this.$t("table.pleaseInput") + '头像'}
                     ],
                     account: [
-                        {required: true, message: this.$t("table.pleaseInput") + '登陆帐户'}
+                        {required: true, message: this.$t("table.pleaseInput") + '登录帐户'},
+                        {validator: validateAccount, trigger: 'blur'}
                     ],
                     password: [
-                        {required: true, message: this.$t("table.pleaseInput") + '密码'}
+                        {required: true, message: this.$t("table.pleaseInput") + '密码'},
+                        {min: 6, max: 18, message: '长度在 6 到 18 个字符', trigger: 'blur'},
+                        {validator: validatePwd, trigger: 'blur'}
+                    ],
+                    passwordConfirm: [
+                        {required: true, message: this.$t("table.pleaseInput") + '确认密码'},
+                        {validator: validatePwdConfirm, trigger: 'blur'}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                uploadAction: this.$store.state.common.uploadUrl,
+                acceptTypes: this.$store.state.common.imageAccepts,
+                departmentCascader: []
             }
         },
         computed: {
@@ -206,10 +283,27 @@
                 'permission',
                 'titleMap',
                 'enums',
+                'dicts',
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
             ]),
+            departmentTreePosition: {
+                get() {
+                    if (this.user.departmentTreePosition) {
+                        return this.user.departmentTreePosition.substr(1).split('&')
+                    }
+                },
+                set(v) {
+                    if (v.length > 0) {
+                        this.user.departmentId = v[v.length - 1];
+                        this.user.departmentTreePosition = '&' + v.join('&');
+                    } else {
+                        this.user.departmentId = undefined;
+                        this.user.departmentTreePosition = undefined;
+                    }
+                }
+            },
             btnEnable() {
                 return {
                     create: this.permission.user_create,
@@ -220,6 +314,7 @@
         },
         created() {
             this.reloadList();
+            this.getDepartmentCascader();
         },
         methods: {
             resetSearch() {
@@ -233,6 +328,13 @@
                     this.listLoading = false;
                     this.userList = response.data.records;
                     this.total = response.data.total;
+                })
+            },
+            getDepartmentCascader() {
+                this.submitLoading = true;
+                getDepartmentCascader().then(response => {
+                    this.submitLoading = false;
+                    this.departmentCascader = response.data;
                 })
             },
             handleSizeChange(val) {
@@ -249,6 +351,8 @@
             btnCreate() {
                 this.resetUser();
                 this.dialogTitle = 'create';
+                this.userRules.password[0].required = true;
+                this.userRules.passwordConfirm[0].required = true;
                 this.dialogVisible = true;
             },
             btnUpdate(row) {
@@ -258,6 +362,10 @@
                 } else {
                     this.user = deepClone(this.selectedRows[0]);
                 }
+                this.user.departmentTreePosition += '&' + this.user.departmentId
+                this.user.password = undefined;
+                this.userRules.password[0].required = false;
+                this.userRules.passwordConfirm[0].required = false;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -284,6 +392,8 @@
                         createOrUpdateUser(this.user).then(() => {
                             this.resetUserDialog();
                             this.$message.success(this.$t("table.createSuccess"));
+                        }).catch(() => {
+                            this.submitLoading = false
                         })
                     } else {
                         return false;
@@ -297,6 +407,8 @@
                         createOrUpdateUser(this.user).then(() => {
                             this.resetUserDialog();
                             this.$message.success(this.$t("table.updateSuccess"));
+                        }).catch(() => {
+                            this.submitLoading = false
                         })
                     } else {
                         return false;
@@ -310,6 +422,29 @@
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
+            handleAvatarSuccess(res, file, fileList) {
+                if (res.status === 200 && res.data.state === 'SUCCESS') {
+                    this.user.avatar = res.data.url;
+                    this.$message.success('上传成功！');
+                } else {
+                    this.$message.error('上传失败！');
+                }
+            },
+            handlerAvatarError(err, file, fileList) {
+                this.$message.error("网络不稳定，上传失败");
+            },
+            beforeAvatarUpload(file) {
+                const isJPG = this.acceptTypes.includes(file.type);
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isJPG) {
+                    this.$message.error('上传头像图片格式不正确!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            },
             resetUser() {
                 this.user = {
                     id: undefined,
@@ -319,17 +454,49 @@
                     phone: undefined,
                     avatar: undefined,
                     account: undefined,
-                    password: undefined
+                    password: undefined,
+                    passwordConfirm: undefined
                 }
             },
             resetUserDialog() {
-                this.dialogVisible = false;
+                this.closeUserDialog();
                 this.submitLoading = false;
-                this.resetUser();
                 this.reloadList();
+            },
+            closeUserDialog() {
+                this.dialogVisible = false;
+                this.resetUser();
+                this.$refs['userDialogForm'].resetFields();
             }
         }
     }
 </script>
+<style>
+    .avatar-uploader .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
 
+    .avatar-uploader .el-upload:hover {
+        border-color: #409EFF;
+    }
+
+    .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 178px;
+        height: 178px;
+        line-height: 178px;
+        text-align: center;
+    }
+
+    .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+    }
+</style>
 

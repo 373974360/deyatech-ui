@@ -24,6 +24,7 @@ const common = {
         btnSize: 'small',
         closeOnClickModal: false,
         uploadUrl: '/manage/common/upload',
+        showPicImgUrl: '/manage/common/showPicImg?filePath=',
         imageAccepts: 'image/jpg, image/jpeg, image/png, image/bmp, image/gif',
         fileAccepts: 'image/jpg,image/jpeg,image/png,image/bmp,image/gif,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf,text/plain,application/zip,application/rar',
         isCollapse: false,

@@ -43,4 +43,11 @@ export function getUserList(query) {
     });
 }
 
+export function checkAccountExist(id, account) {
+    return request({
+        url: '/manage/admin/user/checkAccountExist',
+        method: 'get',
+        params: {id, account}
+    })
+}
 

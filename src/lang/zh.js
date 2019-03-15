@@ -97,6 +97,7 @@ export default {
         confirm: '确定',
         cancel: '取消',
         pleaseInput: '请输入',
+        pleaseSelect: '请选择',
         deleteConfirm: '此操作将永久删除该信息, 是否继续？',
         tip: '提示',
         createSuccess: '新增成功',
