@@ -18,6 +18,21 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
+                        <el-date-picker
+                            :size="searchSize"
+                            v-model="selectTime"
+                            type="daterange"
+                            align="right"
+                            unlink-panels
+                            range-separator="至"
+                            start-placeholder="开始日期"
+                            end-placeholder="结束日期"
+                            @change="changeDate"
+                            value-format="yyyy-MM-dd"
+                            :picker-options="pickerOptions2">
+                        </el-date-picker>
+                    </el-form-item>
+                    <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
                             {{$t('table.search')}}
                         </el-button>
@@ -128,16 +143,45 @@
     export default {
         name: 'logs',
         data() {
-            return {
+            return {pickerOptions2: {
+                    shortcuts: [{
+                        text: '最近一周',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近一个月',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近三个月',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }]
+                },
+                selectTime: undefined,
                 userList: [],
                 logsList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    rows: this.$store.state.common.rows,
+                    size: this.$store.state.common.rows,
                     notes: undefined,
-                    userId: undefined
+                    userId: undefined,
+                    startTime: undefined,
+                    endTime: undefined
                 },
                 logs: {
                     id: undefined,
@@ -183,6 +227,10 @@
                     this.logsList = response.data.records;
                     this.total = response.data.total;
                 })
+            },
+            changeDate() {
+                this.listQuery.startTime = this.selectTime[0];
+                this.listQuery.endTime = this.selectTime[1];
             },
             handleSizeChange(val) {
                 this.listQuery.rows = val;
