@@ -23,3 +23,7 @@
     text-align: center;
     font-size: 14px !important;
 }
+
+.el-button--small [class^=icon] {
+    font-size: 12px !important;
+}

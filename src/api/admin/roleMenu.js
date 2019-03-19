@@ -43,4 +43,18 @@ export function getRoleMenuList(query) {
     });
 }
 
+export function getAllRoleMenu(query) {
+    return request({
+        url: '/manage/admin/roleMenu/listByRoleMenu',
+        method: 'get',
+        params: query
+    })
+}
 
+export function setRoleMenus(roleId, menuIds) {
+    return request({
+        url: '/manage/admin/roleMenu/setRoleMenus',
+        method: 'post',
+        data: {roleId, menuIds}
+    })
+}
