@@ -181,7 +181,7 @@
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    size: this.$store.state.common.rows,
+                    size: this.$store.state.common.size,
                     name: undefined
                 },
                 role: {
@@ -203,7 +203,7 @@
                 userTotal: 0,
                 userListQuery: {
                     page: this.$store.state.common.page,
-                    size: this.$store.state.common.rows,
+                    size: this.$store.state.common.size,
                     departmentId: undefined,
                     name: undefined,
                     roleId: undefined
@@ -444,7 +444,7 @@
                     if (valid) {
                         this.submitLoading = true;
                         createOrUpdateRole(this.role).then(() => {
-                            this.resetRoleDialog();
+                            this.resetRoleDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -457,7 +457,7 @@
                     if (valid) {
                         this.submitLoading = true;
                         createOrUpdateRole(this.role).then(() => {
-                            this.resetRoleDialog();
+                            this.resetRoleDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -498,7 +498,7 @@
                     type: undefined
                 }
             },
-            resetRoleDialog() {
+            resetRoleDialogAndList() {
                 this.closeRoleDialog();
                 this.submitLoading = false;
                 this.reloadList();

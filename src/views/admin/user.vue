@@ -224,7 +224,7 @@
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    size: this.$store.state.common.rows,
+                    size: this.$store.state.common.size,
                     name: undefined
                 },
                 user: {

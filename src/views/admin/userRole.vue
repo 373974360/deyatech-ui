@@ -60,13 +60,13 @@
             </el-table>
             <el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.rows" :layout="this.$store.state.common.pageLayout" :total="total"
+                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal">
+                       :close-on-click-modal="closeOnClickModal" @close="closeUserRoleDialog">
                 <el-form ref="userRoleDialogForm" class="deyatech-form" :model="userRole" label-position="right"
                          label-width="80px" :rules="userRoleRules">
                     <el-row :gutter="20" :span="24">
@@ -93,7 +93,7 @@
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
                                :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeUserRoleDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -104,11 +104,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
-    import {
-        getUserRoleList,
-        createOrUpdateUserRole,
-        delUserRoles
-    } from '@/api/admin/userRole';
+    import {createOrUpdateUserRole, delUserRoles, getUserRoleList} from '@/api/admin/userRole';
 
     export default {
         name: 'userRole',
@@ -119,7 +115,7 @@
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    rows: this.$store.state.common.rows,
+                    size: this.$store.state.common.size,
                     name: undefined
                 },
                 userRole: {
@@ -176,7 +172,7 @@
                 })
             },
             handleSizeChange(val) {
-                this.listQuery.rows = val;
+                this.listQuery.size = val;
                 this.reloadList();
             },
             handleCurrentChange(val) {
@@ -222,7 +218,7 @@
                     if (valid) {
                         this.submitLoading = true;
                         createOrUpdateUserRole(this.userRole).then(() => {
-                            this.resetUserRoleDialog();
+                            this.resetUserRoleDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -235,7 +231,7 @@
                     if (valid) {
                         this.submitLoading = true;
                         createOrUpdateUserRole(this.userRole).then(() => {
-                            this.resetUserRoleDialog();
+                            this.resetUserRoleDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -257,11 +253,15 @@
                     roleId: undefined
                 }
             },
-            resetUserRoleDialog() {
-                this.dialogVisible = false;
+            resetUserRoleDialogAndList() {
+                this.closeUserRoleDialog();
                 this.submitLoading = false;
-                this.resetUserRole();
                 this.reloadList();
+            },
+            closeUserRoleDialog() {
+                this.dialogVisible = false;
+                this.resetUserRole();
+                this.$refs['userRoleDialogForm'].resetFields();
             }
         }
     }

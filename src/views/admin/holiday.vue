@@ -76,7 +76,7 @@
                     year: this.year.getFullYear(),
                     value: this.value
                 }
-                saveOrUpdateBatch(dataParam).then(response => {
+                saveOrUpdateBatch(dataParam).then(() => {
                     this.$message.success('保存成功');
                 })
             }

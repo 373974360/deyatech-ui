@@ -7,7 +7,7 @@ const common = {
     state: {
         language: getStore({name: 'language'}) || 'zh',
         page: 1,
-        rows: 15,
+        size: 15,
         dialogRows: 10,
         pageSize: [10, 15, 20, 30, 40, 50, 100],
         pageLayout: 'total, sizes, prev, pager, next, jumper',

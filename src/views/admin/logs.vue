@@ -61,7 +61,7 @@
             </el-table>
             <el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.rows" :layout="this.$store.state.common.pageLayout" :total="total"
+                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
@@ -177,7 +177,7 @@
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    size: this.$store.state.common.rows,
+                    size: this.$store.state.common.size,
                     notes: undefined,
                     userId: undefined,
                     startTime: undefined,
@@ -233,7 +233,7 @@
                 this.listQuery.endTime = this.selectTime[1];
             },
             handleSizeChange(val) {
-                this.listQuery.rows = val;
+                this.listQuery.size = val;
                 this.reloadList();
             },
             handleCurrentChange(val) {

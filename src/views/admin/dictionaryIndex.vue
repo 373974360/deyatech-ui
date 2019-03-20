@@ -65,7 +65,7 @@
             </el-table>
             <el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.rows" :layout="this.$store.state.common.pageLayout" :total="total"
+                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
@@ -159,7 +159,7 @@
 
             <!-- 新增子项目 -->
             <el-dialog :title="dictionaryCreateDialogTitle" :visible.sync="dictionaryCreateDialogVisible"
-                       :close-on-click-modal="closeOnClickModal">
+                       :close-on-click-modal="closeOnClickModal" @close="closeDictionaryDialog">
                 <el-form ref="dictionaryDialogForm" class="deyatech-form" :model="dictionary"
                          label-position="right"
                          label-width="80px" :rules="dictionaryRules">
@@ -202,7 +202,7 @@
                     <el-button v-if="dictionaryCreateDialogTitle=='新增'" type="primary" :size="btnSize" @click="doDictionaryCreate"
                                :loading="dictionarySubmitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doDictionaryUpdate" :loading="dictionarySubmitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="dictionaryCreateDialogVisible = false">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeDictionaryDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -241,7 +241,7 @@
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    rows: this.$store.state.common.rows,
+                    size: this.$store.state.common.size,
                     name: undefined
                 },
                 dictionaryIndex: {
@@ -342,7 +342,7 @@
                 })
             },
             handleSizeChange(val) {
-                this.listQuery.rows = val;
+                this.listQuery.size = val;
                 this.reloadList();
             },
             handleCurrentChange(val) {
@@ -486,7 +486,7 @@
                     if (valid) {
                         this.dictionarySubmitLoading = true;
                         createOrUpdateDictionary(this.dictionary).then(response => {
-                            this.resetDictionaryDialog();
+                            this.resetDictionaryDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -499,7 +499,7 @@
                     if (valid) {
                         this.dictionarySubmitLoading = true;
                         createOrUpdateDictionary(this.dictionary).then(response => {
-                            this.resetDictionaryDialog();
+                            this.resetDictionaryDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -524,11 +524,15 @@
                     editable: 1
                 }
             },
-            resetDictionaryDialog() {
-                this.dictionaryCreateDialogVisible = false;
+            resetDictionaryDialogAndList() {
+                this.closeDictionaryDialog();
                 this.dictionarySubmitLoading = false;
-                this.resetDictionary();
                 this.dictionaryReloadList();
+            },
+            closeDictionaryDialog() {
+                this.dictionaryCreateDialogVisible = false;
+                this.resetDictionary();
+                this.$refs['dictionaryDialogForm'].resetFields();
             }
         }
     }

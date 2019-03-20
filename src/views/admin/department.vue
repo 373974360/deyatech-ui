@@ -290,7 +290,7 @@
                         this.submitLoading = true;
                         createOrUpdateDepartment(this.department).then(() => {
                             this.lastExpanded = this.department.treePosition;
-                            this.resetDepartmentDialog();
+                            this.resetDepartmentDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         }).catch(() => {
                             this.submitLoading = false;
@@ -306,7 +306,7 @@
                         this.submitLoading = true;
                         createOrUpdateDepartment(this.department).then(() => {
                             this.lastExpanded = this.department.treePosition;
-                            this.resetDepartmentDialog();
+                            this.resetDepartmentDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         }).catch(() => {
                             this.submitLoading = false;
@@ -334,10 +334,10 @@
                     sortNo: undefined
                 }
             },
-            resetDepartmentDialog() {
+            resetDepartmentDialogAndList() {
                 this.closeDepartmentDialog();
-                this.reloadList();
                 this.submitLoading = false;
+                this.reloadList();
             },
             closeDepartmentDialog() {
                 this.dialogVisible = false;

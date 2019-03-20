@@ -68,7 +68,7 @@
         </el-table>
 
         <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                   :close-on-click-modal="closeOnClickModal">
+                   :close-on-click-modal="closeOnClickModal" @close="closeMenuDialog">
             <el-form ref="menuDialogForm" class="deyatech-form" :model="menu" label-position="right"
                      label-width="80px" :rules="menuRules">
                 <el-row :gutter="20" :span="24">
@@ -140,7 +140,7 @@
                 <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
                            :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                 <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
+                <el-button :size="btnSize" @click="closeMenuDialog">{{$t('table.cancel')}}</el-button>
             </span>
         </el-dialog>
     </basic-container>
@@ -316,7 +316,7 @@
                         this.submitLoading = true;
                         createOrUpdateMenu(this.menu).then(() => {
                             this.lastExpanded = this.menu.treePosition;
-                            this.resetMenuDialog();
+                            this.resetMenuDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -330,7 +330,7 @@
                         this.submitLoading = true;
                         createOrUpdateMenu(this.menu).then(() => {
                             this.lastExpanded = this.menu.treePosition;
-                            this.resetMenuDialog();
+                            this.resetMenuDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -359,11 +359,15 @@
                     sortNo: undefined
                 }
             },
-            resetMenuDialog() {
+            resetMenuDialogAndList() {
+                this.closeMenuDialog();
+                this.submitLoading = false;
+                this.reloadList();
+            },
+            closeMenuDialog() {
                 this.dialogVisible = false;
                 this.resetMenu();
-                this.reloadList();
-                this.submitLoading = false;
+                this.$refs['menuDialogForm'].resetFields();
             }
         }
     }

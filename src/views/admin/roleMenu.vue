@@ -60,13 +60,13 @@
             </el-table>
             <el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.rows" :layout="this.$store.state.common.pageLayout" :total="total"
+                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal">
+                       :close-on-click-modal="closeOnClickModal" @close="closeRoleMenuDialog">
                 <el-form ref="roleMenuDialogForm" class="deyatech-form" :model="roleMenu" label-position="right"
                          label-width="80px" :rules="roleMenuRules">
                     <el-row :gutter="20" :span="24">
@@ -93,7 +93,7 @@
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate"
                                :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="dialogVisible = false">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeRoleMenuDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -119,7 +119,7 @@
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
-                    rows: this.$store.state.common.rows,
+                    size: this.$store.state.common.size,
                     name: undefined
                 },
                 roleMenu: {
@@ -176,7 +176,7 @@
                 })
             },
             handleSizeChange(val) {
-                this.listQuery.rows = val;
+                this.listQuery.size = val;
                 this.reloadList();
             },
             handleCurrentChange(val) {
@@ -222,7 +222,7 @@
                     if (valid) {
                         this.submitLoading = true;
                         createOrUpdateRoleMenu(this.roleMenu).then(() => {
-                            this.resetRoleMenuDialog();
+                            this.resetRoleMenuDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -235,7 +235,7 @@
                     if (valid) {
                         this.submitLoading = true;
                         createOrUpdateRoleMenu(this.roleMenu).then(() => {
-                            this.resetRoleMenuDialog();
+                            this.resetRoleMenuDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -257,11 +257,15 @@
                     menuId: undefined
                 }
             },
-            resetRoleMenuDialog() {
-                this.dialogVisible = false;
+            resetRoleMenuDialogAndList() {
+                this.closeRoleMenuDialog();
                 this.submitLoading = false;
-                this.resetRoleMenu();
                 this.reloadList();
+            },
+            closeRoleMenuDialog() {
+                this.dialogVisible = false;
+                this.resetRoleMenu();
+                this.$refs['roleMenuDialogForm'].resetFields();
             }
         }
     }
