@@ -31,7 +31,11 @@
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="类型" prop="type" width="200"/>
-                <el-table-column align="center" label="过期时间" prop="ttl" width="180"/>
+                <el-table-column align="center" label="过期时间" width="180">
+                    <template scope="scope">
+                        <span>{{scope.row.ttl | date('YYYY-MM-DD HH:mm:ss')}}</span>
+                    </template>
+                </el-table-column>
             </el-table>
             <el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
@@ -54,7 +58,7 @@
                         <el-input :value="cache.type" :disabled="true"/>
                     </el-form-item>
                     <el-form-item label="过期时间">
-                        <el-input :value="cache.ttl" :disabled="true"/>
+                        <el-input :value="cache.ttl | date('YYYY-MM-DD HH:mm:ss')" :disabled="true"/>
                     </el-form-item>
                 </el-form>
             </el-dialog>

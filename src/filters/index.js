@@ -1,4 +1,13 @@
 import {getStore} from '@/util/store'
+import moment from 'moment';
+
+export function date(value, format) {
+    if (value) {
+        return moment(value).format(format);
+    } else {
+        return '';
+    }
+}
 
 export function enums(value, type) {
     if (type == 'Enable' && value == -1) {
