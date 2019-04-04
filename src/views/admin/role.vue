@@ -42,7 +42,11 @@
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="角色类型(1:业务角色;2:管理角色 ;3:系统内置角色)" prop="type"/>
+                <el-table-column align="center" label="角色类型" prop="type">
+                    <template slot-scope="scope">
+                        <span>{{scope.row.type | enums('RoleTypeEnum')}}</span>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -84,8 +88,11 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="角色类型(1:业务角色;2:管理角色 ;3:系统内置角色)" prop="type">
-                                <el-input v-model="role.type"></el-input>
+                            <el-form-item label="角色类型" prop="type">
+                                <el-select v-model="role.type">
+                                    <el-option v-for="item in enums['RoleTypeEnum']" :key="item.code" :label="item.value"
+                                               :value="item.code"></el-option>
+                                </el-select>
                             </el-form-item>
                         </el-col>
                     </el-row>

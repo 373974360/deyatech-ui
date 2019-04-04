@@ -43,9 +43,9 @@
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="性别(2:未知;1:男;0:女)" prop="gender">
+                <el-table-column align="center" label="性别" prop="gender">
                     <template slot-scope="scope">
-                        <span>{{scope.row.gender | dicts('sex')}}</span>
+                        <span>{{scope.row.gender | enums('GenderEnum')}}</span>
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="手机号码" prop="phone"/>
@@ -105,7 +105,7 @@
                         <el-col :span="12">
                             <el-form-item label="性别" prop="gender">
                                 <el-radio-group v-model="user.gender">
-                                    <el-radio v-for="item in dicts['sex']" :label="item.code">{{item.value}}</el-radio>
+                                    <el-radio v-for="item in enums['GenderEnum']" :label="item.code">{{item.value}}</el-radio>
                                 </el-radio-group>
                             </el-form-item>
                         </el-col>
