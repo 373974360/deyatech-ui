@@ -161,8 +161,8 @@
                     id: undefined,
                     name: undefined,
                     type: undefined,
-                    parentId: undefined,
-                    treePosition: undefined,
+                    parentId: 0,
+                    treePosition: '&',
                     icon: undefined,
                     path: undefined,
                     request: undefined,
@@ -208,7 +208,7 @@
                         this.menu.treePosition = v.join('&') + "&" + this.menu.parentId;
                     } else {
                         this.menu.parentId = 0;
-                        this.menu.treePosition = undefined;
+                        this.menu.treePosition = '&';
                     }
                 }
             },
@@ -256,18 +256,18 @@
             btnCreate(row) {
                 this.resetMenu();
                 if (row.id) {
-                    if (row.treePosition != null) {
+                    if (row.treePosition != '&') {
                         this.menu.treePosition = row.treePosition + "&" + row.id;
                     } else {
-                        this.menu.treePosition = "&" + row.id;
+                        this.menu.treePosition = row.treePosition + row.id;
                     }
                     this.menu.parentId = row.id;
                 } else {
                     if (this.selectedRows.length == 1) {
-                        if (this.selectedRows[0].treePosition != null) {
+                        if (this.selectedRows[0].treePosition != '&') {
                             this.menu.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
                         } else {
-                            this.menu.treePosition = "&" + this.selectedRows[0].id;
+                            this.menu.treePosition = this.selectedRows[0].treePosition + this.selectedRows[0].id;
                         }
                         this.menu.parentId = this.selectedRows[0].id;
                     }
@@ -350,8 +350,8 @@
                     id: undefined,
                     name: undefined,
                     type: undefined,
-                    parentId: undefined,
-                    treePosition: undefined,
+                    parentId: 0,
+                    treePosition: '&',
                     icon: undefined,
                     path: undefined,
                     request: undefined,

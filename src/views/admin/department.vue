@@ -124,8 +124,8 @@
         getDepartmentCascader,
         createOrUpdateDepartment,
         delDepartments
-    } from '../../api/admin/department';
-    import {deepClone, setExpanded} from '../../util/util';
+    } from '@/api/admin/department';
+    import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
 
     export default {

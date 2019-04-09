@@ -170,15 +170,15 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {deepClone} from '../../util/util';
+    import {deepClone} from '@/util/util';
     import {
         getUserList,
         createOrUpdateUser,
         delUsers,
         checkAccountExist
-    } from '../../api/admin/user';
-    import {getDepartmentCascader} from '../../api/admin/department';
-    import {isvalidatemobile} from '../../util/validate';
+    } from '@/api/admin/user';
+    import {getDepartmentCascader} from '@/api/admin/department';
+    import {isvalidatemobile} from '@/util/validate';
 
     export default {
         name: 'user',

@@ -159,18 +159,18 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {deepClone} from '../../util/util';
-    import {getParentKeys, getChildrenKeys} from "../../util/treeUtils";
+    import {deepClone} from '@/util/util';
+    import {getParentKeys, getChildrenKeys} from "@/util/treeUtils";
     import {
         getRoleList,
         createOrUpdateRole,
         delRoles
     } from '@/api/admin/role';
-    import {getUserList} from "../../api/admin/user";
-    import {getDepartmentCascader} from "../../api/admin/department";
-    import {getAllUserRole, setRoleUsers} from "../../api/admin/userRole";
-    import {getMenuTree} from "../../api/admin/menu";
-    import {getAllRoleMenu, setRoleMenus} from "../../api/admin/roleMenu";
+    import {getUserList} from "@/api/admin/user";
+    import {getDepartmentCascader} from "@/api/admin/department";
+    import {getAllUserRole, setRoleUsers} from "@/api/admin/userRole";
+    import {getMenuTree} from "@/api/admin/menu";
+    import {getAllRoleMenu, setRoleMenus} from "@/api/admin/roleMenu";
 
     export default {
         name: 'role',
