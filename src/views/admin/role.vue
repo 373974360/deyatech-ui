@@ -60,9 +60,9 @@
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
                                    icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.role_user" title="关联用户" type="primary" icon="iconadd-account"
+                        <el-button v-if="btnEnable.role_users" title="关联用户" type="primary" icon="iconadd-account"
                                    :size="btnSize" circle @click.stop.safe="btnRoleUser(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.role_menu" title="关联菜单" type="primary" icon="iconcaidan1"
+                        <el-button v-if="btnEnable.role_menus" title="关联菜单" type="primary" icon="iconcaidan1"
                                    :size="btnSize" circle @click.stop.safe="btnRoleMenu(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                    icon="el-icon-delete" :size="btnSize" circle
@@ -70,7 +70,7 @@
                     </template>
                 </el-table-column>
             </el-table>
-            <el-pagination class="deyatech-pagination pull-right" backgroundyarn
+            <el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
                            :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
@@ -119,10 +119,10 @@
                         <el-cascader :options="departmentCascader" @change="handleDepartmentChange"
                                      class="search-item dialog-keywords"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
-                                     size="mini" placeholder="根据部门筛选"></el-cascader>
+                                     :size="searchSize" placeholder="根据部门筛选"></el-cascader>
                         <el-input v-model="userListQuery.name" class="search-item dialog-keywords"
-                                  clearable size="mini" placeholder="根据姓名或帐户查询"></el-input>
-                        <el-button type="primary" size="mini" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
+                                  clearable :size="searchSize" placeholder="根据姓名或帐户查询"></el-input>
+                        <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
                     </div>
                     <div class="search">
                         <el-checkbox v-model="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
@@ -135,7 +135,7 @@
                             <el-table-column prop="name" label="姓名"></el-table-column>
                             <el-table-column prop="account" label="登录帐户"></el-table-column>
                         </el-table>
-                        <el-pagination class="deyatech-pagination pull-right" backgroundyarn
+                        <el-pagination class="deyatech-pagination pull-right" background
                                        :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
                                        :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotal"
                                        @size-change="handleSizeChangeRoleUser" @current-change="handleCurrentChangeRoleUser">
@@ -143,8 +143,9 @@
                     </div>
                 </div>
                 <div slot="footer" class="dialog-footer">
-                    <el-button icon="circle-cross" type="danger" @click="closeRoleUserDialog">取 消</el-button>
-                    <el-button type="primary" @click="doSaveRoleUser" :loading="submitLoading">确 定</el-button>
+                    <el-button type="primary" :size="btnSize" @click="doSaveRoleUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeRoleUserDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
 
@@ -155,8 +156,9 @@
                              @check="menuTreeChecked" :check-strictly="true"></el-tree>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button icon="circle-cross" type="danger" @click="closeRoleMenuDialog">取 消</el-button>
-                    <el-button type="primary" @click="doSaveRoleMenu" :loading="submitLoading">确 定</el-button>
+                    <el-button type="primary" :size="btnSize" @click="doSaveRoleMenu"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeRoleMenuDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
         </div>
@@ -242,8 +244,8 @@
                     create: this.permission.role_create,
                     update: this.permission.role_update,
                     delete: this.permission.role_delete,
-                    role_user: this.permission.role_user,
-                    role_menu: this.permission.role_menu
+                    role_users: this.permission.role_users,
+                    role_menus: this.permission.role_menus
                 };
             }
         },
