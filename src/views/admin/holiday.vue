@@ -30,7 +30,7 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import DatePicker from '@/components/DatePicker';
+    import DatePicker from '@/components/datePicker';
     import {saveOrUpdateBatch, getHolidayList} from '@/api/admin/holiday';
 
     export default {

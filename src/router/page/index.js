@@ -25,7 +25,7 @@ export default [{
     {
         path: '/404',
         component: () =>
-            import( /* webpackChunkName: "page" */ '@/components/error-page/404'),
+            import( /* webpackChunkName: "page" */ '@/components/errorPage/404'),
         name: '404',
         meta: {
             keepAlive: true,
@@ -37,7 +37,7 @@ export default [{
     {
         path: '/403',
         component: () =>
-            import( /* webpackChunkName: "page" */ '@/components/error-page/403'),
+            import( /* webpackChunkName: "page" */ '@/components/errorPage/403'),
         name: '403',
         meta: {
             keepAlive: true,
@@ -48,7 +48,7 @@ export default [{
     {
         path: '/500',
         component: () =>
-            import( /* webpackChunkName: "page" */ '@/components/error-page/500'),
+            import( /* webpackChunkName: "page" */ '@/components/errorPage/500'),
         name: '500',
         meta: {
             keepAlive: true,
@@ -69,7 +69,7 @@ export default [{
             path: ":routerPath",
             name: 'iframe',
             component: () =>
-                import( /* webpackChunkName: "page" */ '@/components/iframe/main'),
+                import( /* webpackChunkName: "page" */ '@/components/iframe'),
             props: true
         }]
 

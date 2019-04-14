@@ -14,8 +14,8 @@ import ElTreeGrid from 'element-tree-grid'
 import i18n from './lang' // Internationalization
 import './styles/common.scss';
 import * as filters from './filters' // 全局filter
-import basicContainer from './components/basic-container/main'
-import iconSelect from './components/icon-select/main'
+import basicContainer from './components/basicContainer'
+import iconSelect from './components/iconSelect'
 
 Vue.use(router)
 Vue.use(VueAxios, axios)

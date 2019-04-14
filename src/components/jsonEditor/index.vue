@@ -16,7 +16,7 @@
     import 'codemirror/addon/lint/json-lint';
 
     export default {
-      name: 'jsonEditor',
+      name: 'json-editor',
       data() {
         return {
           jsonEditor: false

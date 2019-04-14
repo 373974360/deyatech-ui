@@ -35,7 +35,7 @@
 <script>
     import moment from 'moment';
     export default {
-        name: 'datepicker',
+        name: 'date-picker',
         props: {
             year: {
                 type: Date,
