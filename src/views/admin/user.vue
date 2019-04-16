@@ -55,8 +55,8 @@
                              width="30" height="30px">
                     </template>
                 </el-table-column>
+                <el-table-column align="center" label="工号" prop="empNo"/>
                 <el-table-column align="center" label="登录帐户" prop="account"/>
-                <!--<el-table-column align="center" label="密码" prop="password"/>-->
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -128,6 +128,13 @@
                                     <img v-if="user.avatar" :src="this.$store.state.common.showPicImgUrl + user.avatar" class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="工号" prop="empNo">
+                                <el-input v-model="user.empNo"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -234,6 +241,7 @@
                     gender: undefined,
                     phone: undefined,
                     avatar: undefined,
+                    empNo: undefined,
                     account: undefined,
                     password: undefined,
                     passwordConfirm: undefined
@@ -254,6 +262,9 @@
                     ],
                     avatar: [
                         {required: true, message: this.$t("table.pleaseInput") + '头像'}
+                    ],
+                    empNo: [
+                        {required: true, message: this.$t("table.pleaseInput") + '工号'}
                     ],
                     account: [
                         {required: true, message: this.$t("table.pleaseInput") + '登录帐户'},
@@ -453,6 +464,7 @@
                     gender: undefined,
                     phone: undefined,
                     avatar: undefined,
+                    empNo: undefined,
                     account: undefined,
                     password: undefined,
                     passwordConfirm: undefined
