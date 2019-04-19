@@ -90,7 +90,8 @@
                         <el-col :span="12">
                             <el-form-item label="角色类型" prop="type">
                                 <el-select v-model="role.type">
-                                    <el-option v-for="item in enums['RoleTypeEnum']" :key="item.code" :label="item.value"
+                                    <el-option v-for="item in enums['RoleTypeEnum']" :key="item.code"
+                                               :label="item.value"
                                                :value="item.code"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -122,29 +123,35 @@
                                      :size="searchSize" placeholder="根据部门筛选"></el-cascader>
                         <el-input v-model="userListQuery.name" class="search-item dialog-keywords"
                                   clearable :size="searchSize" placeholder="根据姓名或帐户查询"></el-input>
-                        <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">
+                            {{$t('table.search')}}
+                        </el-button>
                     </div>
                     <div class="search">
                         <el-checkbox v-model="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
                     </div>
                     <div>
                         <el-table ref="roleUserTable" :data="userList" border @select="selectRowUser"
-                                  @select-all="selectAllUser" @selection-change="handleSelectionChangeRoleUser">
+                                  @select-all="selectAllUser" row-key="userId">
                             <el-table-column type="selection" width="50" align="center"></el-table-column>
                             <el-table-column prop="departmentName" label="部门"></el-table-column>
                             <el-table-column prop="name" label="姓名"></el-table-column>
                             <el-table-column prop="account" label="登录帐户"></el-table-column>
                         </el-table>
                         <el-pagination class="deyatech-pagination pull-right" background
-                                       :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                                       :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotal"
-                                       @size-change="handleSizeChangeRoleUser" @current-change="handleCurrentChangeRoleUser">
+                                       :current-page.sync="userListQuery.page"
+                                       :page-sizes="this.$store.state.common.pageSize"
+                                       :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout"
+                                       :total="userTotal"
+                                       @size-change="handleSizeChangeRoleUser"
+                                       @current-change="handleCurrentChangeRoleUser">
                         </el-pagination>
                     </div>
                 </div>
                 <div slot="footer" class="dialog-footer">
                     <el-button type="primary" :size="btnSize" @click="doSaveRoleUser"
-                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                               :loading="submitLoading">{{$t('table.confirm')}}
+                    </el-button>
                     <el-button :size="btnSize" @click="closeRoleUserDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
@@ -157,7 +164,8 @@
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                     <el-button type="primary" :size="btnSize" @click="doSaveRoleMenu"
-                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                               :loading="submitLoading">{{$t('table.confirm')}}
+                    </el-button>
                     <el-button :size="btnSize" @click="closeRoleMenuDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
@@ -169,15 +177,10 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
-    import {getParentKeys, getChildrenKeys} from "@/util/treeUtils";
-    import {
-        getRoleList,
-        createOrUpdateRole,
-        delRoles
-    } from '@/api/admin/role';
-    import {getUserList} from "@/api/admin/user";
+    import {getChildrenKeys, getParentKeys} from "@/util/treeUtils";
+    import {createOrUpdateRole, delRoles, getRoleList} from '@/api/admin/role';
     import {getDepartmentCascader} from "@/api/admin/department";
-    import {getAllUserRole, setRoleUsers} from "@/api/admin/userRole";
+    import {getRoleUserList, setRoleUsers} from "@/api/admin/roleUser";
     import {getMenuTree} from "@/api/admin/menu";
     import {getAllRoleMenu, setRoleMenus} from "@/api/admin/roleMenu";
 
@@ -220,7 +223,6 @@
                 selectAllUserId: [],
                 currentRow: undefined,
                 selectedRows: [],
-                selectedRowsUser: [],
                 dialogVisible: false,
                 dialogRoleUserVisible: false,
                 dialogRoleMenuVisible: false,
@@ -255,9 +257,6 @@
             this.loadMenuTree();
         },
         methods: {
-            resetSearch() {
-                this.listQuery.name = undefined;
-            },
             reloadList() {
                 this.listLoading = true;
                 this.roleList = undefined;
@@ -268,48 +267,15 @@
                     this.total = response.data.total;
                 })
             },
-            loadUserList() {
-                return new Promise((resolve, reject) => {
-                    this.dialogFormLoading = true;
-                    getUserList(this.userListQuery).then(response => {
-                        this.dialogFormLoading = false;
-                        this.userList = response.data.records;
-                        this.userTotal = response.data.total;
-                        resolve();
-                    }).catch(err => {
-                        reject(err);
-                    })
-                });
-            },
             loadDepartment() {
                 getDepartmentCascader().then(response => {
                     this.departmentCascader = response.data
                 })
             },
-            loadRoleUser(roleId) {
-                let query = {roleId}
-                return new Promise((resolve, reject) => {
-                    getAllUserRole(query).then(response => {
-                        resolve(response.data)
-                    }).catch(err => {
-                        reject(err)
-                    })
-                });
-            },
             loadMenuTree() {
                 getMenuTree().then(response => {
                     this.menuTree = response.data
                 })
-            },
-            loadRoleMenu(roleId) {
-                let query = {roleId}
-                return new Promise((resolve, reject) => {
-                    getAllRoleMenu(query).then(response => {
-                        resolve(response.data)
-                    }).catch(err => {
-                        reject(err)
-                    })
-                });
             },
             handleSizeChange(val) {
                 this.listQuery.size = val;
@@ -321,72 +287,6 @@
             },
             handleSelectionChange(rows) {
                 this.selectedRows = rows;
-            },
-            handleSizeChangeRoleUser(val) {
-                this.userListQuery.size = val;
-                this.loadUserList().then(() => {
-                    this.checkRelatedUserRows();
-                });
-            },
-            handleCurrentChangeRoleUser(val) {
-                this.userListQuery.page = val;
-                this.loadUserList().then(() => {
-                    this.checkRelatedUserRows();
-                });
-            },
-            checkRelatedUserRows() {
-                if (this.selectAllUserId && this.selectAllUserId.length > 0) {
-                    for (let row of this.userList) {
-                        if (this.selectAllUserId.includes(row.id)) {
-                            this.$refs['roleUserTable'].toggleRowSelection(row, true)
-                        }
-                    }
-                }
-            },
-            handleSelectionChangeRoleUser(rows) {
-                this.selectedRowsUser = rows;
-            },
-            selectRowUser(selection, row) {
-                let i = this.selectAllUserId.indexOf(row.id)
-                if (i < 0) {
-                    this.selectAllUserId.push(row.id)
-                } else {
-                    this.selectAllUserId.splice(i, 1)
-                }
-            },
-            selectAllUser(selection) {
-                if (selection.length > 0) {
-                    for (let user of this.userList) {
-                        if (this.selectAllUserId.indexOf(user.id) < 0) {
-                            this.selectAllUserId.push(user.id)
-                        }
-                    }
-                } else {
-                    for (let user of this.userList) {
-                        let i = this.selectAllUserId.indexOf(user.id)
-                        if (i >= 0) {
-                            this.selectAllUserId.splice(i, 1)
-                        }
-                    }
-                }
-            },
-            reloadUserList() {
-                this.handleCurrentChangeRoleUser(1)
-            },
-            handleDepartmentChange(val) {
-                if (val.length > 0) {
-                    this.userListQuery.departmentId = val[val.length - 1]
-                } else {
-                    this.userListQuery.departmentId = undefined
-                }
-            },
-            handleShowRelated(checked) {
-                if (checked) {
-                    this.userListQuery.roleId = this.currentRow.id;
-                } else {
-                    this.userListQuery.roleId = undefined;
-                }
-                this.reloadUserList();
             },
             btnCreate() {
                 this.resetRole();
@@ -418,35 +318,6 @@
                         this.doDelete(ids);
                     })
                 }
-            },
-            btnRoleUser(row) {
-                this.currentRow = row;
-                this.dialogRoleUserVisible = true;
-                this.dialogFormLoading = true;
-                this.selectAllUserId = [];
-                this.loadRoleUser(row.id).then(res => {
-                    if (res && res.length > 0) {
-                        for (let roleUser of res) {
-                            this.selectAllUserId.push(roleUser.userId)
-                        }
-                        this.showRelatedFlag = true;
-                        this.handleShowRelated(true);
-                    } else {
-                        this.showRelatedFlag = false;
-                        this.handleShowRelated(false);
-                    }
-                })
-            },
-            btnRoleMenu(row) {
-                this.currentRow = row;
-                this.dialogRoleMenuVisible = true;
-                this.dialogFormLoading = true;
-                this.loadRoleMenu(row.id).then(res => {
-                    for (let roleMenu of res) {
-                        this.$refs['roleMenuTree'].setChecked(roleMenu.menuId, true, false)
-                    }
-                    this.dialogFormLoading = false
-                })
             },
             doCreate() {
                 this.$refs['roleDialogForm'].validate(valid => {
@@ -481,6 +352,92 @@
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
+            btnRoleUser(row) {
+                this.currentRow = row;
+                this.dialogRoleUserVisible = true;
+                this.selectAllUserId = [];
+                this.resetUserListQuery();
+                this.showRelatedFlag = true;
+                this.userListQuery.roleId = row.id;
+                this.loadRoleUser(true);
+            },
+            loadRoleUser(isFirst) {
+                this.dialogFormLoading = true;
+                getRoleUserList(this.userListQuery).then(response => {
+                    this.userList = response.data.records;
+                    this.userTotal = response.data.total;
+                    if (isFirst) {
+                        if (this.userList && this.userList.length > 0) {
+                            for (const roleUser of this.userList) {
+                                this.selectAllUserId.push(roleUser.userId);
+                            }
+                        }
+                    }
+                    this.checkRelatedUserRows();
+                    this.dialogFormLoading = false;
+                });
+            },
+            handleSizeChangeRoleUser(val) {
+                this.userListQuery.size = val;
+                this.loadRoleUser();
+            },
+            handleCurrentChangeRoleUser(val) {
+                this.userListQuery.page = val;
+                this.loadRoleUser();
+            },
+            checkRelatedUserRows() {
+                if (this.selectAllUserId && this.selectAllUserId.length > 0) {
+                    for (let row of this.userList) {
+                        if (this.selectAllUserId.includes(row.userId)) {
+                            Vue.nextTick(() => {
+                                this.$refs['roleUserTable'].toggleRowSelection(row, true)
+                            });
+                        }
+                    }
+                }
+            },
+            selectRowUser(selection, row) {
+                let i = this.selectAllUserId.indexOf(row.userId)
+                if (i < 0) {
+                    this.selectAllUserId.push(row.userId)
+                } else {
+                    this.selectAllUserId.splice(i, 1)
+                }
+            },
+            selectAllUser(selection) {
+                if (selection.length > 0) {
+                    for (let user of this.userList) {
+                        if (this.selectAllUserId.indexOf(user.userId) < 0) {
+                            this.selectAllUserId.push(user.userId)
+                        }
+                    }
+                } else {
+                    for (let user of this.userList) {
+                        let i = this.selectAllUserId.indexOf(user.userId)
+                        if (i >= 0) {
+                            this.selectAllUserId.splice(i, 1)
+                        }
+                    }
+                }
+            },
+            reloadUserList() {
+                this.handleCurrentChangeRoleUser(1)
+            },
+            handleDepartmentChange(val) {
+                if (val.length > 0) {
+                    this.userListQuery.departmentId = val[val.length - 1]
+                } else {
+                    this.userListQuery.departmentId = undefined
+                }
+            },
+            handleShowRelated(checked) {
+                if (checked) {
+                    this.userListQuery.roleId = this.currentRow.id;
+                } else {
+                    this.userListQuery.roleId = undefined;
+                }
+                this.loadRoleUser();
+            },
             doSaveRoleUser() {
                 this.submitLoading = true;
                 setRoleUsers(this.currentRow.id, this.selectAllUserId).then(() => {
@@ -489,6 +446,41 @@
                 }).catch(() => {
                     this.submitLoading = false;
                 })
+            },
+            btnRoleMenu(row) {
+                this.currentRow = row;
+                this.dialogRoleMenuVisible = true;
+                this.dialogFormLoading = true;
+                this.loadRoleMenu(row.id).then(res => {
+                    for (let roleMenu of res) {
+                        this.$refs['roleMenuTree'].setChecked(roleMenu.menuId, true, false)
+                    }
+                    this.dialogFormLoading = false
+                })
+            },
+            loadRoleMenu(roleId) {
+                let query = {roleId}
+                return new Promise((resolve, reject) => {
+                    getAllRoleMenu(query).then(response => {
+                        resolve(response.data)
+                    }).catch(err => {
+                        reject(err)
+                    })
+                });
+            },
+            menuTreeChecked(node, tree) {
+                let checkedKeys = tree.checkedKeys
+                if (checkedKeys.includes(node.id)) {
+                    checkedKeys.push.apply(checkedKeys, getParentKeys(node, this.menuTree))
+                    checkedKeys.push.apply(checkedKeys, getChildrenKeys(node))
+                } else {
+                    for (let key of getChildrenKeys(node)) {
+                        if (checkedKeys.includes(key)) {
+                            checkedKeys.splice(checkedKeys.indexOf(key), 1)
+                        }
+                    }
+                }
+                this.$refs['roleMenuTree'].setCheckedKeys(checkedKeys)
             },
             doSaveRoleMenu() {
                 this.submitLoading = true;
@@ -500,11 +492,23 @@
                     this.submitLoading = false;
                 })
             },
+            resetSearch() {
+                this.listQuery.name = undefined;
+            },
             resetRole() {
                 this.role = {
                     id: undefined,
                     name: undefined,
                     type: undefined
+                }
+            },
+            resetUserListQuery() {
+                this.userListQuery = {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    departmentId: undefined,
+                    name: undefined,
+                    roleId: undefined
                 }
             },
             resetRoleDialogAndList() {
@@ -525,32 +529,20 @@
                 this.dialogRoleMenuVisible = false;
                 this.submitLoading = false;
                 this.$refs['roleMenuTree'].setCheckedKeys([])
-            },
-            menuTreeChecked(node, tree) {
-                let checkedKeys = tree.checkedKeys
-                if (checkedKeys.includes(node.id)) {
-                    checkedKeys.push.apply(checkedKeys, getParentKeys(node, this.menuTree))
-                    checkedKeys.push.apply(checkedKeys, getChildrenKeys(node))
-                } else {
-                    for (let key of getChildrenKeys(node)) {
-                        if (checkedKeys.includes(key)) {
-                            checkedKeys.splice(checkedKeys.indexOf(key), 1)
-                        }
-                    }
-                }
-                this.$refs['roleMenuTree'].setCheckedKeys(checkedKeys)
             }
         }
     }
 </script>
 
 <style>
-    .search{
+    .search {
         margin-bottom: 20px;
     }
+
     .search-item {
         margin-right: 8px;
     }
+
     .dialog-keywords {
         width: 180px;
         height: 30px;
