@@ -43,6 +43,14 @@ export function getRoleUserList(query) {
     });
 }
 
+export function getAllRoleUser(query) {
+    return request({
+        url: '/manage/admin/roleUser/listByRoleUser',
+        method: 'get',
+        params: query
+    })
+}
+
 export function setRoleUsers(roleId, userIds) {
     return request({
         url: '/manage/admin/roleUser/setRoleUsers',
