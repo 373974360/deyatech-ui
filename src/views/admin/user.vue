@@ -230,10 +230,6 @@
                     callback(new Error(this.$t("errorMsg.blankSpace")));
                     return;
                 }
-                if (!validatename(value)) {
-                    callback(new Error('姓名不正确'));
-                    return;
-                }
                 callback();
             };
             const validateEmpNo = (rule, value, callback) => {
