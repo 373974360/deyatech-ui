@@ -43,4 +43,10 @@ export function getRoleList(query) {
     });
 }
 
-
+export function countRoleByName(name) {
+    return request({
+        url: '/manage/admin/role/countRoleByName',
+        method: 'get',
+        params: {name}
+    })
+}

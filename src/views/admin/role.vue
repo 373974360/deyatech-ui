@@ -8,7 +8,7 @@
                                   v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">
                             {{$t('table.search')}}
                         </el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
@@ -98,7 +98,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item :label="$t('table.remark')">
+                            <el-form-item :label="$t('table.remark')" prop="remark">
                                 <el-input type="textarea" v-model="role.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
@@ -173,16 +173,38 @@
     import {
         getRoleList,
         createOrUpdateRole,
-        delRoles
+        delRoles,
+        countRoleByName
     } from '@/api/admin/role';
     import {getDepartmentCascader} from "@/api/admin/department";
     import {getAllRoleUser,getRoleUserList, setRoleUsers} from "@/api/admin/roleUser";
     import {getMenuTree} from "@/api/admin/menu";
     import {getAllRoleMenu, setRoleMenus} from "@/api/admin/roleMenu";
-
+    import {isStartOrEndWithWhiteSpace} from '@/util/validate';
     export default {
         name: 'role',
         data() {
+            const validateName = (rule, value, callback) => {
+                // 空格检查
+                if (isStartOrEndWithWhiteSpace(value)) {
+                    callback(new Error(this.$t("errorMsg.blankSpace")));
+                    return;
+                }
+                // 角色名未修改不用检查
+                if (this.roleName != value) {
+                    countRoleByName(value).then(response => {
+                        if (response.data > 0) {
+                            callback(new Error('角色已经存在'))
+                        } else {
+                            callback();
+                        }
+                    }).catch(() => {
+                        callback(new Error('检查角色名时出错'))
+                    })
+                } else {
+                    callback();
+                }
+            };
             return {
                 roleList: undefined,
                 total: undefined,
@@ -197,12 +219,18 @@
                     name: undefined,
                     type: undefined
                 },
+                roleName: undefined,
                 roleRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '角色名称'}
+                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '角色名称'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                        {validator: validateName, trigger: 'blur'}
                     ],
                     type: [
                         {required: true, message: this.$t("table.pleaseInput") + '角色类型(1:业务角色;2:管理角色 ;3:系统内置角色)'}
+                    ],
+                    remark: [
+                        {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}
                     ]
                 },
                 userList: [],
@@ -254,6 +282,10 @@
             this.loadMenuTree();
         },
         methods: {
+            btnSearch() {
+                this.listQuery.page = 1;
+                this.reloadList();
+            },
             resetSearch() {
                 this.listQuery.name = undefined;
             },
@@ -399,6 +431,7 @@
                 } else {
                     this.role = deepClone(this.selectedRows[0]);
                 }
+                this.roleName = this.role.name;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },

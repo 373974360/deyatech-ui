@@ -8,7 +8,7 @@
                                   v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">
                             {{$t('table.search')}}
                         </el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
@@ -90,7 +90,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="部门" prop="departmentId">
-                                <el-cascader :options="departmentCascader" v-model="departmentTreePosition"
+                                <el-cascader ref="mycascader" :options="departmentCascader" v-model="departmentTreePosition"
                                              :show-all-levels="false" expand-trigger="hover" clearable
                                              change-on-select></el-cascader>
                             </el-form-item>
@@ -157,7 +157,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item :label="$t('table.remark')">
+                            <el-form-item :label="$t('table.remark')" prop="remark">
                                 <el-input type="textarea" v-model="user.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
@@ -185,7 +185,7 @@
         checkAccountExist
     } from '@/api/admin/user';
     import {getDepartmentCascader} from '@/api/admin/department';
-    import {isvalidatemobile} from '@/util/validate';
+    import {isvalidatemobile, validatename, isStartOrEndWithWhiteSpace} from '@/util/validate';
 
     export default {
         name: 'user',
@@ -225,6 +225,24 @@
                 }
                 callback()
             };
+            const validateName = (rule, value, callback) => {
+                if (isStartOrEndWithWhiteSpace(value)) {
+                    callback(new Error(this.$t("errorMsg.blankSpace")));
+                    return;
+                }
+                if (!validatename(value)) {
+                    callback(new Error('姓名不正确'));
+                    return;
+                }
+                callback();
+            };
+            const validateEmpNo = (rule, value, callback) => {
+                if (isStartOrEndWithWhiteSpace(value)) {
+                    callback(new Error(this.$t("errorMsg.blankSpace")));
+                    return;
+                }
+                callback();
+            };
             return {
                 userList: undefined,
                 total: undefined,
@@ -251,23 +269,29 @@
                         {required: true, message: this.$t("table.pleaseSelect") + '部门'}
                     ],
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '姓名'}
+                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '姓名'},
+                        {min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur'},
+                        {validator: validateName, trigger: 'blur'}
                     ],
                     gender: [
                         {required: true, message: this.$t("table.pleaseSelect") + '性别'}
                     ],
                     phone: [
                         {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '手机号码'},
+                        {min: 11, max: 11, message: '长度11个数字', trigger: 'blur'},
                         {validator: validateMobile, trigger: 'blur'}
                     ],
                     avatar: [
                         {required: true, message: this.$t("table.pleaseInput") + '头像'}
                     ],
                     empNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '工号'}
+                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '工号'},
+                        {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'},
+                        {validator: validateEmpNo, trigger: 'blur'}
                     ],
                     account: [
-                        {required: true, message: this.$t("table.pleaseInput") + '登录帐户'},
+                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '登录帐户'},
+                        {min: 1, max: 64, message: '长度在 1 到 64 个字符', trigger: 'blur'},
                         {validator: validateAccount, trigger: 'blur'}
                     ],
                     password: [
@@ -278,6 +302,9 @@
                     passwordConfirm: [
                         {required: true, message: this.$t("table.pleaseInput") + '确认密码'},
                         {validator: validatePwdConfirm, trigger: 'blur'}
+                    ],
+                    remark: [
+                        {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}
                     ]
                 },
                 selectedRows: [],
@@ -328,6 +355,10 @@
             this.getDepartmentCascader();
         },
         methods: {
+            btnSearch() {
+                this.listQuery.page = 1;
+                this.reloadList();
+            },
             resetSearch() {
                 this.listQuery.name = undefined;
             },
@@ -476,6 +507,9 @@
                 this.reloadList();
             },
             closeUserDialog() {
+                let obj = {};
+                obj.stopPropagation = () =>{};
+                this.$refs.mycascader.clearValue(obj);
                 this.dialogVisible = false;
                 this.resetUser();
                 this.$refs['userDialogForm'].resetFields();

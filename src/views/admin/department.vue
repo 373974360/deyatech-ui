@@ -32,8 +32,8 @@
             </el-table-tree-column>
             <el-table-column align="center" label="部门名称简称" prop="shortName"/>
             <el-table-column align="center" label="部门编码" prop="code"/>
-            <el-table-column align="center" label="上级部门编号" prop="parentId"/>
-            <el-table-column align="center" label="树结构中的索引位置" prop="treePosition"/>
+            <!--<el-table-column align="center" label="上级部门编号" prop="parentId"/>-->
+            <!--<el-table-column align="center" label="树结构中的索引位置" prop="treePosition"/>-->
             <el-table-column align="center" label="排序号" prop="sortNo"/>
             <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                 <template slot-scope="scope">
@@ -83,26 +83,26 @@
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="部门名称简称" prop="shortName">
+                        <el-form-item label="部门简称" prop="shortName">
                             <el-input v-model="department.shortName"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="树结构中的索引位置" prop="treePosition">
-                            <el-input v-model="department.treePosition"></el-input>
-                        </el-form-item>
-                    </el-col>
+                    <!--<el-col :span="12">-->
+                        <!--<el-form-item label="树结构中的索引位置" prop="treePosition">-->
+                            <!--<el-input v-model="department.treePosition"></el-input>-->
+                        <!--</el-form-item>-->
+                    <!--</el-col>-->
                     <el-col :span="12">
                         <el-form-item label="排序号" prop="sortNo">
-                            <el-input v-model="department.sortNo"></el-input>
+                            <el-input-number v-model="department.sortNo" :min="1" :max="9999"></el-input-number>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
-                        <el-form-item :label="$t('table.remark')">
+                        <el-form-item :label="$t('table.remark')" prop="remark">
                             <el-input type="textarea" v-model="department.remark" :rows="3"/>
                         </el-form-item>
                     </el-col>
@@ -127,10 +127,17 @@
     } from '@/api/admin/department';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
-
+    import {isStartOrEndWithWhiteSpace} from '@/util/validate';
     export default {
         name: 'department',
         data() {
+            const validateWhiteSpace = (rule, value, callback) => {
+                if (isStartOrEndWithWhiteSpace(value)) {
+                    callback(new Error(this.$t("errorMsg.blankSpace")));
+                    return;
+                }
+                callback();
+            };
             return {
                 departmentList: undefined,
                 listLoading: true,
@@ -150,19 +157,29 @@
                 selectedRows: [],
                 departmentRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '部门名称'}
+                        {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '部门名称'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                        {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     shortName: [
-                        {required: true, message: this.$t("table.pleaseInput") + '部门名称简称'}
+                        {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '部门简称'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                        {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     code: [
-                        {required: true, message: this.$t("table.pleaseInput") + '部门编码'}
+                        {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '部门编码'}
+                        ,
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                        {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     parentId: [
                         {required: true, message: this.$t("table.pleaseInput") + '上级部门编号'}
                     ],
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'}
+                    ],
+                    remark: [
+                        {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}
                     ]
                 },
                 lastExpanded: undefined,

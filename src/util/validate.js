@@ -260,3 +260,12 @@ export function validatenull(val) {
     }
     return false;
 }
+/**
+ * 判断空格
+ */
+export function isStartOrEndWithWhiteSpace(value) {
+    if (value.match(/^[ ]+$/) || value.match(/^[　]+$/))
+        return true;
+    else
+        false;
+}

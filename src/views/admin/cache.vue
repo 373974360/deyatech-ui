@@ -13,7 +13,7 @@
                         </el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
                         </el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="btnDelete" type="danger">{{$t('table.delete')}}缓存
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="btnDelete" type="danger" :disabled="selectedRows.length < 1" >{{$t('table.delete')}}缓存
                         </el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="btnClear" type="danger">{{$t('table.clear')}}缓存
                         </el-button>

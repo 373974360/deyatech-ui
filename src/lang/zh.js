@@ -121,5 +121,8 @@ export default {
         menu: '更多',
         closeOthers: '关闭其它',
         closeAll: '关闭所有'
+    },
+    errorMsg: {
+        blankSpace: '不能为空格'
     }
 }
