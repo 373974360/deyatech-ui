@@ -123,6 +123,6 @@ export default {
         closeAll: '关闭所有'
     },
     errorMsg: {
-        blankSpace: '不能为空格'
+        blankSpace: '不能为空'
     }
 }
