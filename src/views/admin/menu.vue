@@ -81,7 +81,7 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="菜单名称" prop="name">
-                            <el-input v-model="menu.name"/>
+                            <el-input v-model.trim="menu.name"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -107,19 +107,19 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="前台地址" prop="path">
-                            <el-input v-model="menu.path"></el-input>
+                            <el-input v-model.trim="menu.path"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="后台地址" prop="request">
-                            <el-input v-model="menu.request"></el-input>
+                            <el-input v-model.trim="menu.request"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="权限标识" prop="permission">
-                            <el-input v-model="menu.permission"></el-input>
+                            <el-input v-model.trim="menu.permission"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -130,8 +130,8 @@
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
-                        <el-form-item :label="$t('table.remark')">
-                            <el-input type="textarea" v-model="menu.remark" :rows="3"/>
+                        <el-form-item :label="$t('table.remark')" prop="remark">
+                            <el-input type="textarea" v-model.trim="menu.remark" :rows="3"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -150,6 +150,7 @@
     import {createOrUpdateMenu, delMenus, getMenuCascader, getMenuTree} from '@/api/admin/menu';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
+    import {isStartOrEndWithWhiteSpace} from '@/util/validate';
 
     export default {
         name: 'menu',
@@ -176,16 +177,19 @@
                 selectedRows: [],
                 menuRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '菜单名称'}
+                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '菜单名称'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
                     ],
                     type: [
                         {required: true, message: this.$t("table.pleaseInput") + '菜单类型(0:CURD;1:系统菜单;2:业务菜单;)'}
                     ],
                     request: [
-                        {required: true, message: this.$t("table.pleaseInput") + '后台地址'}
+                        {required: true, whitespace: true,message: this.$t("table.pleaseInput") + '后台地址'},
+                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
                     ],
                     permission: [
-                        {required: true, message: this.$t("table.pleaseInput") + '权限标识'}
+                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '权限标识'},
+                        {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}
                     ]
                 },
                 lastExpanded: undefined,

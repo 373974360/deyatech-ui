@@ -5,7 +5,7 @@
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')"
-                                  v-model="listQuery.name"></el-input>
+                                  v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
@@ -78,19 +78,19 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="名称" prop="name">
-                                <el-input v-model="dictionaryIndex.name"></el-input>
+                                <el-input v-model.trim="dictionaryIndex.name"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="索引" prop="key">
-                                <el-input v-model="dictionaryIndex.key"></el-input>
+                                <el-input v-model.trim="dictionaryIndex.key"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="dictionaryIndex.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="dictionaryIndex.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

@@ -3,7 +3,7 @@ import {getStore, setStore} from '@/util/store'
 import {isURL} from '@/util/validate'
 import {deepClone} from '@/util/util'
 import webiste from '@/config/website'
-import {loginByUsername, logout, refeshToken} from '@/api/common'
+import {loginByUsername, logout, refreshToken} from '@/api/common'
 import {getMenuTree} from '@/api/admin/menu'
 
 
@@ -66,6 +66,18 @@ const user = {
                     resolve(menu)
                 })
             })
+        },
+        //刷新token
+        RefreshToken({commit}){
+            return new Promise((resolve, reject) => {
+                refreshToken().then(response => {
+                    const data = response.data;
+                    commit('SET_TOKEN', data);
+                    resolve();
+                }).catch(error => {
+                    reject(error);
+                });
+            });
         },
         // 登出
         LogOut({commit}) {

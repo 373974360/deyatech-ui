@@ -51,3 +51,11 @@ export function checkAccountExist(id, account) {
     })
 }
 
+export function getUsersByWindowAndDepartment(query) {
+    return request({
+        url: '/manage/admin/user/getUsersByWindowAndDepartment',
+        method: 'get',
+        params: query
+    });
+}
+

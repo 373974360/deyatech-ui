@@ -72,19 +72,19 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item :label="$t('table.searchName')" prop="name">
-                            <el-input v-model="department.name"/>
+                            <el-input v-model.trim="department.name"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="部门编码" prop="code">
-                            <el-input v-model="department.code"></el-input>
+                            <el-input v-model.trim="department.code"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="部门简称" prop="shortName">
-                            <el-input v-model="department.shortName"></el-input>
+                            <el-input v-model.trim="department.shortName"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -103,7 +103,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item :label="$t('table.remark')" prop="remark">
-                            <el-input type="textarea" v-model="department.remark" :rows="3"/>
+                            <el-input type="textarea" v-model.trim="department.remark" :rows="3"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -148,7 +148,7 @@
                     code: undefined,
                     parentId: undefined,
                     treePosition: undefined,
-                    sortNo: undefined
+                    sortNo: 1
                 },
                 departmentCascader: [],
                 dialogVisible: false,
@@ -348,7 +348,7 @@
                     code: undefined,
                     parentId: undefined,
                     treePosition: undefined,
-                    sortNo: undefined
+                    sortNo: 1
                 }
             },
             resetDepartmentDialogAndList() {

@@ -66,8 +66,8 @@
         data() {
             return {
                 loginForm: {
-                    account: "admin",
-                    password: "123456",
+                    account: "",
+                    password: "",
                     verifyCode: "",
                     random: ""
                 },
@@ -119,6 +119,7 @@
                     if (valid) {
                         this.loginLoading = true;
                         this.$store.dispatch("LoginByUsername", this.loginForm).then(() => {
+                            this.$message.success(this.$t("login.loginSuccess"));
                             this.$router.push({path: this.tagWel.value});
                             this.loginLoading = false;
                         }).catch(() => {

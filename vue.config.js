@@ -1,6 +1,9 @@
 // 基础路径 注意发布之前要先修改这里
 let url = 'http://localhost:8765'
 module.exports = {
+    publicPath: process.env.NODE_ENV === 'production'
+        ? '/admin/'
+        : '/',
     lintOnSave: true,
     productionSourceMap: false,
     chainWebpack: (config) => {

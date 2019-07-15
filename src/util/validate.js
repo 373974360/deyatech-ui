@@ -269,3 +269,61 @@ export function isStartOrEndWithWhiteSpace(value) {
     else
         false;
 }
+
+/**
+ * 判断邮编
+ */
+export function isZipCode(value) {
+    let pattern =  /^[1-9]\d{5}$/;
+    return pattern.test(value)
+}
+
+export function validateQueryStr(str) {
+   let invalidStr = ['script', 'mid', 'master', 'truncate', 'insert', 'select', 'delete', 'update', 'declare', 'iframe', '\'', 'onreadystatechange', 'alert', 'atestu', 'xss', ';', '"', '<', '>', '\\', 'svg', 'confirm', 'prompt', 'onload', 'onmouseover', 'onfocus', 'onerror'];
+    if (str) {
+        for (let reg of invalidStr) {
+            if (str.indexOf(reg) > -1) {
+                return reg;
+            }
+        }
+    }
+    return '';
+}
+
+/**
+ * 统一社会信用代码校验
+ * @param code
+ * @returns {boolean}
+ */
+export function checkSocialCreditCode(code) {
+    let reg = /^[0-9A-Z]+$/;
+    if ((code.length != 18) || !reg.test(code)) {
+        return false;
+    }
+    //如果15位前面补三个0就让过，兼容旧注册号
+    if (/^000[0-9A-Z]{15}$/.test(code)) {
+        return true;
+    }
+
+    let codeChar, codeCharValue;
+    let total = 0;
+    let weightedFactors = [1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28];
+    let chars = '0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F,G,H,J,K,L,M,N,P,Q,R,T,U,W,X,Y';
+    let charsArr = chars.split(',');
+    let charsStr = charsArr.join('');
+    for (let i = 0; i < code.length - 1; i++) {
+        codeChar = code.substring(i, i + 1);
+        codeCharValue = charsStr.indexOf(codeChar);
+        total = total + codeCharValue * weightedFactors[i];
+    }
+    let logicCheckCode = 31 - total % 31;
+    if (logicCheckCode == 31) {
+        logicCheckCode = 0;
+    }
+    logicCheckCode = charsArr[logicCheckCode];
+    let checkCode = code.substring(17, 18);
+    if (logicCheckCode != checkCode) {
+        return false;
+    }
+    return true;
+}

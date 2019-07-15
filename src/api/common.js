@@ -8,7 +8,7 @@ export function loginByUsername(userInfo) {
     });
 }
 
-export function refeshToken() {
+export function refreshToken() {
     return request({
         url: '/manage/auth/userJwt/refresh',
         method: 'get'

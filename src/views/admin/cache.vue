@@ -5,7 +5,7 @@
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-input :size="searchSize" placeholder="redis key"
-                                  v-model="listQuery.key"></el-input>
+                                  v-model.trim="listQuery.key"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
@@ -13,9 +13,11 @@
                         </el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
                         </el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="btnDelete" type="danger" :disabled="selectedRows.length < 1" >{{$t('table.delete')}}缓存
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="btnDelete" type="danger"
+                                   :disabled="selectedRows.length < 1">{{$t('table.delete')}}缓存
                         </el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="btnClear" type="danger">{{$t('table.clear')}}缓存
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="btnClear" type="danger">
+                            {{$t('table.clear')}}缓存
                         </el-button>
                     </el-form-item>
                 </el-form>
@@ -33,7 +35,8 @@
                 <el-table-column align="center" label="类型" prop="type" width="200"/>
                 <el-table-column align="center" label="过期时间" width="180">
                     <template scope="scope">
-                        <span>{{scope.row.ttl | date('YYYY-MM-DD HH:mm:ss')}}</span>
+                        <span v-if="scope.row.ttl">{{scope.row.ttl | date('YYYY-MM-DD HH:mm:ss')}}</span>
+                        <span v-else>-1</span>
                     </template>
                 </el-table-column>
             </el-table>
@@ -58,7 +61,8 @@
                         <el-input :value="cache.type" :disabled="true"/>
                     </el-form-item>
                     <el-form-item label="过期时间">
-                        <el-input :value="cache.ttl | date('YYYY-MM-DD HH:mm:ss')" :disabled="true"/>
+                        <el-input v-if="cache.ttl" :value="cache.ttl | date('YYYY-MM-DD HH:mm:ss')" :disabled="true"/>
+                        <el-input v-else value="-1" :disabled="true"/>
                     </el-form-item>
                 </el-form>
             </el-dialog>
@@ -105,7 +109,7 @@
                 'btnSize'
             ])
         },
-        components: { jsonEditor },
+        components: {jsonEditor},
         created() {
             this.reloadList();
         },
@@ -130,8 +134,8 @@
                 this.listQuery.page = val;
                 this.handlePage();
             },
-            handlePage(){
-                this.list = this.cacheList.slice((this.listQuery.page - 1) * this.listQuery.size,(this.listQuery.page - 1) * this.listQuery.size + this.listQuery.size);
+            handlePage() {
+                this.list = this.cacheList.slice((this.listQuery.page - 1) * this.listQuery.size, (this.listQuery.page - 1) * this.listQuery.size + this.listQuery.size);
             },
             handleSelectionChange(rows) {
                 this.selectedRows = rows;
@@ -188,7 +192,7 @@
     }
 </script>
 <style>
-    .editor-container,.json-editor{
+    .editor-container, .json-editor {
         position: relative;
         height: 300px;
         overflow-x: hidden;

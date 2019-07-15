@@ -5,7 +5,7 @@
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')"
-                                  v-model="listQuery.name"></el-input>
+                                  v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">
@@ -51,7 +51,7 @@
                 <el-table-column align="center" label="手机号码" prop="phone"/>
                 <el-table-column align="center" label="头像" prop="avatar">
                     <template slot-scope="scope">
-                        <img v-if="scope.row.avatar" :src="$store.state.common.showPicImgUrl + scope.row.avatar"
+                        <img v-if="scope.row.avatar" :src="scope.row.avatar"
                              width="30" height="30px">
                     </template>
                 </el-table-column>
@@ -97,7 +97,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="姓名" prop="name">
-                                <el-input v-model="user.name"></el-input>
+                                <el-input v-model.trim="user.name"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -134,31 +134,31 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="工号" prop="empNo">
-                                <el-input v-model="user.empNo"></el-input>
+                                <el-input v-model.trim="user.empNo"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="登录帐户" prop="account">
-                                <el-input v-model="user.account"></el-input>
+                                <el-input v-model.trim="user.account"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="密码" prop="password">
-                                <el-input type="password" v-model="user.password" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
+                                <el-input type="password" v-model.trim="user.password" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="确认密码" prop="passwordConfirm">
-                                <el-input type="password" v-model="user.passwordConfirm" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
+                                <el-input type="password" v-model.trim="user.passwordConfirm" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark">
-                                <el-input type="textarea" v-model="user.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="user.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

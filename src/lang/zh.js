@@ -65,6 +65,7 @@ export default {
     },
     login: {
         title: '登录 ',
+        loginSuccess: '登录成功',
         info: '西安德雅通科技有限公司',
         account: '请输入用户名',
         password: '请输入密码',
@@ -102,7 +103,9 @@ export default {
         tip: '提示',
         createSuccess: '新增成功',
         updateSuccess: '修改成功',
-        deleteSuccess: '删除成功'
+        deleteSuccess: '删除成功',
+        associateSuccess: '关联成功',
+        submitSuccess: '提交成功'
     },
     navbar: {
         logOut: '退出登录',
@@ -123,6 +126,6 @@ export default {
         closeAll: '关闭所有'
     },
     errorMsg: {
-        blankSpace: '不能为空格'
+        blankSpace: '不能为空'
     }
 }

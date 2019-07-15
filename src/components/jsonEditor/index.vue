@@ -37,6 +37,7 @@
           mode: 'application/json',
           gutters: ['CodeMirror-lint-markers'],
           theme: 'rubyblue',
+          lineWrapping: true,
           lint: true
         });
 

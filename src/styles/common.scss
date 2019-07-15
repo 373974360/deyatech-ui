@@ -98,3 +98,14 @@ a {
     border-radius: 5px;
     background-color: hsla(220, 4%, 58%, .3);
 }
+.dialog-search {
+    margin-bottom: 20px;
+    .dialog-search-item {
+        margin-right: 8px;
+    }
+    .dialog-keywords {
+        width: 180px;
+        height: 30px;
+        line-height: 30px;
+    }
+}

@@ -5,7 +5,7 @@
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')"
-                                  v-model="listQuery.name"></el-input>
+                                  v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">
@@ -84,7 +84,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="角色名称" prop="name">
-                                <el-input v-model="role.name"></el-input>
+                                <el-input v-model.trim="role.name"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -99,7 +99,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark">
-                                <el-input type="textarea" v-model="role.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="role.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -115,16 +115,16 @@
             <el-dialog :title="titleMap['associateUser']" :visible.sync="dialogRoleUserVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeRoleUserDialog">
                 <div v-loading="dialogFormLoading">
-                    <div class="search">
+                    <div class="dialog-search">
                         <el-cascader :options="departmentCascader" @change="handleDepartmentChange"
-                                     class="search-item dialog-keywords"
+                                     class="dialog-search-item dialog-keywords"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                      :size="searchSize" placeholder="根据部门筛选"></el-cascader>
-                        <el-input v-model="userListQuery.name" class="search-item dialog-keywords"
+                        <el-input v-model="userListQuery.name" class="dialog-search-item dialog-keywords"
                                   clearable :size="searchSize" placeholder="根据姓名或帐户查询"></el-input>
                         <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
                     </div>
-                    <div class="search">
+                    <div class="dialog-search">
                         <el-checkbox v-model="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
                     </div>
                     <div>
@@ -232,6 +232,7 @@
                     remark: [
                         {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}
                     ]
+
                 },
                 userList: [],
                 departmentCascader: [],
@@ -366,13 +367,15 @@
                 });
             },
             checkRelatedUserRows() {
-                if (this.selectAllUserId && this.selectAllUserId.length > 0) {
-                    for (let row of this.userList) {
-                        if (this.selectAllUserId.includes(row.userId)) {
-                            this.$refs['roleUserTable'].toggleRowSelection(row, true)
+                this.$nextTick(() => {
+                    if (this.selectAllUserId && this.selectAllUserId.length > 0) {
+                        for (let row of this.userList) {
+                            if (this.selectAllUserId.includes(row.userId)) {
+                                this.$refs['roleUserTable'].toggleRowSelection(row, true)
+                            }
                         }
                     }
-                }
+                });
             },
             handleSelectionChangeRoleUser(rows) {
                 this.selectedRowsUser = rows;
@@ -538,6 +541,7 @@
                     name: undefined,
                     type: undefined
                 }
+                this.roleName = "";
             },
             resetRoleDialogAndList() {
                 this.closeRoleDialog();
@@ -575,17 +579,3 @@
         }
     }
 </script>
-
-<style>
-    .search{
-        margin-bottom: 20px;
-    }
-    .search-item {
-        margin-right: 8px;
-    }
-    .dialog-keywords {
-        width: 180px;
-        height: 30px;
-        line-height: 30px;
-    }
-</style>

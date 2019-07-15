@@ -51,5 +51,12 @@ export function getDepartmentCascader(query) {
     });
 }
 
+export function getAllDepartments(query) {
+    return request({
+        url: '/manage/admin/department/listByDepartment',
+        method: 'get',
+        params: query
+    });
+}
 
 

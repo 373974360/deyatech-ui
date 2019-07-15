@@ -16,6 +16,7 @@ import './styles/common.scss';
 import * as filters from './filters' // 全局filter
 import basicContainer from './components/basicContainer'
 import iconSelect from './components/iconSelect'
+import messageTemplate from './components/messageTemplate'
 
 Vue.use(router)
 Vue.use(VueAxios, axios)
@@ -29,6 +30,7 @@ Vue.use(window.AVUE, {
 Vue.component('basicContainer', basicContainer)
 Vue.component('elTreeGrid', ElTreeGrid)
 Vue.component('iconSelect', iconSelect)
+Vue.component('messageTemplate', messageTemplate)
 // 加载相关url地址
 Object.keys(urls).forEach(key => {
     Vue.prototype[key] = urls[key];
