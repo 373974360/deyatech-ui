@@ -24,11 +24,31 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="configList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table :data="groupList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="站点名称" prop="siteName"/>
-                <el-table-column align="center" label="域名" prop="siteDomain"/>
+                <el-table-column align="center" label="任务名称" prop="groupName"/>
+                <el-table-column align="center" label="触发模式" prop="triggerType">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.triggerType == 1">
+                            固定时刻
+                        </span>
+                        <span v-if="scope.row.triggerType == 2">
+                            日历周期
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="任务状态" prop="runType">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.runType == 1">
+                            <el-tag type="danger">运行中</el-tag>
+                        </span>
+                        <span v-if="scope.row.runType == 2">
+                           <el-tag type="success">空闲</el-tag>
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="运行时间" prop="lastDtime"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -53,37 +73,65 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeConfigDialog">
-                <el-form ref="configDialogForm" class="deyatech-form" :model="config" label-position="right"
-                         label-width="80px" :rules="configRules">
+                       :close-on-click-modal="closeOnClickModal" @close="closeGroupDialog">
+                <el-form ref="groupDialogForm" class="deyatech-form" :model="group" label-position="right"
+                         label-width="80px" :rules="groupRules">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="" prop="siteName">
-                                <el-input v-model="config.siteName"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="" prop="siteDomain">
-                                <el-input v-model="config.siteDomain"></el-input>
+                        <el-col :span="24">
+                            <el-form-item label="任务名称" prop="groupName">
+                                <el-input v-model="group.groupName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="" prop="timeSecond">
-                                <el-input v-model="config.timeSecond"></el-input>
+                            <el-form-item label="触发模式" prop="triggerType">
+                                <el-radio-group v-model="group.triggerType">
+                                    <el-radio :label="1" border>固定时刻</el-radio>
+                                    <el-radio :label="2" border>日历周期</el-radio>
+                                </el-radio-group>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="" prop="mobiles">
-                                <el-input v-model="config.mobiles"></el-input>
+                            <el-form-item label="触发类型" prop="calendarType">
+                                <el-radio-group v-model="group.calendarType" disabled>
+                                    <el-radio :label="1" border>每日</el-radio>
+                                    <el-radio :label="2" border>每周</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="间隔时间" prop="incrementSeconds">
+                                <el-input v-model="group.incrementSeconds"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="触发时间" prop="calendarTime">
+                                <el-input v-model="group.calendarTime" disabled></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="每周" prop="calendarWorkday">
+                                <el-checkbox-group v-model="group.calendarWorkday" disabled>
+                                    <el-checkbox :label="1">周一</el-checkbox>
+                                    <el-checkbox :label="2">周二</el-checkbox>
+                                    <el-checkbox :label="3">周三</el-checkbox>
+                                    <el-checkbox :label="4">周四</el-checkbox>
+                                    <el-checkbox :label="5">周五</el-checkbox>
+                                    <el-checkbox :label="6">周六</el-checkbox>
+                                    <el-checkbox :label="7">周日</el-checkbox>
+                                </el-checkbox-group>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="config.remark" :rows="3"/>
+                                <el-input type="textarea" v-model="group.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -91,7 +139,7 @@
                 <span slot="footer" class="dialog-footer">
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeConfigDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeGroupDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -103,16 +151,16 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getConfigList,
-        createOrUpdateConfig,
-        delConfigs
-    } from '@/api/monitor/config';
+        getGroupList,
+        createOrUpdateGroup,
+        delGroups
+    } from '@/api/monitor/group';
 
     export default {
-        name: 'config',
+        name: 'group',
         data() {
             return {
-                configList: undefined,
+                groupList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
@@ -120,25 +168,19 @@
                     size: this.$store.state.common.size,
                     name: undefined
                 },
-                config: {
+                group: {
                     id: undefined,
-                    siteName: undefined,
-                    siteDomain: undefined,
-                    timeSecond: undefined,
-                    mobiles: undefined
+                    groupName: undefined,
+                    triggerType: 1,
+                    incrementSeconds: undefined,
+                    calendarTime: '00:00:00',
+                    calendarType: 1,
+                    calendarWorkday: [],
+                    runType: 2
                 },
-                configRules: {
-                    siteName: [
-                        {required: true, message: this.$t("table.pleaseInput") + ''}
-                    ],
-                    siteDomain: [
-                        {required: true, message: this.$t("table.pleaseInput") + ''}
-                    ],
-                    timeSecond: [
-                        {required: true, message: this.$t("table.pleaseInput") + ''}
-                    ],
-                    mobiles: [
-                        {required: true, message: this.$t("table.pleaseInput") + ''}
+                groupRules: {
+                    groupName: [
+                        {required: true, message: this.$t("table.pleaseInput") + '任务组名称'}
                     ]
                 },
                 selectedRows: [],
@@ -154,13 +196,14 @@
                 'enums',
                 'closeOnClickModal',
                 'searchSize',
-                'btnSize'
+                'btnSize',
+                'dicts'
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.config_create,
-                    update: this.permission.config_update,
-                    delete: this.permission.config_delete
+                    create: this.permission.group_create,
+                    update: this.permission.group_update,
+                    delete: this.permission.group_delete
                 };
             }
         },
@@ -173,11 +216,11 @@
             },
             reloadList(){
                 this.listLoading = true;
-                this.configList = undefined;
+                this.groupList = undefined;
                 this.total = undefined;
-                getConfigList(this.listQuery).then(response => {
+                getGroupList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.configList = response.data.records;
+                    this.groupList = response.data.records;
                     this.total = response.data.total;
                 })
             },
@@ -193,16 +236,16 @@
                 this.selectedRows = rows;
             },
             btnCreate(){
-                this.resetConfig();
+                this.resetGroup();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
             btnUpdate(row){
-                this.resetConfig();
+                this.resetGroup();
                 if (row.id) {
-                    this.config = deepClone(row);
+                    this.group = deepClone(row);
                 } else {
-                    this.config = deepClone(this.selectedRows[0]);
+                    this.group = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -224,11 +267,11 @@
                 }
             },
             doCreate(){
-                this.$refs['configDialogForm'].validate(valid => {
+                this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateConfig(this.config).then(() => {
-                            this.resetConfigDialogAndList();
+                        createOrUpdateGroup(this.group).then(() => {
+                            this.resetGroupDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -237,11 +280,11 @@
                 });
             },
             doUpdate(){
-                this.$refs['configDialogForm'].validate(valid => {
+                this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateConfig(this.config).then(() => {
-                            this.resetConfigDialogAndList();
+                        createOrUpdateGroup(this.group).then(() => {
+                            this.resetGroupDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -251,29 +294,32 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delConfigs(ids).then(() => {
+                delGroups(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetConfig(){
-                this.config = {
+            resetGroup(){
+                this.group = {
                     id: undefined,
-                    siteName: undefined,
-                    siteDomain: undefined,
-                    timeSecond: undefined,
-                    mobiles: undefined
+                    groupName: undefined,
+                    triggerType: 1,
+                    incrementSeconds: undefined,
+                    calendarTime: '00:00:00',
+                    calendarType: 1,
+                    calendarWorkday: [],
+                    runType: 2
                 }
             },
-            resetConfigDialogAndList(){
-                this.closeConfigDialog();
+            resetGroupDialogAndList(){
+                this.closeGroupDialog();
                 this.submitLoading = false;
                 this.reloadList();
             },
-            closeConfigDialog() {
+            closeGroupDialog() {
                 this.dialogVisible = false;
-                this.resetConfig();
-                this.$refs['configDialogForm'].resetFields();
+                this.resetGroup();
+                this.$refs['groupDialogForm'].resetFields();
             }
         }
     }
