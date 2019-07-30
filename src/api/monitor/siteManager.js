@@ -41,3 +41,23 @@ export function getSiteManagerList(query) {
 }
 
 
+export function setSiteUsers(siteId, userIds) {
+    return request({
+        url: '/manage/monitor/siteManager/setSiteUsers',
+        method: 'post',
+        data: {siteId, userIds}
+    })
+}
+
+export function listBySiteManager(query) {
+    return request({
+        url: '/manage/monitor/siteManager/listBySiteManager',
+        method: 'get',
+        params: query
+    })
+}
+
+
+
+
+

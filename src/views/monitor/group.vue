@@ -56,10 +56,12 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.manager" title="关联站点" type="primary" icon="iconcaidan1"
+                                   :size="btnSize" circle @click.stop.safe="btnGroupSite(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
@@ -86,7 +88,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="触发模式" prop="triggerType">
-                                <el-radio-group v-model="group.triggerType">
+                                <el-radio-group v-model="group.triggerType" @change="changeTriggerType(group.triggerType)">
                                     <el-radio :label="1" border>固定时刻</el-radio>
                                     <el-radio :label="2" border>日历周期</el-radio>
                                 </el-radio-group>
@@ -94,7 +96,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="触发类型" prop="calendarType">
-                                <el-radio-group v-model="group.calendarType" disabled>
+                                <el-radio-group v-model="group.calendarType" @change="changeCalendarType(group.calendarType)" :disabled="calendarTypeDisabled">
                                     <el-radio :label="1" border>每日</el-radio>
                                     <el-radio :label="2" border>每周</el-radio>
                                 </el-radio-group>
@@ -104,26 +106,34 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="间隔时间" prop="incrementSeconds">
-                                <el-input v-model="group.incrementSeconds"></el-input>
+                                <el-input v-model="group.incrementSeconds" :disabled="incrementSecondsDisabled"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="触发时间" prop="calendarTime">
-                                <el-input v-model="group.calendarTime" disabled></el-input>
+                                <el-time-select
+                                    v-model="group.calendarTime"
+                                    :picker-options="{
+                                        start: '00:00',
+                                        step: '00:30',
+                                        end: '24:00'
+                                     }"
+                                    placeholder="时间点" :disabled="calendarTimeDisabled">
+                                </el-time-select>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="每周" prop="calendarWorkday">
-                                <el-checkbox-group v-model="group.calendarWorkday" disabled>
-                                    <el-checkbox :label="1">周一</el-checkbox>
-                                    <el-checkbox :label="2">周二</el-checkbox>
-                                    <el-checkbox :label="3">周三</el-checkbox>
-                                    <el-checkbox :label="4">周四</el-checkbox>
-                                    <el-checkbox :label="5">周五</el-checkbox>
-                                    <el-checkbox :label="6">周六</el-checkbox>
-                                    <el-checkbox :label="7">周日</el-checkbox>
+                                <el-checkbox-group v-model="group.calendarWorkday" :disabled="calendarWorkdayDisabled">
+                                    <el-checkbox label="1">周一</el-checkbox>
+                                    <el-checkbox label="2">周二</el-checkbox>
+                                    <el-checkbox label="3">周三</el-checkbox>
+                                    <el-checkbox label="4">周四</el-checkbox>
+                                    <el-checkbox label="5">周五</el-checkbox>
+                                    <el-checkbox label="6">周六</el-checkbox>
+                                    <el-checkbox label="7">周日</el-checkbox>
                                 </el-checkbox-group>
                             </el-form-item>
                         </el-col>
@@ -142,6 +152,34 @@
                     <el-button :size="btnSize" @click="closeGroupDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
+            <!-- 关联站点 -->
+            <el-dialog title="关联站点" :visible.sync="groupSiteDialogVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeGroupSiteDialog">
+                <el-table ref="groupSiteTable" :data="siteList" v-loading.body="listLoading" stripe border highlight-current-row @select="selectRowSite"
+                          @select-all="selectAllSite">
+                    <el-table-column type="selection" width="50" align="center"/>
+                    <el-table-column align="center" label="站点名称" prop="siteName"/>
+                    <el-table-column align="center" label="监测地址" prop="siteDomain"/>
+                    <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                        <template slot-scope="scope">
+                            <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                                {{scope.row.enable | enums('EnableEnum')}}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-pagination class="deyatech-pagination pull-right" background
+                               :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                               :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="siteTotle"
+                               @size-change="handleGroupSiteSizeChange" @current-change="handleGroupSiteCurrentChange">
+                </el-pagination>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveGroupSite"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeGroupSiteDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -155,11 +193,22 @@
         createOrUpdateGroup,
         delGroups
     } from '@/api/monitor/group';
+    import {
+        getSiteList
+    } from '@/api/monitor/site';
+    import {
+        setGroupSites,
+        listByGroupSite
+    } from '@/api/monitor/groupSite';
 
     export default {
         name: 'group',
         data() {
             return {
+                calendarTypeDisabled: true,
+                incrementSecondsDisabled: false,
+                calendarTimeDisabled: true,
+                calendarWorkdayDisabled: true,
                 groupList: undefined,
                 total: undefined,
                 listLoading: true,
@@ -173,7 +222,7 @@
                     groupName: undefined,
                     triggerType: 1,
                     incrementSeconds: undefined,
-                    calendarTime: '00:00:00',
+                    calendarTime: '00:00',
                     calendarType: 1,
                     calendarWorkday: [],
                     runType: 2
@@ -186,7 +235,12 @@
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                groupSiteDialogVisible: false,
+                siteList: undefined,
+                currentRow: undefined,
+                selectAllSiteId: [''],
+                siteTotle: undefined
             }
         },
         computed: {
@@ -203,7 +257,8 @@
                 return {
                     create: this.permission.group_create,
                     update: this.permission.group_update,
-                    delete: this.permission.group_delete
+                    delete: this.permission.group_delete,
+                    manager: this.permission.group_site
                 };
             }
         },
@@ -211,6 +266,33 @@
             this.reloadList();
         },
         methods: {
+            changeTriggerType(e){
+                if(e==1){
+                    this.incrementSecondsDisabled = false;
+                    this.calendarTypeDisabled = true;
+                    this.calendarTimeDisabled = true;
+                    this.calendarWorkdayDisabled = true;
+                }
+                if(e==2){
+                    this.incrementSecondsDisabled = true;
+                    this.calendarTypeDisabled = false;
+                    this.calendarTimeDisabled = false;
+                    this.calendarWorkdayDisabled = true;
+                }
+                this.group.calendarTime = '00:00';
+                this.group.calendarType = 1;
+                this.group.calendarWorkday = [];
+                this.group.incrementSeconds = undefined;
+            },
+            changeCalendarType(e){
+                if(e==1){
+                    this.calendarWorkdayDisabled = true;
+                }
+                if(e==2){
+                    this.calendarWorkdayDisabled = false;
+                }
+                this.group.calendarWorkday = [];
+            },
             resetSearch(){
                 this.listQuery.name = undefined;
             },
@@ -239,6 +321,10 @@
                 this.resetGroup();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                this.incrementSecondsDisabled = false;
+                this.calendarTypeDisabled = true;
+                this.calendarTimeDisabled = true;
+                this.calendarWorkdayDisabled = true;
             },
             btnUpdate(row){
                 this.resetGroup();
@@ -246,6 +332,29 @@
                     this.group = deepClone(row);
                 } else {
                     this.group = deepClone(this.selectedRows[0]);
+                }
+                if(this.group.triggerType==1){
+                    this.incrementSecondsDisabled = false;
+                    this.calendarTypeDisabled = true;
+                    this.calendarTimeDisabled = true;
+                    this.calendarWorkdayDisabled = true;
+                }
+                if(this.group.triggerType==2){
+                    this.incrementSecondsDisabled = true;
+                    this.calendarTypeDisabled = false;
+                    this.calendarTimeDisabled = false;
+                    this.calendarWorkdayDisabled = true;
+                }
+                if(this.group.calendarType==1){
+                    this.calendarWorkdayDisabled = true;
+                }
+                if(this.group.calendarType==2){
+                    this.calendarWorkdayDisabled = false;
+                    if(this.group.calendarWorkday!=undefined){
+                        this.group.calendarWorkday = this.group.calendarWorkday.split(",");
+                    }else{
+                        this.group.calendarWorkday = [];
+                    }
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -270,6 +379,9 @@
                 this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if(this.group.calendarWorkday!=undefined){
+                            this.group.calendarWorkday = this.group.calendarWorkday.join(",");
+                        }
                         createOrUpdateGroup(this.group).then(() => {
                             this.resetGroupDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
@@ -283,6 +395,9 @@
                 this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if(this.group.calendarWorkday!=undefined){
+                            this.group.calendarWorkday = this.group.calendarWorkday.join(",");
+                        }
                         createOrUpdateGroup(this.group).then(() => {
                             this.resetGroupDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -305,7 +420,7 @@
                     groupName: undefined,
                     triggerType: 1,
                     incrementSeconds: undefined,
-                    calendarTime: '00:00:00',
+                    calendarTime: '00:00',
                     calendarType: 1,
                     calendarWorkday: [],
                     runType: 2
@@ -320,6 +435,87 @@
                 this.dialogVisible = false;
                 this.resetGroup();
                 this.$refs['groupDialogForm'].resetFields();
+            },
+            selectRowSite(selection, row) {
+                let i = this.selectAllSiteId.indexOf(row.id)
+                if (i < 0) {
+                    this.selectAllSiteId.push(row.id)
+                } else {
+                    this.selectAllSiteId.splice(i, 1)
+                }
+            },
+            selectAllSite(selection) {
+                if (selection.length > 0) {
+                    for (let site of this.siteList) {
+                        if (this.selectAllSiteId.indexOf(site.id) < 0) {
+                            this.selectAllSiteId.push(site.id)
+                        }
+                    }
+                } else {
+                    for (let site of this.siteList) {
+                        let i = this.selectAllSiteId.indexOf(site.id)
+                        if (i >= 0) {
+                            this.selectAllSiteId.splice(i, 1)
+                        }
+                    }
+                }
+            },
+            handleGroupSiteSizeChange(val){
+                this.listQuery.size = val;
+                this.getSiteList();
+            },
+            handleGroupSiteCurrentChange(val){
+                this.listQuery.page = val;
+                this.getSiteList();
+            },
+            getSiteList(){
+                this.listLoading = true;
+                this.siteList = undefined;
+                this.siteTotle = undefined;
+                this.selectAllSiteId = [];
+                getSiteList(this.listQuery).then(response => {
+                    this.listLoading = false;
+                    this.siteList = response.data.records;
+                    this.siteTotle = response.data.total;
+                    this.$nextTick(() => {
+                        this.checkSelectGroupSite();
+                    });
+                });
+            },
+            btnGroupSite(row){
+                this.currentRow = row;
+                this.groupSiteDialogVisible = true;
+                this.getSiteList();
+            },
+            checkSelectGroupSite(){
+                listByGroupSite({groupId:this.currentRow.id}).then(response => {
+                    for (let user of response.data) {
+                        if (this.selectAllSiteId.indexOf(user.siteId) < 0) {
+                            this.selectAllSiteId.push(user.siteId)
+                        }
+                    }
+                    if (this.selectAllSiteId && this.selectAllSiteId.length > 0) {
+                        for (let sites of this.siteList) {
+                            if (this.selectAllSiteId.includes(sites.id)) {
+                                this.$refs['groupSiteTable'].toggleRowSelection(sites);
+                            }
+                        }
+                    }
+                })
+            },
+            closeGroupSiteDialog() {
+                this.groupSiteDialogVisible = false;
+                this.submitLoading = false;
+                this.currentRow = undefined;
+            },
+            doSaveGroupSite(){
+                this.submitLoading = true;
+                setGroupSites(this.currentRow.id, this.selectAllSiteId).then(() => {
+                    this.closeGroupSiteDialog();
+                    this.$message.success(this.$t("关联成功"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
             }
         }
     }

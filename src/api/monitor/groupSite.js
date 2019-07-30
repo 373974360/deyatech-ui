@@ -39,5 +39,20 @@ export function getGroupSiteList(query) {
         params: query
     });
 }
+export function listByGroupSite(query) {
+    return request({
+        url: '/manage/monitor/groupSite/listByGroupSite',
+        method: 'get',
+        params: query
+    })
+}
+
+export function setGroupSites(groupId, siteIds) {
+    return request({
+        url: '/manage/monitor/groupSite/setGroupSites',
+        method: 'post',
+        data: {groupId, siteIds}
+    })
+}
 
 

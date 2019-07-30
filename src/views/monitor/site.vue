@@ -28,7 +28,7 @@
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="center" label="站点名称" prop="siteName"/>
-                <el-table-column align="center" label="站点域名" prop="siteDomain"/>
+                <el-table-column align="center" label="监测地址" prop="siteDomain"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -41,7 +41,7 @@
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.manager" title="关联人员" type="primary" icon="iconcaidan1"
-                                   :size="btnSize" circle @click.stop.safe="btnRoleMenu(scope.row)"></el-button>
+                                   :size="btnSize" circle @click.stop.safe="btnSiteUser(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
@@ -65,7 +65,7 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="站点域名" prop="siteDomain">
+                            <el-form-item label="监测地址" prop="siteDomain">
                                 <el-input v-model="site.siteDomain"></el-input>
                             </el-form-item>
                         </el-col>
@@ -84,6 +84,34 @@
                     <el-button :size="btnSize" @click="closeSiteDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
+            <!-- 关联人员 -->
+            <el-dialog title="关联人员" :visible.sync="siteUserDialogVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeSiteUserDialog">
+                <el-table ref="siteUserTable" :data="userList" v-loading.body="listLoading" stripe border highlight-current-row @select="selectRowUser"
+                          @select-all="selectAllUser">
+                    <el-table-column type="selection" width="50" align="center"/>
+                    <el-table-column align="center" label="人员姓名" prop="userName"/>
+                    <el-table-column align="center" label="手机号" prop="userPhone"/>
+                    <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                        <template slot-scope="scope">
+                            <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                                {{scope.row.enable | enums('EnableEnum')}}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-pagination class="deyatech-pagination pull-right" background
+                               :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                               :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotle"
+                               @size-change="handleSiteUserSizeChange" @current-change="handleSiteUserCurrentChange">
+                </el-pagination>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveSiteUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeSiteUserDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -97,6 +125,13 @@
         createOrUpdateSite,
         delSites
     } from '@/api/monitor/site';
+    import {
+        getManagerList
+    } from '@/api/monitor/manager';
+    import {
+        setSiteUsers,
+        listBySiteManager
+    } from '@/api/monitor/siteManager';
 
     export default {
         name: 'site',
@@ -120,13 +155,18 @@
                         {required: true, message: this.$t("table.pleaseInput") + '站点名称'}
                     ],
                     siteDomain: [
-                        {required: true, message: this.$t("table.pleaseInput") + '站点域名'}
+                        {required: true, message: this.$t("table.pleaseInput") + '监测地址'}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                siteUserDialogVisible: false,
+                userList: undefined,
+                currentRow: undefined,
+                selectAllUserId: [''],
+                userTotle: undefined
             }
         },
         computed: {
@@ -255,6 +295,87 @@
                 this.dialogVisible = false;
                 this.resetSite();
                 this.$refs['siteDialogForm'].resetFields();
+            },
+            selectRowUser(selection, row) {
+                let i = this.selectAllUserId.indexOf(row.id)
+                if (i < 0) {
+                    this.selectAllUserId.push(row.id)
+                } else {
+                    this.selectAllUserId.splice(i, 1)
+                }
+            },
+            selectAllUser(selection) {
+                if (selection.length > 0) {
+                    for (let user of this.userList) {
+                        if (this.selectAllUserId.indexOf(user.id) < 0) {
+                            this.selectAllUserId.push(user.id)
+                        }
+                    }
+                } else {
+                    for (let user of this.userList) {
+                        let i = this.selectAllUserId.indexOf(user.id)
+                        if (i >= 0) {
+                            this.selectAllUserId.splice(i, 1)
+                        }
+                    }
+                }
+            },
+            handleSiteUserSizeChange(val){
+                this.listQuery.size = val;
+                this.getManagerList();
+            },
+            handleSiteUserCurrentChange(val){
+                this.listQuery.page = val;
+                this.getManagerList();
+            },
+            getManagerList(){
+                this.listLoading = true;
+                this.userList = undefined;
+                this.userTotle = undefined;
+                this.selectAllUserId = [];
+                getManagerList(this.listQuery).then(response => {
+                    this.listLoading = false;
+                    this.userList = response.data.records;
+                    this.userTotle = response.data.total;
+                    this.$nextTick(() => {
+                        this.checkSelectSiteManager();
+                    });
+                });
+            },
+            btnSiteUser(row){
+                this.currentRow = row;
+                this.siteUserDialogVisible = true;
+                this.getManagerList();
+            },
+            checkSelectSiteManager(){
+                listBySiteManager({siteId:this.currentRow.id}).then(response => {
+                    for (let user of response.data) {
+                        if (this.selectAllUserId.indexOf(user.managerId) < 0) {
+                            this.selectAllUserId.push(user.managerId)
+                        }
+                    }
+                    if (this.selectAllUserId && this.selectAllUserId.length > 0) {
+                        for (let users of this.userList) {
+                            if (this.selectAllUserId.includes(users.id)) {
+                                this.$refs['siteUserTable'].toggleRowSelection(users);
+                            }
+                        }
+                    }
+                })
+            },
+            closeSiteUserDialog() {
+                this.siteUserDialogVisible = false;
+                this.submitLoading = false;
+                this.currentRow = undefined;
+            },
+            doSaveSiteUser(){
+                this.submitLoading = true;
+                setSiteUsers(this.currentRow.id, this.selectAllUserId).then(() => {
+                    this.closeSiteUserDialog();
+                    this.$message.success(this.$t("关联成功"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
             }
         }
     }
