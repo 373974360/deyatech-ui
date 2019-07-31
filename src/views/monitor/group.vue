@@ -188,6 +188,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
+    import moment from 'moment';
     import {
         getGroupList,
         createOrUpdateGroup,
@@ -225,7 +226,8 @@
                     calendarTime: '00:00',
                     calendarType: 1,
                     calendarWorkday: [],
-                    runType: 2
+                    runType: 2,
+                    nextDtime: undefined
                 },
                 groupRules: {
                     groupName: [
@@ -379,7 +381,7 @@
                 this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if(this.group.calendarWorkday!=undefined){
+                        if(this.group.calendarWorkday!=undefined&&this.group.calendarWorkday!=""){
                             this.group.calendarWorkday = this.group.calendarWorkday.join(",");
                         }
                         createOrUpdateGroup(this.group).then(() => {
@@ -395,9 +397,10 @@
                 this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if(this.group.calendarWorkday!=undefined){
+                        if(this.group.calendarWorkday!=undefined&&this.group.calendarWorkday!=""){
                             this.group.calendarWorkday = this.group.calendarWorkday.join(",");
                         }
+                        this.group.nextDtime = moment(new Date()).format("YYYY-MM-DD HH:mm:ss").toString();
                         createOrUpdateGroup(this.group).then(() => {
                             this.resetGroupDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -423,7 +426,8 @@
                     calendarTime: '00:00',
                     calendarType: 1,
                     calendarWorkday: [],
-                    runType: 2
+                    runType: 2,
+                    nextDtime: undefined
                 }
             },
             resetGroupDialogAndList(){
