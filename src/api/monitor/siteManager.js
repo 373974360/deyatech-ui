@@ -49,6 +49,14 @@ export function setSiteUsers(siteId, userIds) {
     })
 }
 
+export function setUserSites(userId, siteIds) {
+    return request({
+        url: '/manage/monitor/siteManager/setUserSites',
+        method: 'post',
+        data: {userId, siteIds}
+    })
+}
+
 export function listBySiteManager(query) {
     return request({
         url: '/manage/monitor/siteManager/listBySiteManager',
