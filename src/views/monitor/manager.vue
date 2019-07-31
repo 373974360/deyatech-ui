@@ -348,10 +348,10 @@
                 this.getSiteList();
             },
             checkSelectManagerSite(){
-                listBySiteManager({groupId:this.currentRow.id}).then(response => {
-                    for (let user of response.data) {
-                        if (this.selectAllSiteId.indexOf(user.siteId) < 0) {
-                            this.selectAllSiteId.push(user.siteId)
+                listBySiteManager({managerId:this.currentRow.id}).then(response => {
+                    for (let site of response.data) {
+                        if (this.selectAllSiteId.indexOf(site.siteId) < 0) {
+                            this.selectAllSiteId.push(site.siteId)
                         }
                     }
                     if (this.selectAllSiteId && this.selectAllSiteId.length > 0) {
