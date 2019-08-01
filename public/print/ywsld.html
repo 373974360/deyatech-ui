@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网上政务大厅管理平台 - 业务受理单</title>
+    <style media="print">button {
+        display: none;
+    }</style>
+
+    <style type="text/css">
+
+        body{
+            font-size:16px;
+            line-height:2em;
+        }
+        table{
+            border-collapse:collapse;
+        }
+        table tr td {
+            border: solid black 1px;
+            padding:10px;
+
+        }
+
+
+        #wl_list{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        #wl_list li {
+            line-height: 2.5em;
+        }
+    </style>
+</head>
+
+<body>
+<div class="printTable">
+
+    <p style="font-size: medium;text-align: center;white-space: normal;background-color: rgb(255, 255, 255)">
+        <span style="font-size: 24px;font-weight: bold">政务服务中心</span>
+    </p>
+
+    <p style="font-size: medium;text-align: center;white-space: normal;background-color: rgb(255, 255, 255)">
+        <span style="font-size: 24px;font-weight: bold">综合窗口业务受理单</span>
+    </p>
+    <div style="text-align: center;">
+        <button onclick="window.print()">打印</button>
+    </div>
+
+    <div style="width:600px;margin:10px auto">
+
+    <table width="100%" >
+        <tbody>
+        <tr>
+            <td colspan="100" align="right">办件号：{{workNo}}</td>
+        </tr>
+        <tr>
+            <td colspan="2" align="left">事项名称：{{itemName}}</td>
+        </tr>
+        <tr>
+            <td colspan="2" align="left">申请单位：{{companyName}}</td>
+        </tr>
+        <tr>
+            <td colspan="1" align="left" width="50%">联系人：{{name}}</td>
+            <td colspan="1" align="left">联系电话：{{phone}}</td>
+        </tr>
+        <tr>
+            <td colspan="1" align="left">证件类型：身份证</td>
+            <td colspan="1" align="left">身份证号：{{idcardNo}}</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style=" margin-top:1em">
+                    物料清单：
+                    <div >
+                        <ul id="wl_list" style="margin:0px;">
+                            <li v-for="(m,i) in materialsList">
+                                {{i + 1}}、{{m.materialsName}}{{m.materialsTypeName ? '，' + m.materialsTypeName : ''}}{{m.materialsNum ? '，数量：' + m.materialsNum : ''}}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="min-height: 7em;">
+
+                    <p>备注：
+                        <br>
+                        {{remark}}
+                    </p>
+                </div>
+                <div style="margin-top:1em;font-size:1em;">* 取件时，需要申请人携带受理单与本人身份证（缺一不可），请妥善保管。</div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="1" align="left" style="height: 5em">
+                申请人：
+            </td>
+            <td colspan="1" align="left">
+                收件人：
+            </td>
+        </tr>
+        <tr>
+            <td colspan="1" align="right">
+                日期：{{date}}
+            </td>
+            <td colspan="1" align="right">
+                日期：{{date}}
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+    </div>
+
+
+</div>
+<script src="/cdn/vue/2.5.2/vue.min.js"></script>
+<script src="/cdn/jquery/jquery-3.3.1.js"></script>
+<script type="text/javascript">
+
+    function getParam(name) {
+        return location.search.match(new RegExp('[?&]' + name + '=([^?&]+)', 'i')) ? decodeURIComponent(RegExp.$1) : '';
+    }
+
+    var printTable = new Vue({
+        el: '.printTable',
+        data: {
+            workNo: '',
+            itemName: '',
+            companyName: '',
+            name: '',
+            phone: '',
+            idcardNo: '',
+            materialsList: [],
+            remark: '',
+            date: ''
+        },
+        mounted: function () {
+            var _this = this;
+            var workNo = getParam("workNo");
+            console.log(workNo);
+            if (workNo == null) {
+                return;
+            }
+            $.post('/web/api/handling/ywsldData', {
+                workNo: workNo
+            }, function (response) {
+                if (response.status == 200 && response.data) {
+                    var rd = response.data;
+                    console.dir(rd);
+                    _this.workNo = rd.workNo;
+                    console.dir(_this.workNo);
+                    _this.itemName = rd.itemName;
+                    _this.companyName = rd.companyName;
+                    _this.name = rd.name;
+                    _this.phone = rd.phone;
+                    _this.idcardNo = rd.idcardNo;
+                    _this.materialsList = rd.materialsList;
+                    _this.remark = rd.remark;
+                    _this.date = rd.date;
+                } else {
+                    alert(response.msg);
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+
+
+</html>

@@ -9,7 +9,7 @@ const env = process.env
 if (env.NODE_ENV == 'development') {
     baseUrl = ``; // 开发环境地址
 } else if (env.NODE_ENV == 'production') {
-    baseUrl = `/admin/`; //生产环境地址
+    baseUrl = ``; //生产环境地址
 } else if (env.NODE_ENV == 'test') {
     baseUrl = ``; //测试环境地址
 }

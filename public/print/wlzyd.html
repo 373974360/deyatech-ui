@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网上政务大厅管理平台 - 业务受理单</title>
+    <style media="print">button {
+        display: none;
+    }</style>
+
+    <style type="text/css">
+        body {
+            font-size: 16px;
+            line-height: 2em;
+        }
+
+        table tr td {
+            border: solid black 1px;
+            padding: 10px;
+        }
+        .wl_list{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .wl_list li {
+            line-height: 2em;
+            text-align: left;
+        }
+
+        table {
+            width: 600px;
+            /*margin-left: 95px;*/
+            border-collapse: collapse;
+            border-spacing: 0;
+            border-left: 1px solid #aaa;
+            border-top: 1px solid #aaa;
+        }
+
+        th {
+            border-right: 1px solid #888;
+            border-bottom: 1px solid #888;
+            padding: 3px 15px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        td {
+            border-right: 1px solid #888;
+            border-bottom: 1px solid #888;
+            padding: 3px 15px;
+            color: #3C3C3C;
+        }
+    </style>
+</head>
+
+<body>
+<div class="printTable">
+
+    <p style="font-size: medium;text-align: center;white-space: normal;background-color: rgb(255, 255, 255)">
+        <span style="font-size: 24px;font-weight: bold">政务服务中心</span>
+    </p>
+
+    <p style="font-size: medium;text-align: center;white-space: normal;background-color: rgb(255, 255, 255)">
+        <span style="font-size: 24px;font-weight: bold">物料转移单</span>
+    </p>
+    <div style="text-align: center;">
+        <button onclick="window.print()">打印</button>
+    </div>
+
+    <div style="width:600px;margin:10px auto">
+        <table width="100%">
+            <tbody>
+            <tr>
+                <td colspan="100" align="right">办件号：{{workNo}}</td>
+            </tr>
+            <tr>
+                <td colspan="2" align="left">事项名称：{{itemName}}</td>
+            </tr>
+            <tr>
+                <td colspan="2" align="left">申请单位：{{companyName}}</td>
+            </tr>
+            <tr>
+                <td colspan="1" align="left" width="50%">联系人：{{name}}</td>
+                <td colspan="1" align="left">联系电话：{{phone}}</td>
+            </tr>
+            </tbody>
+        </table>
+        <table>
+            <tbody>
+            <tr>
+                <td colspan="2">
+                    <h2 style="text-align: center">【综合窗口 → 审批部门】材料清单</h2>
+
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div style=" margin-top:1em;">
+                        <div style="">
+                            <ul class="wl_list">
+                                <li v-for="(m,i) in materialsList">
+                                    {{i + 1}}、{{m.materialsName}}，{{m.materialsTypeName}}，数量：{{m.materialsNum}}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="min-height: 7em;">
+                        <p style="text-align: left">备注：
+                            <br>
+                            {{remark}}
+                        </p>
+
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:left">综合窗口（签名）</td>
+                <td style="text-align: center">审批部门（签名）</td>
+            </tr>
+            <tr>
+                <td style="height:2em;text-align:left">后台协调员（签名）</td>
+                <td style="height:2em"></td>
+            </tr>
+            <tr>
+                <td style="text-align: left">日期:</td>
+                <td style="text-align: left">日期:</td>
+            </tr>
+            </tbody>
+        </table>
+        <!--表格空白间隔分页-->
+        <table style="page-break-before: always;" width="100%">
+            <tbody>
+            <tr>
+                <td colspan="2">
+                    <h2 style="text-align: center">【审批部门 → 综合窗口】材料清单</h2>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="100" align="right">办件号：{{workNo}}</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div style=" margin-top:1em">
+
+                        <div style="">
+                            <ul class="wl_list">
+                                <li v-for="(m,i) in materialsList">
+                                    {{i + 1}}、{{m.materialsName}}{{m.materialsTypeName ? '，' + m.materialsTypeName : ''}}{{m.materialsNum ? '，数量：' + m.materialsNum : ''}}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="min-height: 7em;">
+                        <p style="text-align: left">备注：
+                            <br>
+                            {{remark}}
+                        </p>
+
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: center">审批部门（签名）</td>
+                <td style="text-align: left">综合窗口（签名）</td>
+            </tr>
+            <tr>
+                <td style="height:2em"></td>
+                <td style="height:2em;text-align:left">后台协调员（签名）</td>
+
+            </tr>
+            <tr>
+                <td style="text-align: left">日期:</td>
+                <td style="text-align: left">日期:</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+
+</div>
+<script src="/cdn/vue/2.5.2/vue.min.js"></script>
+<script src="/cdn/jquery/jquery-3.3.1.js"></script>
+<script type="text/javascript">
+
+    function getParam(name) {
+        return location.search.match(new RegExp('[?&]' + name + '=([^?&]+)', 'i')) ? decodeURIComponent(RegExp.$1) : '';
+    }
+
+    var printTable = new Vue({
+        el: '.printTable',
+        data: {
+            workNo: '',
+            itemName: '',
+            companyName: '',
+            name: '',
+            phone: '',
+            idcardNo: '',
+            materialsList: [],
+            remark: '',
+            date: ''
+        },
+        mounted: function () {
+            var _this = this;
+            var workNo = getParam("workNo");
+            console.log(workNo);
+            if (workNo == null) {
+                return;
+            }
+            $.post('/web/api/handling/wlzydData', {
+                workNo: workNo
+            }, function (response) {
+                if (response.status == 200 && response.data) {
+                    var rd = response.data;
+                    console.dir(rd);
+                    _this.workNo = rd.workNo;
+                    console.dir(_this.workNo);
+                    _this.itemName = rd.itemName;
+                    _this.companyName = rd.companyName;
+                    _this.name = rd.name;
+                    _this.phone = rd.phone;
+                    _this.idcardNo = rd.idcardNo;
+                    _this.materialsList = rd.materialsList;
+                    _this.remark = rd.remark;
+                    _this.date = rd.date;
+                } else {
+                    alert(response.msg);
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+
+
+</html>

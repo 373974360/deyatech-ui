@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网上政务大厅管理平台 - 一次性告知单</title>
+    <style media="print">button {
+        display: none;
+    }</style>
+
+    <style type="text/css">
+        body {
+            font-size: 16px;
+            line-height: 2em;
+        }
+
+        table {
+            border-collapse: collapse;
+
+        }
+
+        table tr td {
+            border: solid black 1px;
+            padding:10px;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="printTable">
+    <p style="font-size: medium;text-align: center;white-space: normal;background-color: rgb(255, 255, 255)">
+        <span style="font-size: 24px;font-weight: bold">政务服务中心</span>
+    </p>
+
+    <p style="font-size: medium;text-align: center;white-space: normal;background-color: rgb(255, 255, 255)">
+        <span style="font-size: 24px;font-weight: bold">一次性告知单</span>
+    </p>
+    <div style="text-align: center;">
+        <button onclick="window.print()">打印</button>
+
+    </div>
+    <table width="600" style="margin:20px auto 0px;">
+        <tbody>
+        <tr>
+            <td colspan="100" align="right">办件号：{{workNo}}</td>
+        </tr>
+        <tr>
+            <td colspan="2" align="left">事项名称：{{itemName}}</td>
+        </tr>
+        <tr>
+            <td colspan="2" align="left">申请单位：{{companyName}}</td>
+        </tr>
+        <tr>
+            <td colspan="1" align="left" width="50%">联系人：{{name}}</td>
+            <td colspan="1" align="left">联系电话：{{phone}}</td>
+        </tr>
+        <tr>
+            <td colspan="1" align="left">证件类型：身份证</td>
+            <td colspan="1" align="left">身份证号：{{idcardNo}}</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style=" margin-top:2em">
+                    <p style="text-indent: 2em"> 贵单位（个人）办理的事项《{{itemName}}》在审批过程中因以下几点不符合相关规定/要求，现通知{{msgType}}：
+                    </p>
+
+                    <ul style="padding:2em;">
+                        <li v-for="p in reason">
+                            {{p}}
+                        </li>
+
+                    </ul>
+                </div>
+
+                <div style="min-height: 7em;">
+                    <p>备注：
+                        <br>
+                    </p>
+
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="right">
+                咨询电话：{{askTel}}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="right">
+                日期：{{date}}
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+<script src="/cdn/vue/2.5.2/vue.min.js"></script>
+<script src="/cdn/jquery/jquery-3.3.1.js"></script>
+<script type="text/javascript">
+
+    function getParam(name) {
+        return location.search.match(new RegExp('[?&]' + name + '=([^?&]+)', 'i')) ? decodeURIComponent(RegExp.$1) : '';
+    }
+
+    var printTable = new Vue({
+        el: '.printTable',
+        data: {
+            option: '',
+            askTel: "",
+            workNo: '',
+            itemName: '',
+            companyName: '',
+            name: '',
+            phone: '',
+            idcardNo: '',
+            materialsList: [],
+            remark: '',
+            date: '',
+            reason: []
+        },
+        mounted: function () {
+            var _this = this;
+            var workNo = getParam("workNo");
+            console.log(workNo);
+            if (workNo == null) {
+                return;
+            }
+            $.post('/web/api/handling/ycxgzdData', {
+                workNo: workNo
+            }, function (response) {
+                if (response.status == 200 && response.data) {
+                    var rd = response.data;
+                    console.dir(rd);
+                    _this.workNo = rd.workNo;
+                    console.dir(_this.workNo);
+                    _this.itemName = rd.itemName;
+                    _this.companyName = rd.companyName;
+                    _this.name = rd.name;
+                    _this.phone = rd.phone;
+                    _this.idcardNo = rd.idcardNo;
+                    _this.materialsList = rd.materialsList;
+                    _this.remark = rd.remark;
+                    _this.date = rd.date;
+                    _this.askTel = rd.askTel;
+                    _this.option = rd.option;
+                    if (rd.option) {
+                        _this.reason = rd.option.split(/\r?\n/);
+                    }
+
+                } else {
+                    alert(response.msg);
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+
+
+</html>

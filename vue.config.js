@@ -34,6 +34,13 @@ module.exports = {
                 pathRewrite: {
                     '^/manage': '/manage'
                 }
+            },
+            '/web': {
+                target: url,
+                ws: true,
+                pathRewrite: {
+                    '^/web': '/web'
+                }
             }
         }
     }
