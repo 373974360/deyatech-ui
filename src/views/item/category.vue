@@ -45,7 +45,7 @@
                                @click.stop.safe="btnUpdate(scope.row)"></el-button>
 
                     <el-badge :value="scope.row.number" style="margin: 10px 13px 11px 10px">
-                    <el-button v-if="btnEnable.associateItem" title="关联事项" type="primary" icon="iconcaidan1" :size="btnSize" circle
+                    <el-button v-if="btnEnable.associate_item" title="关联事项" type="primary" icon="iconcaidan1" :size="btnSize" circle
                                @click.stop.safe="btnCategoryItem(scope.row)"></el-button>
                     </el-badge>
 
@@ -283,7 +283,7 @@
                     create: this.permission.category_create,
                     update: this.permission.category_update,
                     delete: this.permission.category_delete,
-                    associateItem: this.permission.category_associate_item,
+                    associate_item: this.permission.category_associate_item,
                 };
             }
         },

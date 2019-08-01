@@ -63,11 +63,3 @@ export function pageItemsByItemNameAndCategoryIds(query) {
         params: query
     });
 }
-
-export function listItemsByCategoryId(query) {
-    return request({
-        url: '/manage/item/categoryItem/listItemsByCategoryId',
-        method: 'get',
-        params: query
-    });
-}

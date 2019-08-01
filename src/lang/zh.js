@@ -104,8 +104,7 @@ export default {
         createSuccess: '新增成功',
         updateSuccess: '修改成功',
         deleteSuccess: '删除成功',
-        associateSuccess: '关联成功',
-        submitSuccess: '提交成功'
+        associateSuccess: '关联成功'
     },
     navbar: {
         logOut: '退出登录',

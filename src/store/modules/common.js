@@ -17,8 +17,7 @@ const common = {
             view: '查看',
             associateMenu: '关联权限',
             associateUser: '关联用户',
-            associateItem: '关联事项',
-            associateMaterials: '关联材料'
+            associateItem: '关联事项'
         },
         enums: getStore({name: 'enums'}) || [],
         dicts: getStore({name: 'dicts'}) || [],
@@ -26,7 +25,6 @@ const common = {
         btnSize: 'small',
         closeOnClickModal: false,
         uploadUrl: '/manage/common/upload',
-        downloadUrl: '/manage/common/download?filePath=',
         showPicImgUrl: '/manage/common/showPicImg?filePath=',
         imageAccepts: 'image/jpg, image/jpeg, image/png, image/bmp, image/gif',
         fileAccepts: 'image/jpg,image/jpeg,image/png,image/bmp,image/gif,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf,text/plain,application/zip,application/rar',

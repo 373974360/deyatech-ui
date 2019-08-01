@@ -8,6 +8,11 @@
                                   v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
+                        <el-select v-model.trim="listQuery.departmentId" clearable  placeholder="选择部门">
+                            <el-option :key="item.id" v-for="item in deptList" :label="item.name" :value="item.id"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">
                             {{$t('table.search')}}
                         </el-button>
@@ -125,7 +130,7 @@
                                            :on-success="handleAvatarSuccess"
                                            :on-error="handlerAvatarError"
                                            :before-upload="beforeAvatarUpload">
-                                    <img v-if="user.avatar" :src="this.$store.state.common.showPicImgUrl + user.avatar" class="avatar">
+                                    <img v-if="user.avatar" :src="user.avatar" class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -186,6 +191,7 @@
     } from '@/api/admin/user';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {isvalidatemobile, validatename, isStartOrEndWithWhiteSpace} from '@/util/validate';
+    import { getAllDepartments } from '@/api/admin/department';
 
     export default {
         name: 'user',
@@ -250,7 +256,8 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    name: undefined,
+                    departmentId: undefined
                 },
                 user: {
                     id: undefined,
@@ -313,7 +320,8 @@
                 submitLoading: false,
                 uploadAction: this.$store.state.common.uploadUrl,
                 acceptTypes: this.$store.state.common.imageAccepts,
-                departmentCascader: []
+                departmentCascader: [],
+                deptList: []
             }
         },
         computed: {
@@ -352,9 +360,19 @@
         },
         created() {
             this.reloadList();
+            this.getDeptList();
             this.getDepartmentCascader();
         },
         methods: {
+            getDeptList() {
+                getAllDepartments().then(response => {
+                    if (response.status === 200) {
+                        this.deptList = response.data;
+                    } else {
+                        this.$message.error('部门信息加载失败')
+                    }
+                })
+            },
             btnSearch() {
                 this.listQuery.page = 1;
                 this.reloadList();
@@ -543,6 +561,9 @@
         width: 178px;
         height: 178px;
         display: block;
+    }
+    .el-select .el-input__inner {
+        height: 32px;
     }
 </style>
 

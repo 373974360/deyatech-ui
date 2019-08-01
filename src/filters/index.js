@@ -55,32 +55,3 @@ export function statusFilter(status) {
     };
     return statusMap[status]
 }
-
-export function deliveryStatusFilter(status) {
-    const deliveryStatusMap = {
-        0: '快递收件（揽件）',
-        1: '在途中',
-        2: '派件中',
-        3: '已签收',
-        4: '派送失败（拒签等）'
-    };
-    return deliveryStatusMap[status];
-}
-
-export function expressTypeFilter(type) {
-    const expressTypeMap = {
-        'EMS': '邮政EMS',
-        'HTKY': '百世快递',
-        'DEPPON': '德邦物流',
-        'GTO': '国通快递',
-        'KYEXPRESS': '跨越速运',
-        'STO': '申通快递',
-        'SFEXPRESS': '顺丰速运',
-        'TTKDEX': '天天快递',
-        'YTO': '圆通速递',
-        'YUNDA': '韵达快递',
-        'ZJS': '宅急送',
-        'ZTO': '中通快递'
-    };
-    return expressTypeMap[type];
-}
