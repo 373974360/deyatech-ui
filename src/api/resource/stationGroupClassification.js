@@ -48,5 +48,29 @@ export function getStationGroupClassificationCascader(query) {
     });
 }
 
+export function isNameExist(query) {
+    return request({
+        url: '/manage/resource/stationGroupClassification/isNameExist',
+        method: 'get',
+        params: query
+    });
+}
+
+export function isEnglishNameExist(query) {
+    return request({
+        url: '/manage/resource/stationGroupClassification/isEnglishNameExist',
+        method: 'get',
+        params: query
+    });
+}
+
+export function hasStationOrClassification(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/resource/stationGroupClassification/hasStationOrClassification',
+        method: 'post',
+        data
+    })
+}
 
 

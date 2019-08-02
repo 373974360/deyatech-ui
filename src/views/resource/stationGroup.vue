@@ -3,6 +3,11 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
+                    <el-form-item >
+                        <el-cascader :options="stationGroupClassificationCascader"
+                                     v-model="listQuery.stationGroupClassificationId"
+                                     clearable placeholder="请选择分类" style="width: 300px;" :size="searchSize"></el-cascader>
+                    </el-form-item>
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
                     </el-form-item>
@@ -64,45 +69,50 @@
                 <el-form ref="stationGroupDialogForm" class="deyatech-form" :model="stationGroup" label-position="right"
                          label-width="80px" :rules="stationGroupRules">
                     <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="网站分类">
+                                <el-cascader :options="stationGroupClassificationCascader"
+                                             v-model="stationGroup.stationGroupClassificationId"
+                                             clearable placeholder="请选择分类" style="width: 100%;" ></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="网站名称" prop="name">
-                                <el-input v-model="stationGroup.name"></el-input>
+                                <el-input v-model="stationGroup.name" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="englishName">
-                                <el-input v-model="stationGroup.englishName"></el-input>
+                                <el-input v-model="stationGroup.englishName" maxlength="20"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="网站简称" prop="abbreviation">
-                                <el-input v-model="stationGroup.abbreviation"></el-input>
+                                <el-input v-model="stationGroup.abbreviation" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="描述" prop="description">
-                                <el-input v-model="stationGroup.description"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
                                 <el-input v-model="stationGroup.sortNo"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="分类编号" prop="stationGroupClassificationId">
-                                <el-input v-model="stationGroup.stationGroupClassificationId"></el-input>
+
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="描述" prop="description">
+                                <el-input type="textarea" v-model="stationGroup.description" :rows="3" maxlength="1000"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="stationGroup.remark" :rows="3"/>
+                                <el-input type="textarea" v-model="stationGroup.remark" :rows="3" maxlength="400"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -124,12 +134,69 @@
     import {
         getStationGroupList,
         createOrUpdateStationGroup,
-        delStationGroups
+        delStationGroups,
+        isNameExist,
+        isEnglishNameExist,
+        isAbbreviationExist
     } from '@/api/resource/stationGroup';
-
+    import {getStationGroupClassificationCascader} from '@/api/resource/stationGroupClassification';
+    import {isEnglish} from '@/util/validate';
     export default {
         name: 'stationGroup',
         data() {
+            const checkName = (rule, value, callback) => {
+                if (!this.stationGroup.stationGroupClassificationId) {
+                    callback();
+                    return;
+                }
+                isNameExist({id: this.stationGroup.id, classificationId: this.stationGroup.stationGroupClassificationId, name: this.stationGroup.name}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                        return;
+                    }
+                    callback();
+                }).catch(() => {
+                });
+            };
+            const checkEnglishName = (rule, value, callback) => {
+                if (!isEnglish(value)) {
+                    callback(new Error('只能输入英文字母'));
+                    return;
+                }
+                if (!this.stationGroup.stationGroupClassificationId) {
+                    callback();
+                    return;
+                }
+                isEnglishNameExist({id: this.stationGroup.id, classificationId: this.stationGroup.stationGroupClassificationId, englishName: this.stationGroup.englishName}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                        return;
+                    }
+                    callback();
+                }).catch(() => {
+                });
+            };
+            const checkAbbreviation = (rule, value, callback) => {
+                if (!this.stationGroup.stationGroupClassificationId) {
+                    callback();
+                    return;
+                }
+                isAbbreviationExist({id: this.stationGroup.id, classificationId: this.stationGroup.stationGroupClassificationId, abbreviation: this.stationGroup.abbreviation}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                        return;
+                    }
+                    callback();
+                }).catch(() => {
+                });
+            };
+            const checkSortNo = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入整数'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 stationGroupList: undefined,
                 total: undefined,
@@ -137,7 +204,8 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    name: undefined,
+                    stationGroupClassificationId: undefined
                 },
                 stationGroup: {
                     id: undefined,
@@ -150,19 +218,23 @@
                 },
                 stationGroupRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '网站名称'}
+                        {required: true, message: this.$t("table.pleaseInput") + '网站名称'},
+                        {validator: checkName, trigger: 'blur'}
                     ],
                     englishName: [
-                        {required: true, message: this.$t("table.pleaseInput") + '网站英文名称'}
+                        {required: true, message: this.$t("table.pleaseInput") + '网站英文名称'},
+                        {validator: checkEnglishName, trigger: 'blur'}
                     ],
                     abbreviation: [
-                        {required: true, message: this.$t("table.pleaseInput") + '网站简称'}
+                        {required: true, message: this.$t("table.pleaseInput") + '网站简称'},
+                        {validator: checkAbbreviation, trigger: 'blur'}
                     ],
                     description: [
                         {required: true, message: this.$t("table.pleaseInput") + '描述'}
                     ],
                     sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'}
+                        {required: true, message: this.$t("table.pleaseInput") + '排序号'},
+                        {validator: checkSortNo, trigger: ['blur','change']}
                     ],
                     stationGroupClassificationId: [
                         {required: true, message: this.$t("table.pleaseInput") + '分类编号'}
@@ -171,7 +243,8 @@
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                stationGroupClassificationCascader: []
             }
         },
         computed: {
@@ -193,8 +266,16 @@
         },
         created(){
             this.reloadList();
+            this.getStationGroupClassificationCascader(null);
         },
         methods: {
+            getStationGroupClassificationCascader(id){
+                this.submitLoading = true;
+                getStationGroupClassificationCascader(id).then(response => {
+                    this.submitLoading = false;
+                    this.stationGroupClassificationCascader = response.data;
+                })
+            },
             resetSearch(){
                 this.listQuery.name = undefined;
             },
