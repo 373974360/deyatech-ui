@@ -40,4 +40,11 @@ export function getStationGroupList(query) {
     });
 }
 
+export function getAllStationGroup(query) {
+    return request({
+        url: '/manage/resource/stationGroup/listByStationGroup',
+        method: 'get',
+        params: query
+    });
+}
 
