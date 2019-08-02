@@ -39,6 +39,15 @@ export function getStationGroupList(query) {
         params: query
     });
 }
+
+export function getAllStationGroup(query) {
+    return request({
+        url: '/manage/resource/stationGroup/listByStationGroup',
+        method: 'get',
+        params: query
+    });
+}
+
 export function pageSelectByStationGroup(query) {
     return request({
         url: '/manage/resource/stationGroup/pageSelectByStationGroup',
