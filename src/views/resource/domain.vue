@@ -4,6 +4,14 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
+                        <el-select v-model="listQuery.stationGroupId" :size="searchSize">
+                            <el-option v-for = "o in stationGroups"
+                                       :label="o.name"
+                                       :value="o.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
@@ -19,37 +27,46 @@
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
             <el-table :data="domainList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="域名名称" prop="name">
+                <el-table-column align="center" label="所属网站" prop="stationGroupName"/>
+                <el-table-column align="center" label="域名" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="描述" prop="description"/>
-                <el-table-column align="center" label="标志" prop="sign"/>
-                <el-table-column align="center" label="排序号" prop="sortNo"/>
-                <el-table-column align="center" label="站群编号" prop="stationGroupId"/>
                 <el-table-column align="center" label="端口" prop="port"/>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <el-table-column align="center" label="主域名" prop="sign">
+                    <template slot-scope="scope">
+                        <el-tag v-if="scope.row.sign == '1'">{{scope.row.enable | enums('YesNoEnum')}}</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="排序号" prop="sortNo"/>
+                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="100">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                            {{scope.row.enable | enums('EnableEnum')}}
+                            {{scope.row.enable == 1 ? "启用" : (scope.row.enable == 0 ? "停用" : "") }}
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
+                                   @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
+                        <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
+                                   @click.stop="btnCtrl(scope.row, 'run')"></el-button>
+                        <el-button v-if="scope.row.sign == '1'" title="主域名" type="info" icon="el-icon-star-on" :size="btnSize" circle
+                                   @click.stop="btnSign(scope.row)"></el-button>
+                        <el-button v-else-if="scope.row.sign == '0'" title="主域名" type="info" icon="el-icon-star-off" :size="btnSize" circle
+                                   @click.stop="btnSign(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -66,44 +83,57 @@
                          label-width="80px" :rules="domainRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="域名名称" prop="name">
-                                <el-input v-model="domain.name"></el-input>
+                            <el-form-item label="所属网站" prop="stationGroupId">
+                                <el-select v-model="domain.stationGroupId" style="width: 100%;">
+                                    <el-option v-for = "o in stationGroups"
+                                               :label="o.name"
+                                               :value="o.id">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="描述" prop="description">
-                                <el-input v-model="domain.description"></el-input>
+                            <el-form-item label="域名" prop="name">
+                                <el-input v-model="domain.name" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
+
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="标志" prop="sign">
-                                <el-input v-model="domain.sign"></el-input>
+                            <el-form-item label="端口" prop="port">
+                                <el-input v-model="domain.port" maxlength="5"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
-                                <el-input v-model="domain.sortNo"></el-input>
+                                <el-input v-model="domain.sortNo" maxlength="3"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="站群编号" prop="stationGroupId">
-                                <el-input v-model="domain.stationGroupId"></el-input>
+                            <el-form-item label="主域名" prop="sign">
+                                <el-select v-model="domain.sign">
+                                    <el-option v-for = "o in loadEnum('YesNoEnum')"
+                                        :label="o.value"
+                                        :value="o.code">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="端口" prop="port">
-                                <el-input v-model="domain.port"></el-input>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="描述" prop="description">
+                                <el-input type="textarea" v-model="domain.description" :rows="3" maxlength="400"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="domain.remark" :rows="3"/>
+                                <el-input type="textarea" v-model="domain.remark" :rows="3" maxlength="400"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -125,12 +155,51 @@
     import {
         getDomainList,
         createOrUpdateDomain,
-        delDomains
+        delDomains,
+        isNameExist,
+        runOrStopDomainById,
+        updateSignByIdAndStationGroupId
     } from '@/api/resource/domain';
+    import {getStore} from '@/util/store';
+    import {
+        getAllStationGroup
+    } from '@/api/resource/stationGroup';
 
     export default {
         name: 'domain',
         data() {
+            const checkName = (rule, value, callback) => {
+                this.$refs['domainDialogForm'].validateField('stationGroupId', errorMsg => {
+                    if (!errorMsg) {
+                        isNameExist({
+                            id: this.domain.id,
+                            stationGroupId: this.domain.stationGroupId,
+                            name: this.domain.name}).then(response => {
+                            if (response.status == 200 && response.data) {
+                                callback(new Error(response.message));
+                            } else {
+                                callback();
+                            }
+                        }).catch(() => {});
+                    } else {
+                        callback(new Error("没有选择所属网站，域名无法校验"));
+                    }
+                });
+            };
+            const checkPort = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入整数'));
+                } else {
+                    callback();
+                }
+            };
+            const checkSortNo = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入整数'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 domainList: undefined,
                 total: undefined,
@@ -138,7 +207,8 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    name: undefined,
+                    stationGroupId: undefined
                 },
                 domain: {
                     id: undefined,
@@ -151,7 +221,8 @@
                 },
                 domainRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '域名名称'}
+                        {required: true, message: this.$t("table.pleaseInput") + '域名名称'},
+                        {validator: checkName, trigger: 'blur'}
                     ],
                     description: [
                         {required: true, message: this.$t("table.pleaseInput") + '描述'}
@@ -160,19 +231,22 @@
                         {required: true, message: this.$t("table.pleaseInput") + '标志'}
                     ],
                     sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'}
+                        {required: true, message: this.$t("table.pleaseInput") + '排序号'},
+                        {validator: checkSortNo, trigger: ['blur','change']}
                     ],
                     stationGroupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '站群编号'}
+                        {required: true, message: this.$t("table.pleaseInput") + '所属网站'}
                     ],
                     port: [
-                        {required: true, message: this.$t("table.pleaseInput") + '端口'}
+                        {required: true, message: this.$t("table.pleaseInput") + '端口'},
+                        {validator: checkPort, trigger: ['blur','change']}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                stationGroups: []
             }
         },
         computed: {
@@ -194,9 +268,22 @@
         },
         created(){
             this.reloadList();
+            this.loadStationGroup();
         },
         methods: {
+            loadStationGroup() {
+                getAllStationGroup().then(response => {
+                    console.dir(response);
+                    if (response.status == 200) {
+                        this.stationGroups = response.data;
+                    }
+                }).catch(()=>{});
+            },
+            loadEnum(name) {
+                return getStore({name: 'enums'})[name]
+            },
             resetSearch(){
+                this.listQuery.stationGroupId = undefined;
                 this.listQuery.name = undefined;
             },
             reloadList(){
@@ -250,6 +337,27 @@
                         this.doDelete(ids);
                     })
                 }
+            },
+            btnCtrl(row, flag){
+                let msg = flag === 'run' ? "启用" : "停用";
+                runOrStopDomainById({
+                    id: row.id,
+                    flag: flag
+                }).then((response) => {
+                    console.dir(response);
+                    this.reloadList();
+                    this.$message.success(msg + "操作成功");
+                })
+            },
+            btnSign(row){
+                updateSignByIdAndStationGroupId({
+                    id: row.id,
+                    stationGroupId: row.stationGroupId
+                }).then((response) => {
+                    console.dir(response);
+                    this.reloadList();
+                    this.$message.success("主域名操作成功");
+                })
             },
             doCreate(){
                 this.$refs['domainDialogForm'].validate(valid => {

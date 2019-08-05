@@ -76,3 +76,11 @@ export function isAbbreviationExist(query) {
         params: query
     });
 }
+export function runOrStopStationById(query) {
+    return request({
+        url: '/manage/resource/stationGroup/runOrStopStationById',
+        method: 'get',
+        params: query
+    });
+}
+
