@@ -15,7 +15,7 @@ import website from '@/config/website';
 import NProgress from 'nprogress' // progress bar
 import Qs from 'qs'
 import 'nprogress/nprogress.css' // progress bar style
-axios.defaults.timeout = 10000;
+axios.defaults.timeout = 50000;
 //返回其他状态吗
 axios.defaults.validateStatus = function (status) {
     return status >= 200 && status <= 500; // 默认的
