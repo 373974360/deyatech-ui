@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select v-model="listQuery.stationGroupId" :size="searchSize">
+                        <el-select v-model="listQuery.stationGroupId" :size="searchSize" placeholder="请选择网站">
                             <el-option v-for = "o in stationGroups"
                                        :label="o.name"
                                        :value="o.id">
@@ -12,7 +12,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入域名" v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -34,17 +34,13 @@
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="center" label="所属网站" prop="stationGroupName"/>
-                <el-table-column align="center" label="域名" prop="name">
+                <el-table-column align="left" label="域名" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
+                        <el-tag v-if="scope.row.sign == '1'" style="margin-left: 20px;">主域名</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="端口" prop="port"/>
-                <el-table-column align="center" label="主域名" prop="sign">
-                    <template slot-scope="scope">
-                        <el-tag v-if="scope.row.sign == '1'">{{scope.row.enable | enums('YesNoEnum')}}</el-tag>
-                    </template>
-                </el-table-column>
                 <el-table-column align="center" label="排序号" prop="sortNo"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="100">
                     <template slot-scope="scope">
@@ -57,9 +53,9 @@
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.sign == '1'"
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
-                        <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
+                        <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle :disabled="scope.row.sign == '1'"
                                    @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
                         <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
                                    @click.stop="btnCtrl(scope.row, 'run')"></el-button>
@@ -273,7 +269,6 @@
         methods: {
             loadStationGroup() {
                 getAllStationGroup().then(response => {
-                    console.dir(response);
                     if (response.status == 200) {
                         this.stationGroups = response.data;
                     }
@@ -340,23 +335,34 @@
             },
             btnCtrl(row, flag){
                 let msg = flag === 'run' ? "启用" : "停用";
+                this.listLoading = true;
                 runOrStopDomainById({
                     id: row.id,
                     flag: flag
                 }).then((response) => {
-                    console.dir(response);
-                    this.reloadList();
-                    this.$message.success(msg + "操作成功");
-                })
+                    if (response.status == 200 && response.data) {
+                        this.reloadList();
+                        this.$message.success(msg + "操作成功");
+                    } else {
+                        this.listLoading = false;
+                        this.$message.error(msg + "操作失败");
+                    }
+                }).catch(error=>{
+                    this.listLoading = false;
+                    this.$message.error(error);
+                });
             },
             btnSign(row){
                 updateSignByIdAndStationGroupId({
                     id: row.id,
                     stationGroupId: row.stationGroupId
                 }).then((response) => {
-                    console.dir(response);
-                    this.reloadList();
-                    this.$message.success("主域名操作成功");
+                    if (response.status == 200 && response.data) {
+                        this.reloadList();
+                        this.$message.success("设置主域名成功");
+                    } else {
+                        this.$message.error("设置主域名失败");
+                    }
                 })
             },
             doCreate(){
@@ -387,10 +393,18 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delDomains(ids).then(() => {
-                    this.reloadList();
-                    this.$message.success(this.$t("table.deleteSuccess"));
-                })
+                delDomains(ids).then((response) => {
+                    if (response.status == 200 && response.data) {
+                        this.reloadList();
+                        this.$message.success(this.$t("table.deleteSuccess"));
+                    } else {
+                        this.listLoading = false;
+                        this.$message.error("域名删除失败");
+                    }
+                }).catch(error=>{
+                    this.listLoading = false;
+                    this.$message.error(error);
+                });
             },
             resetDomain(){
                 this.domain = {
