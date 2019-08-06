@@ -15,7 +15,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -163,6 +163,9 @@
                 }
             }
             const validatePagePath = (rule, value, callback) => {
+                if (!this.page.pageEnglishName) {
+                    callback(new Error('请先输入英文名称'))
+                }
                 const regExp = /^(\/([\u4E00-\u9FA5]|\w)+)*\/$/;
                 if (!regExp.test(value)) {
                     callback(new Error("页面路径以‘/’开头和结尾，不许出现连续多个‘/’及特殊符号"))
@@ -170,7 +173,7 @@
                 }
                 this.page.siteId = this.listQuery.siteId;
                 existsPagePath(this.page).then(response => {
-                    if (response.status != 200 ) {
+                    if (response.status != 200) {
                         callback(new Error(response.message))
                     } else {
                         callback()
@@ -270,14 +273,11 @@
             resetSearch(){
                 this.listQuery.siteId = undefined;
             },
-            searchReloadList() {
+            reloadList(){
                 if (!this.listQuery.siteId) {
                     this.$message.warning("请先选择站点");
                     return
                 }
-                this.reloadList();
-            },
-            reloadList(){
                 this.listLoading = true;
                 this.pageList = undefined;
                 this.total = undefined;
