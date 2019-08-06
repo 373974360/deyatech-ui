@@ -39,5 +39,25 @@ export function getDomainList(query) {
         params: query
     });
 }
-
+export function isNameExist(query) {
+    return request({
+        url: '/manage/resource/domain/isNameExist',
+        method: 'get',
+        params: query
+    });
+}
+export function runOrStopDomainById(query) {
+    return request({
+        url: '/manage/resource/domain/runOrStopDomainById',
+        method: 'get',
+        params: query
+    });
+}
+export function updateSignByIdAndStationGroupId(query) {
+    return request({
+        url: '/manage/resource/domain/updateSignByIdAndStationGroupId',
+        method: 'get',
+        params: query
+    });
+}
 

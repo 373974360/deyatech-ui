@@ -26,7 +26,7 @@
             </el-table-tree-column>
             <el-table-column align="center" label="英文名称" prop="englishName"/>
             <el-table-column align="center" label="排序号" prop="sortNo"/>
-            <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+            <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="100">
                 <template slot-scope="scope">
                     <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                         {{scope.row.enable | enums('EnableEnum')}}
@@ -50,23 +50,17 @@
             <el-form ref="stationGroupClassificationDialogForm" class="deyatech-form" :model="stationGroupClassification" label-position="right"
                      label-width="80px" :rules="stationGroupClassificationRules">
                 <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item :label="$t('table.parent')">
+                    <el-col :span="24">
+                        <el-form-item label="上级分类">
                             <el-cascader :options="stationGroupClassificationCascader" v-model="stationGroupClassificationTreePosition"
-                                         show-all-levels expand-trigger="click" clearable
-                                         change-on-select></el-cascader>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="分类名称" prop="name">
-                            <el-input v-model.trim="stationGroupClassification.name" maxlength="30"/>
+                                         change-on-select show-all-levels expand-trigger="click" clearable style="width: 100%;" ></el-cascader>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item label="排序号" prop="sortNo">
-                            <el-input-number v-model.trom="stationGroupClassification.sortNo" :min="1" :max="999" :precision="0" :step="1"/>
+                        <el-form-item label="分类名称" prop="name">
+                            <el-input v-model.trim="stationGroupClassification.name" maxlength="30"/>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -76,9 +70,16 @@
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
+                    <el-col :span="12">
+                        <el-form-item label="排序号" prop="sortNo">
+                            <el-input v-model.trim="stationGroupClassification.sortNo" maxlength="3" /><!--:min="1" :max="999" :precision="0" :step="1"-->
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item :label="$t('table.remark')">
-                            <el-input type="textarea" v-model.trom="stationGroupClassification.remark" :rows="3" maxlength="200"/>
+                            <el-input type="textarea" v-model.trim="stationGroupClassification.remark" :rows="3" maxlength="400"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -97,7 +98,10 @@
         getStationGroupClassificationTree,
         getStationGroupClassificationCascader,
         createOrUpdateStationGroupClassification,
-        delStationGroupClassifications} from '@/api/resource/stationGroupClassification';
+        delStationGroupClassifications,
+        isNameExist,
+        isEnglishNameExist,
+        hasStationOrClassification} from '@/api/resource/stationGroupClassification';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
     import {isEnglish} from '@/util/validate';
@@ -105,11 +109,36 @@
     export default {
         name: 'stationGroupClassification',
         data() {
+            const checkName = (rule, value, callback) => {
+                isNameExist({id: this.stationGroupClassification.id, parentId: this.stationGroupClassification.parentId, name: this.stationGroupClassification.name}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                        return;
+                    }
+                    callback();
+                }).catch(() => {
+                });
+            };
             const checkEnglishName = (rule, value, callback) => {
                 if (!isEnglish(value)) {
                     callback(new Error('只能输入英文字母'));
+                    return;
                 }
-                callback();
+                isEnglishNameExist({id: this.stationGroupClassification.id, parentId: this.stationGroupClassification.parentId, englishName: this.stationGroupClassification.englishName}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                        return;
+                    }
+                    callback();
+                }).catch(() => {
+                });
+            };
+            const checkSortNo = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入整数'));
+                } else {
+                    callback();
+                }
             };
             return {
                 stationGroupClassificationList: undefined,
@@ -129,17 +158,19 @@
                 selectedRows: [],
                 stationGroupClassificationRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '分类名称'}
+                        {required: true, message: this.$t("table.pleaseInput") + '分类名称'},
+                        {validator: checkName, trigger: 'blur'}
                     ],
                     englishName: [
                         {required: true, message: this.$t("table.pleaseInput") + '分类英文名称'},
-                        {validator: checkEnglishName, trigger: ['blur','change']}
+                        {validator: checkEnglishName, trigger: 'blur'}
                     ],
                     parentId: [
                         {required: true, message: this.$t("table.pleaseInput") + '上级分类编号'}
                     ],
                     sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'}
+                        {required: true, message: this.$t("table.pleaseInput") + '排序号'},
+                        {validator: checkSortNo, trigger: ['blur','change']}
                     ]
                 },
                 lastExpanded: undefined,
@@ -183,7 +214,7 @@
             }
         },
         methods: {
-            reloadList(){
+            reloadList() {
                 this.listLoading = true;
                 getStationGroupClassificationTree().then(response => {
                     this.tableReset = false;
@@ -267,11 +298,17 @@
                 this.$refs['stationGroupClassificationDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateStationGroupClassification(this.stationGroupClassification).then(() => {
-                            this.lastExpanded = this.stationGroupClassification.treePosition;
-                            this.resetStationGroupClassificationDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
-                        })
+                        createOrUpdateStationGroupClassification(this.stationGroupClassification).then((response) => {
+                            if (response.status == 200) {
+                                this.lastExpanded = this.stationGroupClassification.treePosition;
+                                this.resetStationGroupClassificationDialogAndList();
+                                this.$message.success(this.$t("table.createSuccess"));
+                            } else {
+                                this.$message.error(response.message);
+                            }
+                        }).catch(() => {
+                            this.submitLoading = false;
+                        });
                     } else {
                         return false;
                     }
@@ -281,11 +318,18 @@
                 this.$refs['stationGroupClassificationDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateStationGroupClassification(this.stationGroupClassification).then(() => {
-                            this.lastExpanded = this.stationGroupClassification.treePosition;
-                            this.resetStationGroupClassificationDialogAndList();
-                            this.$message.success(this.$t("table.updateSuccess"));
-                        })
+                        createOrUpdateStationGroupClassification(this.stationGroupClassification).then((response) => {
+                            if (response.status == 200) {
+                                this.lastExpanded = this.stationGroupClassification.treePosition;
+                                this.resetStationGroupClassificationDialogAndList();
+                                this.$message.success(this.$t("table.updateSuccess"));
+                            } else {
+                                this.submitLoading = false;
+                                this.$message.error(response.message);
+                            }
+                        }).catch(() => {
+                            this.submitLoading = false;
+                        });
                     } else {
                         return false;
                     }
@@ -293,10 +337,26 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delStationGroupClassifications(ids).then(() => {
-                    this.reloadList();
-                    this.$message.success(this.$t("table.deleteSuccess"));
-                })
+                hasStationOrClassification(ids).then(response => {
+                    if (response.status == 200) {
+                        if (response.data) {
+                            this.listLoading = false;
+                            this.$message.error(response.message);
+                        } else {
+                            delStationGroupClassifications(ids).then((response) => {
+                                if (response.status == 200) {
+                                    this.reloadList();
+                                    this.$message.success(this.$t("table.deleteSuccess"));
+                                } else {
+                                    this.listLoading = false;
+                                    this.$message.error(response.message);
+                                }
+                            })
+                        }
+                    }
+                }).catch(() => {
+                    this.listLoading = false;
+                });
             },
             resetStationGroupClassification(){
                 this.stationGroupClassification = {
