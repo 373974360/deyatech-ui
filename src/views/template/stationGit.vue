@@ -26,7 +26,8 @@
                                    :show-file-list="false"
                                    :on-success="handleAvatarSuccess"
                                    :on-error="handlerAvatarError"
-                                   :before-upload="beforeAvatarUpload">
+                                   :before-upload="beforeAvatarUpload"
+                                   :disabled="uploadDesabled">
                             <el-button :size="searchSize" icon="el-icon-upload" @click="handlerSiteId">上传</el-button>
                         </el-upload>
                     </el-form-item>
@@ -150,6 +151,7 @@
                 dialogWindow: true,
                 uploadAction: this.$store.state.common.uploadUrl,
                 acceptTypes: 'application/zip',
+                uploadDesabled: true
             }
         },
         computed: {
@@ -220,6 +222,7 @@
                 this.gitUrlInputDisabled = false;
                 this.stationGitSiteId = undefined;
                 this.filePath = '';
+                this.uploadDesabled = false;
                 for(const stationGit of this.stationGitList){
                     if(stationGit.tempSiteId == val){
                         this.stationGit.gitUrl = stationGit.gitUrl;
@@ -312,7 +315,6 @@
                 return isZip;
             },
             handlerSiteId(){
-                console.log(this.stationGit.siteId);
                 if(this.stationGit.siteId == undefined){
                     this.$message.error('请选择站点!');
                     return false;
