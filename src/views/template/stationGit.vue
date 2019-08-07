@@ -120,7 +120,7 @@
                 stationGit: {
                     id: undefined,
                     gitUrl: undefined,
-                    siteId: undefined
+                    siteId: this.$store.state.common.siteId
                 },
                 stationGitRules: {
                     siteId: [
