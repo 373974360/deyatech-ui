@@ -61,5 +61,21 @@ export function listTemplateFiles(siteId,path) {
         params: query
     });
 }
+export function getFileContent(path) {
+    const query = {path:path};
+    return request({
+        url: '/manage/template/stationGit/getFileContent',
+        method: 'get',
+        params: query
+    });
+}
+export function unzip(filePath,siteId) {
+    const query = {filePath:filePath,siteId:siteId};
+    return request({
+        url: '/manage/template/stationGit/unzip',
+        method: 'get',
+        params: query
+    });
+}
 
 

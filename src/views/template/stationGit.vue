@@ -18,7 +18,21 @@
                     </el-form-item>
                     <el-form-item>
                         <el-button v-if="btnEnable.sync" type="primary" icon="el-icon-refresh" :size="searchSize" @click="doCreateOrUpdate" :loading="submitLoading">同步</el-button>
-                        <el-button v-if="btnEnable.upload" icon="el-icon-upload" :size="searchSize">上传</el-button>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-upload v-if="btnEnable.upload"
+                                   :action="this.$store.state.common.uploadUrl"
+                                   :accept="this.$store.state.common.imageAccepts"
+                                   :show-file-list="false"
+                                   :on-success="handleAvatarSuccess"
+                                   :on-error="handlerAvatarError"
+                                   :before-upload="beforeAvatarUpload"
+                                   :disabled="uploadDesabled">
+                            <el-button :size="searchSize" icon="el-icon-upload" @click="handlerSiteId">上传</el-button>
+                        </el-upload>
+                    </el-form-item>
+                    <el-form-item>
+                        <div style="font-size:12px;color: red;">上传zip格式的压缩包</div>
                     </el-form-item>
                 </el-form>
             </div>
@@ -26,12 +40,9 @@
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="left" label="文件名称" prop="fileName">
                     <template slot-scope="scope">
-                        <template v-if="scope.row.fileType=='file'">
-                            <i class="iconfont icon-file-fill"></i>
-                        </template>
-                        <template v-else>
-                            <i class="iconfont icon-folder-fill"></i>
-                        </template>
+                        <i v-if="scope.row.fileType=='file'" class="el-icon-tickets"></i>
+                        <i v-else-if="scope.row.fileType=='folder' &&scope.row.fileName=='...'" class="el-icon-back"></i>
+                        <i v-else class="el-icon-news"></i>
                         <a href="javascript:void(0)"
                            @click="scope.row.fileType=='folder' ? getChildFiles(scope.row.filePath) : getFileContext(scope.row)">
                             <span style="margin-left: 10px; font-size: 14px;">{{ scope.row.fileName }}</span>
@@ -41,8 +52,9 @@
                 <el-table-column align="center" label="添加时间" prop="lastModified"/>
             </el-table>
         </div>
+        <!-- Git账户登录 -->
         <el-dialog title="Git登录" :visible.sync="dialogVisible"
-                   :close-on-click-modal="closeOnClickModal" @close="closePageDialog">
+                   :close-on-click-modal="closeOnClickModal" @close="closeStationGitDialog">
             <el-form ref="gitForm" class="deyatech-form" :model="synchronize" label-position="right"
                      label-width="80px" :rules="synchronizeRules">
                 <el-row :gutter="20" :span="24">
@@ -62,8 +74,13 @@
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" :size="btnSize" :loading="submitLoading" @click="doSync">{{$t('table.confirm')}}</el-button>
-                <el-button :size="btnSize" @click="closePageDialog">{{$t('table.cancel')}}</el-button>
+                <el-button :size="btnSize" @click="closeStationGitDialog">{{$t('table.cancel')}}</el-button>
             </span>
+        </el-dialog>
+        <!-- 文件湘西内容 -->
+        <el-dialog title="内容" :visible.sync="dialogContentVisible"
+                   :close-on-click-modal="closeOnClickModal" @close="closeContentDialog" width="100%" :fullscreen="dialogWindow">
+            <codemirror :value="contentCode" :options="options" style="border:1px solid #cccccc;"></codemirror>
         </el-dialog>
     </basic-container>
 </template>
@@ -71,16 +88,25 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {deepClone} from '@/util/util';
     import {
         createOrUpdateStationGit,
         listByStationGroupAndStationGit,
         doSync,
-        listTemplateFiles
+        listTemplateFiles,
+        getFileContent,
+        unzip
     } from '@/api/template/stationGit';
+    import { codemirror } from 'vue-codemirror-lite';
+    require('codemirror/mode/vue/vue.js')
+    require('codemirror/mode/javascript/javascript.js')
+    require('codemirror/mode/xml/xml.js')
+    require('codemirror/mode/htmlmixed/htmlmixed.js')
 
     export default {
         name: 'stationGit',
+        components: {
+            codemirror
+        },
         data() {
             return {
                 params: {},
@@ -118,7 +144,14 @@
                 },
                 submitLoading: false,
                 dialogVisible: false,
-                dialogTitle: undefined
+                dialogTitle: undefined,
+                dialogContentVisible: false,
+                contentCode: undefined,
+                mode: undefined,
+                dialogWindow: true,
+                uploadAction: this.$store.state.common.uploadUrl,
+                acceptTypes: 'application/zip',
+                uploadDesabled: true
             }
         },
         computed: {
@@ -135,6 +168,15 @@
                     sync: this.permission.stationGit_sync,
                     upload: this.permission.stationGit_upload
                 };
+            },
+            options: function () {
+                return {
+                    mode: this.mode,
+                    tabSize: 2,
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    extraKeys: {'Ctrl-Space': 'autocomplete'},
+                }
             }
         },
         created(){
@@ -155,7 +197,18 @@
                 this.listTemplateFiles();
             },
             getFileContext (row) {
-
+                this.mode = row.filePath.substring(row.filePath.indexOf(".")+1,row.filePath.length);
+                if(this.mode == 'js'){
+                    this.mode = 'javascript';
+                }
+                if(this.mode == 'html'){
+                    this.mode = 'htmlmixed';
+                }
+                this.dialogContentVisible = true;
+                this.contentCode = undefined;
+                getFileContent(row.filePath).then(response => {
+                    this.contentCode = response.data;
+                })
             },
             listByStationGroupAndStationGit(){
                 this.stationGitList = [];
@@ -168,6 +221,8 @@
                 this.stationGit.siteId = val;
                 this.gitUrlInputDisabled = false;
                 this.stationGitSiteId = undefined;
+                this.filePath = '';
+                this.uploadDesabled = false;
                 for(const stationGit of this.stationGitList){
                     if(stationGit.tempSiteId == val){
                         this.stationGit.gitUrl = stationGit.gitUrl;
@@ -226,11 +281,50 @@
                     passWord: undefined
                 }
             },
-            closePageDialog() {
+            closeStationGitDialog() {
                 this.dialogVisible = false;
+            },
+            closeContentDialog() {
+                this.dialogContentVisible = false;
+            },
+            handleAvatarSuccess(res, file, fileList) {
+                if (res.status === 200 && res.data.state === 'SUCCESS') {
+                    unzip(res.data.filePath,this.stationGit.siteId).then(response => {
+                        if(response.data){
+                            this.$message.success('上传成功！');
+                            this.listTemplateFiles();
+                        }else{
+                            this.$message.error('上传失败！');
+                        }
+                    })
+                } else {
+                    this.$message.error('上传失败！');
+                }
+            },
+            handlerAvatarError(err, file, fileList) {
+                this.$message.error("网络不稳定，上传失败");
+            },
+            beforeAvatarUpload(file) {
+                let isZip = this.acceptTypes.includes(file.type);
+                if(file.type == ''){
+                    isZip = false;
+                }
+                if (!isZip) {
+                    this.$message.error('请上传zip格式的文件!');
+                }
+                return isZip;
+            },
+            handlerSiteId(){
+                if(this.stationGit.siteId == undefined){
+                    this.$message.error('请选择站点!');
+                    return false;
+                }
             }
         }
     }
 </script>
+<style>
+    .CodeMirror{height:100%;}
+</style>
 
 
