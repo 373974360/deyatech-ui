@@ -3,13 +3,11 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || stationCount > 0">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
@@ -19,7 +17,7 @@
                   @selection-change="handleSelectionChange" v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
-                                  parentKey="parentId" prop="name" label="分类名称" width="200">
+                                  parentKey="parentId" prop="name" label="名称">
                 <template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                 </template>
@@ -35,7 +33,7 @@
             </el-table-column>
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                 <template slot-scope="scope">
-                    <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
+                    <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle :disabled="scope.row.stationCount > 0"
                                @click.stop.safe="btnCreate(scope.row)"></el-button>
                     <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                @click.stop.safe="btnUpdate(scope.row)"></el-button>
@@ -52,14 +50,14 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item label="上级分类">
-                            <el-cascader :options="stationGroupClassificationCascader" v-model="stationGroupClassificationTreePosition"
+                            <el-cascader :options="stationGroupClassificationCascader" v-model.trim="stationGroupClassificationTreePosition"
                                          change-on-select show-all-levels expand-trigger="click" clearable style="width: 100%;" ></el-cascader>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item label="分类名称" prop="name">
+                        <el-form-item label="名称" prop="name">
                             <el-input v-model.trim="stationGroupClassification.name" maxlength="30"/>
                         </el-form-item>
                     </el-col>
@@ -72,7 +70,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="排序号" prop="sortNo">
-                            <el-input v-model.trim="stationGroupClassification.sortNo" maxlength="3" /><!--:min="1" :max="999" :precision="0" :step="1"-->
+                            <el-input v-model.trim="stationGroupClassification.sortNo" maxlength="3" />
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -156,6 +154,7 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 selectedRows: [],
+                stationCount: 0,
                 stationGroupClassificationRules: {
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '分类名称'},
@@ -237,6 +236,11 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.stationCount = 0;
+                console.dir(rows);
+                for(let r of rows) {
+                    this.stationCount += r.stationCount;
+                }
             },
             btnCreate(row){
                 this.resetStationGroupClassification();

@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select v-model="listQuery.stationGroupId" :size="searchSize" placeholder="请选择网站">
+                        <el-select v-model.trim="listQuery.stationGroupId" :size="searchSize" placeholder="请选择站群">
                             <el-option v-for = "o in stationGroups"
                                        :label="o.name"
                                        :value="o.id">
@@ -12,7 +12,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入域名" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入域名" v-model.trim="listQuery.name" clearable></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -33,7 +33,7 @@
             <el-table :data="domainList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="所属网站" prop="stationGroupName"/>
+                <el-table-column align="center" label="所属站群" prop="stationGroupName"/>
                 <el-table-column align="left" label="域名" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
@@ -79,8 +79,8 @@
                          label-width="80px" :rules="domainRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="所属网站" prop="stationGroupId">
-                                <el-select v-model="domain.stationGroupId" style="width: 100%;">
+                            <el-form-item label="所属站群" prop="stationGroupId">
+                                <el-select v-model.trim="domain.stationGroupId" style="width: 100%;">
                                     <el-option v-for = "o in stationGroups"
                                                :label="o.name"
                                                :value="o.id">
@@ -90,7 +90,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="域名" prop="name">
-                                <el-input v-model="domain.name" maxlength="30"></el-input>
+                                <el-input v-model.trim="domain.name" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
 
@@ -98,19 +98,19 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="端口" prop="port">
-                                <el-input v-model="domain.port" maxlength="5"></el-input>
+                                <el-input v-model.trim="domain.port" maxlength="5" :readonly="domain.port"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
-                                <el-input v-model="domain.sortNo" maxlength="3"></el-input>
+                                <el-input v-model.trim="domain.sortNo" maxlength="3"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="主域名" prop="sign">
-                                <el-select v-model="domain.sign">
+                                <el-select v-model.trim="domain.sign">
                                     <el-option v-for = "o in loadEnum('YesNoEnum')"
                                         :label="o.value"
                                         :value="o.code">
@@ -122,14 +122,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="描述" prop="description">
-                                <el-input type="textarea" v-model="domain.description" :rows="3" maxlength="400"></el-input>
+                                <el-input type="textarea" v-model.trim="domain.description" :rows="3" maxlength="400"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="domain.remark" :rows="3" maxlength="400"/>
+                                <el-input type="textarea" v-model.trim="domain.remark" :rows="3" maxlength="400"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -154,7 +154,8 @@
         delDomains,
         isNameExist,
         runOrStopDomainById,
-        updateSignByIdAndStationGroupId
+        updateSignByIdAndStationGroupId,
+        getNginxPort
     } from '@/api/resource/domain';
     import {getStore} from '@/util/store';
     import {
@@ -178,7 +179,7 @@
                             }
                         }).catch(() => {});
                     } else {
-                        callback(new Error("没有选择所属网站，域名无法校验"));
+                        callback(new Error("没有选择所属站群，域名无法校验"));
                     }
                 });
             };
@@ -231,7 +232,7 @@
                         {validator: checkSortNo, trigger: ['blur','change']}
                     ],
                     stationGroupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '所属网站'}
+                        {required: true, message: this.$t("table.pleaseInput") + '所属站群'}
                     ],
                     port: [
                         {required: true, message: this.$t("table.pleaseInput") + '端口'},
@@ -242,7 +243,8 @@
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
-                stationGroups: []
+                stationGroups: [],
+                nginxPort: ''
             }
         },
         computed: {
@@ -265,8 +267,15 @@
         created(){
             this.reloadList();
             this.loadStationGroup();
+            this.loadNginxPort();
         },
         methods: {
+            loadNginxPort(){
+                getNginxPort().then(response => {
+                    if (response.status == 200)
+                        this.nginxPort = response.data;
+                });
+            },
             loadStationGroup() {
                 getAllStationGroup().then(response => {
                     if (response.status == 200) {
@@ -306,6 +315,9 @@
                 this.resetDomain();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                if (!this.domain.port) {
+                    this.domain.port = this.nginxPort;
+                }
             },
             btnUpdate(row){
                 this.resetDomain();
@@ -314,6 +326,10 @@
                 } else {
                     this.domain = deepClone(this.selectedRows[0]);
                 }
+                if (!this.domain.port) {
+                    this.domain.port = this.nginxPort;
+                }
+                this.domain.sign = parseInt(this.domain.sign);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
