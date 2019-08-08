@@ -4,12 +4,12 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item >
-                        <el-cascader ref="stationGroupClassificationCascader" :options="stationGroupClassificationCascader"
-                                     v-model="listQuery.stationGroupClassificationArray"
+                        <el-cascader ref="queryStationGroupClassificationCascader" :options="stationGroupClassificationCascader"
+                                     v-model.trim="listQuery.stationGroupClassificationArray"
                                      clearable placeholder="请选择分类" style="width: 300px;" :size="searchSize"></el-cascader>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" clearable></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -31,14 +31,14 @@
             <el-table :data="stationGroupList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="分类名称" prop="stationGroupClassificationName"/>
-                <el-table-column align="center" label="网站名称" prop="name">
+                <el-table-column align="center" label="所属分类" prop="stationGroupClassificationName"/>
+                <el-table-column align="center" label="名称" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="英文名称" prop="englishName"/>
-                <el-table-column align="center" label="网站简称" prop="abbreviation"/>
+                <el-table-column align="center" label="简称" prop="abbreviation"/>
                 <el-table-column align="center" label="排序号" prop="sortNo"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="100">
                     <template slot-scope="scope">
@@ -51,7 +51,7 @@
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 10"
                                    @click.stop="btnDelete(scope.row)"></el-button>
                         <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
                                    @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
@@ -72,34 +72,34 @@
                          label-width="80px" :rules="stationGroupRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="网站分类" prop="stationGroupClassificationId">
-                                <el-cascader :options="stationGroupClassificationCascader"
-                                             v-model="stationGroupClassificationTreePosition"
+                            <el-form-item label="所属分类" prop="stationGroupClassificationId">
+                                <el-cascader ref="addOrEditStationGroupClassificationCascader" :options="stationGroupClassificationCascader"
+                                             v-model.trim="stationGroupClassificationTreePosition"
                                              clearable placeholder="请选择分类" style="width: 100%;" ></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="网站名称" prop="name">
-                                <el-input v-model="stationGroup.name" maxlength="30"></el-input>
+                            <el-form-item label="名称" prop="name">
+                                <el-input v-model.trim="stationGroup.name" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="englishName">
-                                <el-input v-model="stationGroup.englishName" maxlength="20"></el-input>
+                                <el-input v-model.trim="stationGroup.englishName" maxlength="20"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="网站简称" prop="abbreviation">
-                                <el-input v-model="stationGroup.abbreviation" maxlength="10"></el-input>
+                            <el-form-item label="简称" prop="abbreviation">
+                                <el-input v-model.trim="stationGroup.abbreviation" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
-                                <el-input v-model="stationGroup.sortNo"></el-input>
+                                <el-input v-model.trim="stationGroup.sortNo" maxlength="3"></el-input>
                             </el-form-item>
                         </el-col>
 
@@ -107,14 +107,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="描述" prop="description">
-                                <el-input type="textarea" v-model="stationGroup.description" :rows="3" maxlength="1000"/>
+                                <el-input type="textarea" v-model.trim="stationGroup.description" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="stationGroup.remark" :rows="3" maxlength="400"/>
+                                <el-input type="textarea" v-model.trim="stationGroup.remark" :rows="3" maxlength="400"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -162,7 +162,7 @@
                             }
                         }).catch(() => {});
                     } else {
-                        callback(new Error("没有选择网站分类，网站名称无法校验"));
+                        callback(new Error("没有选择分类，名称无法校验"));
                     }
                 });
             };
@@ -184,7 +184,7 @@
                             }
                         }).catch(() => {});
                     } else {
-                        callback(new Error("没有选择网站分类，英文名称无法校验"));
+                        callback(new Error("没有选择分类，英文名称无法校验"));
                     }
                 });
             };
@@ -202,7 +202,7 @@
                             }
                         }).catch(() => {});
                     } else {
-                        callback(new Error("没有选择网站分类，网站简称无法校验"));
+                        callback(new Error("没有选择分类，简称无法校验"));
                     }
                 });
 
@@ -237,18 +237,18 @@
                 },
                 stationGroupRules: {
                     stationGroupClassificationId: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '网站分类'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '分类'}
                     ],
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '网站名称'},
+                        {required: true, message: this.$t("table.pleaseInput") + '名称'},
                         {validator: checkName, trigger: 'blur'}
                     ],
                     englishName: [
-                        {required: true, message: this.$t("table.pleaseInput") + '网站英文名称'},
+                        {required: true, message: this.$t("table.pleaseInput") + '英文名称'},
                         {validator: checkEnglishName, trigger: 'blur'}
                     ],
                     abbreviation: [
-                        {required: true, message: this.$t("table.pleaseInput") + '网站简称'},
+                        {required: true, message: this.$t("table.pleaseInput") + '简称'},
                         {validator: checkAbbreviation, trigger: 'blur'}
                     ],
                     description: [
@@ -278,15 +278,10 @@
             stationGroupClassificationTreePosition: {
                 get() {
                     if (this.stationGroup.stationGroupClassificationTreePosition) {
-                        let arr = this.stationGroup.stationGroupClassificationTreePosition.substr(1).split('&')
-                        console.log('get');
-                        console.dir(arr);
-                        return arr;
+                        return this.stationGroup.stationGroupClassificationTreePosition.substr(1).split('&')
                     }
                 },
                 set(v) {
-                    console.log('set');
-                    console.dir(v);
                     if (v.length > 0) {
                         this.stationGroup.stationGroupClassificationId = v[v.length - 1];
                         this.stationGroup.stationGroupClassificationTreePosition = '&' + v.join('&');
@@ -320,7 +315,7 @@
             resetSearch(){
                 let obj = {};
                 obj.stopPropagation = () =>{};
-                this.$refs.stationGroupClassificationCascader.clearValue(obj);
+                this.$refs.queryStationGroupClassificationCascader.clearValue(obj);
                 this.listQuery.name = undefined;
             },
             reloadList(){
@@ -376,7 +371,6 @@
                     id: row.id,
                     flag: flag
                 }).then((response) => {
-                    console.dir(response);
                     this.reloadList();
                     this.$message.success(msg + "操作成功");
                 })
@@ -401,10 +395,18 @@
                 this.$refs['stationGroupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateStationGroup(this.stationGroup).then(() => {
-                            this.resetStationGroupDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
-                        })
+                        createOrUpdateStationGroup(this.stationGroup).then((response) => {
+                            if (response.status == 200) {
+                                this.resetStationGroupDialogAndList();
+                                this.$message.success(this.$t("table.createSuccess"));
+                            } else {
+                                this.submitLoading = false;
+                                this.$message.error(response.message);
+                            }
+                        }).catch(error => {
+                            this.submitLoading = false;
+                            this.$message.error(error);
+                        });
                     } else {
                         return false;
                     }
@@ -425,10 +427,18 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delStationGroups(ids).then(() => {
-                    this.reloadList();
-                    this.$message.success(this.$t("table.deleteSuccess"));
-                })
+                delStationGroups(ids).then((response) => {
+                    if (response.status == 200 && response.data) {
+                        this.reloadList();
+                        this.$message.success(this.$t("table.deleteSuccess"));
+                    } else {
+                        this.listLoading = false;
+                        this.$message.error(response.message)
+                    }
+                }).catch(error => {
+                    this.listLoading = false;
+                    this.$message.error(error);
+                });
             },
             resetStationGroup(){
                 this.stationGroup = {
@@ -450,6 +460,9 @@
                 this.dialogVisible = false;
                 this.resetStationGroup();
                 this.$refs['stationGroupDialogForm'].resetFields();
+                let obj = {};
+                obj.stopPropagation = () =>{};
+                this.$refs.addOrEditStationGroupClassificationCascader.clearValue(obj);
             }
         }
     }

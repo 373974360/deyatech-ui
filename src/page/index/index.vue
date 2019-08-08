@@ -18,10 +18,10 @@
                 <el-scrollbar style="height:100%">
                     <keep-alive>
                         <router-view class="avue-view"
-                                     v-if="$route.meta.keepAlive"/>
+                                     v-if="$route.meta.keepAlive" :key="routerViewKey"/>
                     </keep-alive>
                     <router-view class="avue-view"
-                                 v-if="!$route.meta.keepAlive"/>
+                                 v-if="!$route.meta.keepAlive" :key="routerViewKey"/>
                 </el-scrollbar>
 
             </div>
@@ -52,13 +52,19 @@
             tags,
             sidebar
         },
+        provide(){
+            return {
+                reloadMainView: this.reloadView
+            }
+        },
         name: "index",
         data() {
             return {
                 //刷新token锁
                 refreshLock: false,
                 //刷新token的时间
-                refreshTime: ""
+                refreshTime: "",
+                routerViewKey: new Date().getTime()
             };
         },
         created() {
@@ -104,6 +110,11 @@
                       });
                   }
                 }, 10000);*/
+            },
+            reloadView(){
+                this.$nextTick(function (){
+                    this.routerViewKey = new Date().getTime()
+                });
             }
         }
     };

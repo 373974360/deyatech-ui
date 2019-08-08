@@ -60,4 +60,11 @@ export function updateSignByIdAndStationGroupId(query) {
         params: query
     });
 }
+export function getNginxPort(query) {
+    return request({
+        url: '/manage/resource/domain/getNginxPort',
+        method: 'get',
+        params: query
+    });
+}
 

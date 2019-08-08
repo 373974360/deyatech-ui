@@ -63,6 +63,9 @@
                        @click="handleScreen"></i>
                 </div>
             </el-tooltip>
+            <div class="top-bar__item">
+                <top-site></top-site>
+            </div>
             <img class="top-bar__img"
                  :src="userInfo.avatar">
             <el-dropdown>
@@ -94,6 +97,7 @@
     import topLogs from "./top-logs";
     import topColor from "./top-color";
     import topLang from "./top-lang";
+    import topSite from "./top-site";
 
     export default {
         components: {
@@ -102,7 +106,8 @@
             topTheme,
             topLogs,
             topColor,
-            topLang
+            topLang,
+            topSite
         },
         name: "top",
         data() {

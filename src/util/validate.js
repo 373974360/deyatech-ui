@@ -329,11 +329,11 @@ export function checkSocialCreditCode(code) {
 }
 
 /**
- * 英文校验，中间可以有空格
+ * 英文校验
  * @param textval
  * @returns {boolean}
  */
 export function isEnglish(textval) {
-    const reg=/^[a-zA-Z\s]*$/
+    const reg=/^[a-zA-Z]*$/
     return reg.test(textval)
 }
