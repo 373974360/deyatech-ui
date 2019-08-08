@@ -168,6 +168,7 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
                 this.listTemplateFiles();
                 this.getStationGit();

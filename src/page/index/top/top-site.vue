@@ -1,5 +1,5 @@
 <template>
-    <el-select v-model="siteId" placeholder="请选择站点" style="margin-top:12px;" @change="siteChange">
+    <el-select v-if="this.$store.state.common.selectSiteDisplay" v-model="siteId" placeholder="请选择站点" style="margin-top:12px;" @change="siteChange">
         <el-option
             v-for="item in stationGroupList"
             :key="item.id"
