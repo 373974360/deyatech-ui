@@ -630,8 +630,8 @@
                        :close-on-click-modal="closeOnClickModal" @close="closePreauditConfigDialog" class="el-dialog-table">
                 <el-form ref="preauditConfigDialogForm" class="deyatech-form" :model="preauditConfig"
                          :rules="preauditConfigRules" v-loading="dialogFormLoading">
-                    <el-form-item label="预审天数">
-                        <el-input-number v-model="preauditConfig.preauditDays" :min="0" :max="100"></el-input-number>
+                    <el-form-item label="预审天数" prop="preauditDays">
+                        <el-input-number v-model="preauditConfig.preauditDays" :min="0" :max="100" :step="0.5"></el-input-number>
                     </el-form-item>
                     <el-form-item label="预审人员" prop="userIds">
                         <el-select v-model="selectedUserIds" multiple filterable placeholder="请选择">
@@ -683,7 +683,7 @@
                        :close-on-click-modal="closeOnClickModal" @click="closeItemMaterialsDialog">
                 <div v-loading="dialogFormLoading">
                     <div class="search">
-                        <el-input v-model="materialsListQuery.materialsName"
+                        <el-input v-model.trim="materialsListQuery.materialsName"
                                   class="dialog-keywords"
                                   clearable :size="searchSize" placeholder="根据输入查询"></el-input>
                         <el-select v-model="materialsListQuery.materialsVersion"
@@ -784,6 +784,12 @@
     export default {
         name: 'item',
         data() {
+            const promiseEndTimeValidate = (rule, value, callback) => {
+                if (!/^[1-9]\d{0,2}(\.5)?$|^0\.5$|^0$/.test(this.preauditConfig.preauditDays)) {
+                    callback(new Error('请填写预约天数，最小单位为0.5天,最多三位整数'));
+                }
+                callback();
+            };
             const validateSiteNum = (rule, value, callback) => {
                 if (!/^[1-9][0-9]*$/.test(value)) {
                     callback(new Error('请输入 1 到 99 的数字'));
@@ -1070,9 +1076,12 @@
                 preauditConfig: {
                     itemId: undefined,
                     userIds: undefined,
-                    preauditDays: 1
+                    preauditDays: 0.5
                 },
                 preauditConfigRules: {
+                    preauditDays: [
+                        {required: true, validator: promiseEndTimeValidate, trigger: 'blur'}
+                    ],
                     userIds: [
                         {validator: isSelected, message: this.$t("table.pleaseSelect") + '预审用户', trigger: 'change'}
                     ]
