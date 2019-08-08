@@ -4,15 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-<!--                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>-->
-                        <el-select v-model="listQuery.siteId" placeholder="请选择站点" :size="searchSize">
-                            <el-option
-                                v-for="s in stationGroup"
-                                :key="s.id"
-                                :label="s.name"
-                                :value="s.id">
-                            </el-option>
-                        </el-select>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -94,8 +86,9 @@
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
-                                    :options="publicFiles"
+                                    :options="templateTreeData"
                                     v-model="selectTemplatePath"
+                                    :props="cascaderProps"
                                     @change="handleChange">
                                 </el-cascader>
                             </el-form-item>
@@ -136,8 +129,8 @@
         createOrUpdatePage,
         delPages,
         existsPagePath
-    } from '@/api/station/page';
-    import {getAllStationGroup} from '@/api/resource/stationGroup';
+    } from '@/api/generate/page';
+    import {listTemplateAllFiles} from '@/api/template/template';
 
     export default {
         name: 'page',
@@ -187,7 +180,7 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    siteId: undefined
+                    siteId: this.$store.state.common.siteId
                 },
                 page: {
                     id: undefined,
@@ -227,17 +220,12 @@
                     id: '1',
                     name: '德雅通科技'
                 }],
-                publicFiles: [{
-                    value: 'deyatech',
-                    label: '德雅通科技',
-                    children: [{
-                        value: 'xiangmu.html',
-                        label: '项目',
-                    },{
-                        value: 'yanfa.html',
-                        label: '研发',
-                    }]
-                }],
+                templateTreeData: [],
+                cascaderProps: {
+                    value: 'fileName',
+                    label: 'fileName',
+                    children: 'children'
+                },
                 selectTemplatePath: undefined
             }
         },
@@ -259,19 +247,17 @@
             }
         },
         created(){
-            this.getAllStationGroup();
-            // this.reloadList();
+            this.$store.state.common.selectSiteDisplay = true;
+            if(this.$store.state.common.siteId != undefined){
+                this.reloadList();
+                this.listTemplateAllFiles();
+            }else{
+                this.$message.error('请选择站点！');
+            }
         },
         methods: {
-            getAllStationGroup() {
-                getAllStationGroup().then(response => {
-                    if (response.status == 200 && response.data.length > 0) {
-                        this.stationGroup = response.data;
-                    }
-                })
-            },
             resetSearch(){
-                this.listQuery.siteId = undefined;
+                this.listQuery.siteId = this.$store.state.common.siteId;
             },
             reloadList(){
                 if (!this.listQuery.siteId) {
@@ -285,6 +271,13 @@
                     this.listLoading = false;
                     this.pageList = response.data.records;
                     this.total = response.data.total;
+                })
+            },
+            listTemplateAllFiles(){
+                this.templateTreeData = [];
+                listTemplateAllFiles(this.listQuery.siteId).then(response => {
+                    let result = JSON.parse(response.data)
+                    this.templateTreeData = result.files
                 })
             },
             handleSizeChange(val){

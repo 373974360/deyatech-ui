@@ -1,7 +1,7 @@
 import request from '@/router/axios';
 export function getPage(id) {
     return request({
-        url: '/manage/station/page/getByPage',
+        url: '/manage/generate/page/getByPage',
         method: 'get',
         params: {id}
     })
@@ -10,7 +10,7 @@ export function getPage(id) {
 export function createOrUpdatePage(pageVo){
     const data = pageVo;
     return request({
-        url: '/manage/station/page/saveOrUpdate',
+        url: '/manage/generate/page/saveOrUpdate',
         method: 'post',
         data
     })
@@ -19,7 +19,7 @@ export function createOrUpdatePage(pageVo){
 export function delPage(id) {
     const data = {id};
     return request({
-        url: '/manage/station/page/removeByPage',
+        url: '/manage/generate/page/removeByPage',
         method: 'post',
         data
     })
@@ -27,21 +27,21 @@ export function delPage(id) {
 export function delPages(ids) {
     const data = {ids};
     return request({
-        url: '/manage/station/page/removeByIds',
+        url: '/manage/generate/page/removeByIds',
         method: 'post',
         data
     })
 }
 export function getPageList(query) {
     return request({
-        url: '/manage/station/page/pageByPage',
+        url: '/manage/generate/page/pageByPage',
         method: 'get',
         params: query
     });
 }
 export function existsPagePath(query) {
     return request({
-        url: '/manage/station/page/existsPagePath',
+        url: '/manage/generate/page/existsPagePath',
         method: 'get',
         params: query
     })
