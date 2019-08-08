@@ -46,16 +46,16 @@ export function isNameExist(query) {
         params: query
     });
 }
-export function runOrStopDomainById(query) {
+export function isEnglishNameExist(query) {
     return request({
-        url: '/manage/resource/domain/runOrStopDomainById',
+        url: '/manage/resource/domain/isEnglishNameExist',
         method: 'get',
         params: query
     });
 }
-export function updateSignByIdAndStationGroupId(query) {
+export function runOrStopDomainById(query) {
     return request({
-        url: '/manage/resource/domain/updateSignByIdAndStationGroupId',
+        url: '/manage/resource/domain/runOrStopDomainById',
         method: 'get',
         params: query
     });

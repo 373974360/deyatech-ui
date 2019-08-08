@@ -37,9 +37,9 @@
                 <el-table-column align="left" label="域名" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
-                        <el-tag v-if="scope.row.sign == '1'" style="margin-left: 20px;">主域名</el-tag>
                     </template>
                 </el-table-column>
+                <el-table-column align="center" label="英文名" prop="englishName"/>
                 <el-table-column align="center" label="端口" prop="port"/>
                 <el-table-column align="center" label="排序号" prop="sortNo"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="100">
@@ -53,16 +53,12 @@
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.sign == '1'"
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
-                        <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle :disabled="scope.row.sign == '1'"
+                        <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
                                    @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
                         <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
                                    @click.stop="btnCtrl(scope.row, 'run')"></el-button>
-                        <el-button v-if="scope.row.sign == '1'" title="主域名" type="info" icon="el-icon-star-on" :size="btnSize" circle
-                                   @click.stop="btnSign(scope.row)"></el-button>
-                        <el-button v-else-if="scope.row.sign == '0'" title="主域名" type="info" icon="el-icon-star-off" :size="btnSize" circle
-                                   @click.stop="btnSign(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -78,7 +74,7 @@
                 <el-form ref="domainDialogForm" class="deyatech-form" :model="domain" label-position="right"
                          label-width="80px" :rules="domainRules">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
+                        <el-col :span="24">
                             <el-form-item label="所属站群" prop="stationGroupId">
                                 <el-select v-model.trim="domain.stationGroupId" style="width: 100%;">
                                     <el-option v-for = "o in stationGroups"
@@ -88,34 +84,29 @@
                                 </el-select>
                             </el-form-item>
                         </el-col>
+
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="域名" prop="name">
                                 <el-input v-model.trim="domain.name" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
-
+                        <el-col :span="12">
+                            <el-form-item label="英文名称" prop="englishName">
+                                <el-input v-model.trim="domain.englishName" maxlength="30"></el-input>
+                            </el-form-item>
+                        </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="端口" prop="port">
-                                <el-input v-model.trim="domain.port" maxlength="5" :readonly="domain.port"></el-input>
+                                <el-input v-model.trim="domain.port" maxlength="5"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
                                 <el-input v-model.trim="domain.sortNo" maxlength="3"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="主域名" prop="sign">
-                                <el-select v-model.trim="domain.sign">
-                                    <el-option v-for = "o in loadEnum('YesNoEnum')"
-                                        :label="o.value"
-                                        :value="o.code">
-                                    </el-option>
-                                </el-select>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -153,35 +144,58 @@
         createOrUpdateDomain,
         delDomains,
         isNameExist,
-        runOrStopDomainById,
-        updateSignByIdAndStationGroupId,
-        getNginxPort
+        isEnglishNameExist,
+        runOrStopDomainById
     } from '@/api/resource/domain';
     import {getStore} from '@/util/store';
     import {
         getAllStationGroup
     } from '@/api/resource/stationGroup';
+    import {isEnglish} from '@/util/validate';
 
     export default {
         name: 'domain',
         data() {
             const checkName = (rule, value, callback) => {
-                this.$refs['domainDialogForm'].validateField('stationGroupId', errorMsg => {
-                    if (!errorMsg) {
-                        isNameExist({
-                            id: this.domain.id,
-                            stationGroupId: this.domain.stationGroupId,
-                            name: this.domain.name}).then(response => {
-                            if (response.status == 200 && response.data) {
-                                callback(new Error(response.message));
-                            } else {
-                                callback();
-                            }
-                        }).catch(() => {});
+                isNameExist({
+                    id: this.domain.id,
+                    name: this.domain.name}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
                     } else {
-                        callback(new Error("没有选择所属站群，域名无法校验"));
+                        callback();
                     }
-                });
+                }).catch(() => {});
+                // this.$refs['domainDialogForm'].validateField('stationGroupId', errorMsg => {
+                //     if (!errorMsg) {
+                //
+                //     } else {
+                //         callback(new Error("没有选择所属站群，域名无法校验"));
+                //     }
+                // });
+
+            };
+            const checkEnglishName = (rule, value, callback) => {
+                if (!isEnglish(value)) {
+                    callback(new Error('只能输入英文字母'));
+                    return;
+                }
+                isEnglishNameExist({
+                    id: this.domain.id,
+                    englishName: this.domain.englishName}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                    } else {
+                        callback();
+                    }
+                }).catch(() => {});
+                // this.$refs['domainDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
+                //     if (!errorMsg) {
+                //
+                //     } else {
+                //         callback(new Error("没有选择分类，英文名称无法校验"));
+                //     }
+                // });
             };
             const checkPort = (rule, value, callback) => {
                 if (/[^\d]/g.test(value)) {
@@ -211,7 +225,6 @@
                     id: undefined,
                     name: undefined,
                     description: undefined,
-                    sign: undefined,
                     sortNo: undefined,
                     stationGroupId: undefined,
                     port: undefined
@@ -221,11 +234,12 @@
                         {required: true, message: this.$t("table.pleaseInput") + '域名名称'},
                         {validator: checkName, trigger: 'blur'}
                     ],
+                    englishName: [
+                        {required: true, message: this.$t("table.pleaseInput") + '英文名称'},
+                        {validator: checkEnglishName, trigger: 'blur'}
+                    ],
                     description: [
                         {required: true, message: this.$t("table.pleaseInput") + '描述'}
-                    ],
-                    sign: [
-                        {required: true, message: this.$t("table.pleaseInput") + '标志'}
                     ],
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'},
@@ -243,8 +257,7 @@
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
-                stationGroups: [],
-                nginxPort: ''
+                stationGroups: []
             }
         },
         computed: {
@@ -267,15 +280,8 @@
         created(){
             this.reloadList();
             this.loadStationGroup();
-            this.loadNginxPort();
         },
         methods: {
-            loadNginxPort(){
-                getNginxPort().then(response => {
-                    if (response.status == 200)
-                        this.nginxPort = response.data;
-                });
-            },
             loadStationGroup() {
                 getAllStationGroup().then(response => {
                     if (response.status == 200) {
@@ -315,9 +321,6 @@
                 this.resetDomain();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
-                if (!this.domain.port) {
-                    this.domain.port = this.nginxPort;
-                }
             },
             btnUpdate(row){
                 this.resetDomain();
@@ -326,10 +329,6 @@
                 } else {
                     this.domain = deepClone(this.selectedRows[0]);
                 }
-                if (!this.domain.port) {
-                    this.domain.port = this.nginxPort;
-                }
-                this.domain.sign = parseInt(this.domain.sign);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -367,19 +366,6 @@
                     this.listLoading = false;
                     this.$message.error(error);
                 });
-            },
-            btnSign(row){
-                updateSignByIdAndStationGroupId({
-                    id: row.id,
-                    stationGroupId: row.stationGroupId
-                }).then((response) => {
-                    if (response.status == 200 && response.data) {
-                        this.reloadList();
-                        this.$message.success("设置主域名成功");
-                    } else {
-                        this.$message.error("设置主域名失败");
-                    }
-                })
             },
             doCreate(){
                 this.$refs['domainDialogForm'].validate(valid => {
@@ -427,7 +413,6 @@
                     id: undefined,
                     name: undefined,
                     description: undefined,
-                    sign: undefined,
                     sortNo: undefined,
                     stationGroupId: undefined,
                     port: undefined
