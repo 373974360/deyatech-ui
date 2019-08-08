@@ -265,7 +265,7 @@
         methods: {
             getAllStationGroup() {
                 getAllStationGroup().then(response => {
-                    if (response.data.length > 0) {
+                    if (response.status == 200 && response.data.length > 0) {
                         this.stationGroup = response.data;
                     }
                 })
