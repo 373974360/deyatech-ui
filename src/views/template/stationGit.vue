@@ -3,16 +3,6 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-header">
                 <el-form :inline="true" ref="stationGitForm" :model="stationGit" :rules="stationGitRules">
-                    <el-form-item prop="siteId">
-                        <el-select v-model="stationGit.siteId" placeholder="请选择站点" :size="searchSize" @change="stationGitChange">
-                            <el-option
-                                v-for="s in stationGitList"
-                                :key="s.siteId"
-                                :label="s.siteName"
-                                :value="s.siteId">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
                     <el-form-item prop="gitUrl">
                         <el-input :size="searchSize" placeholder="Git地址" v-model="stationGit.gitUrl" :disabled="gitUrlInputDisabled"></el-input>
                     </el-form-item>
@@ -94,7 +84,8 @@
         doSync,
         listTemplateFiles,
         getFileContent,
-        unzip
+        unzip,
+        getStationGitBySiteId
     } from '@/api/template/stationGit';
     import { codemirror } from 'vue-codemirror-lite';
     require('codemirror/mode/vue/vue.js')
@@ -120,12 +111,9 @@
                 stationGit: {
                     id: undefined,
                     gitUrl: undefined,
-                    siteId: undefined
+                    siteId: this.$store.state.common.siteId
                 },
                 stationGitRules: {
-                    siteId: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '站点'}
-                    ],
                     gitUrl: [
                         {required: true, message: this.$t("table.pleaseInput") + 'Git地址'}
                     ]
@@ -180,7 +168,13 @@
             }
         },
         created(){
-            this.listByStationGroupAndStationGit();
+            this.$store.state.common.selectSiteDisplay = true;
+            if(this.$store.state.common.siteId != undefined){
+                this.listTemplateFiles();
+                this.getStationGit();
+            }else{
+                this.$message.error('请选择站点！');
+            }
         },
         methods: {
             listTemplateFiles(){
@@ -210,28 +204,15 @@
                     this.contentCode = response.data;
                 })
             },
-            listByStationGroupAndStationGit(){
-                this.stationGitList = [];
-                listByStationGroupAndStationGit().then(response => {
-                    this.stationGitList = response.data;
-                })
-            },
-            stationGitChange(val){
-                this.resetStationGit();
-                this.stationGit.siteId = val;
-                this.gitUrlInputDisabled = false;
-                this.stationGitSiteId = undefined;
-                this.filePath = '';
-                this.uploadDesabled = false;
-                for(const stationGit of this.stationGitList){
-                    if(stationGit.tempSiteId == val){
-                        this.stationGit.gitUrl = stationGit.gitUrl;
-                        this.stationGit.id = stationGit.id;
-                        this.gitUrlInputDisabled = true;
-                        this.stationGitSiteId = stationGit.tempSiteId;
+            getStationGit(){
+                getStationGitBySiteId(this.stationGit.siteId).then(response => {
+                    if(response.data != undefined){
+                        this.stationGit.id = response.data.id;
+                        this.stationGit.gitUrl = response.data.gitUrl;
+                    }else{
+                        this.gitUrlInputDisabled = false;
                     }
-                }
-                this.listTemplateFiles();
+                })
             },
             doCreateOrUpdate(){
                 this.$refs['stationGitForm'].validate(valid => {
@@ -240,7 +221,6 @@
                         if(this.stationGitSiteId == undefined){
                             this.submitLoading = true;
                             createOrUpdateStationGit(this.stationGit).then(() => {
-                                this.listByStationGroupAndStationGit();
                                 this.gitUrlInputDisabled = true;
                                 this.submitLoading = false;
                                 this.dialogVisible = true;
@@ -267,13 +247,6 @@
                         return false;
                     }
                 });
-            },
-            resetStationGit(){
-                this.stationGit = {
-                    id: undefined,
-                    gitUrl: undefined,
-                    siteId: undefined
-                }
             },
             resestSynchronize(){
                 this.synchronize = {

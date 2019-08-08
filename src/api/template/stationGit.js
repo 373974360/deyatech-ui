@@ -77,5 +77,13 @@ export function unzip(filePath,siteId) {
         params: query
     });
 }
+export function getStationGitBySiteId(siteId) {
+    const query = {siteId};
+    return request({
+        url: '/manage/template/stationGit/getStationGitBySiteId',
+        method: 'get',
+        params: query
+    });
+}
 
 

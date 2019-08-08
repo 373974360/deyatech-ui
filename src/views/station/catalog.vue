@@ -336,16 +336,15 @@
                 })
             }
             const validateListTemplate = (rule, value, callback) => {
+                this.catalog.listTemplate = '/';
                 if (this.selectListTemplate) {
-                    this.catalog.listTemplate = '/' + this.selectListTemplate.join('/');
-                    if (this.catalog.listTemplate.length > 50) {
-                        callback(new Error('长度在 1 到 50 个字符'))
-                        this.catalog.listTemplate = undefined;
-                    } else {
-                        callback()
-                    }
+                    this.catalog.listTemplate += this.selectListTemplate.join('/');
+                }
+                if (this.catalog.listTemplate.length > 50) {
+                    callback(new Error('模板路径过长，最多 50 个字符'))
+                    this.catalog.listTemplate = undefined;
                 } else {
-                    callback(new Error(this.$t("table.pleaseSelect") + '列表页模板'))
+                    callback()
                 }
             }
             return {
@@ -427,10 +426,11 @@
                         {required: true, message: this.$t("table.pleaseSelect") + '工作流'}
                     ],
                     indexTemplate: [
-                        {required: true, message: this.$t("table.pleaseInput") + '首页模板'}
+                        // {required: true, message: this.$t("table.pleaseInput") + '首页模板'}
+                        {max: 50, message: '模板路径过长，最多 50 个字符', trigger: 'blur'}
                     ],
                     listTemplate: [
-                        {required: true, validator: validateListTemplate, trigger: 'change'}
+                        {validator: validateListTemplate, trigger: 'change'}
                     ],
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'}
@@ -516,7 +516,7 @@
                 set(v) {
                     if (v.length > 0) {
                         this.catalog.parentId = v[v.length - 1];
-                        this.catalog.treePosition = v.join('&') + "&" + this.catalog.parentId;
+                        this.catalog.treePosition = "&" + v.join('&') + "&" + this.catalog.parentId;
                     } else {
                         this.catalog.parentId = '0';
                         this.catalog.treePosition = undefined;
@@ -542,7 +542,7 @@
         methods: {
             getAllStationGroup() {
                 getAllStationGroup().then(response => {
-                    if (response.data.length > 0) {
+                    if (response.status == 200 && response.data.length > 0) {
                         this.stationGroup = response.data;
                     }
                 })
@@ -568,9 +568,9 @@
                     this.listLoading = false;
                 })
             },
-            getCatalogCascader(id){
+            getCatalogCascader(query){
                 this.submitLoading = true;
-                getCatalogCascader(id).then(response => {
+                getCatalogCascader(query).then(response => {
                     this.submitLoading = false;
                     this.catalogCascader = response.data;
                 })
@@ -603,6 +603,7 @@
                         this.catalog.treePosition = "&" + row.id;
                     }
                     this.catalog.parentId = row.id;
+                    this.getCatalogCascader({siteId : row.siteId});
                 } else {
                     if (this.selectedRows.length == 1) {
                         if(this.selectedRows[0].treePosition){
@@ -615,9 +616,9 @@
                         this.catalog.parentId = '0';
                         this.catalog.treePosition = undefined;
                     }
+                    this.getCatalogCascader({siteId : this.listQuery.siteId});
                 }
                 this.catalog.children = undefined;
-                this.getCatalogCascader(null);
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
@@ -630,7 +631,7 @@
                 }
                 this.isWorkflowEnable(this.catalog.workflowEnable);
                 this.catalog.children = undefined;
-                this.getCatalogCascader(this.catalog.id);
+                this.getCatalogCascader({siteId : row.siteId});
                 this.selectListTemplate = this.catalog.listTemplate.split('/').slice(1);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
