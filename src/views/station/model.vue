@@ -204,8 +204,15 @@
                                                  :default-expand-all="true" :expand-on-click-node="false" :filter-node-method="filterNode">
                                             <div class="custom-tree-node" slot-scope="{data}">
                                                 <span>{{data.name}}</span>
-                                                <el-cascader :options="templateTreeData" v-model="catalogTemplate[data.id].templatePath" :ref="'catalogTemplate' + data.id"
-                                                             @change="handleCatalogTemplateChange(data)" :clearable="true" size="mini"></el-cascader>
+                                                <el-cascader
+                                                    :options="templateTreeData"
+                                                     v-model="catalogTemplate[data.id].templatePath"
+                                                     :props="cascaderProps"
+                                                     :ref="'catalogTemplate' + data.id"
+                                                     @change="handleCatalogTemplateChange(data)"
+                                                     :clearable="true"
+                                                     size="mini">
+                                                </el-cascader>
                                             </div>
                                         </el-tree>
                                     </div>
@@ -662,29 +669,13 @@
             initCatalogTemplate(catalogList) {
                 if (catalogList && catalogList.length > 0) {
                     for (let catalog of catalogList) {
-                        // 编辑
-                        if (this.modelTemplateSaveOrUpdateDialogTitle == 'update' && this.allModelTemplate.length > 0) {
-                            this.catalogTemplate[catalog.id] = {
-                                id: undefined,
-                                templatePath: []
-                            }
-                            // 特殊配置
-                            for (let modelTemplate of this.allModelTemplate) {
-                                if (catalog.id == modelTemplate.cmsCatalogId) {
-                                    this.catalogTemplate[catalog.id] = {
-                                        id: modelTemplate.id,
-                                        templatePath: modelTemplate.templatePath.split('/').slice(1)
-                                    }
-                                }
-                            }
-                        } else {
-                            if (catalog.listTemplate == '/') {
-                                catalog.listTemplate = ''
-                            }
-                            this.catalogTemplate[catalog.id] = {
-                                id: undefined,
-                                templatePath: catalog.listTemplate.split('/').slice(1)
-                            }
+                        // if (catalog.listTemplate == '/') {
+                        //     catalog.listTemplate = ''
+                        // }
+                        this.catalogTemplate[catalog.id] = {
+                            id: undefined,
+                            // templatePath: catalog.listTemplate.split('/').slice(1)
+                            templatePath: []
                         }
                         if (catalog.children && catalog.children.length > 0) {
                             this.initCatalogTemplate(catalog.children)
@@ -706,7 +697,7 @@
                 // data: 栏目对象
                 // templatePath: 选择的值
                 const templatePath = this.catalogTemplate[data.id].templatePath
-                console.log("templatePath: " + templatePath)
+                // console.log("templatePath: " + templatePath)
                 if (templatePath && templatePath.length > 0) {
                     this.checkChildrenTemplate(data.children, templatePath)
                 }
@@ -793,10 +784,31 @@
                 this.modelTemplateSaveOrUpdateDialogTitle = 'update';
                 this.modelTemplateSaveOrUpdateDialogVisible = true;
                 this.listTemplateAllFiles(row.siteId);
-                const query = {siteId: row.siteId};
+                const query = {
+                    siteId: row.siteId,
+                    defaultFlag: false
+                };
                 getAllModelTemplate(query).then(response => {
                     this.allModelTemplate = response.data;
-                    this.getCatalogTree(row.siteId);
+                    Promise.all([this.getCatalogTree(row.siteId)]).then(() => {
+                        // 特殊配置
+                        for (let modelTemplate of this.allModelTemplate) {
+                            if (this.catalogTemplate[modelTemplate.cmsCatalogId]) {
+                                this.catalogTemplate[modelTemplate.cmsCatalogId] = {
+                                    id: modelTemplate.id,
+                                    templatePath: modelTemplate.templatePath.split('/').slice(1)
+                                }
+                            } else {
+                                // 当某个栏目已删除，删除原有相关栏目配置
+                                if (modelTemplate.cmsCatalogId) {
+                                    this.catalogTemplate[modelTemplate.cmsCatalogId] = {
+                                        id: modelTemplate.id,
+                                        templatePath: []
+                                    }
+                                }
+                            }
+                        }
+                    })
                 })
                 this.modelTemplate.id = row.id;
                 this.modelTemplate.siteId = row.siteId;
@@ -811,12 +823,19 @@
                             // console.log("this.catalogTemplate[item].templatePath: " + this.catalogTemplate[item].templatePath.length)
                             if (this.catalogTemplate[item].templatePath.length !== 0) {
                                 catalogTemplateList.push({
-                                    id: this.catalogTemplate[item].id ? this.catalogTemplate[item].id : null,
+                                    id: this.catalogTemplate[item].id,
                                     cmsCatalogId: item,
                                     siteId: this.modelTemplate.siteId,
                                     contentModelId: this.model.id,
                                     templatePath: '/' + this.catalogTemplate[item].templatePath.join('/'),
                                     defaultFlag: false
+                                })
+                            }
+                            // 删除原有特殊设置
+                            if (this.catalogTemplate[item].templatePath.length == 0 && this.catalogTemplate[item].id) {
+                                catalogTemplateList.push({
+                                    id: this.catalogTemplate[item].id,
+                                    enable: -1
                                 })
                             }
                         }
