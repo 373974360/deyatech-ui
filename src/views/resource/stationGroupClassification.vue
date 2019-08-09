@@ -63,7 +63,7 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="英文名称" prop="englishName">
-                            <el-input v-model.trim="stationGroupClassification.englishName" maxlength="20"></el-input>
+                            <el-input v-model.trim="stationGroupClassification.englishName" maxlength="30"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
