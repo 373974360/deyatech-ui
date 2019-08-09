@@ -149,63 +149,62 @@
         name: 'stationGroup',
         data() {
             const checkName = (rule, value, callback) => {
-                this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
-                    if (!errorMsg) {
-                        isNameExist({
-                            id: this.stationGroup.id,
-                            classificationId: this.stationGroup.stationGroupClassificationId,
-                            name: this.stationGroup.name}).then(response => {
-                            if (response.status == 200 && response.data) {
-                                callback(new Error(response.message));
-                            } else {
-                                callback();
-                            }
-                        }).catch(() => {});
+                isNameExist({
+                    id: this.stationGroup.id,
+                    classificationId: this.stationGroup.stationGroupClassificationId,
+                    name: this.stationGroup.name}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
                     } else {
-                        callback(new Error("没有选择分类，名称无法校验"));
+                        callback();
                     }
-                });
+                }).catch(() => {});
+                // this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
+                //     if (!errorMsg) {
+                //     } else {
+                //         callback(new Error("没有选择分类，名称无法校验"));
+                //     }
+                // });
             };
             const checkEnglishName = (rule, value, callback) => {
                 if (!isEnglish(value)) {
                     callback(new Error('只能输入英文字母'));
                     return;
                 }
-                this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
-                    if (!errorMsg) {
-                        isEnglishNameExist({
-                            id: this.stationGroup.id,
-                            classificationId: this.stationGroup.stationGroupClassificationId,
-                            englishName: this.stationGroup.englishName}).then(response => {
-                            if (response.status == 200 && response.data) {
-                                callback(new Error(response.message));
-                            } else {
-                                callback();
-                            }
-                        }).catch(() => {});
+                isEnglishNameExist({
+                    id: this.stationGroup.id,
+                    classificationId: this.stationGroup.stationGroupClassificationId,
+                    englishName: this.stationGroup.englishName}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
                     } else {
-                        callback(new Error("没有选择分类，英文名称无法校验"));
+                        callback();
                     }
-                });
+                }).catch(() => {});
+                // this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
+                //     if (!errorMsg) {
+                //     } else {
+                //         callback(new Error("没有选择分类，英文名称无法校验"));
+                //     }
+                // });
             };
             const checkAbbreviation = (rule, value, callback) => {
-                this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
-                    if (!errorMsg) {
-                        isAbbreviationExist({
-                            id: this.stationGroup.id,
-                            classificationId: this.stationGroup.stationGroupClassificationId,
-                            abbreviation: this.stationGroup.abbreviation}).then(response => {
-                            if (response.status == 200 && response.data) {
-                                callback(new Error(response.message));
-                            } else {
-                                callback();
-                            }
-                        }).catch(() => {});
+                isAbbreviationExist({
+                    id: this.stationGroup.id,
+                    classificationId: this.stationGroup.stationGroupClassificationId,
+                    abbreviation: this.stationGroup.abbreviation}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
                     } else {
-                        callback(new Error("没有选择分类，简称无法校验"));
+                        callback();
                     }
-                });
-
+                }).catch(() => {});
+                // this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
+                //     if (!errorMsg) {
+                //     } else {
+                //         callback(new Error("没有选择分类，简称无法校验"));
+                //     }
+                // });
             };
             const checkSortNo = (rule, value, callback) => {
                 if (/[^\d]/g.test(value)) {
