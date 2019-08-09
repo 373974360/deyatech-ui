@@ -216,10 +216,6 @@
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
-                stationGroup: [{
-                    id: '1',
-                    name: '德雅通科技'
-                }],
                 templateTreeData: [],
                 cascaderProps: {
                     value: 'fileName',
@@ -291,20 +287,11 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
             },
-            // TODO 后台接口还未开发
-            getAllPublicFiles() {
-                /*getAllPublicFiles(this.listQuery).then(response => {
-                    if (this.publicFiles.length > 0) {
-                        this.publicFiles = response.data;
-                    }
-                })*/
-            },
             btnCreate(){
                 if (!this.listQuery.siteId) {
                     this.$message.warning("请先选择站点");
                     return
                 }
-                this.getAllPublicFiles();
                 this.resetPage();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
