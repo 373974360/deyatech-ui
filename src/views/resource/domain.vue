@@ -53,7 +53,7 @@
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 10"
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                         <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
                                    @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
