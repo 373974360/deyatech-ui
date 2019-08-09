@@ -337,3 +337,15 @@ export function isEnglish(textval) {
     const reg=/^[a-zA-Z]*$/
     return reg.test(textval)
 }
+
+// 只能包含汉字，中间可以有空格
+export function isChinese(textval) {
+    const reg = /^[\u4e00-\u9fa5\s]*$/
+    return reg.test(textval)
+}
+
+// 只能是小写字母开头、数字和下划线组成
+export function isEnglishName(textval) {
+    const reg = /^[a-z]+\w*$/
+    return reg.test(textval)
+}

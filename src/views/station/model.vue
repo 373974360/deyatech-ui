@@ -186,8 +186,9 @@
                                         placeholder="请选择模板地址"
                                         clearable
                                         expand-trigger="hover"
-                                        :options="publicFiles"
+                                        :options="templateTreeData"
                                         v-model="selectTemplatePath"
+                                        :props="cascaderProps"
                                         @change="handleChange">
                                     </el-cascader>
                                 </el-form-item>
@@ -203,7 +204,7 @@
                                                  :default-expand-all="true" :expand-on-click-node="false" :filter-node-method="filterNode">
                                             <div class="custom-tree-node" slot-scope="{data}">
                                                 <span>{{data.name}}</span>
-                                                <el-cascader :options="publicFiles" v-model="catalogTemplate[data.id].templatePath" :ref="'catalogTemplate' + data.id"
+                                                <el-cascader :options="templateTreeData" v-model="catalogTemplate[data.id].templatePath" :ref="'catalogTemplate' + data.id"
                                                              @change="handleCatalogTemplateChange(data)" :clearable="true" size="mini"></el-cascader>
                                             </div>
                                         </el-tree>
@@ -230,7 +231,9 @@
     import {
         getModelList,
         createOrUpdateModel,
-        delModels
+        delModels,
+        checkNameExist,
+        checkEnglishNameExist
     } from '@/api/station/model';
     import {
         createOrUpdateModelTemplateBatch,
@@ -243,10 +246,54 @@
     import {
         getCatalogTree,
     } from '@/api/station/catalog';
+    import {isChinese, isEnglishName} from '@/util/validate';
+    import {listTemplateAllFiles} from '@/api/template/template';
 
     export default {
         name: 'model',
         data() {
+            const validateName = (rule, value, callback) => {
+                if (!isChinese(value)) {
+                    callback(new Error('只能输入中文'))
+                } else {
+                    const query = {
+                        id: this.model.id,
+                        name: value
+                    }
+                    checkNameExist(query).then(response => {
+                        if (response.status == 200) {
+                            if (response.data) {
+                                callback(new Error('名称已存在'))
+                            } else {
+                                callback()
+                            }
+                        } else {
+                            callback(new Error('检查名称重复失败'))
+                        }
+                    })
+                }
+            }
+            const validateEnglishName = (rule, value, callback) => {
+                if (!isEnglishName(value)) {
+                    callback(new Error('只能是小写字母开头、数字和下划线组成'))
+                } else {
+                    const query = {
+                        id: this.model.id,
+                        englishName: value
+                    }
+                    checkEnglishNameExist(query).then(response => {
+                        if (response.status == 200) {
+                            if (response.data) {
+                                callback(new Error('英文名称已存在'))
+                            } else {
+                                callback()
+                            }
+                        } else {
+                            callback(new Error('检查英文名称重复失败'))
+                        }
+                    })
+                }
+            }
             const validateSiteId = (rule, value, callback) => {
                 if (this.modelTemplateSaveOrUpdateDialogTitle == 'update') {
                     return callback()
@@ -305,7 +352,8 @@
                     ],
                     englishName: [
                         {required: true, message: this.$t("table.pleaseInput") + '英文名称'},
-                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
+                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
+                        {validator: validateEnglishName, trigger: 'blur'}
                     ],
                     metaDataCollectionId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '元数据集'}
@@ -313,6 +361,7 @@
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '内容对象名称'},
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
+                        {validator: validateName, trigger: 'blur'}
                     ],
                     remark: [
                         {max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}
@@ -361,11 +410,8 @@
                 modelTemplateList: undefined,
                 modelTemplateTotal: undefined,
                 selectedModelTemplateRows: [],
-                stationGroup: [{
-                    id: '1',
-                    name: '德雅通科技'
-                }],
-                publicFiles: [{
+                stationGroup: [],
+                templateTreeData: [{
                     value: 'deyatech',
                     label: '德雅通科技',
                     children: [{
@@ -376,6 +422,11 @@
                         label: '研发',
                     }]
                 }],
+                cascaderProps: {
+                    value: 'fileName',
+                    label: 'fileName',
+                    children: 'children'
+                },
                 selectTemplatePath: undefined,
                 catalogList: undefined,
                 defaultTreeProps: {
@@ -589,17 +640,15 @@
                 })
             },
             getInfoBySiteId(siteId) {
-                this.getAllPublicFiles(siteId);
+                this.listTemplateAllFiles(siteId);
                 this.getCatalogTree(siteId);
             },
-            // TODO 后台接口还未开发
-            getAllPublicFiles(siteId) {
-                /*const query = {siteId : siteId};
-                getAllPublicFiles(query).then(response => {
-                    if (this.publicFiles.length > 0) {
-                        this.publicFiles = response.data;
-                    }
-                })*/
+            listTemplateAllFiles(siteId){
+                this.templateTreeData = [];
+                listTemplateAllFiles(siteId).then(response => {
+                    let result = JSON.parse(response.data)
+                    this.templateTreeData = result.files
+                })
             },
             getCatalogTree(siteId){
                 this.listLoading = true;
@@ -743,7 +792,7 @@
             modelTemplateBtnUpdate(row) {
                 this.modelTemplateSaveOrUpdateDialogTitle = 'update';
                 this.modelTemplateSaveOrUpdateDialogVisible = true;
-                this.getAllPublicFiles(row.siteId);
+                this.listTemplateAllFiles(row.siteId);
                 const query = {siteId: row.siteId};
                 getAllModelTemplate(query).then(response => {
                     this.allModelTemplate = response.data;

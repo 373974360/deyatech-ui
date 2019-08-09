@@ -1,24 +1,17 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
+<!--            <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select v-model="listQuery.siteId" placeholder="请选择站点" :size="searchSize">
-                            <el-option
-                                v-for="s in stationGroup"
-                                :key="s.id"
-                                :label="s.name"
-                                :value="s.id">
-                            </el-option>
-                        </el-select>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
-            </div>
+            </div>-->
 
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
@@ -138,8 +131,9 @@
                                 placeholder="请选择模板地址"
                                 clearable
                                 expand-trigger="hover"
-                                :options="publicFiles"
+                                :options="templateTreeData"
                                 v-model="selectListTemplate"
+                                :props="cascaderProps"
                                 @change="handleChange">
                             </el-cascader>
                         </el-form-item>
@@ -278,9 +272,9 @@
     } from '@/api/station/catalog';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
-    import {getAllStationGroup} from '@/api/resource/stationGroup';
     import {getStore} from '@/util/store';
-    import pinyin from 'pinyin'
+    import pinyin from 'pinyin';
+    import {listTemplateAllFiles} from '@/api/template/template';
 
     export default {
         name: 'catalog',
@@ -293,15 +287,19 @@
                     name: value
                 }
                 existsName(query).then(response => {
-                    if (response.status != 200) {
-                        callback(new Error(response.data))
-                    } else {
-                        if (!this.catalog.ename) {
-                            this.catalog.ename = pinyin(this.catalog.name, {
-                                style: pinyin.STYLE_FIRST_LETTER
-                            }).join('')
+                    if (response.status == 200) {
+                        if (response.data) {
+                            callback(new Error('名称已存在'))
+                        } else {
+                            if (!this.catalog.ename) {
+                                this.catalog.ename = pinyin(this.catalog.name, {
+                                    style: pinyin.STYLE_FIRST_LETTER
+                                }).join('')
+                            }
+                            callback()
                         }
-                        callback()
+                    } else {
+                        callback(new Error('检查名称重复失败'))
                     }
                 })
             }
@@ -313,10 +311,14 @@
                     aliasName: value
                 }
                 existsAliasName(query).then(response => {
-                    if (response.status != 200) {
-                        callback(new Error(response.data))
+                    if (response.status == 200) {
+                        if (response.data) {
+                            callback(new Error('别名已存在'))
+                        } else {
+                            callback()
+                        }
                     } else {
-                        callback()
+                        callback(new Error('检查别名重复失败'))
                     }
                 })
             }
@@ -328,10 +330,14 @@
                     ename: value
                 }
                 existsEname(query).then(response => {
-                    if (response.status != 200) {
-                        callback(new Error(response.data))
+                    if (response.status == 200) {
+                        if (response.data) {
+                            callback(new Error('英文名称已存在'))
+                        } else {
+                            callback()
+                        }
                     } else {
-                        callback()
+                        callback(new Error('检查英文名称重复失败'))
                     }
                 })
             }
@@ -351,12 +357,8 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    siteId: undefined
+                    siteId: this.$store.state.common.siteId
                 },
-                stationGroup: [{
-                    id: '1',
-                    name: '德雅通科技'
-                }],
                 catalogList: undefined,
                 listLoading: false,
                 catalog: {
@@ -486,7 +488,7 @@
                 },
                 lastExpanded: undefined,
                 tableReset: true,
-                publicFiles: [{
+                templateTreeData: [{
                     value: 'deyatech',
                     label: '德雅通科技',
                     children: [{
@@ -497,14 +499,24 @@
                         label: '研发',
                     }]
                 }],
+                cascaderProps: {
+                    value: 'fileName',
+                    label: 'fileName',
+                    children: 'children'
+                },
                 selectListTemplate: undefined,
                 workflowList: [],
                 display: false
             }
         },
         created() {
-            this.getAllStationGroup();
-            // this.reloadList();
+            this.$store.state.common.selectSiteDisplay = true;
+            if(this.$store.state.common.siteId != undefined){
+                this.reloadList();
+                this.listTemplateAllFiles();
+            }else{
+                this.$message.error('请选择站点！');
+            }
         },
         computed: {
             catalogTreePosition: {
@@ -540,16 +552,9 @@
             }
         },
         methods: {
-            getAllStationGroup() {
-                getAllStationGroup().then(response => {
-                    if (response.status == 200 && response.data.length > 0) {
-                        this.stationGroup = response.data;
-                    }
-                })
-            },
-            resetSearch(){
-                this.listQuery.siteId = undefined;
-            },
+/*            resetSearch(){
+                this.listQuery.siteId = this.$store.state.common.siteId;
+            },*/
             reloadList(){
                 if (!this.listQuery.siteId) {
                     this.$message.warning("请先选择站点");
@@ -581,20 +586,19 @@
             loadEnum(name) {
                 return getStore({name: 'enums'})[name]
             },
-            // TODO 后台接口还未开发
-            getAllPublicFiles() {
-                /*getAllPublicFiles(this.listQuery).then(response => {
-                    if (this.publicFiles.length > 0) {
-                        this.publicFiles = response.data;
-                    }
-                })*/
+            // 获取模板
+            listTemplateAllFiles(){
+                this.templateTreeData = [];
+                listTemplateAllFiles(this.listQuery.siteId).then(response => {
+                    let result = JSON.parse(response.data)
+                    this.templateTreeData = result.files
+                })
             },
             btnCreate(row){
                 if (!(this.listQuery.siteId || row.siteId)) {
                     this.$message.warning("请先选择站点");
                     return
                 }
-                this.getAllPublicFiles();
                 this.resetCatalog();
                 if (row.id) {
                     if(row.treePosition){

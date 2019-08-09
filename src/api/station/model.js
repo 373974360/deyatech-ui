@@ -40,4 +40,18 @@ export function getModelList(query) {
     });
 }
 
+export function checkNameExist(query) {
+    return request({
+        url: '/manage/station/model/checkNameExist',
+        method: 'get',
+        params: query
+    });
+}
 
+export function checkEnglishNameExist(query) {
+    return request({
+        url: '/manage/station/model/checkEnglishNameExist',
+        method: 'get',
+        params: query
+    });
+}
