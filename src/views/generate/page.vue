@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.pageName"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -40,10 +40,12 @@
                         </el-tag>
                     </template>
                 </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.replay" title="发布静态页" type="success" icon="el-icon-check" :size="btnSize" circle
+                                   @click.stop.safe="btnReplay(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
@@ -128,7 +130,8 @@
         getPageList,
         createOrUpdatePage,
         delPages,
-        existsPagePath
+        existsPagePath,
+        replay
     } from '@/api/generate/page';
     import {listTemplateAllFiles} from '@/api/template/template';
 
@@ -180,7 +183,8 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    siteId: this.$store.state.common.siteId
+                    siteId: this.$store.state.common.siteId,
+                    pageName: undefined
                 },
                 page: {
                     id: undefined,
@@ -238,7 +242,8 @@
                 return {
                     create: this.permission.page_create,
                     update: this.permission.page_update,
-                    delete: this.permission.page_delete
+                    delete: this.permission.page_delete,
+                    replay: this.permission.page_replay
                 };
             }
         },
@@ -254,6 +259,8 @@
         methods: {
             resetSearch(){
                 this.listQuery.siteId = this.$store.state.common.siteId;
+                this.listQuery.pageName = undefined;
+                this.reloadList();
             },
             reloadList(){
                 if (!this.listQuery.siteId) {
@@ -322,6 +329,11 @@
                         this.doDelete(ids);
                     })
                 }
+            },
+            btnReplay(row){
+                replay(row).then(() => {
+                    this.$message.success("发布成功");
+                })
             },
             doCreate(){
                 this.$refs['pageDialogForm'].validate(valid => {

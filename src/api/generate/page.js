@@ -46,4 +46,12 @@ export function existsPagePath(query) {
         params: query
     })
 }
+export function replay(pageVo){
+    const data = pageVo;
+    return request({
+        url: '/manage/generate/page/replay',
+        method: 'post',
+        data
+    })
+}
 
