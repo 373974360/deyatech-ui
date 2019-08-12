@@ -19,10 +19,10 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
-                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
-                    <el-button v-if="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting">全局设置</el-button>
+                    <el-button v-show="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+                    <el-button v-show="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
+                    <el-button v-show="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting">全局设置</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -50,15 +50,15 @@
                 </el-table-column>
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                        <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 10"
+                        <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 1"
                                    @click.stop="btnDelete(scope.row)"></el-button>
                         <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
                                    @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
                         <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
                                    @click.stop="btnCtrl(scope.row, 'run')"></el-button>
-                        <el-button v-if="btnEnable.setting" title="设置" type="primary" icon="el-icon-setting" :size="btnSize" circle
+                        <el-button v-show="btnEnable.setting" title="设置" type="primary" icon="el-icon-setting" :size="btnSize" circle
                                    @click.stop="btnSetting(scope.row)"></el-button>
                     </template>
                 </el-table-column>
@@ -135,7 +135,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站群" prop="stationGroupId" :rules="setting.stationGroupId ? settingRules.stationGroupId : []">
-                                <span v-if="setting.stationGroupId" v-text="setting.stationGroupName"></span>
+                                <span v-if="setting.stationGroupId" v-text="setting.stationGroupName" style="color: blue; font-weight: bold;"></span>
                                 <span v-else>全局设置所有站群</span>
                             </el-form-item>
                         </el-col>
@@ -172,12 +172,12 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="缩略图宽度(px)" prop="thumbnailWidth" :rules="setting.thumbnailEnable == 0 ? [] : settingRules.thumbnailWidth">
+                            <el-form-item label="缩略图宽度(px)" prop="thumbnailWidth" ref="thumbnailWidthField" v-show="setting.thumbnailEnable == 1" :rules="setting.thumbnailEnable == 0 ? [] : settingRules.thumbnailWidth">
                                 <el-input v-model="setting.thumbnailWidth" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="缩略图高度(px)" prop="thumbnailHeight" :rules="setting.thumbnailEnable == 0 ? [] : settingRules.thumbnailHeight">
+                            <el-form-item label="缩略图高度(px)" prop="thumbnailHeight" ref="thumbnailHeightField" v-show="setting.thumbnailEnable == 1" :rules="setting.thumbnailEnable == 0 ? [] : settingRules.thumbnailHeight">
                                 <el-input v-model="setting.thumbnailHeight" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
@@ -185,7 +185,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否生成水印" prop="watermarkEnable">
-                                <el-select v-model="setting.watermarkEnable" style="width:100%">
+                                <el-select v-model="setting.watermarkEnable" style="width:100%" @change="watermarkEnableChange">
                                     <el-option v-for="item in enums['YesNoEnum']"
                                                :label="item.value"
                                                :value="item.code"></el-option>
@@ -193,8 +193,8 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="水印类型" prop="watermarkType">
-                                <el-select v-model="setting.watermarkType" style="width:100%">
+                            <el-form-item label="水印类型" prop="watermarkType" ref="watermarkTypeField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkType">
+                                <el-select v-model="setting.watermarkType" style="width:100%" @change="watermarkTypeChange">
                                     <el-option v-for="item in enums['WaterMarkTypeEnum']"
                                                :label="item.value"
                                                :value="item.code"></el-option>
@@ -204,40 +204,50 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="水印宽度(px)" prop="watermarkWidth">
+                            <el-form-item label="水印宽度(px)" prop="watermarkWidth" ref="watermarkWidthField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkWidth">
                                 <el-input v-model="setting.watermarkWidth" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="水印高度(px)" prop="watermarkHeight">
+                            <el-form-item label="水印高度(px)" prop="watermarkHeight" ref="watermarkHeightField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkHeight">
                                 <el-input v-model="setting.watermarkHeight" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="水印透明度(px)" prop="watermarkTransparency">
-                                <el-slider v-model="setting.watermarkTransparency" :min="1" :max="100" :step="1"/>
+                            <el-form-item label="水印透明度(px)" prop="watermarkTransparency" ref="watermarkTransparencyField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkTransparency">
+                                <el-slider v-model="setting.watermarkTransparency" :min="1" :max="100" :step="1" show-input/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="水印图片" prop="watermarkUrl">
-                                <el-input v-model="setting.watermarkUrl" maxlength="1000"></el-input>
+                            <el-form-item label="水印图片" prop="watermarkUrl" ref="watermarkUrlField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 1" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 2 ? [] : settingRules.watermarkUrl">
+                                <!--<el-input v-model="setting.watermarkUrl" maxlength="1000"></el-input>-->
+                                <el-upload name="file"
+                                           class="avatar-uploader"
+                                           :action="this.$store.state.common.uploadUrl"
+                                           accept="image/jpg,image/jpeg,image/png"
+                                           :show-file-list="false"
+                                           :on-success="watermarkUrlUploadSuccess"
+                                           :on-error="uploadError">
+                                    <img v-if="setting.watermarkUrl" :src="imageUrl + setting.watermarkUrl" class="avatar">
+                                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                </el-upload>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="水印文字" prop="watermarkWord">
+                            <el-form-item label="水印文字" prop="watermarkWord" ref="watermarkWordField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 2" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 1 ? [] : settingRules.watermarkWord">
                                 <el-input v-model="setting.watermarkWord" maxlength="50"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="水印位置" prop="watermarkPosition">
+                            <el-form-item label="水印位置" prop="watermarkPosition" ref="watermarkPositionField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkPosition">
                                 <div>
                                     <el-radio v-model="setting.watermarkPosition" :label="1" border>左上</el-radio>
                                     <el-radio v-model="setting.watermarkPosition" :label="2" border>上边</el-radio>
@@ -259,7 +269,17 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="ICO图片" prop="icoUrl">
-                                <el-input v-model="setting.icoUrl" maxlength="1000"></el-input>
+                                <!--<el-input v-model="setting.icoUrl" maxlength="1000"></el-input>-->
+                                <el-upload name="file"
+                                           class="avatar-uploader"
+                                           :action="this.$store.state.common.uploadUrl"
+                                           accept="image/jpg,image/jpeg,image/png"
+                                           :show-file-list="false"
+                                           :on-success="icoUrlUploadSuccess"
+                                           :on-error="uploadError">
+                                    <img v-if="setting.icoUrl" :src="imageUrl + setting.icoUrl" class="avatar">
+                                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                </el-upload>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -285,6 +305,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
+    import {getStore} from '@/util/store';
     import {
         getStationGroupList,
         createOrUpdateStationGroup,
@@ -425,11 +446,11 @@
                     stationGroupId: undefined,
                     uploadFileType: undefined,
                     uploadFileSize: undefined,
-                    thumbnailEnable: undefined,
+                    thumbnailEnable: 1,
                     thumbnailWidth: undefined,
                     thumbnailHeight: undefined,
-                    watermarkEnable: undefined,
-                    watermarkType: undefined,
+                    watermarkEnable: 1,
+                    watermarkType: 1,
                     watermarkWidth: undefined,
                     watermarkHeight: undefined,
                     watermarkTransparency: undefined,
@@ -443,14 +464,14 @@
                         {required: true, message: this.$t("table.pleaseInput") + '站群'}
                     ],
                     uploadFileType: [
-                        {required: true, message: this.$t("table.pleaseInput") + '允许上传的附件类型'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '允许上传的附件类型'}
                     ],
                     uploadFileSize: [
                         {required: true, message: this.$t("table.pleaseInput") + '允许上传文件大小'},
                         {validator: checkNumber, trigger: ['blur','change']}
                     ],
                     thumbnailEnable: [
-                        {required: true, message: this.$t("table.pleaseInput") + '是否生成缩略图'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否生成缩略图'}
                     ],
                     thumbnailWidth: [
                         {required: true, message: this.$t("table.pleaseInput") + '缩略图宽度'},
@@ -461,7 +482,7 @@
                         {validator: checkNumber, trigger: ['blur','change']}
                     ],
                     watermarkEnable: [
-                        {required: true, message: this.$t("table.pleaseInput") + '是否生成水印'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否生成水印'}
                     ],
                     watermarkType: [
                         {required: true, message: this.$t("table.pleaseInput") + '水印类型'}
@@ -478,20 +499,21 @@
                         {required: true, message: this.$t("table.pleaseInput") + '水印透明度'}
                     ],
                     watermarkUrl: [
-                        {required: true, message: this.$t("table.pleaseInput") + '水印图片'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '水印图片'}
                     ],
                     watermarkWord: [
                         {required: true, message: this.$t("table.pleaseInput") + '水印文字'}
                     ],
                     watermarkPosition: [
-                        {required: true, message: this.$t("table.pleaseInput") + '水印位置'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '水印位置'}
                     ],
                     icoUrl: [
-                        {required: true, message: this.$t("table.pleaseInput") + 'ICO图片'}
+                        {required: true, message: this.$t("table.pleaseSelect") + 'ICO图片'}
                     ]
                 },
                 dialogSettingVisible: false,
-                uploadFileTypeArray: []
+                uploadFileTypeArray: [],
+                imageUrl: '/manage/common/showPicImg?filePath='
             }
         },
         computed: {
@@ -708,11 +730,11 @@
                     stationGroupId: undefined,
                     uploadFileType: undefined,
                     uploadFileSize: undefined,
-                    thumbnailEnable: undefined,
+                    thumbnailEnable: 1,
                     thumbnailWidth: undefined,
                     thumbnailHeight: undefined,
-                    watermarkEnable: undefined,
-                    watermarkType: undefined,
+                    watermarkEnable: 1,
+                    watermarkType: 1,
                     watermarkWidth: undefined,
                     watermarkHeight: undefined,
                     watermarkTransparency: undefined,
@@ -729,13 +751,22 @@
                     stationGroupId = row.id;
                 }
                 this.resetSetting();
-                this.loadSetting(stationGroupId).then(response=>{
-                    if (response.status == 200 && response.data) {
+                this.setting.stationGroupId = stationGroupId;
+                this.loadSetting({stationGroupId: stationGroupId}).then(response=>{
+                    if (response.status == 200 && response.data.id) {
                         this.setting = response.data;
-                        if (this.setting.uploadFileType) {
-                            this.uploadFileTypeArray = this.setting.uploadFileType.split(',');
-                        }
+                        if (this.setting.uploadFileType) this.uploadFileTypeArray = this.setting.uploadFileType.split(',');
+                        if (typeof(this.setting.thumbnailWidth) === 'undefined') this.$set(this.setting, 'thumbnailWidth', undefined);
+                        if (typeof(this.setting.thumbnailHeight) === 'undefined') this.$set(this.setting, 'thumbnailHeight', undefined);
+                        if (typeof(this.setting.watermarkType) === 'undefined') this.$set(this.setting, 'watermarkType', undefined);
+                        if (typeof(this.setting.watermarkWidth) === 'undefined') this.$set(this.setting, 'watermarkWidth', undefined);
+                        if (typeof(this.setting.watermarkHeight) === 'undefined') this.$set(this.setting, 'watermarkHeight', undefined);
+                        if (typeof(this.setting.watermarkTransparency) === 'undefined') this.$set(this.setting, 'watermarkTransparency', undefined);
+                        if (typeof(this.setting.watermarkUrl) === 'undefined') this.$set(this.setting, 'watermarkUrl', undefined);
+                        if (typeof(this.setting.watermarkWord) === 'undefined') this.$set(this.setting, 'watermarkWord', undefined);
+                        if (typeof(this.setting.watermarkPosition) === 'undefined') this.$set(this.setting, 'watermarkPosition', undefined);
                     }
+                    if (!this.setting.stationGroupName) this.setting.stationGroupName = row.name;
                     this.dialogSettingVisible = true;
                 }).catch(error=>{
                     this.$message.error(error);
@@ -758,6 +789,29 @@
                 this.$refs['settingDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        // 没有缩略图
+                        if (this.setting.thumbnailEnable == 0) {
+                            this.setting.thumbnailWidth = undefined;
+                            this.setting.thumbnailHeight = undefined;
+                        }
+                        // 没有水印
+                        if (this.setting.watermarkEnable == 0) {
+                            this.setting.watermarkType = undefined;
+                            this.setting.watermarkWidth = undefined;
+                            this.setting.watermarkHeight = undefined;
+                            this.setting.watermarkTransparency = undefined;
+                            this.setting.watermarkUrl = undefined;
+                            this.setting.watermarkWord = undefined;
+                            this.setting.watermarkPosition = undefined;
+                        } else {
+                            // 图片
+                            if (this.setting.watermarkType == 1) {
+                                this.setting.watermarkWord = undefined;
+                                // 文字
+                            } else if (this.setting.watermarkType == 2) {
+                                this.setting.watermarkUrl = undefined;
+                            }
+                        }
                         createOrUpdateSetting(this.setting).then(() => {
                             this.resetSettingDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -777,22 +831,99 @@
                 this.$refs['settingDialogForm'].resetFields();
             },
             uploadFileTypeChange(selectedType) {
-                console.dir(selectedType);
                 if (selectedType.length > 0) {
                     this.setting.uploadFileType = selectedType.join(',');
                 } else {
                     this.setting.uploadFileType = selectedType.join(',');
                 }
-                console.dir(this.setting.uploadFileType);
             },
             thumbnailEnableChange() {
-                //if (this.setting.thumbnailEnable == 0) {
-                    this.$refs['settingDialogForm'].clearValidate('thumbnailWidth');
-                    this.$refs['settingDialogForm'].clearValidate('thumbnailHeight');
-                //}
+                if (this.setting.thumbnailEnable == 0) {
+                    this.$refs['thumbnailWidthField'].clearValidate();
+                    this.$refs['thumbnailHeightField'].clearValidate();
+                    this.setting.thumbnailWidth = undefined;
+                    this.setting.thumbnailHeight = undefined;
+                }
+            },
+            watermarkEnableChange() {
+                if (this.setting.watermarkEnable == 0) {
+                    this.$refs['watermarkTypeField'].clearValidate();
+                    this.$refs['watermarkWidthField'].clearValidate();
+                    this.$refs['watermarkHeightField'].clearValidate();
+                    this.$refs['watermarkTransparencyField'].clearValidate();
+                    this.$refs['watermarkUrlField'].clearValidate();
+                    this.$refs['watermarkWordField'].clearValidate();
+                    this.$refs['watermarkPositionField'].clearValidate();
+                    this.setting.watermarkType = undefined;
+                    this.setting.watermarkWidth = undefined;
+                    this.setting.watermarkHeight = undefined;
+                    this.setting.watermarkTransparency = undefined;
+                    this.setting.watermarkUrl = undefined;
+                    this.setting.watermarkWord = undefined;
+                    this.setting.watermarkPosition = undefined;
+                } else if (this.setting.watermarkEnable == 1) {
+                    if (!this.setting.watermarkType) {
+                        this.setting.watermarkType = 1;
+                    }
+                }
+            },
+            watermarkTypeChange() {
+                // 图片
+                if (this.setting.watermarkType == 1) {
+                    this.$refs['watermarkWordField'].clearValidate();
+                    this.setting.watermarkWord = undefined;
+                    // 文字
+                } else if (this.setting.watermarkType == 2) {
+                    this.$refs['watermarkUrlField'].clearValidate();
+                    this.setting.watermarkUrl = undefined;
+                }
+            },
+            watermarkUrlUploadSuccess(response) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    this.setting.watermarkUrl = response.data.url;
+                    this.$message.success('上传成功！');
+                } else {
+                    this.$message.error(response.message);
+                }
+            },
+            icoUrlUploadSuccess(response) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    this.setting.icoUrl = response.data.url;
+                    this.$message.success('上传成功！');
+                } else {
+                    this.$message.error(response.message);
+                }
+            },
+            uploadError() {
+                this.$message.error("上传失败");
             }
         }
     }
 </script>
 
 
+<style>
+    .avatar-uploader .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .avatar-uploader .el-upload:hover {
+        border-color: #409EFF;
+    }
+    .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 178px;
+        height: 178px;
+        line-height: 178px;
+        text-align: center;
+    }
+    .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+    }
+</style>
