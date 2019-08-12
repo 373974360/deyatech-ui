@@ -158,8 +158,6 @@
                                 <el-input v-model="setting.uploadFileSize" maxlength="3"></el-input>
                             </el-form-item>
                         </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否生成缩略图" prop="thumbnailEnable">
                                 <el-select v-model="setting.thumbnailEnable" style="width: 100%" @change="thumbnailEnableChange">
