@@ -172,6 +172,7 @@
             if(this.$store.state.common.siteId != undefined){
                 this.listTemplateFiles();
                 this.getStationGit();
+                this.uploadDesabled = false;
             }else{
                 this.$message.error('请选择站点！');
             }
@@ -215,24 +216,28 @@
                 })
             },
             doCreateOrUpdate(){
-                this.$refs['stationGitForm'].validate(valid => {
-                    if(valid) {
-                        this.resestSynchronize();
-                        if(this.stationGitSiteId == undefined){
-                            this.submitLoading = true;
-                            createOrUpdateStationGit(this.stationGit).then(() => {
-                                this.gitUrlInputDisabled = true;
-                                this.submitLoading = false;
+                if(this.stationGit.siteId != undefined){
+                    this.$refs['stationGitForm'].validate(valid => {
+                        if(valid) {
+                            this.resestSynchronize();
+                            if(this.stationGitSiteId == undefined){
+                                this.submitLoading = true;
+                                createOrUpdateStationGit(this.stationGit).then(() => {
+                                    this.gitUrlInputDisabled = true;
+                                    this.submitLoading = false;
+                                    this.dialogVisible = true;
+                                    this.stationGitSiteId = this.stationGit.siteId;
+                                })
+                            }else{
                                 this.dialogVisible = true;
-                                this.stationGitSiteId = this.stationGit.siteId;
-                            })
-                        }else{
-                            this.dialogVisible = true;
+                            }
+                        } else {
+                            return false;
                         }
-                    } else {
-                        return false;
-                    }
-                });
+                    });
+                }else{
+                    this.$message.error('请选择站点！');
+                }
             },
             doSync(){
                 this.$refs['gitForm'].validate(valid => {
@@ -289,8 +294,11 @@
             },
             handlerSiteId(){
                 if(this.stationGit.siteId == undefined){
+                    this.uploadDesabled = true;
                     this.$message.error('请选择站点!');
                     return false;
+                }else{
+                    this.uploadDesabled = false;
                 }
             }
         }
