@@ -54,3 +54,22 @@ export function getChildrenKeys(node) {
     }
     return keys;
 }
+
+/**
+ * 寻找第一个最后一级节点
+ *
+ * @param children
+ * @returns {*}
+ */
+export function getFirstFinalChild(children) {
+    if (children && children.length > 0) {
+        for (let child of children) {
+            if (child.children && child.children.length > 0) {
+                return getFirstFinalChild(child.children)
+            } else {
+                return child
+            }
+        }
+    }
+    return null
+}

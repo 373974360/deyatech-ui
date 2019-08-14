@@ -43,4 +43,10 @@ export function getDictionaryIndexList(query) {
     });
 }
 
-
+export function getAllDictionaryIndex(query) {
+    return request({
+        url: '/manage/admin/dictionaryIndex/listByDictionaryIndex',
+        method: 'get',
+        params: query
+    })
+}
