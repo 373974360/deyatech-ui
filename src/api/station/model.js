@@ -55,3 +55,11 @@ export function checkEnglishNameExist(query) {
         params: query
     });
 }
+
+export function getAllModelBySiteId(query) {
+    return request({
+        url: '/manage/station/model/getAllModelBySiteId',
+        method: 'get',
+        params: query
+    });
+}

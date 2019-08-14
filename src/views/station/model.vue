@@ -17,7 +17,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -371,7 +371,7 @@
                         {validator: validateName, trigger: 'blur'}
                     ],
                     remark: [
-                        {max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}
+                        {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
                     ]
                 },
                 selectedRows: [],
@@ -494,6 +494,9 @@
             resetSearch(){
                 this.listQuery.name = undefined;
                 this.listQuery.metaDataCollectionId = undefined;
+            },
+            searchReloadList(){
+                this.handleCurrentChange(1);
             },
             reloadList(){
                 this.listLoading = true;
