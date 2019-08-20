@@ -50,3 +50,11 @@ export function countRoleByName(name) {
         params: {name}
     })
 }
+
+export function getAllRole(query) {
+    return request({
+        url: '/manage/admin/role/listByRole',
+        method: 'get',
+        params: query
+    })
+}

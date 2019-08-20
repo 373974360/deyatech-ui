@@ -285,7 +285,7 @@
                 }
             };
             const validatePrefix = (rule, value, callback) => {
-                const reg = /^[a-z]+(_)?$/;
+                const reg = /^([a-z]+(_)?)+$/;
                 if (!reg.test(value)) {
                     callback(new Error('格式错误，只能输入小写字母或 _ 且必须以字母开头，例如：a, a_ 等'));
                 } else {
@@ -700,6 +700,7 @@
                     obj.advancedQuery = relation.advancedQuery;
                     obj.useFullIndex = relation.useFullIndex;
                     obj.useIndex = relation.useIndex;
+                    obj.fieldName = relation.fieldName;
                 } else {
                     obj.tableHead = false;
                     obj.advancedQuery = false;

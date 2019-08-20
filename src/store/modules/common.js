@@ -48,6 +48,7 @@ const common = {
         themeName: getStore({name: 'themeName'}) || 'theme-default',
         lockPasswd: getStore({name: 'lockPasswd'}) || '',
         website: website,
+        activitiModelEditUrl: './modeler.html'
     },
     actions: {
         // 获取后台的所有枚举json数据
