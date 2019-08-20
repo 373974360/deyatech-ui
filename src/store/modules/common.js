@@ -50,6 +50,7 @@ const common = {
         website: website,
         siteId: undefined,
         selectSiteDisplay: false
+        activitiModelEditUrl: './modeler.html'
     },
     actions: {
         // 获取后台的所有枚举json数据

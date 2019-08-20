@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
 
-const TokenKey = 'x-access-token'
+const TokenKey = 'Deyatech-Token'
 var inFifteenMinutes = new Date(new Date().getTime() + 120 * 60 * 1000);
 
 export function getToken() {
