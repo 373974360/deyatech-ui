@@ -63,3 +63,12 @@ export function reindex(params) {
         params: params
     });
 }
+
+export function updateContentStatus(id){
+    const data = {id};
+    return request({
+        url: '/manage/station/template/updateContentStatus',
+        method: 'post',
+        data
+    })
+}

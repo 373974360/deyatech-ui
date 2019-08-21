@@ -40,4 +40,37 @@ export function getReviewProcessList(query) {
     });
 }
 
+export function getCurrentTaskList(query) {
+    return request({
+        url: '/manage/workflow/processTask/getCurrentTaskList',
+        method: 'get',
+        params: query
+    });
+}
 
+export function completeTask(actTaskId) {
+    const data = {taskId: actTaskId}
+    return request({
+        url: '/manage/workflow/processTask/completeTask',
+        method: 'post',
+        data
+    })
+}
+
+export function rollBackTask(actTaskId) {
+    const data = {taskId: actTaskId}
+    return request({
+        url: '/manage/workflow/processTask/rollBackTask',
+        method: 'post',
+        data
+    })
+}
+
+export function rejectTask(actTaskId) {
+    const data = {taskId: actTaskId}
+    return request({
+        url: '/manage/workflow/processTask/rejectTask',
+        method: 'post',
+        data
+    })
+}

@@ -4,10 +4,10 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入标题或作者" v-model="listQuery.titleOrAuthor"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -17,6 +17,9 @@
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <!--<el-button type="success" icon="el-icon-check" :size="btnSize" @click="btnCompleteTask" :disabled="selectedRows.length < 1">批量通过</el-button>
+                    <el-button type="warning" icon="el-icon-back" :size="btnSize" @click="btnRollBackTask" :disabled="selectedRows.length < 1">批量回退</el-button>
+                    <el-button type="danger" icon="el-icon-close" :size="btnSize" @click="btnRejectTask" :disabled="selectedRows.length < 1">批量拒绝</el-button>-->
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -27,21 +30,21 @@
             <el-table :data="reviewProcessList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <!--元数据相关 TODO-->
-                <el-table-column type="expand">
+                <!--<el-table-column type="expand">
                     <template slot-scope="scope">
                         <el-form label-position="right" inline class="form-model">
-                            <!--<el-form-item v-for="item in scope.row.metaDataCollection.metaDataCollectionMetaDataDtoList"  TODO
+                            &lt;!&ndash;<el-form-item v-for="item in scope.row.metaDataCollection.metaDataCollectionMetaDataDtoList"  TODO
                                           v-if="item.tableHand === 1" :key="item.id" :label="item.metaData.name + '：'">
                                 <span>{{scope.row.content[item.fieldName]}}</span>
-                            </el-form-item>-->
+                            </el-form-item>&ndash;&gt;
                         </el-form>
                     </template>
-                </el-table-column>
-                <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="标题" prop="title"/>
-                <el-table-column align="center" label="作者" prop="author"/>
-                <el-table-column align="center" label="审核状态" prop="status"/>
-                <el-table-column align="center" label="创建时间" prop="createTime"/>
+                </el-table-column>-->
+                <!--<el-table-column type="selection" width="50" align="center"/>-->
+                <el-table-column align="center" label="标题" prop="variables.title"/>
+                <el-table-column align="center" label="作者" prop="variables.author"/>
+                <el-table-column align="center" label="审核状态" prop="name"/>
+                <el-table-column align="center" label="创建时间" prop="startTime"/>
                 <!--<el-table-column align="center" label="内容id" prop="contentId"/>
                 <el-table-column align="center" label="工作流id" prop="workflowId"/>-->
 
@@ -52,12 +55,14 @@
                         </el-tag>
                     </template>
                 </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        <el-button title="通过" type="success" icon="el-icon-check" :size="btnSize" circle
+                                   @click.stop.safe="completeTask(scope.row)"></el-button>
+                        <el-button title="回退" type="warning" icon="el-icon-back" :size="btnSize" circle
+                                   @click.stop.safe="rollBackTask(scope.row)"></el-button>
+                        <el-button title="拒绝" type="danger" icon="el-icon-close" :size="btnSize" circle
+                                   @click.stop.safe="rejectTask(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -114,10 +119,16 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getReviewProcessList,
+        getCurrentTaskList,
+        completeTask,
+        rollBackTask,
+        rejectTask,
         createOrUpdateReviewProcess,
         delReviewProcesss
     } from '@/api/content/reviewProcess';
+    import {
+        updateContentStatus
+    } from '@/api/station/template';
 
     export default {
         name: 'reviewProcess',
@@ -129,7 +140,7 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    titleOrAuthor: undefined
                 },
                 reviewProcess: {
                     id: undefined,
@@ -172,17 +183,21 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
         },
         methods: {
             resetSearch(){
-                this.listQuery.name = undefined;
+                this.listQuery.titleOrAuthor = undefined;
+            },
+            searchReloadList(){
+                this.handleCurrentChange(1);
             },
             reloadList(){
                 this.listLoading = true;
                 this.reviewProcessList = undefined;
                 this.total = undefined;
-                getReviewProcessList(this.listQuery).then(response => {
+                getCurrentTaskList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.reviewProcessList = response.data.records;
                     this.total = response.data.total;
@@ -280,6 +295,40 @@
                 this.dialogVisible = false;
                 this.resetReviewProcess();
                 this.$refs['reviewProcessDialogForm'].resetFields();
+            },
+            completeTask(row) {
+                completeTask(row.actTaskId).then(response => {
+                    if (response.status == 200) {
+                        if (response.data === 'FINISH') {
+                            updateContentStatus(row.variables.contentId).then(response => {
+                            })
+                        }
+                        this.reloadList();
+                        this.$message.success(row.name + '已通过')
+                    } else {
+                        this.$message.error(response.message)
+                    }
+                })
+            },
+            rollBackTask(row) {
+                rollBackTask(row.actTaskId).then(response => {
+                    if (response.status == 200) {
+                        this.reloadList();
+                        this.$message.success(row.name + '已回退')
+                    } else {
+                        this.$message.error(response.message)
+                    }
+                })
+            },
+            rejectTask(row) {
+                rejectTask(row.actTaskId).then(response => {
+                    if (response.status == 200) {
+                        this.reloadList();
+                        this.$message.success(row.name + '已拒绝')
+                    } else {
+                        this.$message.error(response.message)
+                    }
+                })
             }
         }
     }

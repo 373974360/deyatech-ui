@@ -35,7 +35,7 @@
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
+<!--                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>-->
                 </div>
             </div>
             <div class="standard-text">
@@ -371,7 +371,8 @@
                     sortNo: undefined,
                     flagTop: undefined,
                     views: undefined,
-                    flagExternal: undefined
+                    flagExternal: undefined,
+                    workflowKey: undefined
                 },
                 templateRules: {
                     siteId: [
@@ -445,7 +446,7 @@
                 },
                 modelList: [],
                 modelTemplateList: [],
-
+                workflowKey: undefined
             }
         },
         watch: {
@@ -530,9 +531,10 @@
                 }
             },
             handleNoteClick(data) {
+                // console.log("catalog: " + JSON.stringify(data))
                 // 获取内容列表
                 // 设置内容工作流id TODO
-                // this.dialogList.content['workflowId'] = data.workflowId
+                this.workflowKey = data.workflowKey;
                 this.listQuery.cmsCatalogId = data.id;
                 // 获取template
                 this.reloadList();
@@ -580,6 +582,7 @@
                 this.resetTemplate();
                 this.template.siteId = this.listQuery.siteId;
                 this.template.cmsCatalogId = this.listQuery.cmsCatalogId;
+                this.template.workflowKey = this.workflowKey;
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
@@ -636,7 +639,7 @@
                             this.template.flagExternal = false;
                             this.template.url = undefined
                         }
-                        console.log("template: " + JSON.stringify(this.template))
+                        // console.log("template: " + JSON.stringify(this.template))
                         this.submitLoading = true;
                         createOrUpdateTemplate(this.template).then(() => {
                             this.resetTemplateDialogAndList();
@@ -687,7 +690,8 @@
                     sortNo: undefined,
                     flagTop: undefined,
                     views: undefined,
-                    flagExternal: undefined
+                    flagExternal: undefined,
+                    workflowKey: undefined
                 }
             },
             resetTemplateDialogAndList(){

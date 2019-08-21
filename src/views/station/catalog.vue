@@ -236,9 +236,9 @@
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item label="工作流" prop="workflowId" v-if="display" label-width="140px">
-                            <el-select v-model="catalog.workflowId" placeholder="请选择工作流">
-                                <el-option v-for="item in workflowList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                        <el-form-item label="工作流" prop="workflowKey" v-if="display" label-width="140px">
+                            <el-select v-model="catalog.workflowKey" placeholder="请选择工作流">
+                                <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
@@ -275,6 +275,7 @@
     import {getStore} from '@/util/store';
     import pinyin from 'pinyin';
     import {listTemplateAllFiles} from '@/api/template/template';
+    import {getProcessDefinitionList} from '@/api/workflow/definition';
 
     export default {
         name: 'catalog',
@@ -371,6 +372,7 @@
                     showable: undefined,
                     linkUrl: undefined,
                     workflowId: undefined,
+                    workflowKey: undefined,
                     indexTemplate: undefined,
                     listTemplate: undefined,
                     sortNo: undefined,
@@ -424,7 +426,7 @@
                     showable: [
                         {required: true, message: this.$t("table.pleaseInput") + '是否显示'}
                     ],
-                    workflowId: [
+                    workflowKey: [
                         {required: true, message: this.$t("table.pleaseSelect") + '工作流'}
                     ],
                     indexTemplate: [
@@ -488,17 +490,7 @@
                 },
                 lastExpanded: undefined,
                 tableReset: true,
-                templateTreeData: [{
-                    value: 'deyatech',
-                    label: '德雅通科技',
-                    children: [{
-                        value: 'xiangmu.html',
-                        label: '项目',
-                    },{
-                        value: 'yanfa.html',
-                        label: '研发',
-                    }]
-                }],
+                templateTreeData: [],
                 cascaderProps: {
                     value: 'fileName',
                     label: 'fileName',
@@ -675,6 +667,7 @@
             },
             doUpdate(){
                 this.$refs['catalogDialogForm'].validate(valid => {
+                    // console.log("catalog: " + JSON.stringify(this.catalog))
                     if(valid) {
                         this.submitLoading = true;
                         createOrUpdateCatalog(this.catalog).then(() => {
@@ -705,6 +698,7 @@
                     showable: undefined,
                     linkUrl: undefined,
                     workflowId: undefined,
+                    workflowKey: undefined,
                     indexTemplate: undefined,
                     listTemplate: undefined,
                     sortNo: undefined,
@@ -734,6 +728,7 @@
                 this.display = false;
                 this.dialogVisible = false;
                 this.selectListTemplate = undefined;
+                this.workflowList = [];
                 this.resetCatalog();
                 this.$refs['catalogDialogForm'].resetFields();
             },
@@ -742,29 +737,31 @@
             },
             isWorkflowEnable (value) {
                 if (value == 1) {
-                    this.getWorkflowList();
-                    this.display = true
+                    if (this.workflowList.length == 0) {
+                        this.getWorkflowList();
+                    }
+                    this.display = true;
                 } else {
-                    this.catalog.workflowId = undefined
-                    this.display = false
+                    this.display = false;
+                    if (this.catalog.workflowKey) {
+                        this.catalog.workflowKey = undefined;
+                    }
                 }
             },
-            // TODO 获取工作流
+            // 获取工作流
             getWorkflowList() {
-                this.workflowList = [{
-                    id: '1',
-                    name: '工作流1',
-                },{
-                    id: '2',
-                    name: '工作流2',
-                }]
-                /*getWorkflowList().then(response => {
+                this.workflowList = []
+                const query = {
+                    page: 1,
+                    size: 99999999
+                }
+                getProcessDefinitionList(query).then(response => {
                     if (response.status == 200) {
-                        this.workflowList = response.data
+                        this.workflowList = response.data.records;
                     } else {
                         this.$message.error('工作流数据获取失败')
                     }
-                })*/
+                })
             }
         }
     }
