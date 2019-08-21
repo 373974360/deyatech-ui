@@ -31,6 +31,10 @@
                 this.stationGroupList = [];
                 getAllStationGroup().then(response => {
                     this.stationGroupList = response.data;
+                    if(this.stationGroupList.length>0){
+                        this.siteId = this.stationGroupList[0].id;
+                        this.$store.state.common.siteId = this.siteId;
+                    }
                 })
             },
             siteChange(val){
