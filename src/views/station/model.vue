@@ -9,7 +9,7 @@
                     <el-form-item>
                         <el-select v-model="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize">
                             <el-option
-                                v-for="m in metaDataCollection"
+                                v-for="m in metadataCollectionList"
                                 :key="m.id"
                                 :label="m.name"
                                 :value="m.id">
@@ -92,7 +92,7 @@
                             <el-form-item label="关联元数据集" prop="metaDataCollectionId" label-width="110px">
                                 <el-select v-model="model.metaDataCollectionId" placeholder="请选择元数据集">
                                     <el-option
-                                        v-for="m in metaDataCollection"
+                                        v-for="m in metadataCollectionList"
                                         :key="m.id"
                                         :label="m.name"
                                         :value="m.id">
@@ -255,6 +255,7 @@
     } from '@/api/station/catalog';
     import {isChinese, isEnglishName} from '@/util/validate';
     import {listTemplateAllFiles} from '@/api/template/template';
+    import {findMetadataCollectionAllData} from '@/api/metadata/collection';
 
     export default {
         name: 'model',
@@ -378,13 +379,7 @@
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
-                metaDataCollection: [{
-                    id: '1',
-                    name: '元数据集1'
-                },{
-                    id: '2',
-                    name: '元数据集2'
-                }],
+                metadataCollectionList: [],
                 modelTemplateDialogVisible: false,
                 modelTemplate: {
                     id: undefined,
@@ -484,13 +479,13 @@
             this.getAllMetaDataCollection();
         },
         methods: {
-            // TODO 获取元数据集
+            // 获取元数据集
             getAllMetaDataCollection() {
-                /*getAllMetaDataCollection().then(response => {
+                findMetadataCollectionAllData().then(response => {
                     if (response.status == 200 && response.data.length > 0) {
-                        this.metaDataCollection = response.data;
+                        this.metadataCollectionList = response.data;
                     }
-                })*/
+                })
             },
             resetSearch(){
                 this.listQuery.name = undefined;

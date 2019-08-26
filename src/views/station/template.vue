@@ -61,11 +61,11 @@
                     <!--元数据相关 TODO-->
                     <el-table-column type="expand">
                         <template slot-scope="scope">
-                            <el-form label-position="right" inline class="form-model">
-                                <!--<el-form-item v-for="item in scope.row.metaDataCollection.metaDataCollectionMetaDataDtoList"  TODO
-                                              v-if="item.tableHand === 1" :key="item.id" :label="item.metaData.name + '：'">
-                                    <span>{{scope.row.content[item.fieldName]}}</span>
-                                </el-form-item>-->
+                            <el-form label-position="right" inline v-if="scope.row.metadataCollectionVo.metadataList" class="table-expand">
+                                <el-form-item v-for="item in scope.row.metadataCollectionVo.metadataList"
+                                              v-if="item.tableHead" :key="item.id" :label="'[元数据名称]: ' + item.metadata.name">
+                                    <span>[元数据值]: {{scope.row.content[item.fieldName]}}</span>
+                                </el-form-item>
                             </el-form>
                         </template>
                     </el-table-column>
@@ -176,21 +176,21 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="缩略图" prop="thumbnail">
-                            <el-upload class="avatar-uploader"
-                                       :action="this.$store.state.common.uploadUrl"
-                                       :accept="this.$store.state.common.imageAccepts"
-                                       :show-file-list="false"
-                                       :on-success="handleAvatarSuccess"
-                                       :on-error="handleAvatarError"
-                                       :before-upload="beforeAvatarUpload">
-                                <img v-if="template.thumbnail" :src="this.$store.state.common.showPicImgUrl + template.thumbnail"
-                                     class="avatar">
-                                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                            </el-upload>
-                        </el-form-item>
-                    </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="缩略图" prop="thumbnail">
+                                <el-upload class="avatar-uploader"
+                                           :action="$store.state.common.uploadUrl"
+                                           :accept="$store.state.common.imageAccepts"
+                                           :show-file-list="false"
+                                           :on-success="handleAvatarSuccess"
+                                           :on-error="handleAvatarError"
+                                           :before-upload="beforeAvatarUpload">
+                                    <img v-if="template.thumbnail" :src="this.$store.state.common.showPicImgUrl + template.thumbnail"
+                                         class="avatar">
+                                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                </el-upload>
+                            </el-form-item>
+                        </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
@@ -211,7 +211,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否外链" prop="flagExternal">
-                                <el-switch v-model="template.flagExternal">
+                                <el-switch v-model="template.flagExternal" @change="isFlagExternal">
                                 </el-switch>
                             </el-form-item>
                         </el-col>
@@ -225,57 +225,62 @@
                     </el-row>
 
                     <!-- 选择内容模型后，元数据等相关 TODO -->
-                    <!--<el-form-item class="el-form-item" v-for="(item, index) in contentFormData.metaDataCollectionMetaDataDtoList"
-                                  :key="item.id" :label="item.metaData.name + '：'" :label-width="formLabelWidth"
-                                  :prop="'content.' + [item.fieldName]"
+                    <el-form-item v-if="metadataCollection.metadataList"
+                        class="el-form-item" v-for="(item, index) in metadataCollection.metadataList"
+                                  :key="item.id" :label="item.metadata.name" label-width="80px"
+                                  :prop="'content.' + item.fieldName"
                                   :rules="item | formItemRules">
-                        <template slot-scope>
+<!--                        <template slot-scope>-->
+                            <!-- 输入框 -->
                             <el-input v-if="item.controlType === 'inputElement'"
-                                      v-model="dialogList.content[item.fieldName]"></el-input>
-                            <el-select v-if="item.controlType === 'selectElement'" v-model="dialogList.content[item.fieldName]"
-                                       placeholder="请选择">
-                                <el-option v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.name"
-                                           :value="opt.dataDictionaryId"></el-option>
+                                      v-model="template.content[item.fieldName]"></el-input>
+                            <!-- 选择器 -->
+                            <el-select v-if="item.controlType === 'selectElement'&& contentItemOptions[item.id]" v-model="template.content[item.fieldName]" placeholder="请选择">
+                                <el-option v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.codeText"
+                                       :value="opt.id"></el-option>
                             </el-select>
-                            <el-radio-group v-if="item.controlType === 'radioElement'" v-model="dialogList.content[item.fieldName]">
-                                <el-radio v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.dataDictionaryId">
-                                    {{opt.name}}
+                            <!-- 单选框 -->
+                            <el-radio-group v-if="item.controlType === 'radioElement'" v-model="template.content[item.fieldName]">
+                                <el-radio v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
+                                    {{opt.codeText}}
                                 </el-radio>
                             </el-radio-group>
+                            <!-- 多选框 -->
                             <el-checkbox-group v-if="item.controlType === 'checkboxElement'" v-model="contentItemArray[item.fieldName]">
-                                <el-checkbox v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.dataDictionaryId">
-                                    {{opt.name}}
+                                <el-checkbox v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
+                                    {{opt.codeText}}
                                 </el-checkbox>
                             </el-checkbox-group>
-
+                            <!-- 文本域 -->
                             <el-input type="textarea" v-if="item.controlType === 'textareaElement'"
-                                      v-model="dialogList.content[item.fieldName]"></el-input>
+                                      v-model="template.content[item.fieldName]"></el-input>
+                            <!-- 富文本 -->
                             <editor v-if="item.controlType === 'richTextElement'" :ref="item.id" :id="'editor' + index"
                                     :default-msg="editorDefaultMsg[item.id]" :config="editorConfig"></editor>
-
-                            <template v-if="item.metaData.dataType === 'date'">
-                                <el-time-picker v-if="item.controlType === 'timeElement'" v-model="dialogList.content[item.fieldName]"
+                            <!-- 时间类型 -->
+                            <template v-if="item.metadata.dataType === 'date'">
+                                <el-time-picker v-if="item.controlType === 'timeElement'" v-model="template.content[item.fieldName]"
                                                 value-format="HH:mm:ss" placeholder="请选择时间"></el-time-picker>
                                 <el-date-picker v-else-if="item.controlType === 'datetimeElement'"
-                                                v-model="dialogList.content[item.fieldName]"
+                                                v-model="template.content[item.fieldName]"
                                                 type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择时间"></el-date-picker>
-                                <el-date-picker v-else v-model="dialogList.content[item.fieldName]" type="date" value-format="yyyy-MM-dd"
+                                <el-date-picker v-else v-model="template.content[item.fieldName]" type="date" value-format="yyyy-MM-dd"
                                                 placeholder="请选择日期"></el-date-picker>
                             </template>
 
                             <el-upload v-if="item.controlType === 'fileElement'"
-                                       :action="uploadUrl"
+                                       :action="$store.state.common.uploadUrl"
                                        multiple
                                        :file-list="uploadFileList[item.fieldName]"
-                                       :before-upload="beforeAvatarUpload"
+                                       :before-upload="beforeUpload"
                                        :on-success="handleSuccess"
                                        :on-preview="handlePreview"
                                        :on-remove="handleRemove"
                                        :before-remove="pickUploader(item.fieldName)">
                                 <el-button size="small" type="primary" @click="pickUploader(item.fieldName)">点击上传</el-button>
                             </el-upload>
-                        </template>
-                    </el-form-item>-->
+<!--                        </template>-->
+                    </el-form-item>
 
                 </el-form>
                 <span slot="footer" class="dialog-footer">
@@ -290,6 +295,7 @@
 
 
 <script>
+    import editor from '@/components/editor/index.vue'
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
@@ -307,15 +313,23 @@
         getAllModelBySiteId
     } from '@/api/station/model';
     import {validateURL} from '@/util/validate';
-
-
+    import {findMetadataCollectionAllData} from '@/api/metadata/collection';
+    import {getDictionaryList} from '@/api/admin/dictionary';
 
     export default {
         name: 'template',
+        components: {
+            editor
+        },
         data() {
             const validateTitle = (rule, value, callback) => {
-                this.template.title = value;
-                checkTitleExist(this.template).then(response => {
+                const query = {
+                    title: value,
+                    siteId: this.template.siteId,
+                    cmsCatalogId: this.template.cmsCatalogId,
+                    id: this.template.id,
+                }
+                checkTitleExist(query).then(response => {
                     if (response.status == 200) {
                         if (response.data) {
                             callback(new Error('当前栏目中已存在该标题内容'))
@@ -372,8 +386,15 @@
                     flagTop: undefined,
                     views: undefined,
                     flagExternal: undefined,
-                    workflowKey: undefined
+                    workflowKey: undefined,
+                    contentModelName: undefined,
+                    contentMapStr: undefined,
+                    content: {}
                 },
+                contentItemArray: {},
+                editorDefaultMsg: {},
+                contentItemOptions: {},
+                uploadFileList: {},
                 templateRules: {
                     siteId: [
                         {required: true, message: this.$t("table.pleaseInput") + '站点id'}
@@ -446,36 +467,44 @@
                 },
                 modelList: [],
                 modelTemplateList: [],
-                workflowKey: undefined
+                workflowKey: undefined,
+                metadataCollection: {},
+                editorConfig: {
+                    initialFrameWidth: '100%',
+                    initialFrameHeight: 350,
+                    zIndex: 2000
+                },
+                currentUploaderKey: undefined
             }
         },
         watch: {
             // 弹窗元数据相关部分 TODO
-            /*contentItemArray: {
+            contentItemArray: {
                 handler(val) {
                     for (let item in val) {
-                        this.dialogList.content[item] = val[item].join()
+                        this.template.content[item] = val[item].join()
                     }
                 },
                 deep: true
-            },*/
+            },
         },
         filters: {
             // 弹窗元数据相关部分 TODO
-            /*formItemRules(item) {
+            formItemRules(item) {
                 let rules = []
-                if (item.metaData.required === 1) {
+                if (item.metadata.required) {
                     rules.push({required: true, message: '不能为空', trigger: 'blur'})
                 }
-                if (item.metaData.dataLength) {
+                if (item.metadata.dataLength) {
                     rules.push({
-                        max: parseInt(item.metaData.dataLength),
-                        message: '不能超过' + item.metaData.dataLength + '个字符',
+                        max: parseInt(item.metadata.dataLength),
+                        message: '不能超过' + item.metadata.dataLength + '个字符',
                         trigger: 'blur'
                     })
                 }
+                // console.log(`rules[${item.fieldName}]`, rules)
                 return rules
-            }*/
+            }
         },
         computed: {
             ...mapGetters([
@@ -498,6 +527,7 @@
             this.changeHeight()
         },
         created(){
+            console.log("siteId: " + this.$store.state.common.siteId);
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
@@ -533,7 +563,7 @@
             handleNoteClick(data) {
                 // console.log("catalog: " + JSON.stringify(data))
                 // 获取内容列表
-                // 设置内容工作流id TODO
+                // 设置内容工作流id
                 this.workflowKey = data.workflowKey;
                 this.listQuery.cmsCatalogId = data.id;
                 // 获取template
@@ -590,24 +620,40 @@
                 this.resetTemplate();
                 if (row.id) {
                     this.template = deepClone(row);
+                    this.metadataCollection = row.metadataCollectionVo;
+                    // this.template.content = row.content;
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
+                    this.metadataCollection = this.selectedRows[0].metadataCollectionVo;
+                    // this.template.content = row.content;
                 }
+                this.template.workflowKey = this.workflowKey;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
+                this.getContentForm();
             },
             btnDelete(row){
                 let ids = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        ids.push(row.id);
+                        ids.push({
+                            id: row.id,
+                            metaDataCollectionId: row.metadataCollectionVo.id,
+                            contentId: row.content.id_
+                        });
+                        // console.log("ids: " + JSON.stringify(ids))
                         this.doDelete(ids);
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for(const deleteRow of this.selectedRows){
-                            ids.push(deleteRow.id);
+                            ids.push({
+                                id: deleteRow.id,
+                                metaDataCollectionId: deleteRow.metadataCollectionVo.id,
+                                contentId: deleteRow.content.id_
+                            });
                         }
+                        // console.log("ids: " + JSON.stringify(ids))
                         this.doDelete(ids);
                     })
                 }
@@ -615,20 +661,25 @@
             doCreate(){
 
                 // 元数据相关 TODO
-                /*for (let item of this.contentFormData.metaDataCollectionMetaDataDtoList) {
+                // 富文本
+                for (let item of this.metadataCollection.metadataList) {
                     if (item.controlType === 'richTextElement') {
-                        this.$set(this.dialogList.content, item.fieldName, this.$refs[item.id][0].getUeContent())
+                        this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
                     }
                 }
+                // 文件上传
                 for (let item in this.uploadFileList) {
-                    let ids = []
+                    let files = []
                     for (let file of this.uploadFileList[item]) {
-                        ids.push(file.id)
+                        files.push(file)
                     }
-                    this.dialogList.content[item] = ids.join()
-                }*/
+                    this.template.content[item] = files.join()
+                }
                 this.$refs['templateDialogForm'].validate(valid => {
                     if(valid) {
+                        // 元数据信息字符串
+                        this.template.contentMapStr = JSON.stringify(this.template.content);
+
                         if (!this.template.flagSearch) {
                             this.template.flagSearch = false;
                         }
@@ -637,9 +688,8 @@
                         }
                         if (!this.template.flagExternal) {
                             this.template.flagExternal = false;
-                            this.template.url = undefined
                         }
-                        // console.log("template: " + JSON.stringify(this.template))
+                        console.log("template: " + JSON.stringify(this.template))
                         this.submitLoading = true;
                         createOrUpdateTemplate(this.template).then(() => {
                             this.resetTemplateDialogAndList();
@@ -651,8 +701,30 @@
                 });
             },
             doUpdate(){
+                // 元数据相关 TODO
+                // 富文本
+                for (let item of this.metadataCollection.metadataList) {
+                    if (item.controlType === 'richTextElement') {
+                        this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
+                    }
+                }
+                // 文件上传
+                for (let item in this.uploadFileList) {
+                    let files = []
+                    for (let file of this.uploadFileList[item]) {
+                        files.push(file)
+                    }
+                    this.template.content[item] = files.join()
+                }
                 this.$refs['templateDialogForm'].validate(valid => {
                     if(valid) {
+                        // 删除查询出来的元数据信息
+                        Vue.delete(this.template, 'content');
+                        Vue.delete(this.template, 'metadataCollectionVo');
+
+                        // 元数据信息字符串
+                        this.template.contentMapStr = JSON.stringify(this.template.content);
+
                         this.submitLoading = true;
                         createOrUpdateTemplate(this.template).then(() => {
                             this.resetTemplateDialogAndList();
@@ -665,7 +737,7 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delTemplates(ids).then(() => {
+                delTemplates(JSON.stringify(ids)).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
@@ -691,7 +763,10 @@
                     flagTop: undefined,
                     views: undefined,
                     flagExternal: undefined,
-                    workflowKey: undefined
+                    workflowKey: undefined,
+                    contentModelName: undefined,
+                    contentMapStr: undefined,
+                    content: {}
                 }
             },
             resetTemplateDialogAndList(){
@@ -701,63 +776,89 @@
             },
             closeTemplateDialog() {
                 this.dialogVisible = false;
+                this.metadataCollection = {};
+                this.editorDefaultMsg = {};
+                this.contentItemOptions = {};
+                this.contentItemArray = {};
+                this.uploadFileList = {};
+                this.currentUploaderKey = undefined;
                 this.resetTemplate();
+                // 清除富文本缓存，否则二次以后加载失败
+                $('#ueditor_textarea_editorValue').remove()
                 this.$refs['templateDialogForm'].resetFields();
             },
             handleModelChange() {
-                // 获取内容对象
-                this.getContentForm()
+                this.getContentForm();
             },
+            // 获取内容对象 TODO
             getContentForm() {
                 for (let model of this.modelList) {
                     if (this.template.contentModelId == model.id) {
                         // console.log(JSON.stringify(model))
+                        // 设置内容模型名称
+                        this.template.contentModelName = model.name;
+                        // 设置元数据id
+                        this.$set(this.template.content, 'metaDataCollectionId', model.metaDataCollectionId);
+
+                        // 新增，元数据集为空，获取元数据集
+                        if (this.dialogTitle = 'create') {
+                            // 获取数字字段，获取元数据集 TODO
+                            const query = {id: model.metaDataCollectionId}
+                            findMetadataCollectionAllData(query).then(response => {
+                                if (response.status == 200 && response.data.length > 0) {
+                                    this.metadataCollection = response.data[0];
+                                    this.setMetadataAndDictionary();
+                                } else {
+                                    this.$message.error('获取内容表单结构失败')
+                                }
+                            })
+                        } else {
+                            this.setMetadataAndDictionary();
+                        }
                     }
                 }
-
-                // 获取数字字段，获取元数据集 TODO
-                /*getByIdContentModel(this.dialogList.contentModelId).then(response => {
-                    if (response.ok) {
-                        this.contentFormData = response.data.metaDataCollection
-                        for (let item of this.contentFormData.metaDataCollectionMetaDataDtoList) {
-                            if (item.controlType === 'checkboxElement') {
-                                let val = this.dialogList.content[item.fieldName]
-                                this.$set(this.contentItemArray, item.fieldName, val ? val.split(',') : [])
-                            }
-                            if (item.controlType === 'richTextElement') {
-                                this.$set(this.editorDefaultMsg, item.id, this.dialogList.content[item.fieldName])
-                            }
-                            if (item.dataSource === 'dataItem') {
-                                // 数据源是数据字典，根据字典id查询字典项
-                                findDictionaryItemTreeById(item.dictionaryId).then(response => {
-                                    if (response.ok) {
-                                        this.$set(this.contentItemOptions, item.id, eval(response.data))
-                                    } else {
-                                        this.$message.error('获取字典项失败')
-                                    }
-                                })
-                            }
-                            if (item.controlType === 'fileElement') {
-                                // 根据上传文件记录id查找文件信息
-                                let fileIds = this.dialogList.content[item.fieldName].split(',')
-                                this.$set(this.uploadFileList, item.fieldName, [])
-                                for (let id of fileIds) {
-                                    getUploadFile(id).then(response => {
-                                        if (response.ok) {
-                                            this.uploadFileList[item.fieldName].push({
-                                                id: response.data.id,
-                                                name: response.data.name,
-                                                url: response.data.url
-                                            })
-                                        }
-                                    })
-                                }
-                            }
+            },
+            // 设置元数据值及字典选项
+            setMetadataAndDictionary() {
+                // console.log('content', this.template.content)
+                for (let item of this.metadataCollection.metadataList) {
+                    // 元数据值
+                    let val = this.template.content[item.fieldName];
+                    if (val) {
+                        // 多选框元素
+                        if (item.controlType === 'checkboxElement') {
+                            this.$set(this.contentItemArray, item.fieldName, val.split(','))
                         }
-                    } else {
-                        this.$message.error('获取内容表单结构失败')
+                        // 富文本元素
+                        if (item.controlType === 'richTextElement') {
+                            this.$set(this.editorDefaultMsg, item.id, val)
+                        }
+                        // 上传文件
+                        if (item.controlType === 'fileElement') {
+                            // 根据上传文件记录id查找文件信息
+                            this.$set(this.uploadFileList, item.fieldName, [])
+                            /*let fileIds = val.split(',');
+                            for (let id of fileIds) {
+                                this.uploadFileList[item.fieldName].push({
+                                    // id: response.data.id,
+                                    name: response.data.name,
+                                    url: response.data.url
+                                })
+                            }*/
+                        }
                     }
-                })*/
+                    // 数据源是数据字典
+                    if (item.dataSource === 'dataItem') {
+                        // 根据字典id查询字典项
+                        getDictionaryList({indexId: item.dictionaryId}).then(response => {
+                            if (response.status == 200) {
+                                this.$set(this.contentItemOptions, item.id, eval(response.data))
+                            } else {
+                                this.$message.error('获取字典项失败')
+                            }
+                        })
+                    }
+                }
             },
             handleAvatarSuccess(res, file) {
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
@@ -774,7 +875,7 @@
                 const isJPG = this.$store.state.common.imageAccepts.includes(file.type);
                 const isLt2M = file.size / 1024 / 1024 < 2;
                 if (!isJPG) {
-                    this.$message.error('上传头像图片格式不正确!');
+                    this.$message.error('上传图片格式不正确!');
                 }
                 if (!isLt2M) {
                     this.$message.error('上传图片大小不能超过 2MB!');
@@ -939,6 +1040,45 @@
                     }
                 })
             },
+            isFlagExternal (value) {
+                if (!value) {
+                    if (this.template.url) {
+                        this.template.url = undefined;
+                    }
+                }
+            },
+            beforeUpload(file) {
+
+            },
+            handleSuccess(res, file) {
+                if (res.status === 200 && res.data.state === 'SUCCESS') {
+                    this.$message.success('上传成功！');
+
+                    let uploadFile = {
+                        // id: res.result.customData.id,
+                        name: res.data.original,
+                        url: res.data.url}
+                    if (!this.uploadFileList[this.currentUploaderKey]) {
+                        this.$set(this.uploadFileList, this.currentUploaderKey, [])
+                    }
+                    this.uploadFileList[this.currentUploaderKey].push(uploadFile)
+                } else {
+                    this.$message.error('上传失败！');
+                }
+            },
+            handlePreview(file) {
+                console.log(file)
+            },
+            handleRemove(file, fileList) {
+                for (let [index, item] of this.uploadFileList[this.currentUploaderKey].entries()) {
+                    if (file.url === item.url) {
+                        this.uploadFileList[this.currentUploaderKey].splice(index, 1)
+                    }
+                }
+            },
+            pickUploader(key) {
+                this.currentUploaderKey = key
+            }
         }
     }
 </script>
@@ -1053,6 +1193,20 @@
         width: 178px;
         height: 178px;
         display: block;
+    }
+
+    /*table-expand*/
+    .table-expand {
+        font-size: 0;
+    }
+    .table-expand label {
+        width: 160px;
+        color: #99a9bf;
+    }
+    .table-expand .el-form-item {
+        margin-right: 0;
+        margin-bottom: 0;
+        width: 50%;
     }
 </style>
 
