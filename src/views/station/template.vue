@@ -240,13 +240,13 @@
                                        :value="opt.id"></el-option>
                             </el-select>
                             <!-- 单选框 -->
-                            <el-radio-group v-if="item.controlType === 'radioElement'" v-model="template.content[item.fieldName]">
+                            <el-radio-group v-if="item.controlType === 'radioElement' && contentItemOptions[item.id]" v-model="template.content[item.fieldName]">
                                 <el-radio v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
                                     {{opt.codeText}}
                                 </el-radio>
                             </el-radio-group>
                             <!-- 多选框 -->
-                            <el-checkbox-group v-if="item.controlType === 'checkboxElement'" v-model="contentItemArray[item.fieldName]">
+                            <el-checkbox-group v-if="item.controlType === 'checkboxElement' && contentItemOptions[item.id]" v-model="contentItemArray[item.fieldName]">
                                 <el-checkbox v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
                                     {{opt.codeText}}
                                 </el-checkbox>
@@ -271,7 +271,6 @@
                             <el-upload v-if="item.controlType === 'fileElement'"
                                        :action="$store.state.common.uploadUrl"
                                        multiple
-                                       :file-list="uploadFileList[item.fieldName]"
                                        :before-upload="beforeUpload"
                                        :on-success="handleSuccess"
                                        :on-preview="handlePreview"
@@ -389,7 +388,8 @@
                     workflowKey: undefined,
                     contentModelName: undefined,
                     contentMapStr: undefined,
-                    content: {}
+                    content: {},
+                    metaDataCollectionId: undefined
                 },
                 contentItemArray: {},
                 editorDefaultMsg: {},
@@ -481,6 +481,7 @@
             // 弹窗元数据相关部分 TODO
             contentItemArray: {
                 handler(val) {
+                    // console.log(JSON.stringify(val))
                     for (let item in val) {
                         this.template.content[item] = val[item].join()
                     }
@@ -638,7 +639,7 @@
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push({
                             id: row.id,
-                            metaDataCollectionId: row.metadataCollectionVo.id,
+                            metaDataCollectionId: row.metaDataCollectionId,
                             contentId: row.content.id_
                         });
                         // console.log("ids: " + JSON.stringify(ids))
@@ -649,7 +650,7 @@
                         for(const deleteRow of this.selectedRows){
                             ids.push({
                                 id: deleteRow.id,
-                                metaDataCollectionId: deleteRow.metadataCollectionVo.id,
+                                metaDataCollectionId: deleteRow.metaDataCollectionId,
                                 contentId: deleteRow.content.id_
                             });
                         }
@@ -718,12 +719,13 @@
                 }
                 this.$refs['templateDialogForm'].validate(valid => {
                     if(valid) {
-                        // 删除查询出来的元数据信息
-                        Vue.delete(this.template, 'content');
-                        Vue.delete(this.template, 'metadataCollectionVo');
 
                         // 元数据信息字符串
                         this.template.contentMapStr = JSON.stringify(this.template.content);
+
+                        // 删除查询出来的元数据信息
+                        // Vue.delete(this.template, 'content');
+                        Vue.delete(this.template, 'metadataCollectionVo');
 
                         this.submitLoading = true;
                         createOrUpdateTemplate(this.template).then(() => {
@@ -766,7 +768,8 @@
                     workflowKey: undefined,
                     contentModelName: undefined,
                     contentMapStr: undefined,
-                    content: {}
+                    content: {},
+                    metaDataCollectionId: undefined
                 }
             },
             resetTemplateDialogAndList(){
@@ -788,6 +791,10 @@
                 this.$refs['templateDialogForm'].resetFields();
             },
             handleModelChange() {
+                // 清除已经填值的其他元数据集的元数据信息
+                this.template.content = {};
+                // 清除富文本缓存，否则切换内容模型会出现多余的富文本框
+                $('#ueditor_textarea_editorValue').remove()
                 this.getContentForm();
             },
             // 获取内容对象 TODO
@@ -798,10 +805,10 @@
                         // 设置内容模型名称
                         this.template.contentModelName = model.name;
                         // 设置元数据id
-                        this.$set(this.template.content, 'metaDataCollectionId', model.metaDataCollectionId);
+                        this.template.metaDataCollectionId = model.metaDataCollectionId;
 
                         // 新增，元数据集为空，获取元数据集
-                        if (this.dialogTitle = 'create') {
+                        if (this.dialogTitle == 'create') {
                             // 获取数字字段，获取元数据集 TODO
                             const query = {id: model.metaDataCollectionId}
                             findMetadataCollectionAllData(query).then(response => {
@@ -822,9 +829,18 @@
             setMetadataAndDictionary() {
                 // console.log('content', this.template.content)
                 for (let item of this.metadataCollection.metadataList) {
+                    // 初始化，必须!
+                    if (item.controlType === 'checkboxElement') {
+                        this.$set(this.contentItemArray, item.fieldName, [])
+                    }
+
                     // 元数据值
                     let val = this.template.content[item.fieldName];
                     if (val) {
+                        // 输入框元素, 设置值, 否则校验会出错
+                        if (item.controlType === 'inputElement') {
+                            this.template.content[item.fieldName] = val.toString();
+                        }
                         // 多选框元素
                         if (item.controlType === 'checkboxElement') {
                             this.$set(this.contentItemArray, item.fieldName, val.split(','))
@@ -862,7 +878,8 @@
             },
             handleAvatarSuccess(res, file) {
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
-                    this.template.thumbnail = res.data.url;
+                    // this.template.thumbnail = res.data.url;
+                    this.$set(this.template, 'thumbnail', res.data.url)
                     this.$message.success('上传成功！');
                 } else {
                     this.$message.error('上传失败！');
@@ -989,6 +1006,20 @@
                     this.$message.info('请先勾选数据')
                     return
                 }
+                // 校验
+                const titles = [];
+                for (let t of this.templateList) {
+                    for (let id of ids) {
+                        if (id == t.id && !t.flagSearch) {
+                            titles.push(t.title);
+                        }
+                    }
+                }
+                if (titles.length > 0) {
+                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
+                    return;
+                }
+
                 let params = {
                     ids: ids.join(),
                     siteId: this.listQuery.siteId
@@ -1012,6 +1043,17 @@
                     this.$message.error('请先选择栏目！')
                     return
                 }
+                // 校验
+                const titles = [];
+                for (let t of this.templateList) {
+                    if (this.listQuery.cmsCatalogId == t.cmsCatalogId && !t.flagSearch) {
+                        titles.push(t.title);
+                    }
+                }
+                if (titles.length > 0) {
+                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
+                    return;
+                }
                 let params = {
                     cmsCatalogId: this.listQuery.cmsCatalogId,
                     siteId: this.listQuery.siteId
@@ -1031,6 +1073,17 @@
                     this.$message.error('请先选择站点！')
                     return
                 }
+                // 校验
+                const titles = [];
+                for (let t of this.templateList) {
+                    if (!t.flagSearch) {
+                        titles.push(t.title);
+                    }
+                }
+                if (titles.length > 0) {
+                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
+                    return;
+                }
                 reindex({siteId: this.listQuery.siteId}).then(response => {
                     if (response.status == 200) {
                         this.$message.success('生成中，请稍后查看！')
@@ -1049,6 +1102,11 @@
             },
             beforeUpload(file) {
 
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if (!isLt2M) {
+                    this.$message.error('上传文件大小不能超过 2MB!');
+                }
+                return isLt2M;
             },
             handleSuccess(res, file) {
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
@@ -1058,6 +1116,8 @@
                         // id: res.result.customData.id,
                         name: res.data.original,
                         url: res.data.url}
+
+                    // 初始化uploadFileList
                     if (!this.uploadFileList[this.currentUploaderKey]) {
                         this.$set(this.uploadFileList, this.currentUploaderKey, [])
                     }
@@ -1077,6 +1137,7 @@
                 }
             },
             pickUploader(key) {
+                // console.log('file-key: ', key)
                 this.currentUploaderKey = key
             }
         }
@@ -1147,7 +1208,7 @@
     /*表格样式根据elementUIIndex样式文件来设置*/
     /*树节点选中状态高亮色的设置*/
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-        background-color: #ebb563;
+        /*background-color: #ebb563;*/
     }
     /deep/ .el-tree-node > .el-tree-node__children {
         overflow: visible !important;
