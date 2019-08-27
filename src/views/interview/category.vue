@@ -5,14 +5,15 @@
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-select v-model.trim="listQuery.siteId" :size="searchSize" placeholder="请选择站点">
-                            <el-option v-for = "o in stationGroups"
+                            <el-option v-for="o in stationGroups"
+                                       :key="o.id"
                                        :label="o.name"
                                        :value="o.id">
                             </el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -70,8 +71,8 @@
                          label-width="80px" :rules="categoryRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="名称" prop="name">
-                                <el-input v-model="category.name" maxlength="50"></el-input>
+                            <el-form-item label="分类名称" prop="name">
+                                <el-input v-model.trim="category.name" maxlength="50"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -80,6 +81,7 @@
                             <el-form-item label="站点" prop="siteId">
                                 <el-select v-model.trim="category.siteId" placeholder="请选择站点" style="width: 100%">
                                     <el-option v-for = "o in stationGroups"
+                                               :key="o.id"
                                                :label="o.name"
                                                :value="o.id">
                                     </el-option>
@@ -90,7 +92,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="category.remark" :rows="3" maxlength="500"/>
+                                <el-input type="textarea" v-model.trim="category.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -178,7 +180,9 @@
                     if (response.status == 200) {
                         this.stationGroups = response.data;
                     }
-                }).catch(()=>{});
+                }).catch((error)=>{
+                    this.message.error(error);
+                });
             },
             resetSearch(){
                 this.listQuery.siteId = undefined;
