@@ -271,7 +271,6 @@
                             <el-upload v-if="item.controlType === 'fileElement'"
                                        :action="$store.state.common.uploadUrl"
                                        multiple
-                                       :file-list="uploadFileList[item.fieldName]"
                                        :before-upload="beforeUpload"
                                        :on-success="handleSuccess"
                                        :on-preview="handlePreview"
@@ -718,12 +717,13 @@
                 }
                 this.$refs['templateDialogForm'].validate(valid => {
                     if(valid) {
-                        // 删除查询出来的元数据信息
-                        Vue.delete(this.template, 'content');
-                        Vue.delete(this.template, 'metadataCollectionVo');
 
                         // 元数据信息字符串
                         this.template.contentMapStr = JSON.stringify(this.template.content);
+
+                        // 删除查询出来的元数据信息
+                        // Vue.delete(this.template, 'content');
+                        Vue.delete(this.template, 'metadataCollectionVo');
 
                         this.submitLoading = true;
                         createOrUpdateTemplate(this.template).then(() => {
@@ -801,7 +801,7 @@
                         this.$set(this.template.content, 'metaDataCollectionId', model.metaDataCollectionId);
 
                         // 新增，元数据集为空，获取元数据集
-                        if (this.dialogTitle = 'create') {
+                        if (this.dialogTitle == 'create') {
                             // 获取数字字段，获取元数据集 TODO
                             const query = {id: model.metaDataCollectionId}
                             findMetadataCollectionAllData(query).then(response => {
@@ -989,6 +989,20 @@
                     this.$message.info('请先勾选数据')
                     return
                 }
+                // 校验
+                const titles = [];
+                for (let t of this.templateList) {
+                    for (let id of ids) {
+                        if (id == t.id && !t.flagSearch) {
+                            titles.push(t.title);
+                        }
+                    }
+                }
+                if (titles.length > 0) {
+                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
+                    return;
+                }
+
                 let params = {
                     ids: ids.join(),
                     siteId: this.listQuery.siteId
@@ -1012,6 +1026,17 @@
                     this.$message.error('请先选择栏目！')
                     return
                 }
+                // 校验
+                const titles = [];
+                for (let t of this.templateList) {
+                    if (this.listQuery.cmsCatalogId == t.cmsCatalogId && !t.flagSearch) {
+                        titles.push(t.title);
+                    }
+                }
+                if (titles.length > 0) {
+                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
+                    return;
+                }
                 let params = {
                     cmsCatalogId: this.listQuery.cmsCatalogId,
                     siteId: this.listQuery.siteId
@@ -1031,6 +1056,17 @@
                     this.$message.error('请先选择站点！')
                     return
                 }
+                // 校验
+                const titles = [];
+                for (let t of this.templateList) {
+                    if (!t.flagSearch) {
+                        titles.push(t.title);
+                    }
+                }
+                if (titles.length > 0) {
+                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
+                    return;
+                }
                 reindex({siteId: this.listQuery.siteId}).then(response => {
                     if (response.status == 200) {
                         this.$message.success('生成中，请稍后查看！')
@@ -1049,6 +1085,11 @@
             },
             beforeUpload(file) {
 
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if (!isLt2M) {
+                    this.$message.error('上传文件大小不能超过 2MB!');
+                }
+                return isLt2M;
             },
             handleSuccess(res, file) {
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
@@ -1058,6 +1099,8 @@
                         // id: res.result.customData.id,
                         name: res.data.original,
                         url: res.data.url}
+
+                    // 初始化uploadFileList
                     if (!this.uploadFileList[this.currentUploaderKey]) {
                         this.$set(this.uploadFileList, this.currentUploaderKey, [])
                     }
@@ -1077,6 +1120,7 @@
                 }
             },
             pickUploader(key) {
+                console.log('file-key: ', key)
                 this.currentUploaderKey = key
             }
         }
