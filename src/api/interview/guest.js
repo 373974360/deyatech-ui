@@ -34,7 +34,7 @@ export function delGuests(ids) {
 }
 export function getGuestList(query) {
     return request({
-        url: '/manage/interview/guest/pageByGuest',
+        url: '/manage/interview/guest/pageGuestByModelNameJobType',
         method: 'get',
         params: query
     });

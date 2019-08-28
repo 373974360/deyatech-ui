@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select v-model="listQuery.categoryId" :size="searchSize" placeholder="请选择分类">
+                        <el-select v-model.trim="listQuery.categoryId" :size="searchSize" placeholder="请选择分类">
                             <el-option v-for="o in categorys"
                                        :key="o.id"
                                        :label="o.name"
@@ -12,7 +12,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -27,8 +27,6 @@
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
@@ -86,7 +84,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="访谈名称" prop="name">
-                                <el-input v-model.trim="model.name" maxlength="100"></el-input>
+                                <el-input v-model.trim="model.name" maxlength="100" placeholder="请输入访谈名称"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -97,13 +95,13 @@
                                     v-model.trim="model.time"
                                     type="datetime"
                                     format="yyyy-MM-dd HH:mm"
-                                    placeholder="选择访谈时间">
+                                    placeholder="请选择访谈时间">
                                 </el-date-picker>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="访谈状态" prop="status">
-                                <el-select v-model.trim="model.status">
+                                <el-select v-model.trim="model.status" placeholder="请选择访谈状态">
                                     <el-option v-for="o in enums['InterviewModelStatusEnum']"
                                                :key="o.code"
                                                :label="o.value"
@@ -116,7 +114,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="访谈封面" prop="cover">
-                                <el-input v-model="model.cover" v-show="false"></el-input>
+                                <el-input v-model.trim="model.cover" v-show="false"></el-input>
                                 <el-upload class="cover-uploader" name="file"
                                            :action="$store.state.common.uploadUrl"
                                            :accept="$store.state.common.imageAccepts"
@@ -132,34 +130,37 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="访谈简介" prop="description">
-                                <el-input type="textarea" v-model.trim="model.description" :rows="3" maxlength="500"></el-input>
+                                <el-input type="textarea" v-model.trim="model.description" :rows="3" maxlength="500" placeholder="请输入访谈简介"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="直播地址" prop="liveUrl">
-                                <el-input v-model="model.liveUrl" maxlength="255"></el-input>
+                                <el-input v-model.trim="model.liveUrl" maxlength="255" placeholder="请输入直播地址"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="视频地址" prop="videoUrl">
-                                <el-input v-model.trim="model.videoUrl" maxlength="255"></el-input>
+                                <el-input v-model.trim="model.videoUrl" maxlength="255" placeholder="请输入视频地址"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="访谈图片" ><!--prop="images"-->
-                                <!--<el-input v-model="model.images" v-show="false"></el-input>-->
-                                <div v-for="(o,i) in model.imageArray" class="image-uploader" @mouseover="imageMouseOver(o.url)" @mouseout="imageMouseOut(o.url)">
-                                    <el-form-item :prop="`imageArray[${i}].name`" :rules="{ required: true, message: '请输入访谈图片名称', trigger: 'blur' }">
-                                        <img :src="$store.state.common.showPicImgUrl + o.url" class="image-add">
-                                        <el-input v-model="o.name" maxlength="20" @change="imageNameChange" style=""></el-input>
+                        <el-col :span="24" style="margin-bottom: 0;">
+                            <el-form-item label="访谈图片" style="margin-bottom: 0">
+                                <div v-for="(o,i) in model.imageArray" class="image-uploader" :key="i">
+                                    <el-form-item :prop="`imageArray[${i}].name`"
+                                                  :rules="{ required: true, message: '请输入访谈图片名称', trigger: 'blur' }"
+                                                  style="margin-bottom: 0">
+                                        <img :src="$store.state.common.showPicImgUrl + o.url" class="image-add" >
+                                        <el-input v-model.trim="o.name" maxlength="20" @change="imageNameChange" style=""></el-input>
                                     </el-form-item>
-                                    <el-button v-if="o.del" type="danger" icon="el-icon-delete" circle class="image-delete-button" @click="imageDeleteClick(o.url)"></el-button>
+                                    <div class="image-mask" @mouseover="imageMouseOver(o.url)" @mouseout="imageMouseOut(o.url)"><!--v-if="o.del"-->
+                                        <el-button  type="danger" icon="el-icon-delete" circle class="image-delete-button" @click="imageDeleteClick(o.url)"></el-button>
+                                    </div>
                                 </div>
                                 <el-upload class="image-uploader" name="file"
                                            :action="$store.state.common.uploadUrl"
@@ -172,17 +173,24 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
+                    <el-row :gutter="0" :span="24">
+                        <el-col :span="24" style="margin-bottom: 0;">
+                            <el-form-item label="" prop="images">
+                                <el-input v-model.trim="model.images" v-show="false"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="访谈内容" prop="content">
-                                <el-input type="textarea" v-model.trim="model.content" :rows="10" maxlength="5000"></el-input>
+                                <el-input type="textarea" v-model.trim="model.content" :rows="10" maxlength="5000" placeholder="请输入访谈内容"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="model.remark" :rows="5" maxlength="500"/>
+                                <el-input type="textarea" v-model.trim="model.remark" :rows="5" maxlength="500" placeholder="请输入备注"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -257,7 +265,7 @@
                         {required: true, message: this.$t("table.pleaseInput") + '访谈名称'}
                     ],
                     time: [
-                        {required: true, message: this.$t("table.pleaseInput") + '访谈时间'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '访谈时间'}
                     ],
                     cover: [
                         {required: true, message: '请上传访谈封面'}
@@ -316,7 +324,7 @@
                 getAllCategoryList().then(response => {
                     this.categorys = response.data;
                 }).catch((error)=>{
-                    this.message.error(error);
+                    this.$message.error(error);
                 });
             },
             resetSearch(){
@@ -467,6 +475,7 @@
             imageMouseOut(url) {
                 this.controlDeleteButton(url, false);
             },
+            // 删除按钮显示隐藏
             controlDeleteButton(url, value) {
                 if (this.model.imageArray) {
                     for(let image of this.model.imageArray) {
@@ -477,6 +486,7 @@
                     }
                 }
             },
+            // 删除图像
             imageDeleteClick(url) {
                 if (this.model.imageArray) {
                     let index = -1;
@@ -489,7 +499,11 @@
                     if (index > -1) {
                         this.model.imageArray.splice(index, 1);
                     }
-                    this.model.images = JSON.stringify(this.model.imageArray);
+                    if (this.model.imageArray && this.model.imageArray.length > 0) {
+                        this.model.images = JSON.stringify(this.model.imageArray);
+                    } else {
+                        this.model.images = undefined;
+                    }
                 }
             },
             imageNameChange() {
@@ -577,6 +591,17 @@
     .image-delete-button {
         position: relative;
         left: 60px;
-        top: -144px;
+        top: 60px;
+        z-index: 9999;
+        /*left: 60px;*/
+        /*top: -144px;*/
+    }
+    .image-mask {
+        width: 160px;
+        height: 160px;
+        position: relative;
+        left: 0px;
+        top: -204px;
+        display: inline-block;
     }
 </style>

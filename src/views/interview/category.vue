@@ -72,7 +72,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="分类名称" prop="name">
-                                <el-input v-model.trim="category.name" maxlength="50"></el-input>
+                                <el-input v-model.trim="category.name" maxlength="50" placeholder="请输入分类名称"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -92,7 +92,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="category.remark" :rows="3" maxlength="500"/>
+                                <el-input type="textarea" v-model.trim="category.remark" :rows="3" maxlength="500" placeholder="请输入备注"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -181,7 +181,7 @@
                         this.stationGroups = response.data;
                     }
                 }).catch((error)=>{
-                    this.message.error(error);
+                    this.$message.error(error);
                 });
             },
             resetSearch(){

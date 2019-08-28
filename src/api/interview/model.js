@@ -39,6 +39,13 @@ export function getModelList(query) {
         params: query
     });
 }
+export function getAllModelList(query) {
+    return request({
+        url: '/manage/interview/model/listByModel',
+        method: 'get',
+        params: query
+    });
+}
 export function getModelListByCategoryAndName(query) {
     return request({
         url: '/manage/interview/model/pageByCategoryAndName',
