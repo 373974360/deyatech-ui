@@ -300,7 +300,7 @@
                 completeTask(row.actTaskId).then(response => {
                     if (response.status == 200) {
                         if (response.data === 'FINISH') {
-                            updateContentStatus(row.variables.contentId).then(response => {
+                            updateContentStatus(row.variables.templateId).then(response => {
                             })
                         }
                         this.reloadList();
