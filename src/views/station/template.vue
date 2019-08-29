@@ -150,13 +150,66 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
+                            <el-form-item label="资源分类" prop="resourceCategory"> <!--TODO-->
+                                <el-select v-model="template.resourceCategory" placeholder="请选择资源分类">
+                                    <!--<el-option
+                                        v-for="m in modelList"
+                                        :key="m.id"
+                                        :label="m.name"
+                                        :value="m.id">
+                                    </el-option>-->
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
                             <el-form-item label="作者姓名" prop="author">
                                 <el-input v-model="template.author"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+                        <!--<el-col :span="12">
                             <el-form-item label="编辑姓名" prop="editor">
                                 <el-input v-model="template.editor"></el-input>
+                            </el-form-item>
+                        </el-col>-->
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="摘要" prop="resourceSummary">
+                                <el-input type="textarea" v-model="template.resourceSummary" :rows="3"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="内容" prop="resourceContent">
+                                <el-input type="textarea" v-model="template.resourceContent" :rows="3"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="关键字" prop="keyword">
+                                <el-tag
+                                    :key="tag"
+                                    v-for="tag in dynamicTags"
+                                    closable
+                                    :disable-transitions="false"
+                                    @close="handleClose(tag)">
+                                    {{tag}}
+                                </el-tag>
+                                <el-input
+                                    class="input-new-tag"
+                                    v-if="inputVisible"
+                                    v-model="inputValue"
+                                    ref="saveTagInput"
+                                    size="small"
+                                    @keyup.enter.native="handleInputConfirm"
+                                    @blur="handleInputConfirm"
+                                    placeholder="最多二十个字"
+                                    maxlength="20"
+                                >
+                                </el-input>
+                                <el-button v-if="dynamicTags.length < 5" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多5个)</el-button>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -179,13 +232,14 @@
                         <el-col :span="12">
                             <el-form-item label="缩略图" prop="thumbnail">
                                 <el-upload class="avatar-uploader"
-                                           :action="$store.state.common.uploadUrl"
+                                           :action="uploadUrlCms"
+                                           :data="{'path': siteUploadPath}"
                                            :accept="$store.state.common.imageAccepts"
                                            :show-file-list="false"
                                            :on-success="handleAvatarSuccess"
                                            :on-error="handleAvatarError"
                                            :before-upload="beforeAvatarUpload">
-                                    <img v-if="template.thumbnail" :src="this.$store.state.common.showPicImgUrl + template.thumbnail"
+                                    <img v-if="template.thumbnailUrl" :src="showPicImgUrl"
                                          class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
@@ -269,8 +323,10 @@
                             </template>
 
                             <el-upload v-if="item.controlType === 'fileElement'"
-                                       :action="$store.state.common.uploadUrl"
+                                       :action="uploadUrlCms"
+                                       :data="{'path': siteUploadPath}"
                                        multiple
+                                       :file-list="uploadFileReader"
                                        :before-upload="beforeUpload"
                                        :on-success="handleSuccess"
                                        :on-preview="handlePreview"
@@ -303,7 +359,9 @@
         delTemplates,
         checkTitleExist,
         genStaticPage,
-        reindex
+        reindex,
+        getSiteUploadPath,
+        getUploadFile
     } from '@/api/station/template';
     import {
         getCatalogTree
@@ -379,12 +437,17 @@
                     editor: undefined,
                     source: undefined,
                     thumbnail: undefined,
+                    thumbnailUrl: undefined,
                     title: undefined,
                     flagSearch: undefined,
                     sortNo: undefined,
                     flagTop: undefined,
                     views: undefined,
                     flagExternal: undefined,
+                    resourceSummary: undefined,
+                    resourceContent: undefined,
+                    resourceCategory: undefined,
+                    keyword: undefined,
                     workflowKey: undefined,
                     contentModelName: undefined,
                     contentMapStr: undefined,
@@ -395,6 +458,7 @@
                 editorDefaultMsg: {},
                 contentItemOptions: {},
                 uploadFileList: {},
+                uploadFileReader: [],
                 templateRules: {
                     siteId: [
                         {required: true, message: this.$t("table.pleaseInput") + '站点id'}
@@ -454,7 +518,13 @@
                     ],
                     flagExternal: [
                         // {required: true, message: this.$t("table.pleaseInput") + '是否是外链'}
-                    ]
+                    ],
+                    resourceSummary: [
+                        {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
+                    ],
+                    resourceContent: [
+                        {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
+                    ],
                 },
                 selectedRows: [],
                 dialogVisible: false,
@@ -474,7 +544,12 @@
                     initialFrameHeight: 350,
                     zIndex: 2000
                 },
-                currentUploaderKey: undefined
+                currentUploaderKey: undefined,
+                dynamicTags: [],
+                inputVisible: false,
+                inputValue: '',
+                uploadUrlCms: '/manage/station/material/uploadFile',
+                siteUploadPath: ''
             }
         },
         watch: {
@@ -522,6 +597,10 @@
                     update: this.permission.template_update,
                     delete: this.permission.template_delete
                 };
+            },
+            // 特殊字符转义
+            showPicImgUrl() {
+                return this.$store.state.common.showPicImgUrl + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
             }
         },
         updated() {
@@ -535,6 +614,8 @@
                 this.getCatalogTree();
                 // 获取站点关联的内容模型
                 this.getAllModelBySiteId();
+                // 获取站点上传路径
+                this.getSiteUploadPath();
             }else{
                 this.$message.error('请选择站点！');
             }
@@ -575,6 +656,15 @@
                 getAllModelBySiteId(this.listQuery).then(response => {
                     this.modelList = response.data;
                     this.listLoading = false;
+                })
+            },
+            getSiteUploadPath() {
+                getSiteUploadPath(this.listQuery).then(response => {
+                    if (response.status == 200) {
+                        this.siteUploadPath = response.data
+                    } else {
+                        this.$message.warning('获取站点上传文件存放地址失败')
+                    }
                 })
             },
             resetSearch(){
@@ -628,6 +718,7 @@
                     this.metadataCollection = this.selectedRows[0].metadataCollectionVo;
                     // this.template.content = row.content;
                 }
+                this.dynamicTags = this.template.keyword.split(',');
                 this.template.workflowKey = this.workflowKey;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -670,12 +761,13 @@
                 }
                 // 文件上传
                 for (let item in this.uploadFileList) {
-                    let files = []
+                    let ids = []
                     for (let file of this.uploadFileList[item]) {
-                        files.push(file)
+                        ids.push(file.id)
                     }
-                    this.template.content[item] = files.join()
+                    this.template.content[item] = ids.join()
                 }
+
                 this.$refs['templateDialogForm'].validate(valid => {
                     if(valid) {
                         // 元数据信息字符串
@@ -690,6 +782,10 @@
                         if (!this.template.flagExternal) {
                             this.template.flagExternal = false;
                         }
+
+                        // 关键字标签
+                        this.template.keyword = this.dynamicTags.join();
+
                         console.log("template: " + JSON.stringify(this.template))
                         this.submitLoading = true;
                         createOrUpdateTemplate(this.template).then(() => {
@@ -711,21 +807,24 @@
                 }
                 // 文件上传
                 for (let item in this.uploadFileList) {
-                    let files = []
+                    let ids = []
                     for (let file of this.uploadFileList[item]) {
-                        files.push(file)
+                        ids.push(file.id)
                     }
-                    this.template.content[item] = files.join()
+                    this.template.content[item] = ids.join()
                 }
+
                 this.$refs['templateDialogForm'].validate(valid => {
                     if(valid) {
-
                         // 元数据信息字符串
                         this.template.contentMapStr = JSON.stringify(this.template.content);
 
                         // 删除查询出来的元数据信息
                         // Vue.delete(this.template, 'content');
                         Vue.delete(this.template, 'metadataCollectionVo');
+
+                        // 关键字标签
+                        this.template.keyword = this.dynamicTags.join();
 
                         this.submitLoading = true;
                         createOrUpdateTemplate(this.template).then(() => {
@@ -759,12 +858,17 @@
                     editor: undefined,
                     source: undefined,
                     thumbnail: undefined,
+                    thumbnailUrl: undefined,
                     title: undefined,
                     flagSearch: undefined,
                     sortNo: undefined,
                     flagTop: undefined,
                     views: undefined,
                     flagExternal: undefined,
+                    resourceSummary: undefined,
+                    resourceContent: undefined,
+                    resourceCategory: undefined,
+                    keyword: undefined,
                     workflowKey: undefined,
                     contentModelName: undefined,
                     contentMapStr: undefined,
@@ -784,7 +888,9 @@
                 this.contentItemOptions = {};
                 this.contentItemArray = {};
                 this.uploadFileList = {};
+                this.uploadFileReader = [];
                 this.currentUploaderKey = undefined;
+                this.dynamicTags = [];
                 this.resetTemplate();
                 // 清除富文本缓存，否则二次以后加载失败
                 $('#ueditor_textarea_editorValue').remove()
@@ -852,15 +958,22 @@
                         // 上传文件
                         if (item.controlType === 'fileElement') {
                             // 根据上传文件记录id查找文件信息
+                            let fileIds = this.template.content[item.fieldName].split(',')
                             this.$set(this.uploadFileList, item.fieldName, [])
-                            /*let fileIds = val.split(',');
                             for (let id of fileIds) {
-                                this.uploadFileList[item.fieldName].push({
-                                    // id: response.data.id,
-                                    name: response.data.name,
-                                    url: response.data.url
+                                getUploadFile(id).then(response => {
+                                    if (response.status == 200) {
+                                        let uploadFile = {
+                                            id: response.data.id,
+                                            name: response.data.name,
+                                            url: response.data.url
+                                        }
+                                        // 读写分离 ，否则上传列表会出错
+                                        this.uploadFileReader.push(uploadFile);
+                                        this.uploadFileList[item.fieldName].push(uploadFile)
+                                    }
                                 })
-                            }*/
+                            }
                         }
                     }
                     // 数据源是数据字典
@@ -879,7 +992,8 @@
             handleAvatarSuccess(res, file) {
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
                     // this.template.thumbnail = res.data.url;
-                    this.$set(this.template, 'thumbnail', res.data.url)
+                    this.$set(this.template, 'thumbnail', res.data.customData.id)
+                    this.$set(this.template, 'thumbnailUrl', res.data.customData.url)
                     this.$message.success('上传成功！');
                 } else {
                     this.$message.error('上传失败！');
@@ -1101,7 +1215,6 @@
                 }
             },
             beforeUpload(file) {
-
                 const isLt2M = file.size / 1024 / 1024 < 2;
                 if (!isLt2M) {
                     this.$message.error('上传文件大小不能超过 2MB!');
@@ -1113,9 +1226,9 @@
                     this.$message.success('上传成功！');
 
                     let uploadFile = {
-                        // id: res.result.customData.id,
-                        name: res.data.original,
-                        url: res.data.url}
+                        id: res.data.customData.id,
+                        name: res.data.customData.name,
+                        url: res.data.customData.url}
 
                     // 初始化uploadFileList
                     if (!this.uploadFileList[this.currentUploaderKey]) {
@@ -1131,7 +1244,7 @@
             },
             handleRemove(file, fileList) {
                 for (let [index, item] of this.uploadFileList[this.currentUploaderKey].entries()) {
-                    if (file.url === item.url) {
+                    if (file.id === item.id) {
                         this.uploadFileList[this.currentUploaderKey].splice(index, 1)
                     }
                 }
@@ -1139,7 +1252,27 @@
             pickUploader(key) {
                 // console.log('file-key: ', key)
                 this.currentUploaderKey = key
-            }
+            },
+            // 动态添加关键字 start
+            handleClose(tag) {
+                this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+            },
+
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(_ => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
+            },
+            handleInputConfirm() {
+                let inputValue = this.inputValue;
+                if (inputValue) {
+                    this.dynamicTags.push(inputValue);
+                }
+                this.inputVisible = false;
+                this.inputValue = '';
+            },
+            // 动态添加关键字 end
         }
     }
 </script>
@@ -1268,6 +1401,23 @@
         margin-right: 0;
         margin-bottom: 0;
         width: 50%;
+    }
+
+    /*关键字*/
+    .el-tag + .el-tag {
+        margin-left: 10px;
+    }
+    .button-new-tag {
+        margin-left: 10px;
+        height: 32px;
+        line-height: 30px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .input-new-tag {
+        width: 320px;
+        margin-left: 10px;
+        vertical-align: bottom;
     }
 </style>
 
