@@ -209,7 +209,7 @@
                                     maxlength="20"
                                 >
                                 </el-input>
-                                <el-button v-if="dynamicTags.length < 5" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多5个)</el-button>
+                                <el-button :disabled="dynamicTags.length >= 5" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多5个)</el-button>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -231,7 +231,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="缩略图" prop="thumbnail">
-                                <el-upload class="avatar-uploader"
+                                <!--<el-upload class="avatar-uploader"
                                            :action="uploadUrlCms"
                                            :data="{'path': siteUploadPath}"
                                            :accept="$store.state.common.imageAccepts"
@@ -242,7 +242,25 @@
                                     <img v-if="template.thumbnailUrl" :src="showPicImgUrl"
                                          class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                </el-upload>-->
+
+                                <el-upload class="avatar-uploader"
+                                           :class="{hide: template.thumbnailUrl}"
+                                           :action="uploadUrlCms"
+                                           :data="{'path': siteUploadPath}"
+                                           :accept="$store.state.common.imageAccepts"
+                                           :file-list="thumbnailList"
+                                           list-type="picture-card"
+                                           :on-success="handleAvatarSuccess"
+                                           :on-error="handleAvatarError"
+                                           :before-upload="beforeAvatarUpload"
+                                           :on-preview="handlePictureCardPreview"
+                                           :on-remove="handleAvatarRemove">
+                                    <i class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
+                                <el-dialog :visible.sync="dialogVisiblePicture" z-index="1000">
+                                    <img width="100%" :src="dialogImageUrl" alt="">
+                                </el-dialog>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -538,18 +556,23 @@
                 modelList: [],
                 modelTemplateList: [],
                 workflowKey: undefined,
-                metadataCollection: {},
+                metadataCollection: {
+                    metadataList: []
+                },
                 editorConfig: {
                     initialFrameWidth: '100%',
                     initialFrameHeight: 350,
-                    zIndex: 2000
+                    zIndex: 3000
                 },
                 currentUploaderKey: undefined,
                 dynamicTags: [],
                 inputVisible: false,
                 inputValue: '',
                 uploadUrlCms: '/manage/station/material/uploadFile',
-                siteUploadPath: ''
+                siteUploadPath: '',
+                thumbnailList: [],
+                dialogImageUrl: undefined,
+                dialogVisiblePicture: undefined,
             }
         },
         watch: {
@@ -599,9 +622,9 @@
                 };
             },
             // 特殊字符转义
-            showPicImgUrl() {
+            /*showPicImgUrl() {
                 return this.$store.state.common.showPicImgUrl + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
-            }
+            }*/
         },
         updated() {
             this.changeHeight()
@@ -718,7 +741,13 @@
                     this.metadataCollection = this.selectedRows[0].metadataCollectionVo;
                     // this.template.content = row.content;
                 }
-                this.dynamicTags = this.template.keyword.split(',');
+                if (this.template.thumbnailUrl) {
+                    this.thumbnailList.push({
+                        id: this.template.thumbnail,
+                        url: this.$store.state.common.showPicImgUrl + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+                    })
+                }
+                this.dynamicTags = this.template.keyword ? this.template.keyword.split(',') : [];
                 this.template.workflowKey = this.workflowKey;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -891,6 +920,7 @@
                 this.uploadFileReader = [];
                 this.currentUploaderKey = undefined;
                 this.dynamicTags = [];
+                this.thumbnailList = [];
                 this.resetTemplate();
                 // 清除富文本缓存，否则二次以后加载失败
                 $('#ueditor_textarea_editorValue').remove()
@@ -1012,6 +1042,14 @@
                     this.$message.error('上传图片大小不能超过 2MB!');
                 }
                 return isJPG && isLt2M;
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisiblePicture = true;
+            },
+            handleAvatarRemove() {
+                this.template.thumbnail = '';
+                this.template.thumbnailUrl = '';
             },
             // 选择菜单触发
             handleCommand(command) {
@@ -1241,6 +1279,9 @@
             },
             handlePreview(file) {
                 console.log(file)
+                // 下载文件
+                // window.open(this.$store.state.common.downloadUrl + file.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/'));
+                window.location.href = this.$store.state.common.downloadUrl + file.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
             },
             handleRemove(file, fileList) {
                 for (let [index, item] of this.uploadFileList[this.currentUploaderKey].entries()) {
@@ -1368,12 +1409,12 @@
         cursor: pointer;
         position: relative;
         overflow: hidden;
+        width: 178px;
+        height: 178px;
     }
-
     .avatar-uploader .el-upload:hover {
         border-color: #409EFF;
     }
-
     .avatar-uploader-icon {
         font-size: 28px;
         color: #8c939d;
@@ -1382,11 +1423,20 @@
         line-height: 178px;
         text-align: center;
     }
-
     .avatar {
         width: 178px;
         height: 178px;
         display: block;
+    }
+    .avatar-uploader .el-upload-list__item {
+        width: 178px;
+        height: 178px;
+    }
+    .avatar-uploader .el-upload-list__item .el-upload-list__item-status-label {
+        display: none;
+    }
+    .hide .el-upload--picture-card {
+        display: none;
     }
 
     /*table-expand*/
@@ -1404,11 +1454,10 @@
     }
 
     /*关键字*/
-    .el-tag + .el-tag {
-        margin-left: 10px;
+    .el-tag {
+        margin-right: 10px;
     }
     .button-new-tag {
-        margin-left: 10px;
         height: 32px;
         line-height: 30px;
         padding-top: 0;
@@ -1416,7 +1465,7 @@
     }
     .input-new-tag {
         width: 320px;
-        margin-left: 10px;
+        margin-right: 10px;
         vertical-align: bottom;
     }
 </style>
