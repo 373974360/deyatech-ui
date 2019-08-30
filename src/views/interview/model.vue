@@ -151,31 +151,6 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <!--<el-row :gutter="20" :span="24">-->
-                        <!--<el-col :span="24" style="margin-bottom: 0;">-->
-                            <!--<el-form-item label="访谈图片" style="margin-bottom: 0">-->
-                                <!--<div v-for="(o,i) in model.imageArray" class="image-uploader" :key="i">-->
-                                    <!--<el-form-item :prop="`imageArray[${i}].name`"-->
-                                                  <!--:rules="{ required: true, message: '请输入访谈图片名称', trigger: 'blur' }"-->
-                                                  <!--style="margin-bottom: 0">-->
-                                        <!--<img :src="$store.state.common.showPicImgUrl + o.url" class="image-add" >-->
-                                        <!--<el-input v-model.trim="o.name" maxlength="20" @change="imageNameChange" style=""></el-input>-->
-                                    <!--</el-form-item>-->
-                                    <!--<div class="image-mask" @mouseover="imageMouseOver(o.url)" @mouseout="imageMouseOut(o.url)">&lt;!&ndash;v-if="o.del"&ndash;&gt;-->
-                                        <!--<el-button  type="danger" icon="el-icon-delete" circle class="image-delete-button" @click="imageDeleteClick(o.url)"></el-button>-->
-                                    <!--</div>-->
-                                <!--</div>-->
-                                <!--<el-upload class="image-uploader" name="file"-->
-                                           <!--:action="$store.state.common.uploadUrl"-->
-                                           <!--:accept="$store.state.common.imageAccepts"-->
-                                           <!--:show-file-list="false"-->
-                                           <!--:on-success="handleImagesSuccess"-->
-                                           <!--:on-error="handlerImagesError">-->
-                                    <!--<i class="el-icon-plus image-uploader-icon"></i>-->
-                                <!--</el-upload>-->
-                            <!--</el-form-item>-->
-                        <!--</el-col>-->
-                    <!--</el-row>-->
                     <el-row :gutter="0" :span="24">
                         <el-col :span="24" style="margin-bottom: 0;">
                             <el-form-item label="" prop="images">
@@ -198,42 +173,130 @@
                 </span>
             </el-dialog>
 
-            <el-dialog title="直播管理" :fullscreen="true" :visible.sync="liveDialogVisible" :close-on-click-modal="closeOnClickModal" @close="liveCloseModelDialog">
-                <el-row :gutter="20">
-                    <el-col :span="8">
-                        <video controls="controls" src="http://v.weinan.gov.cn:81/upload/hdjl/zxft/20190828103408.mp4"></video>
-                    </el-col>
 
-                    <el-col :span="16">
-                        <div class="live-content" id="idLiveContent">
-                            <div class="live-row" v-for="i in liveMessageArray" :key="i.key">
-                                <div class="live-type" v-text="i.type"></div>
-                                <div class="live-message" v-html="i.message"></div>
-                            </div>
-                        </div>
 
-                        <el-form ref="liveMessageDialogForm" class="deyatech-form" :model="liveMessage" label-position="right" label-width="0" :rules="liveMessageRules">
-                            <el-row :gutter="20" :span="24">
+            <el-dialog title="直播互动" :fullscreen="true" :visible.sync="liveDialogVisible" :close-on-click-modal="closeOnClickModal" @close="liveCloseModelDialog">
+                <el-row>
+                    <!--左侧-->
+                    <el-col :span="6">
+                        <el-row :span="24">
+                            <el-col :span="24">
+                                <video controls="controls" :src="model.liveUrl"></video>
+                            </el-col>
+                        </el-row>
+
+                        <el-row :span="24">
+                            <el-col :span="24">
+                                <div class="live-contentimage" id="idLiveImage">
+                                    <div class="live-row" v-for="i in liveImageArray" :key="i.key">
+                                        <img class="live-image" :src="$store.state.common.showPicImgUrl + i.url"/>
+                                        <div style="text-align: center">
+                                            <span class="live-image-name" v-text="i.name"></span>
+                                            <el-button :size="btnSize" @click="openModifyLiveImage(i.key)">编辑</el-button>
+                                            <el-button :size="btnSize" @click="deleteLiveImage(i.key)">删除</el-button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </el-col>
+                        </el-row>
+
+                        <el-form ref="liveImageDialogForm" class="deyatech-form" :model="liveImage" label-position="right" label-width="0" :rules="liveImageRules">
+                            <el-row :span="24">
                                 <el-col :span="24">
-                                    <el-form-item label="" prop="message">
-                                        <editor ref="neditor" id="neditor" :default-msg="liveMessage.message" :config="editorConfig"></editor>
+                                    <el-form-item label="" prop="url" style="line-height: 14px">
+                                        <el-input v-model="liveImage.url" v-show="false"></el-input>
+                                        <el-upload class="image-uploader" name="file"
+                                                   :action="$store.state.common.uploadUrl"
+                                                   :accept="$store.state.common.imageAccepts"
+                                                   :show-file-list="false"
+                                                   :on-success="handleImagesSuccess"
+                                                   :on-error="handlerImagesError">
+                                            <img v-if="liveImage.url" :src="$store.state.common.showPicImgUrl + liveImage.url" class="image-add">
+                                            <i v-else class="el-icon-plus image-uploader-icon"></i>
+                                        </el-upload>
                                     </el-form-item>
-
                                 </el-col>
                             </el-row>
-                            <el-row :gutter="20" :span="24">
+
+                            <el-row :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="" prop="name" style="margin-bottom: 0">
+                                        <el-input v-model="liveImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 200px;"></el-input>
+                                        <el-button type="primary" style="margin-left: 20px" @click="appendLiveImage" :size="btnSize">发送</el-button>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                    </el-col>
+
+
+
+                    <!--右侧-->
+                    <el-col :span="18">
+                        <el-form ref="liveMessageDialogForm" class="deyatech-form" :model="liveMessage" label-position="right" label-width="0" :rules="liveMessageRules">
+                            <el-row :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="" prop="message">
+                                        <div class="live-content" id="idLiveContent">
+                                            <div class="live-row" v-for="i in liveMessageArray" :key="i.key">
+                                                <div>
+                                                    <div class="live-type" v-text="i.type"></div>
+                                                    <el-button :size="btnSize" @click="openModifyLiveMessage">编辑</el-button>
+                                                    <el-button :size="btnSize" @click="deleteLiveMessage">删除</el-button>
+                                                </div>
+                                                <div class="live-message" v-html="i.message"></div>
+                                            </div>
+                                        </div>
+
+                                        <editor ref="neditor" id="neditor" :default-msg="liveMessage.message" :config="editorConfig"></editor>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="" prop="type">
-                                        <el-select v-model="liveMessage.type" placeholder="请选择类型">
+                                        <el-select v-model="liveMessage.type" placeholder="请选择类型" :size="btnSize">
                                             <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                         </el-select>
-                                        <el-button type="primary" style="margin-left: 20px" @click="sendLiveMessage" :loading="submitLoading">发送</el-button>
+                                        <el-button type="primary" style="margin-left: 20px" @click="appendLiveMessage" :loading="submitLoading" :size="btnSize">发送</el-button>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                         </el-form>
                     </el-col>
                 </el-row>
+            </el-dialog>
+
+
+
+            <el-dialog title="修改图片" :visible.sync="modifyLiveImageDialogVisible" width="30%" :close-on-click-modal="closeOnClickModal" @close="modifyLiveImageCloseModelDialog">
+                <el-form ref="modifyLiveImageDialogForm" class="deyatech-form" :model="liveModifyImage" label-position="right" label-width="0" :rules="liveImageRules">
+                    <el-row :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="" prop="url" style="line-height: 14px">
+                                <el-input v-model="liveModifyImage.url" v-show="false"></el-input>
+                                <el-upload class="image-uploader" name="file"
+                                           :action="$store.state.common.uploadUrl"
+                                           :accept="$store.state.common.imageAccepts"
+                                           :show-file-list="false"
+                                           :on-success="handleModifyImagesSuccess"
+                                           :on-error="handlerImagesError">
+                                    <img v-if="liveModifyImage.url" :src="$store.state.common.showPicImgUrl + liveModifyImage.url" class="image-add">
+                                    <i v-else class="el-icon-plus image-uploader-icon"></i>
+                                </el-upload>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+
+                    <el-row :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="" prop="name" style="margin-bottom: 0">
+                                <el-input v-model="liveModifyImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 200px;"></el-input>
+                                <el-button type="primary" style="margin-left: 20px" @click="modifyLiveImage" :size="btnSize">修改</el-button>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form>
             </el-dialog>
         </div>
     </basic-container>
@@ -248,12 +311,10 @@
         getModelListByCategoryAndName,
         createOrUpdateModel,
         delModels,
-        appendLiveMessage,
-        appendLiveImage
+        operateLiveMessage,
+        operateLiveImage
     } from '@/api/interview/model';
     import { getAllCategoryList } from '@/api/interview/category';
-    // import SockJS from  'sockjs';
-    // import Stomp from 'stompjs';
 
     export default {
         name: 'model',
@@ -279,8 +340,8 @@
                 editorConfig: {
                     serverUrl: this.$store.state.common.uploadUrl,
                     initialFrameWidth: '100%',
-                    initialFrameHeight: 350,
-                    zIndex: 2000
+                    initialFrameHeight: 200,
+                    zIndex: 3000
                 },
                 modelList: undefined,
                 total: undefined,
@@ -338,7 +399,8 @@
                 submitLoading: false,
                 categorys: [],
                 liveDialogVisible: false,
-                liveSockJS: undefined,
+                liveMessageSockJS: undefined,
+                liveImageSockJS: undefined,
                 webSocketUrl: 'http://localhost:8088',
                 liveImageArray: [],
                 liveImage: {
@@ -346,9 +408,14 @@
                     name: undefined,
                     url: undefined
                 },
+                liveModifyImage: {
+                    key: undefined,
+                    name: undefined,
+                    url: undefined
+                },
                 liveImageRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '访谈图片名称'}
+                        {required: true, message: this.$t("table.pleaseInput") + '图片名称'}
                     ],
                     url: [
                         {required: true, message: this.$t("table.pleaseSelect") + '访谈图片'}
@@ -367,7 +434,8 @@
                     message: [
                         {required: true, message: this.$t("table.pleaseInput") + '消息内容'}
                     ]
-                }
+                },
+                modifyLiveImageDialogVisible: false
             }
         },
         computed: {
@@ -523,71 +591,28 @@
             handlerCoverError() {
                 this.$message.error("上传失败");
             },
-            // handleImagesSuccess(res) {
-            //     if (res.status === 200 && res.data.state === 'SUCCESS') {
-            //         this.liveImageArray.push({name: '', url: res.data.url, del: false});
-            //         this.model.images = JSON.stringify(this.liveImageArray);
-            //         this.$message.success('上传成功！');
-            //     } else {
-            //         this.$message.error('上传失败！');
-            //     }
-            // },
-            // handlerImagesError() {
-            //     this.$message.error("上传失败");
-            // },
-            // imageMouseOver(url) {
-            //     this.controlDeleteButton(url, true);
-            // },
-            // imageMouseOut(url) {
-            //     this.controlDeleteButton(url, false);
-            // },
-            // // 删除按钮显示隐藏
-            // controlDeleteButton(url, value) {
-            //     if (this.model.imageArray) {
-            //         for(let image of this.model.imageArray) {
-            //             if (image.url === url) {
-            //                 image.del = value;
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // },
-            // // 删除图像
-            // imageDeleteClick(url) {
-            //     if (this.model.imageArray) {
-            //         let index = -1;
-            //         for(let image of this.model.imageArray) {
-            //             index += 1;
-            //             if (image.url === url) {
-            //                 break;
-            //             }
-            //         }
-            //         if (index > -1) {
-            //             this.model.imageArray.splice(index, 1);
-            //         }
-            //         if (this.model.imageArray && this.model.imageArray.length > 0) {
-            //             this.model.images = JSON.stringify(this.model.imageArray);
-            //         } else {
-            //             this.model.images = undefined;
-            //         }
-            //     }
-            // },
-            // imageNameChange() {
-            //     if (this.liveImageArray) {
-            //         this.model.images = JSON.stringify(this.liveImageArray);
-            //     }
-            // },
+
             liveCloseModelDialog() {
                 this.liveDialogVisible = false;
                 this.resetModel();
-                if(this.liveSockJS) {
-                    this.liveSockJS.close()
+                if(this.liveMessageSockJS) {
+                    this.liveMessageSockJS.close();
                 }
-                this.liveSockJS = undefined;
+                if(this.liveImageSockJS) {
+                    this.liveImageSockJS.close();
+                }
+                this.liveMessageSockJS = undefined;
+                this.liveImageSockJS = undefined;
             },
             btnLiveUpdate(row){
-                this.waitingLiveMessage();
                 this.resetModel();
+
+                this.resetLiveMessage();
+                this.resetLiveImage();
+
+                this.waitingLiveMessage();
+                this.waitingLiveImage();
+
                 if (row.id) {
                     this.model = deepClone(row);
                 } else {
@@ -608,36 +633,108 @@
 
                 this.liveDialogVisible = true;
             },
+            // 等待直播消息
             waitingLiveMessage: function() {
-                var _this = this;
-                console.log('waitingMessage');
-                var sockJS = new SockJS(this.webSocketUrl + "/websocketlive/");
-                var stompClient = Stomp.over(sockJS);
+                let _this = this;
+                let sockJS = new SockJS(this.webSocketUrl + "/websocketlive/");
+                let stompClient = Stomp.over(sockJS);
                 stompClient.connect({}, function () {
                     stompClient.subscribe('/topic/live/message/', function (response) {
-                        _this.liveMessageArray.push(JSON.parse(response.body));
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body);
+                        let arr = operate.key.split(',');
+                        operate.key = arr[0];
+                        let flag = arr[1];
+                        if (flag === 'append') {
+                            _this.liveMessageArray.push(operate);
+                        } else {
+                            let index = -1;
+                            for(let i = 0; i < _this.liveMessageArray.length; i++) {
+                                let obj = _this.liveMessageArray[i];
+                                if (operate.key === obj.key) {
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            if (flag === 'modify') {
+                                _this.liveMessageArray[index] = operate;
+                            } else if (flag === 'delete') {
+                                _this.liveMessageArray.splice(index, 1);
+                            }
+                        }
+                        if (flag === 'append') {
+                            Vue.nextTick(function(){
+                                let div = document.getElementById('idLiveContent');
+                                div.scrollTop = div.scrollHeight;
+                            });
+                        }
                     });
+                    console.log('消息 WebSocket 连接...');
                 });
                 sockJS.onclose = function () {
-                    console.dir("WebSocket 连接已经断开");
+                    console.dir("消息 WebSocket 连接已经断开");
                     // 断开五秒后重连
                     setTimeout(function () {
                         _this.waitingLiveMessage();
                     }, 5000);
                 }
-                this.liveSockJS = sockJS;
+                this.liveMessageSockJS = sockJS;
             },
-            generateKey() {
-                let date = new Date();
-                return new String(Math.random()).substr(3, 6) + date.getFullYear() + date.getMonth() + date.getDate() + date.getHours() + date.getMinutes() + date.getSeconds();
+            // 等待图片消息
+            waitingLiveImage: function() {
+                let _this = this;
+                let sockJS = new SockJS(this.webSocketUrl + "/websocketlive/");
+                let stompClient = Stomp.over(sockJS);
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/live/image/', function (response) {
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body)
+                        let arr = operate.key.split(',');
+                        operate.key = arr[0];
+                        let flag = arr[1];
+                        if (flag === 'append') {
+                            _this.liveImageArray.push(operate);
+                        } else {
+                            let index = -1;
+                            for(let i = 0; i < _this.liveImageArray.length; i++) {
+                                let obj = _this.liveImageArray[i];
+                                if (operate.key === obj.key) {
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            if (flag === 'modify') {
+                                _this.liveImageArray[index] = operate;
+                            } else if (flag === 'delete') {
+                                _this.liveImageArray.splice(index, 1);
+                            }
+                        }
+                        if (flag === 'append') {
+                            Vue.nextTick(function () {
+                                let div = document.getElementById('idLiveImage');
+                                div.scrollTop = div.scrollHeight;
+                            });
+                        }
+                    });
+                    console.log('图片 WebSocket 连接...');
+                });
+                sockJS.onclose = function () {
+                    console.dir("图片 WebSocket 连接已经断开");
+                    // 断开五秒后重连
+                    setTimeout(function () {
+                        _this.waitingLiveImage();
+                    }, 5000);
+                }
+                this.liveImageSockJS = sockJS;
             },
-            sendLiveMessage: function() {
+            // 添加消息
+            appendLiveMessage: function() {
                 this.liveMessage.message = this.$refs['neditor'].getUeContent();
                 this.$refs['liveMessageDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
                         let data = {};
-                        data.key = this.generateKey();
+                        data.key = undefined;
                         // 主持人
                         if (this.liveMessage.type == 1) {
                             data.type = '主持人：'
@@ -647,13 +744,10 @@
                         data.message = this.liveMessage.message;
                         data.modelId = this.model.id;
 
-                        appendLiveMessage(data).then((response) => {
+                        operateLiveMessage(data).then((response) => {
                             if (response.status == 200 && response.data) {
-                                this.$nextTick(function(){
-                                    let div = document.getElementById('idLiveContent');
-                                    div.scrollTop = div.scrollHeight;
-                                })
-
+                                this.$refs['neditor'].setUeContent('');
+                                this.resetLiveMessage();
                             } else {
                                 this.$message.error("发送失败");
                             }
@@ -662,42 +756,179 @@
                     } else {
                         return false;
                     }
-                })
+                });
+            },
+            openModifyLiveMessage() {
 
+            },
+            modifyLiveMessage() {
 
+            },
+            deleteLiveMessage() {
+
+            },
+            // 图片保存
+            sendOperateLiveImage(data) {
+                operateLiveImage(data).then((response) => {
+                    if (response.status == 200 && response.data) {
+                        this.resetLiveImage();
+                        this.$refs['liveImageDialogForm'].resetFields();
+                    } else {
+                        this.$message.error("发送失败");
+                    }
+                }).catch(error=>{
+                    this.$message.error(error);
+                });
+            },
+            appendLiveImage: function() {
+                this.$refs['liveImageDialogForm'].validate(valid => {
+                    if(valid) {
+                        let data = {};
+                        data.key = undefined;
+                        data.name = this.liveImage.name;
+                        data.url = this.liveImage.url;
+                        data.modelId = this.model.id;
+                        this.sendOperateLiveImage(data);
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            openModifyLiveImage(key) {
+                this.resetModifyLiveImage();
+                this.modifyLiveImageDialogVisible = true;
+                for(let item of this.liveImageArray) {
+                    if (item.key === key) {
+                        this.liveModifyImage.key = item.key;
+                        this.liveModifyImage.name = item.name;
+                        this.liveModifyImage.url = item.url;
+                        break;
+                    }
+                }
+            },
+            modifyLiveImage() {
+                this.$refs['modifyLiveImageDialogForm'].validate(valid => {
+                    if(valid) {
+                        let data = {};
+                        data.key = this.liveModifyImage.key;
+                        data.name = this.liveModifyImage.name;
+                        data.url = this.liveModifyImage.url;
+                        data.modelId = this.model.id;
+                        this.sendOperateLiveImage(data);
+                        this.modifyLiveImageCloseModelDialog();
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            modifyLiveImageCloseModelDialog() {
+                this.resetLiveImage();
+                this.$refs['modifyLiveImageDialogForm'].resetFields();
+                this.modifyLiveImageDialogVisible = false;
+            },
+            deleteLiveImage(key) {
+                let data = {};
+                data.key = key;
+                data.name = undefined;
+                data.url = undefined;
+                data.modelId = this.model.id;
+                this.sendOperateLiveImage(data);
+            },
+            resetLiveMessage() {
+                this.liveMessage = {
+                    key: undefined,
+                    type: undefined,
+                    message: undefined
+                };
+            },
+            resetLiveImage() {
+                this.liveImage = {
+                    key: undefined,
+                    name: undefined,
+                    url: undefined
+                };
+            },
+            resetModifyLiveImage() {
+                this.liveModifyImage = {
+                    key: undefined,
+                    name: undefined,
+                    url: undefined
+                };
+            },
+            handleImagesSuccess(res) {
+                if (res.status === 200 && res.data.state === 'SUCCESS') {
+                    this.liveImage.url = res.data.url;
+                    this.$message.success('上传成功！');
+                } else {
+                    this.$message.error('上传失败！');
+                }
+            },
+            handleModifyImagesSuccess(res) {
+                if (res.status === 200 && res.data.state === 'SUCCESS') {
+                    this.liveModifyImage.url = res.data.url;
+                    this.$message.success('上传成功！');
+                } else {
+                    this.$message.error('上传失败！');
+                }
+            },
+            handlerImagesError() {
+                this.$message.error("上传失败");
             }
+            // imageMouseOver(url) {
+            //     this.controlDeleteButton(url, true);
+            // },
+            // imageMouseOut(url) {
+            //     this.controlDeleteButton(url, false);
+            // },
+            // // 删除按钮显示隐藏
+            // controlDeleteButton(url, value) {
+            //     if (this.liveImageArray) {
+            //         for(let image of this.liveImageArray) {
+            //             if (image.url === url) {
+            //                 break;
+            //             }
+            //         }
+            //     }
+            // },
+            // // 删除图像
+            // imageDeleteClick(url) {
+            //     if (this.liveImageArray) {
+            //         let index = -1;
+            //         for(let image of this.liveImageArray) {
+            //             index += 1;
+            //             if (image.url === url) {
+            //                 break;
+            //             }
+            //         }
+            //         if (index > -1) {
+            //             this.liveImageArray.splice(index, 1);
+            //         }
+            //
+            //     }
+            // }
+            // imageNameChange() {
+            //     if (this.liveImageArray) {
+            //         this.model.images = JSON.stringify(this.liveImageArray);
+            //     }
+            // },
+
         }
     }
 </script>
 
 
 <style>
+    .el-dialog__body {
+        padding-top: 0;
+    }
+    p {
+        padding: 0;
+        margin: 0;
+    }
     video {
         width: 100%;
         height: 100%;
         object-fit:fill;
-    }
-    .live-content {
-        border: 1px solid #dcdfe6;
-        border-radius: 4px;
-        height: 300px;
-        max-height: 300px;
-        scroll-y: scroll;
-        overflow-x: hidden;
-        overflow-y: auto;
-        padding: 10px;
-    }
-
-    .live-row {
-        margin-bottom: 10px;
-    }
-    .live-type {
-        color: #cc3333;
-        display: block;
-        text-indent: 0em;
-    }
-    .live-message {
-        padding-left: 28px;
     }
 
 
@@ -706,7 +937,6 @@
         width: 160px;
         height: 160px;
     }
-
     .cover-uploader .el-upload {
         border: 1px solid #dcdfe6;
         border-radius: 6px;
@@ -714,11 +944,9 @@
         position: relative;
         overflow: hidden;
     }
-
     .cover-uploader .el-upload:hover {
         border-color: #409EFF;
     }
-
     .cover-uploader-icon {
         font-size: 28px;
         color: #8c939d;
@@ -727,7 +955,6 @@
         line-height: 160px;
         text-align: center;
     }
-
     .cover-add {
         width: 160px;
         height: 160px;
@@ -737,14 +964,51 @@
 
 
 
-    .image-uploader {
-        width: 160px;
-        height: 230px;
-        margin-right: 10px;
-        display: inline-block;
-        position: relative;
-        vertical-align: top;
+    /*图片展示*/
+    .live-contentimage {
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        height: 328px;
+        scroll-y: scroll;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 10px;
+        margin-bottom: 10px;
     }
+    /*消息展示*/
+    .live-content {
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        height: 355px;
+        scroll-y: scroll;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    .live-row {
+        margin-bottom: 10px;
+    }
+    .live-type {
+        color: #cc3333;
+        display: block;
+        line-height: 22px;
+        font-size: 14px;
+    }
+    .live-message {
+        text-indent: 2em;
+        line-height: 22px;
+        font-size: 14px;
+    }
+    .live-image {
+        width: 100%;
+        height: 260px;
+    }
+    .live-image-name {
+        margin-right: 10px;
+        font-weight: bold;
+    }
+
 
     .image-uploader .el-upload {
         border: 1px solid #dcdfe6;
@@ -752,42 +1016,22 @@
         cursor: pointer;
         position: relative;
         overflow: hidden;
-    }
+        width: 200px;
+        height: 150px;
 
+    }
     .image-uploader .el-upload:hover {
         border-color: #409EFF;
     }
-
     .image-uploader-icon {
-        font-size: 28px;
+        font-size: 50px;
         color: #8c939d;
-        width: 160px;
-        height: 202px;
-        line-height: 202px;
-        text-align: center;
+        position: relative;
+        top: 50px;
     }
-
     .image-add {
-        width: 160px;
-        height: 160px;
-        display: block;
-        margin-bottom: 4px;
-    }
-    .image-delete-button {
-        position: relative;
-        left: 60px;
-        top: 60px;
-        z-index: 9999;
-        /*left: 60px;*/
-        /*top: -144px;*/
-    }
-    .image-mask {
-        width: 160px;
-        height: 160px;
-        position: relative;
-        left: 0px;
-        top: -204px;
-        display: inline-block;
+        width: 200px;
+        height: 150px;
     }
 
 
