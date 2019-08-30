@@ -53,3 +53,17 @@ export function getModelListByCategoryAndName(query) {
         params: query
     });
 }
+export function appendLiveMessage(query) {
+    return request({
+        url: '/manage/interview/model/appendLiveMessage',
+        method: 'get',
+        params: query
+    });
+}
+export function appendLiveImage(query) {
+    return request({
+        url: '/manage/interview/model/appendLiveImage',
+        method: 'get',
+        params: query
+    });
+}

@@ -25,6 +25,7 @@
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnLiveUpdate" :disabled="selectedRows.length != 1">直播</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -49,12 +50,14 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop="btnDelete(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.update" title="直播" type="primary" icon="el-icon-sort" :size="btnSize" circle
+                                   @click.stop="btnLiveUpdate(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -148,42 +151,35 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24" style="margin-bottom: 0;">
-                            <el-form-item label="访谈图片" style="margin-bottom: 0">
-                                <div v-for="(o,i) in model.imageArray" class="image-uploader" :key="i">
-                                    <el-form-item :prop="`imageArray[${i}].name`"
-                                                  :rules="{ required: true, message: '请输入访谈图片名称', trigger: 'blur' }"
-                                                  style="margin-bottom: 0">
-                                        <img :src="$store.state.common.showPicImgUrl + o.url" class="image-add" >
-                                        <el-input v-model.trim="o.name" maxlength="20" @change="imageNameChange" style=""></el-input>
-                                    </el-form-item>
-                                    <div class="image-mask" @mouseover="imageMouseOver(o.url)" @mouseout="imageMouseOut(o.url)"><!--v-if="o.del"-->
-                                        <el-button  type="danger" icon="el-icon-delete" circle class="image-delete-button" @click="imageDeleteClick(o.url)"></el-button>
-                                    </div>
-                                </div>
-                                <el-upload class="image-uploader" name="file"
-                                           :action="$store.state.common.uploadUrl"
-                                           :accept="$store.state.common.imageAccepts"
-                                           :show-file-list="false"
-                                           :on-success="handleImagesSuccess"
-                                           :on-error="handlerImagesError">
-                                    <i class="el-icon-plus image-uploader-icon"></i>
-                                </el-upload>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
+                    <!--<el-row :gutter="20" :span="24">-->
+                        <!--<el-col :span="24" style="margin-bottom: 0;">-->
+                            <!--<el-form-item label="访谈图片" style="margin-bottom: 0">-->
+                                <!--<div v-for="(o,i) in model.imageArray" class="image-uploader" :key="i">-->
+                                    <!--<el-form-item :prop="`imageArray[${i}].name`"-->
+                                                  <!--:rules="{ required: true, message: '请输入访谈图片名称', trigger: 'blur' }"-->
+                                                  <!--style="margin-bottom: 0">-->
+                                        <!--<img :src="$store.state.common.showPicImgUrl + o.url" class="image-add" >-->
+                                        <!--<el-input v-model.trim="o.name" maxlength="20" @change="imageNameChange" style=""></el-input>-->
+                                    <!--</el-form-item>-->
+                                    <!--<div class="image-mask" @mouseover="imageMouseOver(o.url)" @mouseout="imageMouseOut(o.url)">&lt;!&ndash;v-if="o.del"&ndash;&gt;-->
+                                        <!--<el-button  type="danger" icon="el-icon-delete" circle class="image-delete-button" @click="imageDeleteClick(o.url)"></el-button>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                                <!--<el-upload class="image-uploader" name="file"-->
+                                           <!--:action="$store.state.common.uploadUrl"-->
+                                           <!--:accept="$store.state.common.imageAccepts"-->
+                                           <!--:show-file-list="false"-->
+                                           <!--:on-success="handleImagesSuccess"-->
+                                           <!--:on-error="handlerImagesError">-->
+                                    <!--<i class="el-icon-plus image-uploader-icon"></i>-->
+                                <!--</el-upload>-->
+                            <!--</el-form-item>-->
+                        <!--</el-col>-->
+                    <!--</el-row>-->
                     <el-row :gutter="0" :span="24">
                         <el-col :span="24" style="margin-bottom: 0;">
                             <el-form-item label="" prop="images">
                                 <el-input v-model.trim="model.images" v-show="false"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="访谈内容" prop="content">
-                                <el-input type="textarea" v-model.trim="model.content" :rows="10" maxlength="5000" placeholder="请输入访谈内容"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -201,23 +197,69 @@
                     <el-button :size="btnSize" @click="closeModelDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
+            <el-dialog title="直播管理" :fullscreen="true" :visible.sync="liveDialogVisible" :close-on-click-modal="closeOnClickModal" @close="liveCloseModelDialog">
+                <el-row :gutter="20">
+                    <el-col :span="8">
+                        <video controls="controls" src="http://v.weinan.gov.cn:81/upload/hdjl/zxft/20190828103408.mp4"></video>
+                    </el-col>
+
+                    <el-col :span="16">
+                        <div class="live-content" id="idLiveContent">
+                            <div class="live-row" v-for="i in liveMessageArray" :key="i.key">
+                                <div class="live-type" v-text="i.type"></div>
+                                <div class="live-message" v-html="i.message"></div>
+                            </div>
+                        </div>
+
+                        <el-form ref="liveMessageDialogForm" class="deyatech-form" :model="liveMessage" label-position="right" label-width="0" :rules="liveMessageRules">
+                            <el-row :gutter="20" :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="" prop="message">
+                                        <editor ref="neditor" id="neditor" :default-msg="liveMessage.message" :config="editorConfig"></editor>
+                                    </el-form-item>
+
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="" prop="type">
+                                        <el-select v-model="liveMessage.type" placeholder="请选择类型">
+                                            <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                                        </el-select>
+                                        <el-button type="primary" style="margin-left: 20px" @click="sendLiveMessage" :loading="submitLoading">发送</el-button>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                    </el-col>
+                </el-row>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
 
 
 <script>
+    import editor from '@/components/editor/index.vue'
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
         getModelListByCategoryAndName,
         createOrUpdateModel,
-        delModels
+        delModels,
+        appendLiveMessage,
+        appendLiveImage
     } from '@/api/interview/model';
     import { getAllCategoryList } from '@/api/interview/category';
+    // import SockJS from  'sockjs';
+    // import Stomp from 'stompjs';
 
     export default {
         name: 'model',
+        components: {
+            editor
+        },
         data() {
             const validatorLiveUrl = (rule, value, callback) => {
                 if ( /(http|https|ftp):\/\/[^\s]+/.test(value) || /^\/[^\s]*/.test(value) ) {
@@ -234,6 +276,12 @@
                 }
             };
             return {
+                editorConfig: {
+                    serverUrl: this.$store.state.common.uploadUrl,
+                    initialFrameWidth: '100%',
+                    initialFrameHeight: 350,
+                    zIndex: 2000
+                },
                 modelList: undefined,
                 total: undefined,
                 listLoading: true,
@@ -253,7 +301,6 @@
                     liveUrl: undefined,
                     videoUrl: undefined,
                     images: undefined,
-                    imageArray: [],
                     content: undefined,
                     status: undefined
                 },
@@ -281,12 +328,6 @@
                         {required: true, message: this.$t("table.pleaseInput") + '视频地址'},
                         {validator: validatorVideoUrl, trigger: 'blur'}
                     ],
-                    images: [
-                        {required: true, message: '请上传访谈图片'}
-                    ],
-                    content: [
-                        {required: true, message: this.$t("table.pleaseInput") + '访谈内容'}
-                    ],
                     status: [
                         {required: true, message: this.$t("table.pleaseSelect") + '访谈状态'}
                     ]
@@ -295,7 +336,38 @@
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
-                categorys: []
+                categorys: [],
+                liveDialogVisible: false,
+                liveSockJS: undefined,
+                webSocketUrl: 'http://localhost:8088',
+                liveImageArray: [],
+                liveImage: {
+                    key: undefined,
+                    name: undefined,
+                    url: undefined
+                },
+                liveImageRules: {
+                    name: [
+                        {required: true, message: this.$t("table.pleaseInput") + '访谈图片名称'}
+                    ],
+                    url: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '访谈图片'}
+                    ]
+                },
+                liveMessageArray: [],
+                liveMessage: {
+                    key: undefined,
+                    type: undefined,
+                    message: undefined
+                },
+                liveMessageRules: {
+                    type: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '类型'}
+                    ],
+                    message: [
+                        {required: true, message: this.$t("table.pleaseInput") + '消息内容'}
+                    ]
+                }
             }
         },
         computed: {
@@ -363,11 +435,6 @@
                 } else {
                     this.model = deepClone(this.selectedRows[0]);
                 }
-                if (this.model.images) {
-                    this.$set(this.model, 'imageArray', JSON.parse(this.model.images));
-                } else {
-                    this.$set(this.model, 'imageArray', []);
-                }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -431,7 +498,6 @@
                     liveUrl: undefined,
                     videoUrl: undefined,
                     images: undefined,
-                    imageArray: [],
                     content: undefined,
                     status: undefined
                 }
@@ -457,59 +523,148 @@
             handlerCoverError() {
                 this.$message.error("上传失败");
             },
-            handleImagesSuccess(res) {
-                if (res.status === 200 && res.data.state === 'SUCCESS') {
-                    this.model.imageArray.push({name: '', url: res.data.url, del: false});
-                    this.model.images = JSON.stringify(this.model.imageArray);
-                    this.$message.success('上传成功！');
+            // handleImagesSuccess(res) {
+            //     if (res.status === 200 && res.data.state === 'SUCCESS') {
+            //         this.liveImageArray.push({name: '', url: res.data.url, del: false});
+            //         this.model.images = JSON.stringify(this.liveImageArray);
+            //         this.$message.success('上传成功！');
+            //     } else {
+            //         this.$message.error('上传失败！');
+            //     }
+            // },
+            // handlerImagesError() {
+            //     this.$message.error("上传失败");
+            // },
+            // imageMouseOver(url) {
+            //     this.controlDeleteButton(url, true);
+            // },
+            // imageMouseOut(url) {
+            //     this.controlDeleteButton(url, false);
+            // },
+            // // 删除按钮显示隐藏
+            // controlDeleteButton(url, value) {
+            //     if (this.model.imageArray) {
+            //         for(let image of this.model.imageArray) {
+            //             if (image.url === url) {
+            //                 image.del = value;
+            //                 break;
+            //             }
+            //         }
+            //     }
+            // },
+            // // 删除图像
+            // imageDeleteClick(url) {
+            //     if (this.model.imageArray) {
+            //         let index = -1;
+            //         for(let image of this.model.imageArray) {
+            //             index += 1;
+            //             if (image.url === url) {
+            //                 break;
+            //             }
+            //         }
+            //         if (index > -1) {
+            //             this.model.imageArray.splice(index, 1);
+            //         }
+            //         if (this.model.imageArray && this.model.imageArray.length > 0) {
+            //             this.model.images = JSON.stringify(this.model.imageArray);
+            //         } else {
+            //             this.model.images = undefined;
+            //         }
+            //     }
+            // },
+            // imageNameChange() {
+            //     if (this.liveImageArray) {
+            //         this.model.images = JSON.stringify(this.liveImageArray);
+            //     }
+            // },
+            liveCloseModelDialog() {
+                this.liveDialogVisible = false;
+                this.resetModel();
+                if(this.liveSockJS) {
+                    this.liveSockJS.close()
+                }
+                this.liveSockJS = undefined;
+            },
+            btnLiveUpdate(row){
+                this.waitingLiveMessage();
+                this.resetModel();
+                if (row.id) {
+                    this.model = deepClone(row);
                 } else {
-                    this.$message.error('上传失败！');
+                    this.model = deepClone(this.selectedRows[0]);
                 }
-            },
-            handlerImagesError() {
-                this.$message.error("上传失败");
-            },
-            imageMouseOver(url) {
-                this.controlDeleteButton(url, true);
-            },
-            imageMouseOut(url) {
-                this.controlDeleteButton(url, false);
-            },
-            // 删除按钮显示隐藏
-            controlDeleteButton(url, value) {
-                if (this.model.imageArray) {
-                    for(let image of this.model.imageArray) {
-                        if (image.url === url) {
-                            image.del = value;
-                            break;
-                        }
-                    }
+
+                if (this.model.images) {
+                    this.liveImageArray = JSON.parse(this.model.images);
+                } else {
+                    this.liveImageArray = [];
                 }
+
+                if (this.model.content) {
+                    this.liveMessageArray = JSON.parse(this.model.content);
+                } else {
+                    this.liveMessageArray = [];
+                }
+
+                this.liveDialogVisible = true;
             },
-            // 删除图像
-            imageDeleteClick(url) {
-                if (this.model.imageArray) {
-                    let index = -1;
-                    for(let image of this.model.imageArray) {
-                        index += 1;
-                        if (image.url === url) {
-                            break;
+            waitingLiveMessage: function() {
+                var _this = this;
+                console.log('waitingMessage');
+                var sockJS = new SockJS(this.webSocketUrl + "/websocketlive/");
+                var stompClient = Stomp.over(sockJS);
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/live/message/', function (response) {
+                        _this.liveMessageArray.push(JSON.parse(response.body));
+                    });
+                });
+                sockJS.onclose = function () {
+                    console.dir("WebSocket 连接已经断开");
+                    // 断开五秒后重连
+                    setTimeout(function () {
+                        _this.waitingLiveMessage();
+                    }, 5000);
+                }
+                this.liveSockJS = sockJS;
+            },
+            generateKey() {
+                let date = new Date();
+                return new String(Math.random()).substr(3, 6) + date.getFullYear() + date.getMonth() + date.getDate() + date.getHours() + date.getMinutes() + date.getSeconds();
+            },
+            sendLiveMessage: function() {
+                this.liveMessage.message = this.$refs['neditor'].getUeContent();
+                this.$refs['liveMessageDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        let data = {};
+                        data.key = this.generateKey();
+                        // 主持人
+                        if (this.liveMessage.type == 1) {
+                            data.type = '主持人：'
+                        } else if (this.liveMessage.type == 2) {
+                            data.type = '嘉宾：';
                         }
-                    }
-                    if (index > -1) {
-                        this.model.imageArray.splice(index, 1);
-                    }
-                    if (this.model.imageArray && this.model.imageArray.length > 0) {
-                        this.model.images = JSON.stringify(this.model.imageArray);
+                        data.message = this.liveMessage.message;
+                        data.modelId = this.model.id;
+
+                        appendLiveMessage(data).then((response) => {
+                            if (response.status == 200 && response.data) {
+                                this.$nextTick(function(){
+                                    let div = document.getElementById('idLiveContent');
+                                    div.scrollTop = div.scrollHeight;
+                                })
+
+                            } else {
+                                this.$message.error("发送失败");
+                            }
+                            this.submitLoading = false;
+                        });
                     } else {
-                        this.model.images = undefined;
+                        return false;
                     }
-                }
-            },
-            imageNameChange() {
-                if (this.model.imageArray) {
-                    this.model.images = JSON.stringify(this.model.imageArray);
-                }
+                })
+
+
             }
         }
     }
@@ -517,6 +672,36 @@
 
 
 <style>
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit:fill;
+    }
+    .live-content {
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        height: 300px;
+        max-height: 300px;
+        scroll-y: scroll;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .live-row {
+        margin-bottom: 10px;
+    }
+    .live-type {
+        color: #cc3333;
+        display: block;
+        text-indent: 0em;
+    }
+    .live-message {
+        padding-left: 28px;
+    }
+
+
+
     .cover-uploader {
         width: 160px;
         height: 160px;
@@ -604,4 +789,6 @@
         top: -204px;
         display: inline-block;
     }
+
+
 </style>
