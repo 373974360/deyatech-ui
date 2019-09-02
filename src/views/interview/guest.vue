@@ -43,7 +43,7 @@
                 </el-table-column>
                 <el-table-column align="center" label="照片" prop="photo" width="120">
                     <template slot-scope="scope">
-                        <img :src="$store.state.common.showPicImgUrl + scope.row.photo" style="width: 100px; height: 100px;">
+                        <img :src="showPicImgUrl + scope.row.photo" style="width: 100px; height: 100px;">
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="职务" prop="job"/>
@@ -117,7 +117,7 @@
                                            :show-file-list="false"
                                            :on-success="handlePhotoSuccess"
                                            :on-error="handlerPhotoError">
-                                    <img v-if="guest.photo" :src="$store.state.common.showPicImgUrl + guest.photo" class="photo-add">
+                                    <img v-if="guest.photo" :src="showPicImgUrl + guest.photo" class="photo-add">
                                     <i v-else class="el-icon-plus photo-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -158,6 +158,7 @@
         name: 'guest',
         data() {
             return {
+                showPicImgUrl: this.$store.state.common.showPicImgUrl,
                 guestList: undefined,
                 total: undefined,
                 listLoading: true,

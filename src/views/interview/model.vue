@@ -124,7 +124,7 @@
                                            :show-file-list="false"
                                            :on-success="handleCoverSuccess"
                                            :on-error="handlerCoverError">
-                                    <img v-if="model.cover" :src="$store.state.common.showPicImgUrl + model.cover" class="cover-add">
+                                    <img v-if="model.cover" :src="showPicImgUrl + model.cover" class="cover-add">
                                     <i v-else class="el-icon-plus cover-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -189,7 +189,7 @@
                             <el-col :span="24">
                                 <div class="live-contentimage" id="idLiveImage">
                                     <div class="live-row" v-for="i in liveImageArray" :key="i.key">
-                                        <img class="live-image" :src="$store.state.common.showPicImgUrl + i.url"/>
+                                        <img class="live-image" :src="showPicImgUrl + i.url"/>
                                         <div style="text-align: center">
                                             <span class="live-image-name" v-text="i.name"></span>
                                             <el-button :size="btnSize" @click="openModifyLiveImage(i.key)">编辑</el-button>
@@ -211,7 +211,7 @@
                                                    :show-file-list="false"
                                                    :on-success="handleImagesSuccess"
                                                    :on-error="handlerImagesError">
-                                            <img v-if="liveImage.url" :src="$store.state.common.showPicImgUrl + liveImage.url" class="image-add">
+                                            <img v-if="liveImage.url" :src="showPicImgUrl + liveImage.url" class="image-add">
                                             <i v-else class="el-icon-plus image-uploader-icon"></i>
                                         </el-upload>
                                     </el-form-item>
@@ -281,7 +281,7 @@
                                            :show-file-list="false"
                                            :on-success="handleModifyImagesSuccess"
                                            :on-error="handlerImagesError">
-                                    <img v-if="liveModifyImage.url" :src="$store.state.common.showPicImgUrl + liveModifyImage.url" class="image-add">
+                                    <img v-if="liveModifyImage.url" :src="showPicImgUrl + liveModifyImage.url" class="image-add">
                                     <i v-else class="el-icon-plus image-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -698,7 +698,9 @@
                                 }
                             }
                             if (flag === 'modify') {
-                                _this.liveMessageArray[index] = operate;
+                                _this.liveMessageArray[index].key = operate.key;
+                                _this.liveMessageArray[index].type = operate.type;
+                                _this.liveMessageArray[index].message = operate.message;
                                 _this.$message.success("消息修改成功");
                             } else if (flag === 'delete') {
                                 _this.liveMessageArray.splice(index, 1);
