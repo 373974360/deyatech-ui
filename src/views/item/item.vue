@@ -117,7 +117,7 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
+                        <el-col :span="12">
                             <el-form-item label="是否是第三方事项" prop="remoteEnable" label-width="155px">
                                 <el-select v-model="item.remoteEnable" @change="changeDisplayOfRemoteId">
                                     <el-option
@@ -126,6 +126,12 @@
                                         :value="o.code">
                                     </el-option>
                                 </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="限号量">
+                                <el-input-number v-model="item.limitNumber" @change="limitNumberChange" :min="0"
+                                                 :max="99999"></el-input-number>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -955,7 +961,8 @@
                     departmentTreePosition: undefined,
                     implementTreePosition: undefined,
                     dealTreePosition: undefined,
-                    unionTreePosition: undefined
+                    unionTreePosition: undefined,
+                    limitNumber:undefined
                 },
                 itemTmp: undefined,
                 itemRules: {
@@ -1115,6 +1122,9 @@
             this.getDepartmentCascader();
         },
         methods: {
+            limitNumberChange(value) {
+                this.item.limitNumber = value
+            },
             handleSizeChangeItemMaterials(val) {
                 this.materialsListQuery.size = val;
                 this.loadMaterialsList().then(() => {
@@ -1491,7 +1501,8 @@
                 this.itemTmp = {
                     name: this.item.name,
                     shortName: this.item.shortName,
-                    code: this.item.code
+                    code: this.item.code,
+                    limitNumber:  this.item.limitNumber
                 };
                 // 所属部门
                 if (this.item.departmentTreePosition) {
@@ -1564,7 +1575,13 @@
             doUpdate() {
                 this.$refs['itemDialogForm'].validate(valid => {
                     if (valid) {
-                        this.submitLoading = true;
+                        this.submitLoading = true;var count = '';
+                        let number = 4 - this.item.limitNumber.toString().length;
+                        for (var i = 0; i < number; i++) {
+                            count = count + '0';
+                        }
+                        this.item.limitNumber = count + this.item.limitNumber.toString()
+                        console.log(this.item.limitNumber);
                         createOrUpdateItem(this.item).then(() => {
                             this.resetItemDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -1591,7 +1608,8 @@
                     remoteId: '',
                     isOnlineApply: 0,
                     isInterService: 0,
-                    isCharge: 0
+                    isCharge: 0,
+                    limitNumber:undefined
                 }
             },
             resetItemDialogAndList() {
