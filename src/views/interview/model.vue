@@ -427,6 +427,7 @@
                 liveDialogVisible: false,
                 liveMessageSockJS: undefined,
                 liveImageSockJS: undefined,
+                reconnectionSockJS: false,
                 webSocketUrl: 'http://localhost:8088',
                 liveImageArray: [],
                 liveImage: {
@@ -623,7 +624,7 @@
             handlerCoverError() {
                 this.$message.error("上传失败");
             },
-
+            // 关闭直播
             liveCloseModelDialog() {
                 this.liveDialogVisible = false;
                 this.resetModel();
@@ -635,8 +636,10 @@
                 }
                 this.liveMessageSockJS = undefined;
                 this.liveImageSockJS = undefined;
+                this.reconnectionSockJS = false;
                 this.reloadList();
             },
+            // 打开直播
             btnLiveUpdate(row){
                 this.resetModel();
 
@@ -663,8 +666,8 @@
                 } else {
                     this.liveMessageArray = [];
                 }
-
                 this.liveDialogVisible = true;
+                this.reconnectionSockJS = true;
             },
             // 等待直播消息
             waitingLiveMessage: function() {
@@ -707,10 +710,9 @@
                 });
                 sockJS.onclose = function () {
                     console.log("消息 WebSocket 连接已经断开");
-                    // 断开五秒后重连
-                    setTimeout(function () {
-                        _this.waitingLiveMessage();
-                    }, 5000);
+                    if (this.reconnectionSockJS) {
+                        setTimeout(function () {_this.waitingLiveMessage();}, 5000);
+                    }
                 }
                 this.liveMessageSockJS = sockJS;
             },
@@ -757,10 +759,9 @@
                 });
                 sockJS.onclose = function () {
                     console.log("图片 WebSocket 连接已经断开");
-                    // 断开五秒后重连
-                    setTimeout(function () {
-                        _this.waitingLiveImage();
-                    }, 5000);
+                    if (this.reconnectionSockJS) {
+                        setTimeout(function () {_this.waitingLiveImage();}, 5000);
+                    }
                 }
                 this.liveImageSockJS = sockJS;
             },
