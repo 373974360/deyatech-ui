@@ -31,7 +31,7 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="modelList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table ref="modelTable" :data="modelList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="center" label="分类名称" prop="categoryName"/>
@@ -240,15 +240,15 @@
                                         <div class="live-content" id="idLiveContent">
                                             <div class="live-row" v-for="i in liveMessageArray" :key="i.key">
                                                 <div>
-                                                    <div class="live-type" v-text="i.type"></div>
-                                                    <el-button :size="btnSize" @click="openModifyLiveMessage">编辑</el-button>
-                                                    <el-button :size="btnSize" @click="deleteLiveMessage">删除</el-button>
+                                                    <span class="live-type" v-text="i.type == 1 ? '主持人：' : '嘉宾：'"></span>
+                                                    <span class="live-button" @click="openModifyLiveMessage(i.key)">编辑</span>
+                                                    <span class="live-button" @click="deleteLiveMessage(i.key)">删除</span>
                                                 </div>
                                                 <div class="live-message" v-html="i.message"></div>
                                             </div>
                                         </div>
 
-                                        <editor ref="neditor" id="neditor" :default-msg="liveMessage.message" :config="editorConfig"></editor>
+                                        <editor ref="appendEditor" id="appendEditor" :default-msg="liveMessage.message" :config="editorConfig"></editor>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
@@ -298,6 +298,31 @@
                     </el-row>
                 </el-form>
             </el-dialog>
+
+
+
+            <el-dialog title="修改消息" :visible.sync="modifyLiveMessageDialogVisible" width="50%" :close-on-click-modal="closeOnClickModal" @close="modifyLiveMessageCloseModelDialog">
+                <el-form ref="modifyLiveMessageDialogForm" class="deyatech-form" :model="liveModifyMessage" label-position="right" label-width="0" :rules="liveMessageRules">
+                    <el-row :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="" prop="message">
+                                <editor ref="modifyEditor" id="modifyEditor" :default-msg="liveModifyMessage.message" :config="editorConfig"></editor>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="" prop="type">
+                                <el-select v-model="liveModifyMessage.type" placeholder="请选择类型" :size="btnSize">
+                                    <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                                </el-select>
+                                <el-button type="primary" style="margin-left: 20px" @click="modifyLiveMessage" :loading="submitLoading" :size="btnSize">修改</el-button>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -343,6 +368,7 @@
                     initialFrameHeight: 200,
                     zIndex: 3000
                 },
+                showPicImgUrl: this.$store.state.common.showPicImgUrl,
                 modelList: undefined,
                 total: undefined,
                 listLoading: true,
@@ -427,6 +453,11 @@
                     type: undefined,
                     message: undefined
                 },
+                liveModifyMessage: {
+                    key: undefined,
+                    type: undefined,
+                    message: undefined
+                },
                 liveMessageRules: {
                     type: [
                         {required: true, message: this.$t("table.pleaseSelect") + '类型'}
@@ -435,7 +466,8 @@
                         {required: true, message: this.$t("table.pleaseInput") + '消息内容'}
                     ]
                 },
-                modifyLiveImageDialogVisible: false
+                modifyLiveImageDialogVisible: false,
+                modifyLiveMessageDialogVisible: false
             }
         },
         computed: {
@@ -603,6 +635,7 @@
                 }
                 this.liveMessageSockJS = undefined;
                 this.liveImageSockJS = undefined;
+                this.reloadList();
             },
             btnLiveUpdate(row){
                 this.resetModel();
@@ -647,6 +680,11 @@
                         let flag = arr[1];
                         if (flag === 'append') {
                             _this.liveMessageArray.push(operate);
+                            _this.$message.success("消息添加成功");
+                            Vue.nextTick(function(){
+                                let div = document.getElementById('idLiveContent');
+                                div.scrollTop = div.scrollHeight;
+                            });
                         } else {
                             let index = -1;
                             for(let i = 0; i < _this.liveMessageArray.length; i++) {
@@ -658,21 +696,17 @@
                             }
                             if (flag === 'modify') {
                                 _this.liveMessageArray[index] = operate;
+                                _this.$message.success("消息修改成功");
                             } else if (flag === 'delete') {
                                 _this.liveMessageArray.splice(index, 1);
+                                _this.$message.success("消息删除成功");
                             }
-                        }
-                        if (flag === 'append') {
-                            Vue.nextTick(function(){
-                                let div = document.getElementById('idLiveContent');
-                                div.scrollTop = div.scrollHeight;
-                            });
                         }
                     });
                     console.log('消息 WebSocket 连接...');
                 });
                 sockJS.onclose = function () {
-                    console.dir("消息 WebSocket 连接已经断开");
+                    console.log("消息 WebSocket 连接已经断开");
                     // 断开五秒后重连
                     setTimeout(function () {
                         _this.waitingLiveMessage();
@@ -694,6 +728,11 @@
                         let flag = arr[1];
                         if (flag === 'append') {
                             _this.liveImageArray.push(operate);
+                            _this.$message.success("图片添加成功");
+                            Vue.nextTick(function () {
+                                let div = document.getElementById('idLiveImage');
+                                div.scrollTop = div.scrollHeight;
+                            });
                         } else {
                             let index = -1;
                             for(let i = 0; i < _this.liveImageArray.length; i++) {
@@ -704,22 +743,20 @@
                                 }
                             }
                             if (flag === 'modify') {
-                                _this.liveImageArray[index] = operate;
+                                _this.liveImageArray[index].key = operate.key;
+                                _this.liveImageArray[index].name = operate.name;
+                                _this.liveImageArray[index].url = operate.url;
+                                _this.$message.success("图片修改成功");
                             } else if (flag === 'delete') {
                                 _this.liveImageArray.splice(index, 1);
+                                _this.$message.success("图片删除成功");
                             }
-                        }
-                        if (flag === 'append') {
-                            Vue.nextTick(function () {
-                                let div = document.getElementById('idLiveImage');
-                                div.scrollTop = div.scrollHeight;
-                            });
                         }
                     });
                     console.log('图片 WebSocket 连接...');
                 });
                 sockJS.onclose = function () {
-                    console.dir("图片 WebSocket 连接已经断开");
+                    console.log("图片 WebSocket 连接已经断开");
                     // 断开五秒后重连
                     setTimeout(function () {
                         _this.waitingLiveImage();
@@ -727,45 +764,81 @@
                 }
                 this.liveImageSockJS = sockJS;
             },
+            // 保存消息
+            sendOperateLiveMessage(data) {
+                operateLiveMessage(data).then((response) => {
+                    if (response.status == 200 && response.data) {
+                        this.$refs['appendEditor'].setUeContent('');
+                        this.resetLiveMessage();
+                    } else {
+                        this.$message.error("发送失败");
+                    }
+                    this.submitLoading = false;
+                }).catch(error=>{
+                    this.$message.error(error);
+                });
+            },
             // 添加消息
             appendLiveMessage: function() {
-                this.liveMessage.message = this.$refs['neditor'].getUeContent();
+                this.liveMessage.message = this.$refs['appendEditor'].getUeContent();
                 this.$refs['liveMessageDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
                         let data = {};
                         data.key = undefined;
-                        // 主持人
-                        if (this.liveMessage.type == 1) {
-                            data.type = '主持人：'
-                        } else if (this.liveMessage.type == 2) {
-                            data.type = '嘉宾：';
-                        }
+                        data.type = this.liveMessage.type;
                         data.message = this.liveMessage.message;
                         data.modelId = this.model.id;
-
-                        operateLiveMessage(data).then((response) => {
-                            if (response.status == 200 && response.data) {
-                                this.$refs['neditor'].setUeContent('');
-                                this.resetLiveMessage();
-                            } else {
-                                this.$message.error("发送失败");
-                            }
-                            this.submitLoading = false;
-                        });
+                        this.sendOperateLiveMessage(data);
                     } else {
                         return false;
                     }
                 });
             },
-            openModifyLiveMessage() {
-
+            // 编辑消息
+            openModifyLiveMessage(key) {
+                this.resetModifyLiveMessage();
+                this.modifyLiveMessageDialogVisible = true;
+                for(let item of this.liveMessageArray) {
+                    if (item.key === key) {
+                        this.liveModifyMessage.key = item.key;
+                        this.liveModifyMessage.type = item.type;
+                        this.liveModifyMessage.message = item.message;
+                        break;
+                    }
+                }
             },
+            // 保存编辑后的消息
             modifyLiveMessage() {
-
+                this.liveModifyMessage.message = this.$refs['modifyEditor'].getUeContent();
+                this.$refs['modifyLiveMessageDialogForm'].validate(valid => {
+                    if(valid) {
+                        let data = {};
+                        data.key = this.liveModifyMessage.key;
+                        data.type = this.liveModifyMessage.type;
+                        data.message = this.liveModifyMessage.message;
+                        data.modelId = this.model.id;
+                        this.sendOperateLiveMessage(data);
+                        this.modifyLiveMessageCloseModelDialog();
+                    } else {
+                        return false;
+                    }
+                });
             },
-            deleteLiveMessage() {
-
+            // 关闭编辑对话框
+            modifyLiveMessageCloseModelDialog() {
+                this.resetLiveMessage();
+                this.$refs['modifyLiveMessageDialogForm'].resetFields();
+                this.modifyLiveMessageDialogVisible = false;
+            },
+            // 删除消息
+            deleteLiveMessage(key) {
+                let data = {};
+                data.key = key;
+                data.type = undefined;
+                data.message = undefined;
+                data.modelId = this.model.id;
+                this.sendOperateLiveMessage(data);
             },
             // 图片保存
             sendOperateLiveImage(data) {
@@ -780,6 +853,7 @@
                     this.$message.error(error);
                 });
             },
+            // 添加图片
             appendLiveImage: function() {
                 this.$refs['liveImageDialogForm'].validate(valid => {
                     if(valid) {
@@ -794,6 +868,7 @@
                     }
                 });
             },
+            // 编辑图片
             openModifyLiveImage(key) {
                 this.resetModifyLiveImage();
                 this.modifyLiveImageDialogVisible = true;
@@ -806,6 +881,7 @@
                     }
                 }
             },
+            // 保存编辑后的图片
             modifyLiveImage() {
                 this.$refs['modifyLiveImageDialogForm'].validate(valid => {
                     if(valid) {
@@ -821,11 +897,13 @@
                     }
                 });
             },
+            // 关闭编辑对话框
             modifyLiveImageCloseModelDialog() {
                 this.resetLiveImage();
                 this.$refs['modifyLiveImageDialogForm'].resetFields();
                 this.modifyLiveImageDialogVisible = false;
             },
+            // 删除图片
             deleteLiveImage(key) {
                 let data = {};
                 data.key = key;
@@ -836,6 +914,13 @@
             },
             resetLiveMessage() {
                 this.liveMessage = {
+                    key: undefined,
+                    type: undefined,
+                    message: undefined
+                };
+            },
+            resetModifyLiveMessage() {
+                this.liveModifyMessage = {
                     key: undefined,
                     type: undefined,
                     message: undefined
@@ -874,44 +959,6 @@
             handlerImagesError() {
                 this.$message.error("上传失败");
             }
-            // imageMouseOver(url) {
-            //     this.controlDeleteButton(url, true);
-            // },
-            // imageMouseOut(url) {
-            //     this.controlDeleteButton(url, false);
-            // },
-            // // 删除按钮显示隐藏
-            // controlDeleteButton(url, value) {
-            //     if (this.liveImageArray) {
-            //         for(let image of this.liveImageArray) {
-            //             if (image.url === url) {
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // },
-            // // 删除图像
-            // imageDeleteClick(url) {
-            //     if (this.liveImageArray) {
-            //         let index = -1;
-            //         for(let image of this.liveImageArray) {
-            //             index += 1;
-            //             if (image.url === url) {
-            //                 break;
-            //             }
-            //         }
-            //         if (index > -1) {
-            //             this.liveImageArray.splice(index, 1);
-            //         }
-            //
-            //     }
-            // }
-            // imageNameChange() {
-            //     if (this.liveImageArray) {
-            //         this.model.images = JSON.stringify(this.liveImageArray);
-            //     }
-            // },
-
         }
     }
 </script>
@@ -991,9 +1038,16 @@
     }
     .live-type {
         color: #cc3333;
-        display: block;
         line-height: 22px;
         font-size: 14px;
+    }
+    .live-button {
+        margin-left: 10px;
+        color: #959698;
+    }
+    .live-button:hover {
+        color: blue;
+        cursor: pointer;
     }
     .live-message {
         text-indent: 2em;
