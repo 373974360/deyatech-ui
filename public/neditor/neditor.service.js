@@ -12,7 +12,8 @@ UE.Editor.prototype.getActionUrl = function(action) {
     } else if (action == 'uploadvideo') {
         return '/manage/common/upload';
     } else {
-        return this._bkGetActionUrl.call(this, action);
+        return '/manage/common/upload';
+        // return this._bkGetActionUrl.call(this, action);
     }
 }
 
@@ -59,12 +60,12 @@ window.UEDITOR_CONFIG['imageUploadService'] = function(context, editor) {
          * @returns {Boolean} 上传接口返回的response成功状态条件 (比如: res.code == 200)
          */
         getResponseSuccess: function(res) {
-            return res.code == 200;
+            return res.status == 200;
         },
         /* 指定上传接口返回的response中图片路径的字段，默认为 url
          * 如果图片路径字段不是res的属性，可以写成 对象.属性 的方式，例如：data.url
          * */
-        imageSrcField: 'url'
+        imageSrcField: 'data.url'
     }
 };
 
@@ -111,12 +112,12 @@ window.UEDITOR_CONFIG['videoUploadService'] = function(context, editor) {
          * @returns {Boolean} 上传接口返回的response成功状态条件 (比如: res.code == 200)
          */
         getResponseSuccess: function(res) {
-            return res.code == 200;
+            return res.status == 200;
         },
         /* 指定上传接口返回的response中视频路径的字段，默认为 url
          * 如果视频路径字段不是res的属性，可以写成 对象.属性 的方式，例如：data.url
          * */
-        videoSrcField: 'url'
+        videoSrcField: 'data.url'
     }
 };
 
@@ -220,11 +221,11 @@ window.UEDITOR_CONFIG['fileUploadService'] = function(context, editor) {
          * @returns {Boolean} 上传接口返回的response成功状态条件 (比如: res.code == 200)
          */
         getResponseSuccess: function(res) {
-            return res.code == 200;
+            return res.status == 200;
         },
         /* 指定上传接口返回的response中附件路径的字段，默认为 url
          * 如果附件路径字段不是res的属性，可以写成 对象.属性 的方式，例如：data.url
          * */
-        fileSrcField: 'url'
+        fileSrcField: 'data.url'
     }
 };
