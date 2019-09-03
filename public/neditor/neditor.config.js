@@ -34,7 +34,7 @@
         scrawlActionName: "uploadscrawl",
         videoActionName: "uploadvideo",
         fileActionName: "uploadfile",
-        imageUrlPrefix: "",
+        imageUrlPrefix: "/manage/common/showPicImg?filePath=",
         scrawlUrlPrefix: "",
         videoUrlPrefix: "",
         fileUrlPrefix: "/manage/common/download?filePath=",
