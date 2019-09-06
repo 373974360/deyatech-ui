@@ -80,7 +80,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="元数据集前缀" prop="mdcPrefix">
-                                <el-input v-model="metadataCollection.mdcPrefix" :disabled="dialogTitle !== 'create'"></el-input>
+                                <el-input v-model="metadataCollection.mdcPrefix" disabled></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -324,7 +324,7 @@
                     name: undefined,
                     enName: undefined,
                     mdPrefix: undefined,
-                    mdcPrefix: undefined,
+                    mdcPrefix: 'meta_',
                     source: undefined,
                     tenantFlag: undefined,
                     mdcVersion: '1.0.0',
@@ -637,7 +637,7 @@
                     name: undefined,
                     enName: undefined,
                     mdPrefix: undefined,
-                    mdcPrefix: undefined,
+                    mdcPrefix: 'meta_',
                     source: undefined,
                     tenantFlag: undefined,
                     mdcVersion: '1.0.0',
