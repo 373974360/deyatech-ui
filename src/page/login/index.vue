@@ -1,6 +1,6 @@
 <template>
-    <div class="login-container"
-         @keyup.enter.native="handleLogin">
+    <div class="login-container" style="background: url(img/bg/login-bg.jpg) 0 bottom repeat-x #2790ee;"
+         @keyup.enter.native="handleLogin" >
         <top-color v-show="false"></top-color>
         <div class="login-weaper animated bounceInDown">
             <div class="login-left">
@@ -8,7 +8,7 @@
                     {{time}}
                 </div>
                 <img class="img"
-                     src="/img/logo.png"
+                     src="img/logo.png"
                      alt="">
                 <p class="title">{{ $t('login.info') }}</p>
             </div>
