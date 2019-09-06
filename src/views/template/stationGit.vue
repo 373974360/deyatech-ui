@@ -247,6 +247,8 @@
                             this.dialogVisible = false;
                             this.submitLoading = false;
                             this.listTemplateFiles();
+                        }).catch(() => {
+                            this.submitLoading = false
                         })
                     } else {
                         return false;
