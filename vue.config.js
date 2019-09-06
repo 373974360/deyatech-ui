@@ -34,6 +34,13 @@ module.exports = {
                 pathRewrite: {
                     '^/manage': '/manage'
                 }
+            },
+            '/web/websocket': {
+                target: 'http://localhost:8088',
+                ws: true,
+                pathRewrite: {
+                    '^/web/websocket': '/websocket'
+                }
             }
         }
     }

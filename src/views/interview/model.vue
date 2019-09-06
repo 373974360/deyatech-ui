@@ -12,7 +12,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -98,6 +98,7 @@
                                     v-model.trim="model.time"
                                     type="datetime"
                                     format="yyyy-MM-dd HH:mm"
+                                    value-format="yyyy-MM-dd HH:mm"
                                     placeholder="请选择访谈时间">
                                 </el-date-picker>
                             </el-form-item>
@@ -428,7 +429,6 @@
                 liveMessageSockJS: undefined,
                 liveImageSockJS: undefined,
                 reconnectionSockJS: false,
-                webSocketUrl: 'http://localhost:8088',
                 liveImageArray: [],
                 liveImage: {
                     key: undefined,
@@ -672,7 +672,7 @@
             // 等待直播消息
             waitingLiveMessage: function() {
                 let _this = this;
-                let sockJS = new SockJS(this.webSocketUrl + "/websocketlive/");
+                let sockJS = new SockJS("/web/websocket/");
                 let stompClient = Stomp.over(sockJS);
                 stompClient.connect({}, function () {
                     stompClient.subscribe('/topic/live/message/', function (response) {
@@ -684,7 +684,7 @@
                         if (flag === 'append') {
                             _this.liveMessageArray.push(operate);
                             _this.$message.success("消息添加成功");
-                            Vue.nextTick(function(){
+                            _this.$nextTick(function(){
                                 let div = document.getElementById('idLiveContent');
                                 div.scrollTop = div.scrollHeight;
                             });
@@ -721,7 +721,7 @@
             // 等待图片消息
             waitingLiveImage: function() {
                 let _this = this;
-                let sockJS = new SockJS(this.webSocketUrl + "/websocketlive/");
+                let sockJS = new SockJS("/web/websocket/");
                 let stompClient = Stomp.over(sockJS);
                 stompClient.connect({}, function () {
                     stompClient.subscribe('/topic/live/image/', function (response) {
@@ -733,7 +733,7 @@
                         if (flag === 'append') {
                             _this.liveImageArray.push(operate);
                             _this.$message.success("图片添加成功");
-                            Vue.nextTick(function () {
+                            _this.$nextTick(function () {
                                 let div = document.getElementById('idLiveImage');
                                 div.scrollTop = div.scrollHeight;
                             });

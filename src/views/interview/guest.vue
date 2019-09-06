@@ -9,7 +9,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" 请输入条件 clearable></el-input>
+                        <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="listQuery.name" clearable></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-select :size="searchSize" v-model.trim="listQuery.type" clearable placeholder="请选择类型">
