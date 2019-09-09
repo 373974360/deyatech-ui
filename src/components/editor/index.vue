@@ -34,12 +34,14 @@
                 this.ue.setContent(this.defaultMsg)
             })
         },
+        watch: {
+            defaultMsg: function() {
+                this.ue.setContent(this.defaultMsg)
+            }
+        },
         methods: {
             getUeContent() {
                 return this.ue.getContent()
-            },
-            setUeContent(v) {
-                return this.ue.setContent(v)
             }
         },
         beforeDestroy() {

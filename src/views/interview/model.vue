@@ -421,7 +421,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="类型" prop="type">
-                                        <el-select v-model.trim="guest.type" clearable placeholder="请选择类型" style="width: 100%;">
+                                        <el-select v-model.trim="guest.type" placeholder="请选择类型" style="width: 100%;">
                                             <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                         </el-select>
                                     </el-form-item>
@@ -964,7 +964,6 @@
             sendOperateLiveMessage(data) {
                 operateLiveMessage(data).then((response) => {
                     if (response.status == 200 && response.data) {
-                        this.$refs['appendEditor'].setUeContent('');
                         this.resetLiveMessage();
                     } else {
                         this.$message.error("发送失败");

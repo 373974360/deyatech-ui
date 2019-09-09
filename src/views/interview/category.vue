@@ -13,7 +13,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" placeholder="请输入名称"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入名称" v-model.trim="listQuery.name" ></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
