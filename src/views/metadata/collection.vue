@@ -85,7 +85,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="元数据前缀" prop="mdPrefix">
-                                <el-input v-model="metadataCollection.mdPrefix" :disabled="dialogTitle !== 'create'"></el-input>
+                                <el-input v-model="metadataCollection.mdPrefix" disabled></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -116,6 +116,12 @@
                             <el-table-column type="selection" width="35" align="center"/>
                             <el-table-column label="中文名称" prop="name"/>
                             <el-table-column label="字段名" prop="fieldName"/>
+                            <el-table-column label="显示名称">
+                                <template slot-scope="scope">
+                                    <el-input v-model="relationDataReal[scope.$index].label" placeholder="请输入">
+                                    </el-input>
+                                </template>
+                            </el-table-column>
                             <el-table-column label="数据类型" prop="dataType" :formatter="filterDataType"/>
                             <el-table-column label="控件类型">
                                 <template slot-scope="scope">
@@ -156,11 +162,11 @@
                                     <el-checkbox v-model="relationDataReal[scope.$index].advancedQuery"></el-checkbox>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="是否添加索引">
+                            <!--<el-table-column label="是否添加索引">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model="relationDataReal[scope.$index].useIndex"></el-checkbox>
                                 </template>
-                            </el-table-column>
+                            </el-table-column>-->
                             <el-table-column label="是否全文检索">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model="relationDataReal[scope.$index].useFullIndex"></el-checkbox>
@@ -185,7 +191,7 @@
             </el-dialog>
 
             <el-dialog title="选择关联元数据" :visible.sync="dialogRelationVisible" :before-close="resetDialogRelation"
-                       :close-on-click-modal="closeOnClickModal" @open="initCandidateTable">
+                       :close-on-click-modal="closeOnClickModal" @open="initCandidateTable" width="80%">
                 <el-table ref="candidateTable" :data="candidateList" border @selection-change="handleSelectionChangeCandidate">
                     <el-table-column type="selection" width="35" align="center"/>
                     <el-table-column prop="name" label="中文名称" align="center"/>
@@ -323,7 +329,7 @@
                     id: undefined,
                     name: undefined,
                     enName: undefined,
-                    mdPrefix: undefined,
+                    mdPrefix: 'm_',
                     mdcPrefix: 'meta_',
                     source: undefined,
                     tenantFlag: undefined,
@@ -636,7 +642,7 @@
                     id: undefined,
                     name: undefined,
                     enName: undefined,
-                    mdPrefix: undefined,
+                    mdPrefix: 'm_',
                     mdcPrefix: 'meta_',
                     source: undefined,
                     tenantFlag: undefined,
@@ -696,12 +702,14 @@
                 obj.id = undefined;
                 obj.metadataId = metadata.id;
                 if (relation) {
+                    obj.label = relation.label;
                     obj.tableHead = relation.tableHead;
                     obj.advancedQuery = relation.advancedQuery;
                     obj.useFullIndex = relation.useFullIndex;
                     obj.useIndex = relation.useIndex;
                     obj.fieldName = relation.fieldName;
                 } else {
+                    obj.label = metadata.name;
                     obj.tableHead = false;
                     obj.advancedQuery = false;
                     obj.useFullIndex = false;
