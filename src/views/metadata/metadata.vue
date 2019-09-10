@@ -179,6 +179,16 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
+                    <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
+                        <el-col :span="12">
+                            <el-form-item label="控件长度" prop="controlLength">
+                                <el-radio-group v-model="metadata.controlLength">
+                                    <el-radio :label="1">半行</el-radio>
+                                    <el-radio :label="2">整行</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item prop="mandatory" style="display: inline-block">
@@ -355,6 +365,7 @@
                     mandatory: false,
                     multiFlag: false,
                     annotationCount: 1,
+                    controlLength: undefined,
                     categoryId: undefined,
                     relationId: undefined
                 },
@@ -443,8 +454,11 @@
                     if (item.id === value) {
                         this.dataSourceOptions = item.dataSource;
                         this.checkModelOptions = item.validate;
-                        for (let dataLength of item.dataLengths) {
-                            this.metadata.dataLength = dataLength.length
+                        if (item.dataLengths && item.dataLengths.length > 0) {
+                            this.metadata.dataLength = item.dataLengths[0].length
+                        }
+                        if (item.controlLengths && item.controlLengths.length > 0) {
+                            this.metadata.controlLength = item.controlLengths[0].value;
                         }
                     }
                 }
@@ -684,6 +698,7 @@
                     mandatory: false,
                     multiFlag: false,
                     annotationCount: 1,
+                    controlLength: undefined,
                     categoryId: undefined,
                     relationId: undefined
                 };
