@@ -333,7 +333,7 @@
 
 
             <!--嘉宾管理 列表-->
-            <el-dialog :title="model.name" :visible.sync="guestDialogVisible" :fullscreen="false" :close-on-click-modal="closeOnClickModal" @close="guestCloseModelDialog">
+            <el-dialog :title="titleGuest" :visible.sync="guestDialogVisible" :fullscreen="false" :close-on-click-modal="closeOnClickModal" @close="guestCloseModelDialog">
                 <div class="deyatech-header">
                     <el-form :inline="true" ref="guestSearchForm">
                         <el-form-item>
@@ -640,6 +640,7 @@
                 modifyLiveImageDialogVisible: false,
                 modifyLiveMessageDialogVisible: false,
                 // 嘉宾管理
+                titleGuest: undefined,
                 guestDialogVisible: false,
                 guestDialogVisibleCreateUpdate: false,
                 guestDialogTitle: undefined,
@@ -1227,6 +1228,7 @@
                 } else {
                     this.model = deepClone(this.selectedRows[0]);
                 }
+                this.titleGuest = this.model.name + ' - 嘉宾管理';
                 this.guestDialogVisible = true;
                 this.guestReloadList();
                 this.getDepartmentCascader();
