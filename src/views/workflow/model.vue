@@ -36,6 +36,12 @@
                 </el-table-column>
                 <!--<el-table-column align="center" label="" prop="processDefinitionId"/>-->
                 <el-table-column prop="ver" label="版本" align="center"/>
+                <el-table-column label="发布状态" align="center">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.processDefinitionId">已发布</span>
+                        <span v-else>未发布</span>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
