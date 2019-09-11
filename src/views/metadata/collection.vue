@@ -116,7 +116,7 @@
                             <el-table-column type="selection" width="35" align="center"/>
                             <el-table-column label="中文名称" prop="name"/>
                             <el-table-column label="字段名" prop="fieldName"/>
-                            <el-table-column label="显示名称">
+                            <el-table-column label="标签名称">
                                 <template slot-scope="scope">
                                     <el-input v-model="relationDataReal[scope.$index].label" placeholder="请输入">
                                     </el-input>
@@ -192,7 +192,19 @@
 
             <el-dialog title="选择关联元数据" :visible.sync="dialogRelationVisible" :before-close="resetDialogRelation"
                        :close-on-click-modal="closeOnClickModal" @open="initCandidateTable" width="80%">
-                <el-table ref="candidateTable" :data="candidateList" border @selection-change="handleSelectionChangeCandidate">
+                <div class="dialog-search">
+                    <el-cascader :options="categoryCascader" @change="handleCategoryChange"
+                                 class="dialog-search-item dialog-keywords"
+                                 :show-all-levels="false" expand-trigger="hover" clearable change-on-select
+                                 :size="searchSize" placeholder="根据分类筛选">
+                    </el-cascader>
+                    <el-input v-model="candidateQuery.name" class="dialog-search-item dialog-keywords"
+                              clearable :size="searchSize" placeholder="根据中文名称查询">
+                    </el-input>
+                    <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadCandidateList">{{$t('table.search')}}</el-button>
+                </div>
+                <el-table ref="candidateTable" :data="candidateList" border @select="selectRowCandidate"
+                          @select-all="selectAllCandidate" @selection-change="handleSelectionChangeCandidate">
                     <el-table-column type="selection" width="35" align="center"/>
                     <el-table-column prop="name" label="中文名称" align="center"/>
                     <el-table-column prop="briefName" label="字段名" align="center"/>
@@ -206,6 +218,11 @@
                         </template>
                     </el-table-column>
                 </el-table>
+                <el-pagination class="deyatech-pagination pull-right" background
+                               :current-page.sync="candidateQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                               :page-size="candidateQuery.size" :layout="this.$store.state.common.pageLayout" :total="candidateTotal"
+                               @size-change="handleSizeChangeCandidate" @current-change="handleCurrentChangeCandidate">
+                </el-pagination>
                 <span slot="footer" class="dialog-footer">
                     <el-button type="primary" :size="btnSize" @click="doRelation" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="resetDialogRelation">{{$t('table.cancel')}}</el-button>
@@ -244,8 +261,11 @@
         checkVersionExist
     } from '../../api/metadata/collection';
     import {
+        getMetadataCategoryCascader
+    } from "../../api/metadata/category";
+    import {
         findDataType,
-        getAllMetadata
+        getMetadataList
     } from "../../api/metadata/metadata";
     import {
         getAllDictionaryIndex
@@ -329,8 +349,8 @@
                     id: undefined,
                     name: undefined,
                     enName: undefined,
-                    mdPrefix: 'm_',
-                    mdcPrefix: 'meta_',
+                    mdPrefix: 'mc_',
+                    mdcPrefix: 'mt_',
                     source: undefined,
                     tenantFlag: undefined,
                     mdcVersion: '1.0.0',
@@ -369,9 +389,19 @@
                 dictOptions: [],
                 relationData: [],
                 relationDataReal: [],
+                categoryCascader: [],
+                candidateTotal: 0,
+                candidateQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    categoryId: undefined,
+                    name: undefined
+                },
                 candidateList: [],
                 selectedRowsRelation: [],
                 selectedRowsCandidate: [],
+                selectedAllCandidateIds: [],
+                selectedAllCandidate: [],
                 dialogRelationVisible: false,
                 collectionVersionList: [],
                 mainVersionId: undefined,
@@ -408,6 +438,7 @@
             this.getDataType();
             // 获取数据字典
             this.getAllDicts();
+            this.getMetadataCategory();
         },
         methods: {
             resetSearch(){
@@ -433,30 +464,40 @@
                     this.dictOptions = response.data;
                 })
             },
+            getMetadataCategory() {
+                getMetadataCategoryCascader().then(response => {
+                    this.categoryCascader = response.data;
+                })
+            },
             initCandidateTable() {
                 Promise.all([this.getCandidateData(), this.$nextTick()]).then(() => {
+                    this.selectedAllCandidateIds = [];
+                    for (let item of this.relationData) {
+                        this.selectedAllCandidateIds.push(item.metadataId);
+                    }
                     this.checkRelatedRows();
                 })
             },
             getCandidateData() {
                 return new Promise((resolve, reject) => {
-                    getAllMetadata().then(response => {
-                        this.candidateList = response.data;
-                        resolve()
+                    getMetadataList(this.candidateQuery).then(response => {
+                        this.candidateList = response.data.records;
+                        this.candidateTotal = response.data.total;
+                        resolve();
                     }).catch(err => {
                         reject(err)
                     })
                 });
             },
             checkRelatedRows() {
-                for (let item of this.relationData) {
-                    for (let row of this.candidateList) {
-                        if (item.metadataId === row.id) {
-                            this.$refs['candidateTable'].toggleRowSelection(row, true);
-                            break;
-                        }
+                for (let row of this.candidateList) {
+                    if (this.selectedAllCandidateIds.includes(row.id)) {
+                        this.$refs['candidateTable'].toggleRowSelection(row, true);
                     }
                 }
+            },
+            reloadCandidateList() {
+                this.handleCurrentChangeCandidate(1);
             },
             handleSizeChange(val){
                 this.listQuery.size = val;
@@ -474,6 +515,18 @@
             },
             handleSelectionChangeCandidate(rows) {
                 this.selectedRowsCandidate = rows;
+            },
+            handleSizeChangeCandidate(val) {
+                this.candidateQuery.size = val;
+                this.getCandidateData().then(() => {
+                    this.checkRelatedRows();
+                })
+            },
+            handleCurrentChangeCandidate(val) {
+                this.candidateQuery.page = val;
+                this.getCandidateData().then(() => {
+                    this.checkRelatedRows();
+                })
             },
             btnCreate(){
                 this.resetMetadataCollection();
@@ -617,11 +670,7 @@
                 })
             },
             doRelation() {
-                if (this.selectedRowsCandidate.length === 0) {
-                    this.$message.warning('请选择需要关联的数据');
-                    return;
-                }
-                for (const row of this.selectedRowsCandidate) {
+                for (const row of this.selectedAllCandidate) {
                     let addFlag = true;
                     for (const related of this.relationData) {
                         if (related.metadataId === row.id) {
@@ -642,8 +691,8 @@
                     id: undefined,
                     name: undefined,
                     enName: undefined,
-                    mdPrefix: 'm_',
-                    mdcPrefix: 'meta_',
+                    mdPrefix: 'mc_',
+                    mdcPrefix: 'mt_',
                     source: undefined,
                     tenantFlag: undefined,
                     mdcVersion: '1.0.0',
@@ -667,11 +716,64 @@
                 this.dialogRelationVisible = false;
                 this.$refs['candidateTable'].clearSelection();
                 this.selectedRowsCandidate = [];
+                this.selectedAllCandidate = [];
+                this.selectedAllCandidateIds = [];
+                this.candidateQuery = {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    categoryId: undefined,
+                    name: undefined
+                };
             },
             resetDialogVersion() {
                 this.dialogVersionVisible = false;
                 this.mainVersionId = undefined;
                 this.collectionVersionList = [];
+            },
+            handleCategoryChange(val) {
+                if (val.length > 0) {
+                    this.candidateQuery.categoryId = val[val.length - 1]
+                } else {
+                    this.candidateQuery.categoryId = undefined
+                }
+            },
+            selectRowCandidate(selection, row) {
+                let i = this.selectedAllCandidateIds.indexOf(row.id);
+                if (i < 0) {
+                    this.selectedAllCandidateIds.push(row.id);
+                    this.selectedAllCandidate.push(deepClone(row));
+                } else {
+                    this.selectedAllCandidateIds.splice(i, 1);
+                    for (let [index, item] of this.selectedAllCandidate.entries()) {
+                        if (item.id === row.id) {
+                            this.selectedAllCandidate.splice(index, 1);
+                            break;
+                        }
+                    }
+                }
+            },
+            selectAllCandidate(selection) {
+                if (selection.length > 0) {
+                    for (let row of this.candidateList) {
+                        if (this.selectedAllCandidateIds.indexOf(row.id) < 0) {
+                            this.selectedAllCandidateIds.push(row.id);
+                            this.selectedAllCandidate.push(deepClone(row));
+                        }
+                    }
+                } else {
+                    for (let row of this.candidateList) {
+                        let i = this.selectedAllCandidateIds.indexOf(row.id);
+                        if (i >= 0) {
+                            this.selectedAllCandidateIds.splice(i, 1)
+                        }
+                        for (let [index, item] of this.selectedAllCandidate.entries()) {
+                            if (item.id === row.id) {
+                                this.selectedAllCandidate.splice(index, 1);
+                                break;
+                            }
+                        }
+                    }
+                }
             },
             sortUp(index) {
                 if (index > 0) {
