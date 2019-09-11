@@ -443,7 +443,6 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
-    // import {getStore} from '@/util/store';
     import {
         getStationGroupList,
         createOrUpdateStationGroup,
@@ -799,7 +798,11 @@
             },
             handleStationGroupClassificationNodeClick(data) {
                 if (data.children && data.children.length > 0) {
-                    this.$refs.stationGroupClassificationTree.setCurrentKey(this.listQuery.stationGroupClassificationId);
+                    if (this.listQuery.stationGroupClassificationId) {
+                        this.$refs.stationGroupClassificationTree.setCurrentKey(this.listQuery.stationGroupClassificationId);
+                    } else {
+                        this.$refs.stationGroupClassificationTree.setCurrentKey(null);
+                    }
                     return;
                 }
                 this.listQuery.stationGroupClassificationId = data.value;

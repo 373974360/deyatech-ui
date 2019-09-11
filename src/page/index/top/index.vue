@@ -15,6 +15,9 @@
             </span>
         </div>
         <div class="top-bar__right">
+            <div class="top-bar__item">
+                <top-site></top-site>
+            </div>
             <el-tooltip v-if="showColor"
                         effect="dark"
                         :content="$t('navbar.color')"
@@ -63,16 +66,13 @@
                        @click="handleScreen"></i>
                 </div>
             </el-tooltip>
-            <div class="top-bar__item">
-                <top-site></top-site>
-            </div>
             <img class="top-bar__img"
                  :src="userInfo.avatar">
             <el-dropdown>
-        <span class="el-dropdown-link">
-          {{userInfo.userName}}
-          <i class="el-icon-arrow-down el-icon--right"></i>
-        </span>
+                <span class="el-dropdown-link">
+                  {{userInfo.userName}}
+                  <i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item>
                         <router-link to="/">{{$t('navbar.dashboard')}}</router-link>
