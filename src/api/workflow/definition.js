@@ -41,4 +41,18 @@ export function getProcessDefinitionList(query) {
     });
 }
 
+export function processActivate(keys) {
+    return request({
+        url: '/manage/workflow/processDefinition/activate',
+        method: 'post',
+        data: {keys}
+    })
+}
 
+export function processSuspend(keys) {
+    return request({
+        url: '/manage/workflow/processDefinition/suspend',
+        method: 'post',
+        data: {keys}
+    })
+}

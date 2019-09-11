@@ -16,6 +16,8 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
+                    <el-button v-if="btnEnable.enable" type="primary" :size="btnSize" @click="btnStatusEnable" :disabled="enableDisabled">启用</el-button>
+                    <el-button v-if="btnEnable.disable" type="warning" :size="btnSize" @click="btnStatusDisable" :disabled="disableDisabled">禁用</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
@@ -42,12 +44,16 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.setting" type="primary" title="流程节点配置" icon="iconset" :size="btnSize" circle
                                    @click="btnTaskSetting(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.enable && scope.row.enable === 0" type="primary" title="启用" icon="iconsuccess" :size="btnSize" circle
+                                   @click="btnStatusEnable(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.disable && scope.row.enable === 1" type="warning" title="禁用" icon="iconwarning" :size="btnSize" circle
+                                   @click="btnStatusDisable(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
@@ -144,7 +150,9 @@
     import {
         getProcessDefinitionList,
         createOrUpdateProcessDefinition,
-        delProcessDefinitions
+        delProcessDefinitions,
+        processActivate,
+        processSuspend
     } from '../../api/workflow/definition';
     import {
         getProcessTaskSetting,
@@ -220,9 +228,33 @@
                 return {
                     create: this.permission.processDefinition_create,
                     update: this.permission.processDefinition_update,
+                    enable: this.permission.processDefinition_enable,
+                    disable: this.permission.processDefinition_disable,
                     delete: this.permission.processDefinition_delete,
                     setting: this.permission.processDefinition_setting
                 };
+            },
+            enableDisabled() {
+                if (this.selectedRows.length < 1) {
+                    return true;
+                }
+                for (let row of this.selectedRows) {
+                    if (row.enable !== 0) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            disableDisabled() {
+                if (this.selectedRows.length < 1) {
+                    return true;
+                }
+                for (let row of this.selectedRows) {
+                    if (row.enable !== 1) {
+                        return true;
+                    }
+                }
+                return false;
             }
         },
         created(){
@@ -285,6 +317,36 @@
                         this.doDelete(ids);
                     })
                 }
+            },
+            btnStatusEnable(row) {
+                let keys = [];
+                if (row.id) {
+                    keys.push(row.actDefinitionKey);
+                } else {
+                    for (const item of this.selectedRows) {
+                        keys.push(item.actDefinitionKey);
+                    }
+                }
+                processActivate(keys).then(() => {
+                    this.reloadList();
+                    this.$message.success("流程已启用");
+                })
+            },
+            btnStatusDisable(row) {
+                this.$confirm("禁用后将无法发起该流程，是否继续？", this.$t("table.tip"), {type: 'warning'}).then(() => {
+                    let keys = [];
+                    if (row.id) {
+                        keys.push(row.actDefinitionKey);
+                    } else {
+                        for (const item of this.selectedRows) {
+                            keys.push(item.actDefinitionKey);
+                        }
+                    }
+                    processSuspend(keys).then(() => {
+                        this.reloadList();
+                        this.$message.success("流程已禁用");
+                    })
+                })
             },
             btnTaskSetting(row) {
                 this.dialogTaskSettingVisible = true;
