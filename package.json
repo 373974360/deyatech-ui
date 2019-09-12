@@ -14,6 +14,7 @@
         "axios": "^0.18.0",
         "babel-polyfill": "^6.26.0",
         "classlist-polyfill": "^1.2.0",
+        "ele-multi-cascader": "^2.2.4",
         "element-tree-grid": "^0.1.3",
         "element-ui": "^2.4.5",
         "js-cookie": "^2.2.0",

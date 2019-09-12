@@ -83,178 +83,292 @@
         <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                    :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
             <el-form ref="catalogDialogForm" class="deyatech-form" :model="catalog" label-position="right"
-                     label-width="80px" :rules="catalogRules">
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item :label="$t('table.parent')" label-width="140px">
-                            <el-cascader :options="catalogCascader" v-model="catalogTreePosition"
-                                         show-all-levels expand-trigger="click" clearable
-                                         change-on-select style="width: 100%"></el-cascader>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="栏目名称" prop="name" label-width="140px">
-                            <el-input v-model="catalog.name"/>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
+                     label-width="140px" :rules="catalogRules">
+                <el-steps :active="stepsActive" finish-status="success" simple style="margin-bottom: 30px">
+                    <el-step title="基本属性设置" ></el-step>
+                    <el-step title="核心属性设置" v-if="stepsActive != 0"></el-step>
+                    <el-step title="聚合属性设置" v-if="stepsActive == 2"></el-step>
+                </el-steps>
 
+                <!--基本属性设置-->
+                <div v-if="stepsActive == 0">
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item :label="$t('table.parent')">
+                                <el-cascader :options="catalogCascader" v-model="catalogTreePosition"
+                                             show-all-levels expand-trigger="click" clearable
+                                             change-on-select style="width: 100%"></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="内容模型" prop="contentModelId">
+                                <el-select v-model="selectContentModelIds" placeholder="请选择内容模型"
+                                           multiple style="width: 100%">
+                                    <el-option
+                                        v-for="m in modelList"
+                                        :key="m.id"
+                                        :label="m.name"
+                                        :value="m.id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="栏目名称" prop="name">
+                                <el-input v-model="catalog.name"/>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="栏目别名" prop="aliasName">
+                                <el-input v-model="catalog.aliasName"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="英文名称" prop="ename" label-width="140px">
+                                <el-input v-model="catalog.ename"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="是否外链" prop="flagExternal">
+                                <el-switch v-model="catalog.flagExternal" :active-value=1 :inactive-value=0 @change="isFlagExternal"
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+
+                </div>
+
+                <!--外链属性设置-->
+                <div v-if="catalog.flagExternal == 1">
+                    <el-row :gutter="20" :span="24" v-if="">
+                        <el-col :span="24">
+                            <el-form-item label="外部链接地址" prop="linkUrl">
+                                <el-input v-model="catalog.linkUrl"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </div>
+
+                <!--核心属性设置-->
+                <div v-if="stepsActive == 1">
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="首页模板" prop="indexTemplate">
+                                <el-input v-model="catalog.indexTemplate"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="列表页模板" prop="listTemplate">
+                                <el-cascader
+                                    style="width: 100%"
+                                    placeholder="请选择模板地址"
+                                    clearable
+                                    expand-trigger="hover"
+                                    :options="templateTreeData"
+                                    v-model="selectListTemplate"
+                                    :props="cascaderProps"
+                                    @change="handleChange">
+                                </el-cascader>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="列表页显示条数" prop="displayNumber">
+                                <el-input-number v-model="catalog.displayNumber" :min=1 :max=100 style="width: 100%"></el-input-number>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="是否自动发布" prop="autoRelease">
+                                <el-switch v-model="catalog.autoRelease" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="是否允许评论" prop="allowComment">
+                                <el-switch v-model="catalog.allowComment" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="是否允许分享" prop="allowShare">
+                                <el-switch v-model="catalog.allowShare" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="是否生成栏目首页" prop="generateHome">
+                                <el-switch v-model="catalog.generateHome" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="是否在导航中显示" prop="navigationShowAble">
+                                <el-switch v-model="catalog.navigationShowAble" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="是否在树中显示" prop="treeShowAble">
+                                <el-switch v-model="catalog.treeShowAble" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="是否归档" prop="placeOnFile">
+                                <el-switch v-model="catalog.placeOnFile" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="参与人员" prop="participant">
+                                <el-radio v-model="catalog.participant" border :label="1">会员</el-radio>
+                                <el-radio v-model="catalog.participant" border :label="2">所有人</el-radio>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="是否启用工作流" prop="workflowEnable">
+                                <el-switch v-model="catalog.workflowEnable" :active-value=1 :inactive-value=0 @change="isWorkflowEnable"
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="工作流" prop="workflowKey" v-if="display">
+                                <el-select v-model="catalog.workflowKey" placeholder="请选择工作流">
+                                    <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+<!--                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item :label="$t('table.remark')" prop="remark" label-width="140px">
+                                <el-input type="textarea" v-model="catalog.remark" :rows="3"/>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>-->
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="是否设置聚合规则" prop="flagAggregation">
+                                <el-switch v-model="catalog.flagAggregation" :active-value=1 :inactive-value=0
+                                           active-text="是" inactive-text="否">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </div>
+            </el-form>
+
+            <!--聚合属性设置-->
+            <el-form ref="catalogAggregationDialogForm" class="deyatech-form" :model="catalogAggregation" label-position="right"
+                     v-if="stepsActive == 2" label-width="140px" :rules="catalogAggregationRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item label="栏目别名" prop="aliasName" label-width="140px">
-                            <el-input v-model="catalog.aliasName"></el-input>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="英文名称" prop="ename" label-width="140px">
-                            <el-input v-model="catalog.ename"></el-input>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="外部链接地址" prop="linkUrl" label-width="140px">
-                            <el-input v-model="catalog.linkUrl"></el-input>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="首页模板" prop="indexTemplate" label-width="140px">
-                            <el-input v-model="catalog.indexTemplate"></el-input>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="列表页模板" prop="listTemplate" label-width="140px">
-                            <el-cascader
+                        <el-form-item label="栏目" prop="cmsCatalogId">
+                            <ele-multi-cascader
                                 style="width: 100%"
-                                placeholder="请选择模板地址"
-                                clearable
+                                placeholder="请选择栏目"
+                                show-all-levels
+                                collapse-tags
                                 expand-trigger="hover"
-                                :options="templateTreeData"
-                                v-model="selectListTemplate"
-                                :props="cascaderProps"
+                                :options="catalogCascader"
+                                v-model="selectCatalogIds"
                                 @change="handleChange">
-                            </el-cascader>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="列表页显示条数" prop="displayNumber" label-width="140px">
-                            <el-input-number v-model="catalog.displayNumber" :min=1 :max=100 style="width: 100%"></el-input-number>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="是否自动发布" prop="autoRelease" label-width="140px">
-                            <el-select v-model="catalog.autoRelease" style="width: 100%">
-                                <el-option
-                                    v-for = "o in loadEnum('YesNoEnum')"
-                                    :label="o.value"
-                                    :value="o.code">
-                                </el-option>
-                            </el-select>
+                            </ele-multi-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="是否允许评论" prop="allowComment" label-width="140px">
-                            <el-select v-model="catalog.allowComment" style="width: 100%">
-                                <el-option
-                                    v-for = "o in loadEnum('YesNoEnum')"
-                                    :label="o.value"
-                                    :value="o.code">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="是否允许分享" prop="allowShare" label-width="140px">
-                            <el-select v-model="catalog.allowShare" style="width: 100%">
-                                <el-option
-                                    v-for = "o in loadEnum('YesNoEnum')"
-                                    :label="o.value"
-                                    :value="o.code">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="是否生成栏目首页" prop="generateHome" label-width="140px">
-                            <el-select v-model="catalog.generateHome" style="width: 100%">
-                                <el-option
-                                    v-for = "o in loadEnum('YesNoEnum')"
-                                    :label="o.value"
-                                    :value="o.code">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="是否在导航中显示" prop="navigationShowAble" label-width="140px">
-                            <el-select v-model="catalog.navigationShowAble" style="width: 100%">
-                                <el-option
-                                    v-for = "o in loadEnum('YesNoEnum')"
-                                    :label="o.value"
-                                    :value="o.code">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="是否在树中显示" prop="treeShowAble" label-width="140px">
-                            <el-select v-model="catalog.treeShowAble" style="width: 100%">
-                                <el-option
-                                    v-for = "o in loadEnum('YesNoEnum')"
-                                    :label="o.value"
-                                    :value="o.code">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="参与人员" prop="participant" label-width="140px">
-                            <el-radio v-model="catalog.participant" border :label="1">会员</el-radio>
-                            <el-radio v-model="catalog.participant" border :label="2">所有人</el-radio>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="是否启用工作流" prop="workflowEnable" label-width="140px">
-                            <el-switch v-model="catalog.workflowEnable" :active-value=1 :inactive-value=0 @change="isWorkflowEnable">
-                            </el-switch>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-                        <el-form-item label="工作流" prop="workflowKey" v-if="display" label-width="140px">
-                            <el-select v-model="catalog.workflowKey" placeholder="请选择工作流">
-                                <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
-                            </el-select>
+                        <el-form-item label="发布人" prop="publisher">
+                            <el-input v-model="catalogAggregation.publisher"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
-                        <el-form-item :label="$t('table.remark')" prop="remark" label-width="140px">
-                            <el-input type="textarea" v-model="catalog.remark" :rows="3"/>
+                        <el-form-item label="发布机构" prop="publishOrganization">
+                            <el-input v-model="catalogAggregation.publishOrganization"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" :span="24">
+                    <el-col :span="24">
+                        <el-form-item label="发布时间段" prop="publishTime">
+                            <el-date-picker
+                                v-model="selectPublishTime"
+                                type="datetimerange"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                                value-format="yyyy-MM-dd HH:mm:ss"
+                                :default-time="['00:00:00', '23:59:59']">
+                            </el-date-picker>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" :span="24">
+                    <el-col :span="24">
+                        <el-form-item label="关键字" prop="keyword">
+                            <el-tag
+                                :key="tag"
+                                v-for="tag in dynamicTags"
+                                closable
+                                :disable-transitions="false"
+                                @close="handleClose(tag)">
+                                {{tag}}
+                            </el-tag>
+                            <el-input
+                                class="input-new-tag"
+                                v-if="inputVisible"
+                                v-model="inputValue"
+                                ref="saveTagInput"
+                                size="small"
+                                @keyup.enter.native="handleInputConfirm"
+                                @blur="handleInputConfirm"
+                                placeholder="最多二十个字"
+                                maxlength="20">
+                            </el-input>
+                            <el-button :disabled="dynamicTags.length >= 10" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多10个)</el-button>
                         </el-form-item>
                     </el-col>
                 </el-row>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>
+                <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
+                <el-button v-if="catalog.flagExternal == 0 && stepsActive != 2 && (stepsActive == 0 || catalog.flagAggregation == 1)"
+                           type="primary" :size="btnSize" @click="nextStep" :loading="submitLoading">下一步</el-button>
+                <el-button v-if="dialogTitle=='create' && (catalog.flagExternal == 1 || stepsActive == 2  || (stepsActive == 1 && catalog.flagAggregation == 0))"
+                           type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                <el-button v-if="dialogTitle=='update' && (catalog.flagExternal == 1 || stepsActive == 2  || (stepsActive == 1 && catalog.flagAggregation == 0))"
+                           type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+<!--                <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>-->
             </span>
         </el-dialog>
     </basic-container>
@@ -276,6 +390,11 @@
     import pinyin from 'pinyin';
     import {listTemplateAllFiles} from '@/api/template/template';
     import {getProcessDefinitionList} from '@/api/workflow/definition';
+    import {
+        getAllModel
+    } from '@/api/station/model';
+    import {validateURL} from '@/util/validate';
+    import "ele-multi-cascader/dist/cascader.css"
 
     export default {
         name: 'catalog',
@@ -347,10 +466,57 @@
                 if (this.selectListTemplate) {
                     this.catalog.listTemplate += this.selectListTemplate.join('/');
                 }
-                if (this.catalog.listTemplate.length > 50) {
-                    callback(new Error('模板路径过长，最多 50 个字符'))
+                if (this.catalog.listTemplate.length > 500) {
+                    callback(new Error('模板路径过长，最多 500 个字符'))
                     this.catalog.listTemplate = undefined;
                 } else {
+                    callback()
+                }
+            }
+            const validateContentModelId = (rule, value, callback) => {
+                if (this.selectContentModelIds.length == 0) {
+                    callback(new Error('请选择内容模板'))
+                } else {
+                    this.catalog.contentModelId = this.selectContentModelIds.join();
+                    if (this.catalog.contentModelId.length > 4000) {
+                        callback(new Error('选择内容模板过多，最多 4000 个字符'))
+                        this.catalog.contentModelId = undefined;
+                    } else {
+                        callback()
+                    }
+                }
+            }
+            const validateUrl = (rule, value, callback) => {
+                if (this.catalog.flagExternal == 1) {
+                    if (!value) {
+                        callback(new Error('请输入URL'))
+                    } else {
+                        if (!validateURL(value)) {
+                            callback(new Error('URL格式错误'))
+                        } else {
+                            callback()
+                        }
+                    }
+                }
+            }
+            const validateCmsCatalogId = (rule, value, callback) => {
+                if (this.selectCatalogIds.length == 0) {
+                    callback(new Error('请选择栏目'))
+                } else {
+                    this.catalogAggregation.cmsCatalogId = this.selectCatalogIds.join();
+                    if (this.catalogAggregation.cmsCatalogId.length > 4000) {
+                        callback(new Error('选择栏目过多，最多 4000 个字符'))
+                        this.catalogAggregation.cmsCatalogId = undefined;
+                    } else {
+                        callback()
+                    }
+                }
+            }
+            const validatePublishTime = (rule, value, callback) => {
+                if (this.selectPublishTime.length == 0) {
+                    callback(new Error('请选择发布时间段'))
+                } else {
+                    this.catalogAggregation.publishTime = this.selectPublishTime.join();
                     callback()
                 }
             }
@@ -370,7 +536,7 @@
                     aliasName: undefined,
                     ename: undefined,
                     showable: undefined,
-                    linkUrl: undefined,
+                    linkUrl: '',
                     workflowId: undefined,
                     workflowKey: undefined,
                     indexTemplate: undefined,
@@ -378,19 +544,26 @@
                     sortNo: undefined,
                     treePosition: undefined,
                     status: undefined,
-                    allowComment: undefined,
-                    allowShare: undefined,
+                    allowComment: 0,
+                    allowShare: 0,
                     applicationId: undefined,
                     attributeId: undefined,
-                    autoRelease: undefined,
+                    autoRelease: 0,
                     contectObjectId: undefined,
-                    displayNumber: undefined,
-                    generateHome: undefined,
-                    navigationShowAble: undefined,
+                    displayNumber: 1,
+                    generateHome: 0,
+                    navigationShowAble: 0,
                     participant: undefined,
-                    treeShowAble: undefined,
-                    workflowEnable: undefined,
-                    pathName: undefined
+                    treeShowAble: 0,
+                    workflowEnable: 0,
+                    pathName: undefined,
+                    contentModelId: undefined,
+                    placeOnFile: 0,
+                    flagExternal: 0,
+                    coverage: undefined,
+                    flagAggregation: 0,
+                    aggregationId: undefined,
+                    catalogAggregationInfo: undefined
                 },
                 catalogCascader: [],
                 dialogVisible: false,
@@ -421,7 +594,8 @@
                     ],
                     linkUrl: [
                         {required: true, message: this.$t("table.pleaseInput") + '外部链接地址'},
-                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
+                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
+                        {validator: validateUrl, trigger: 'blur'}
                     ],
                     showable: [
                         {required: true, message: this.$t("table.pleaseInput") + '是否显示'}
@@ -486,7 +660,19 @@
                     ],
                     remark: [
                         {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
-                    ]
+                    ],
+                    contentModelId: [
+                        {required: true, validator: validateContentModelId, trigger: 'change'}
+                    ],
+                    placeOnFile: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否归档'}
+                    ],
+                    flagExternal: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否外链'}
+                    ],
+                    flagAggregation: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否设置聚合规则'}
+                    ],
                 },
                 lastExpanded: undefined,
                 tableReset: true,
@@ -498,7 +684,43 @@
                 },
                 selectListTemplate: undefined,
                 workflowList: [],
-                display: false
+                display: false,
+                modelList: [],
+                selectContentModelIds: [],
+                stepsActive: 0,
+                selectCatalogIds: [],
+                catalogAggregation: {
+                    id: undefined,
+                    cmsCatalogId: undefined,
+                    keyword: undefined,
+                    publishOrganization: undefined,
+                    publishTime: undefined,
+                    publisher: undefined
+                },
+                catalogAggregationRules: {
+                    cmsCatalogId: [
+                        {required: true, validator: validateCmsCatalogId, trigger: 'change'}
+                    ],
+                    keyword: [
+                        // {required: true, message: this.$t("table.pleaseInput") + '关键字'}
+                    ],
+                    publishOrganization: [
+                        {required: true, message: this.$t("table.pleaseInput") + '发布机构'},
+                        {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'},
+                    ],
+                    publishTime: [
+                        // {required: true, message: this.$t("table.pleaseSelect") + '发布时间段'}
+                        {required: true, validator: validatePublishTime, trigger: 'blur'}
+                    ],
+                    publisher: [
+                        {required: true, message: this.$t("table.pleaseInput") + '发布人'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                    ]
+                },
+                dynamicTags: [],
+                inputVisible: false,
+                inputValue: '',
+                selectPublishTime: [],
             }
         },
         created() {
@@ -506,6 +728,8 @@
             if(this.$store.state.common.siteId != undefined){
                 this.reloadList();
                 this.listTemplateAllFiles();
+                this.getAllModel();
+                this.getCatalogCascader();
             }else{
                 this.$message.error('请选择站点！');
             }
@@ -565,8 +789,9 @@
                     this.listLoading = false;
                 })
             },
-            getCatalogCascader(query){
+            getCatalogCascader(){
                 this.submitLoading = true;
+                const query = {siteId : this.listQuery.siteId};
                 getCatalogCascader(query).then(response => {
                     this.submitLoading = false;
                     this.catalogCascader = response.data;
@@ -575,9 +800,9 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
             },
-            loadEnum(name) {
+/*            loadEnum(name) {
                 return getStore({name: 'enums'})[name]
-            },
+            },*/
             // 获取模板
             listTemplateAllFiles(){
                 this.templateTreeData = [];
@@ -587,21 +812,32 @@
                 })
             },
             btnCreate(row){
-                if (!(this.listQuery.siteId || row.siteId)) {
-                    this.$message.warning("请先选择站点");
-                    return
-                }
                 this.resetCatalog();
                 if (row.id) {
+                    this.catalog = deepClone(row);
+                    // 聚合栏目
+                    if (this.catalog.catalogAggregation) {
+                        this.catalogAggregation = row.catalogAggregation;
+                        this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
+                        this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
+                        this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
+                    }
                     if(row.treePosition){
                         this.catalog.treePosition = row.treePosition + "&" + row.id;
                     }else{
                         this.catalog.treePosition = "&" + row.id;
                     }
                     this.catalog.parentId = row.id;
-                    this.getCatalogCascader({siteId : row.siteId});
                 } else {
                     if (this.selectedRows.length == 1) {
+                        this.catalog = deepClone(this.selectedRows[0]);
+                        // 聚合栏目
+                        if (this.catalog.catalogAggregation) {
+                            this.catalogAggregation = row.catalogAggregation;
+                            this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
+                            this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
+                            this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
+                        }
                         if(this.selectedRows[0].treePosition){
                             this.catalog.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
                         }else{
@@ -612,9 +848,18 @@
                         this.catalog.parentId = '0';
                         this.catalog.treePosition = undefined;
                     }
-                    this.getCatalogCascader({siteId : this.listQuery.siteId});
                 }
+                // 一些字段不需要覆盖
+                this.catalog.id = undefined;
+                this.catalog.name = undefined;
+                this.catalog.aliasName = undefined;
+                this.catalog.ename = undefined;
+                this.catalog.sortNo = undefined;
+                this.catalog.pathName = undefined;
+                this.catalog.version = undefined;
+
                 this.catalog.children = undefined;
+                this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
@@ -626,22 +871,36 @@
                     this.catalog = deepClone(this.selectedRows[0]);
                 }
                 this.isWorkflowEnable(this.catalog.workflowEnable);
-                this.catalog.children = undefined;
-                this.getCatalogCascader({siteId : row.siteId});
                 this.selectListTemplate = this.catalog.listTemplate.split('/').slice(1);
+                // 聚合栏目
+                if (this.catalog.catalogAggregation) {
+                    this.catalogAggregation = this.catalog.catalogAggregation;
+                    this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
+                    this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
+                    this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
+                }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
             btnDelete(row){
                 let ids = [];
+                var message = '';
                 if (row.id) {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                    if (row.children) {
+                        message = '所选栏目包含子栏目，'
+                    }
+                    this.$confirm(message + this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push(row.id);
                         this.lastExpanded = row.treePosition;
                         this.doDelete(ids);
                     })
                 } else {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                    for(const deleteRow of this.selectedRows) {
+                        if (deleteRow.children) {
+                            message = '所选栏目包含子栏目，'
+                        }
+                    }
+                    this.$confirm(message + this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for(const deleteRow of this.selectedRows) {
                             this.lastExpanded = deleteRow.treePosition;
                             ids.push(deleteRow.id);
@@ -651,34 +910,102 @@
                 }
             },
             doCreate(){
-                this.$refs['catalogDialogForm'].validate(valid => {
-                    if(valid) {
-                        this.submitLoading = true;
-                        this.catalog.siteId = this.listQuery.siteId;
-                        createOrUpdateCatalog(this.catalog).then(() => {
-                            this.lastExpanded = this.catalog.treePosition;
-                            this.resetCatalogDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
+                var _this = this;
+                var validateForm1 = new Promise(function(resolve, reject) {
+                    _this.$refs['catalogDialogForm'].validate(valid => {
+                        if(valid) {
+                            resolve();
+                        } else {
+                            return false;
+                        }
+                    })
+                });
+                var validateForm2 = true;
+                if (this.catalog.flagAggregation == 1) {
+                    validateForm2 = new Promise(function(resolve, reject) {
+                        _this.$refs['catalogAggregationDialogForm'].validate(valid => {
+                            if(valid) {
+                                resolve();
+                            } else {
+                                return false;
+                            }
                         })
-                    } else {
-                        return false;
+                    });
+                }
+
+                Promise.all([validateForm1, validateForm2]).then(function(){
+                    _this.catalog.siteId = _this.listQuery.siteId;
+                    // 集合栏目信息
+                    if (_this.catalog.flagAggregation == 1) {
+                        _this.catalogAggregation.keyword = _this.dynamicTags.join();
+                        _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
-                })
+                    console.log(_this.catalog);
+                    _this.submitLoading = true;
+                    createOrUpdateCatalog(_this.catalog).then(() => {
+                        _this.lastExpanded = _this.catalog.treePosition;
+                        _this.resetCatalogDialogAndList();
+                        _this.$message.success(_this.$t("table.createSuccess"));
+                    })
+                });
             },
             doUpdate(){
-                this.$refs['catalogDialogForm'].validate(valid => {
-                    // console.log("catalog: " + JSON.stringify(this.catalog))
-                    if(valid) {
-                        this.submitLoading = true;
-                        createOrUpdateCatalog(this.catalog).then(() => {
-                            this.lastExpanded = this.catalog.treePosition;
-                            this.resetCatalogDialogAndList();
-                            this.$message.success(this.$t("table.updateSuccess"));
+                var _this = this;
+                var validateForm1 = new Promise(function(resolve, reject) {
+                    _this.$refs['catalogDialogForm'].validate(valid => {
+                        if(valid) {
+                            resolve();
+                        } else {
+                            return false;
+                        }
+                    })
+                });
+                var validateForm2 = true;
+                if (this.catalog.flagAggregation == 1) {
+                    validateForm2 = new Promise(function(resolve, reject) {
+                        _this.$refs['catalogAggregationDialogForm'].validate(valid => {
+                            if(valid) {
+                                resolve();
+                            } else {
+                                return false;
+                            }
                         })
-                    } else {
-                        return false;
+                    });
+                }
+                var confirm = true;
+                if (this.catalog.children && this.catalog.flagExternal == 0 && this.catalog.flagAggregation == 0) {
+                    confirm = new Promise(function(resolve, reject) {
+                        _this.$confirm('是否覆盖子栏目信息', _this.$t("table.tip"), {
+                            confirmButtonText: '覆盖',
+                            cancelButtonText: '不覆盖',
+                            type: 'warning'
+                        }).then(() => {
+                            resolve();
+                            console.log('覆盖子栏目')
+                            _this.catalog.coverage = true;
+                        }).catch(() => {
+                            resolve();
+                            console.log('不覆盖子栏目')
+                            _this.catalog.coverage = false;
+                        });
+                    });
+                }
+
+                Promise.all([validateForm1, validateForm2, confirm]).then(function(){
+                    _this.catalog.children = undefined;
+                    // 集合栏目信息
+                    if (_this.catalog.flagAggregation == 1) {
+                        _this.catalogAggregation.keyword = _this.dynamicTags.join();
+                        _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
-                })
+                    console.log(_this.catalog);
+                    _this.submitLoading = true;
+                    createOrUpdateCatalog(_this.catalog).then(() => {
+                        _this.lastExpanded = _this.catalog.treePosition;
+                        _this.resetCatalogDialogAndList();
+                        _this.$message.success(_this.$t("table.updateSuccess"));
+                    })
+                });
             },
             doDelete(ids){
                 this.listLoading = true;
@@ -696,7 +1023,7 @@
                     aliasName: undefined,
                     ename: undefined,
                     showable: undefined,
-                    linkUrl: undefined,
+                    linkUrl: '',
                     workflowId: undefined,
                     workflowKey: undefined,
                     indexTemplate: undefined,
@@ -704,25 +1031,42 @@
                     sortNo: undefined,
                     treePosition: undefined,
                     status: undefined,
-                    allowComment: undefined,
-                    allowShare: undefined,
+                    allowComment: 0,
+                    allowShare: 0,
                     applicationId: undefined,
                     attributeId: undefined,
-                    autoRelease: undefined,
+                    autoRelease: 0,
                     contectObjectId: undefined,
-                    displayNumber: undefined,
-                    generateHome: undefined,
-                    navigationShowAble: undefined,
+                    displayNumber: 1,
+                    generateHome: 0,
+                    navigationShowAble: 0,
                     participant: undefined,
-                    treeShowAble: undefined,
+                    treeShowAble: 0,
                     workflowEnable: 0,
-                    pathName: undefined
+                    pathName: undefined,
+                    contentModelId: undefined,
+                    placeOnFile: 0,
+                    flagExternal: 0,
+                    coverage: undefined,
+                    flagAggregation: 0,
+                    catalogAggregationInfo: undefined
+                }
+            },
+            resetCatalogAggregation(){
+                this.catalogAggregation = {
+                    id: undefined,
+                    cmsCatalogId: undefined,
+                    keyword: undefined,
+                    publishOrganization: undefined,
+                    publishTime: undefined,
+                    publisher: undefined
                 }
             },
             resetCatalogDialogAndList(){
                 this.closeCatalogDialog();
                 this.submitLoading = false;
                 this.reloadList();
+                this.getCatalogCascader();
             },
             closeCatalogDialog() {
                 this.display = false;
@@ -730,7 +1074,16 @@
                 this.selectListTemplate = undefined;
                 this.workflowList = [];
                 this.resetCatalog();
+                this.resetCatalogAggregation();
                 this.$refs['catalogDialogForm'].resetFields();
+                this.selectContentModelIds = [];
+                for (let model of this.modelList) {
+                    this.selectContentModelIds.push(model.id);
+                };
+                this.stepsActive = 0;
+                this.selectCatalogIds = [];
+                this.selectPublishTime = [];
+                this.dynamicTags = [];
             },
             handleChange(value) {
                 console.log(value);
@@ -762,8 +1115,72 @@
                         this.$message.error('工作流数据获取失败')
                     }
                 })
-            }
+            },
+            getAllModel() {
+                getAllModel().then(response => {
+                    this.modelList = response.data;
+                    // console.log(this.modelList)
+                    for (let model of this.modelList) {
+                        this.selectContentModelIds.push(model.id);
+                    }
+                })
+            },
+            previousStep() {
+                this.$refs['catalogDialogForm'].clearValidate();
+                this.stepsActive --;
+            },
+            nextStep() {
+                this.$refs['catalogDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.stepsActive ++;
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            isFlagExternal(value) {
+                if (!value && this.catalog.linkUrl) {
+                    this.catalog.linkUrl = '';
+                }
+            },
+            // 动态添加关键字 start
+            handleClose(tag) {
+                this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+            },
+
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(_ => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
+            },
+            handleInputConfirm() {
+                let inputValue = this.inputValue;
+                if (inputValue) {
+                    this.dynamicTags.push(inputValue);
+                }
+                this.inputVisible = false;
+                this.inputValue = '';
+            },
+            // 动态添加关键字 end
         }
     }
 </script>
 
+<style>
+    /*关键字*/
+    .el-tag {
+        margin-right: 10px;
+    }
+    .button-new-tag {
+        height: 32px;
+        line-height: 30px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .input-new-tag {
+        width: 320px;
+        margin-right: 10px;
+        vertical-align: bottom;
+    }
+</style>

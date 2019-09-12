@@ -32,6 +32,13 @@ export function delModels(ids) {
         data
     })
 }
+export function getAllModel(query) {
+    return request({
+        url: '/manage/station/model/listByModel',
+        method: 'get',
+        params: query
+    });
+}
 export function getModelList(query) {
     return request({
         url: '/manage/station/model/pageByModel',
@@ -59,6 +66,14 @@ export function checkEnglishNameExist(query) {
 export function getAllModelBySiteId(query) {
     return request({
         url: '/manage/station/model/getAllModelBySiteId',
+        method: 'get',
+        params: query
+    });
+}
+
+export function getAllIndexName(query) {
+    return request({
+        url: '/manage/station/model/getAllIndexName',
         method: 'get',
         params: query
     });

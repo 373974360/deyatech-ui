@@ -17,6 +17,7 @@ import * as filters from './filters' // 全局filter
 import basicContainer from './components/basicContainer'
 import iconSelect from './components/iconSelect'
 import messageTemplate from './components/messageTemplate'
+import EleMultiCascader from "ele-multi-cascader"
 
 Vue.use(router)
 Vue.use(VueAxios, axios)
@@ -26,6 +27,7 @@ Vue.use(Element, {
 Vue.use(window.AVUE, {
     i18n: (key, value) => i18n.t(key, value)
 })
+Vue.use(EleMultiCascader)
 //注册全局容器
 Vue.component('basicContainer', basicContainer)
 Vue.component('elTreeGrid', ElTreeGrid)
