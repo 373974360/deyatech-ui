@@ -126,7 +126,7 @@
 
             <!-- 内容模型设置弹窗 -->
             <el-dialog title="内容模型设置" :visible.sync="modelTemplateDialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeModelTemplateDialog" :fullscreen="true" >
+                       :close-on-click-modal="closeOnClickModal" @close="closeModelTemplateDialog">
                 <!-- 增加删除按钮 -->
                 <div class="deyatech-menu">
                     <div class="deyatech-menu_left">
@@ -927,7 +927,7 @@
     /*表格样式根据elementUIIndex样式文件来设置*/
     /*树节点选中状态高亮色的设置*/
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-        background-color: #ebb563;
+        /*background-color: #ebb563;*/
     }
     /deep/ .el-tree-node > .el-tree-node__children {
         overflow: visible !important;
