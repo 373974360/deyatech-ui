@@ -15,20 +15,20 @@
                         <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList" :disabled="!this.listQuery.categoryId">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="!this.listQuery.categoryId">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnLiveUpdate" :disabled="selectedRows.length != 1">直播</el-button>
                 </div>
                 <div class="deyatech-menu_right">
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
+                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList" :disabled="!this.listQuery.categoryId"></el-button>
                 </div>
             </div>
 
@@ -542,7 +542,7 @@
                 showPicImgUrl: this.$store.state.common.showPicImgUrl,
                 modelList: undefined,
                 total: undefined,
-                listLoading: true,
+                listLoading: false,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -745,27 +745,37 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = true;
-            this.reloadList();
-            this.loadCategory();
+            if (this.$store.state.common.siteId) {
+                this.loadCategory();
+            }
         },
         methods: {
             loadCategory() {
                 getAllCategoryList({siteId: this.$store.state.common.siteId}).then(response => {
                     this.categorys = response.data;
+                    if (this.categorys && this.categorys.length > 0) {
+                        this.listQuery.categoryId = this.categorys[0].id;
+                        this.reloadList();
+                    }
                 }).catch((error)=>{
                     this.$message.error(error);
                 });
             },
-            resetSearch(){
-                this.listQuery.categoryId = undefined;
+            resetSearch() {
                 this.listQuery.name = undefined;
             },
             reloadList(){
+                if (!this.listQuery.categoryId) {
+                    return;
+                }
                 this.listLoading = true;
                 this.modelList = undefined;
                 this.total = undefined;
+                console.log('reloadList');
+                console.dir(this.listQuery);
                 getModelListByCategoryAndName(this.listQuery).then(response => {
                     this.listLoading = false;
+                    console.dir(response.data.records);
                     this.modelList = response.data.records;
                     this.total = response.data.total;
                 })
@@ -785,6 +795,7 @@
                 this.resetModel();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                this.model.categoryId = this.listQuery.categoryId;
             },
             btnUpdate(row){
                 this.resetModel();

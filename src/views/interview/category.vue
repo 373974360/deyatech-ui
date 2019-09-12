@@ -61,16 +61,16 @@
                 <el-form ref="categoryDialogForm" class="deyatech-form" :model="category" label-position="right"
                          label-width="80px" :rules="categoryRules">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="分类名称" prop="name">
-                                <el-input v-model.trim="category.name" maxlength="50" placeholder="请输入分类名称"></el-input>
+                        <el-col :span="12">
+                            <el-form-item label="站点" prop="siteId">
+                                <span v-text="this.$store.state.common.siteName"></span>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="站点" prop="siteId">
-
+                        <el-col :span="24">
+                            <el-form-item label="分类名称" prop="name">
+                                <el-input v-model.trim="category.name" maxlength="50" placeholder="请输入分类名称"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -165,7 +165,6 @@
                 this.categoryList = undefined;
                 this.total = undefined;
                 this.listQuery.siteId = this.$store.state.common.siteId;
-                console.dir(this.listQuery);
                 getCategoryListByNameAndSiteId(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.categoryList = response.data.records;
@@ -187,6 +186,7 @@
                 this.resetCategory();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                this.category.siteId = this.$store.state.common.siteId;
             },
             btnUpdate(row){
                 this.resetCategory();

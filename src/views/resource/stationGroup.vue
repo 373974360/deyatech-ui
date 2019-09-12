@@ -29,6 +29,7 @@
             <el-row :span="24">
                 <el-col :span="4">
                     <div class="classificationTree">
+                        <!--左侧树-->
                         <el-tree ref="stationGroupClassificationTree" style="max-width:500px;"
                                  :data="stationGroupClassificationCascader"
                                  node-key="value"
@@ -40,6 +41,7 @@
                     </div>
                 </el-col>
                 <el-col :span="20">
+                    <!--右侧一览-->
                     <el-table :data="stationGroupList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="50" align="center"/>
@@ -563,7 +565,7 @@
             return {
                 stationGroupList: undefined,
                 total: undefined,
-                listLoading: true,
+                listLoading: false,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -776,8 +778,9 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = false;
-            this.reloadList();
-            this.getStationGroupClassificationCascader(null);
+            if (this.$store.state.common.siteId) {
+                this.getStationGroupClassificationCascader(null);
+            }
         },
         methods: {
             loadSetting(stationGroupId) {
@@ -789,12 +792,29 @@
                     });
                 });
             },
-            getStationGroupClassificationCascader(id){
+            getStationGroupClassificationCascader(id) {
                 this.submitLoading = true;
                 getStationGroupClassificationCascader(id).then(response => {
                     this.submitLoading = false;
                     this.stationGroupClassificationCascader = response.data;
-                })
+                    if (this.stationGroupClassificationCascader && this.stationGroupClassificationCascader.length > 0) {
+                        let key = this.getDefault(this.stationGroupClassificationCascader[0]);
+                        if (key) {
+                            this.listQuery.stationGroupClassificationId = key;
+                            this.reloadList();
+                            this.$nextTick(()=>{
+                                this.$refs.stationGroupClassificationTree.setCurrentKey(this.listQuery.stationGroupClassificationId);
+                            });
+                        }
+                    }
+                });
+            },
+            getDefault(v) {
+                if (v.children && v.children.length > 0) {
+                    return this.getDefault(v.children[0]);
+                } else {
+                    return v.value;
+                }
             },
             handleStationGroupClassificationNodeClick(data) {
                 if (data.children && data.children.length > 0) {
@@ -816,12 +836,7 @@
                 this.listLoading = true;
                 this.stationGroupList = undefined;
                 this.total = undefined;
-                getStationGroupList({
-                    page: this.listQuery.page,
-                    size: this.listQuery.size,
-                    stationGroupClassificationId: this.listQuery.stationGroupClassificationId,
-                    name: this.listQuery.name
-                }).then(response => {
+                getStationGroupList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.stationGroupList = response.data.records;
                     this.total = response.data.total;
