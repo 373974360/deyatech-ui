@@ -23,8 +23,8 @@
                 </template>
             </el-table-tree-column>
             <el-table-column align="center" label="英文名称" prop="englishName"/>
-            <el-table-column align="center" label="排序号" prop="sortNo"/>
-            <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="100">
+            <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
+            <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                 <template slot-scope="scope">
                     <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                         {{scope.row.enable | enums('EnableEnum')}}

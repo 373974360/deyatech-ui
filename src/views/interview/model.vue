@@ -31,6 +31,8 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
+
+            <!--访谈模型列表-->
             <el-table ref="modelTable" :data="modelList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
@@ -42,7 +44,9 @@
                 </el-table-column>
                 <el-table-column align="center" label="访谈时间" prop="time"/>
                 <el-table-column align="center" label="访谈简介" prop="description"/>
-                <el-table-column align="center" label="访谈状态" prop="status"/>
+                <el-table-column align="center" label="访谈状态" prop="status">
+                    <template slot-scope="scope">{{scope.row.status | enums('InterviewModelStatusEnum')}}</template>
+                </el-table-column>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -50,14 +54,16 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop="btnDelete(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.update" title="直播" type="primary" icon="el-icon-sort" :size="btnSize" circle
+                        <el-button v-if="btnEnable.live" title="直播" type="primary" icon="el-icon-sort" :size="btnSize" circle
                                    @click.stop="btnLiveUpdate(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.guest" title="嘉宾" type="primary" icon="el-icon-star-off" :size="btnSize" circle
+                                   @click.stop="btnGuest(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -68,6 +74,7 @@
             </el-pagination>
 
 
+            <!--访谈模型表单-->
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeModelDialog">
                 <el-form ref="modelDialogForm" class="deyatech-form" :model="model" label-position="right"
@@ -176,7 +183,7 @@
 
 
 
-            <el-dialog title="直播互动" :fullscreen="true" :visible.sync="liveDialogVisible" :close-on-click-modal="closeOnClickModal" @close="liveCloseModelDialog">
+            <el-dialog title="直播互动" :fullscreen="false" :visible.sync="liveDialogVisible" :close-on-click-modal="closeOnClickModal" @close="liveCloseModelDialog">
                 <el-row>
                     <!--左侧-->
                     <el-col :span="6">
@@ -324,6 +331,162 @@
                 </el-form>
             </el-dialog>
 
+
+            <!--嘉宾管理 列表-->
+            <el-dialog :title="titleGuest" :visible.sync="guestDialogVisible" :fullscreen="false" :close-on-click-modal="closeOnClickModal" @close="guestCloseModelDialog">
+                <div class="deyatech-header">
+                    <el-form :inline="true" ref="guestSearchForm">
+                        <el-form-item>
+                            <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="guestListQuery.name"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-select :size="searchSize" v-model.trim="guestListQuery.type" placeholder="请选择类型">
+                                <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="guestReloadList">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="guestResetSearch">{{$t('table.clear')}}</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div class="deyatech-menu">
+                    <div class="deyatech-menu_left">
+                        <el-button v-if="btnEnable.guestCreate" type="primary" :size="btnSize" @click="btnGuestCreate">{{$t('table.create')}}</el-button>
+                        <el-button v-if="btnEnable.guestUpdate" type="primary" :size="btnSize" @click="btnGuestUpdate" :disabled="guestSelectedRows.length != 1">{{$t('table.update')}}</el-button>
+                        <el-button v-if="btnEnable.guestDelete" type="danger" :size="btnSize" @click="btnGuestDelete" :disabled="guestSelectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    </div>
+                    <div class="deyatech-menu_right">
+                        <el-button icon="el-icon-refresh" :size="btnSize" circle @click="guestReloadList"></el-button>
+                    </div>
+                </div>
+                <el-table :data="guestList" v-loading.body="guestListLoading" stripe border highlight-current-row
+                          @selection-change="guestHandleSelectionChange">
+                    <el-table-column type="selection" width="50" align="center"/>
+                    <el-table-column align="center" label="姓名" prop="name">
+                        <template slot-scope="scope">
+                            <span class="link-type" @click='btnGuestUpdate(scope.row)'>{{scope.row.name}}</span>
+                        </template>
+                    </el-table-column>
+                    <!--<el-table-column align="center" label="照片" prop="photo" width="120">
+                        <template slot-scope="scope">
+                            <img :src="showPicImgUrl + scope.row.photo" style="width: 100px; height: 100px;">
+                        </template>
+                    </el-table-column>-->
+                    <el-table-column align="center" label="职务" prop="job"/>
+                    <el-table-column align="center" label="类型" prop="type" width="100">
+                        <template slot-scope="scope">
+                            {{scope.row.type | enums('InterviewGuestTypeEnum')}}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                        <template slot-scope="scope">
+                            <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                                {{scope.row.enable | enums('EnableEnum')}}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                        <template slot-scope="scope">
+                            <el-button v-if="btnEnable.guestUpdate" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                                       @click.stop="btnGuestUpdate(scope.row)"></el-button>
+                            <el-button v-if="btnEnable.guestDelete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                       @click.stop="btnGuestDelete(scope.row)"></el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-pagination class="deyatech-pagination pull-right" background
+                               :current-page.sync="guestListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                               :page-size="guestListQuery.size" :layout="this.$store.state.common.pageLayout" :total="guestTotal"
+                               @size-change="guestHandleSizeChange" @current-change="guestHandleCurrentChange">
+                </el-pagination>
+            </el-dialog>
+
+
+            <!--嘉宾管理 表单-->
+            <el-dialog :title="titleMap[guestDialogTitle]" :visible.sync="guestDialogVisibleCreateUpdate"
+                       :close-on-click-modal="closeOnClickModal" @close="guestCloseDialogCreateUpdate">
+                <el-form ref="guestDialogForm" class="deyatech-form" :model="guest" label-position="right" label-width="80px" :rules="guestRules">
+                    <el-row :span="24">
+                        <el-col :span="12">
+                            <el-row :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="模型" prop="modelId">
+                                        <el-input :value="model.name" readonly></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="姓名" prop="name">
+                                        <el-input v-model.trim="guest.name" maxlength="20" placeholder="请输入姓名"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="类型" prop="type">
+                                        <el-select v-model.trim="guest.type" placeholder="请选择类型" style="width: 100%;">
+                                            <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="职务" prop="job">
+                                        <el-input v-model.trim="guest.job" maxlength="50" placeholder="请输入职务"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="部门" prop="departmentName">
+                                        <el-cascader ref="mycascader" :options="departmentCascader" v-model="departmentTreePosition"
+                                                     :show-all-levels="true" expand-trigger="click" filterable :debounce="1"
+                                                     change-on-select style="width: 100%"
+                                                     :before-filter="beforeFilterDepartment"
+                                                     @blur="blurDepartmentName"
+                                        ></el-cascader>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-row :gutter="20" :span="24">
+                                <el-col :span="24">
+                                    <el-form-item label="照片" prop="photo">
+                                        <el-input v-model.trim="guest.photo" v-if="false"></el-input>
+                                        <el-upload class="photo-uploader" name="file"
+                                                   :action="$store.state.common.uploadUrl"
+                                                   :accept="$store.state.common.imageAccepts"
+                                                   :show-file-list="false"
+                                                   :on-success="handlePhotoSuccess"
+                                                   :on-error="handlerPhotoError">
+                                            <img v-if="guest.photo" :src="showPicImgUrl + guest.photo" class="photo-add">
+                                            <i v-else class="el-icon-plus photo-uploader-icon"></i>
+                                        </el-upload>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item :label="$t('table.remark')">
+                                <el-input type="textarea" v-model.trim="guest.remark" :rows="3" maxlength="500" placeholder="请输入备注"/>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button v-if="guestDialogTitle=='create'" type="primary" :size="btnSize" @click="doGuestCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-else type="primary" :size="btnSize" @click="doGuestUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="guestCloseDialogCreateUpdate">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="btntest">test</el-button>
+                </span>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -341,6 +504,13 @@
         operateLiveImage
     } from '@/api/interview/model';
     import { getAllCategoryList } from '@/api/interview/category';
+    import {
+        getGuestList,
+        createOrUpdateGuest,
+        delGuests
+    } from '@/api/interview/guest';
+    import {getDepartmentCascader} from '@/api/admin/department';
+
 
     export default {
         name: 'model',
@@ -468,7 +638,59 @@
                     ]
                 },
                 modifyLiveImageDialogVisible: false,
-                modifyLiveMessageDialogVisible: false
+                modifyLiveMessageDialogVisible: false,
+                // 嘉宾管理
+                titleGuest: undefined,
+                guestDialogVisible: false,
+                guestDialogVisibleCreateUpdate: false,
+                guestDialogTitle: undefined,
+                guestListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    name: undefined,
+                    modelId: undefined,
+                    type: undefined
+                },
+                guest: {
+                    id: undefined,
+                    modelId: undefined,
+                    name: undefined,
+                    photo: undefined,
+                    job: undefined,
+                    type: undefined,
+                    departmentId: undefined,
+                    departmentName: undefined,
+                    departmentTreePosition: undefined
+                },
+                guestRules: {
+                    modelId: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '模型'}
+                    ],
+                    name: [
+                        {required: true, message: this.$t("table.pleaseInput") + '姓名'}
+                    ],
+                    photo: [
+                        {required: true, message: '请上传照片'}
+                    ],
+                    job: [
+                        {required: true, message: this.$t("table.pleaseInput") + '职务'}
+                    ],
+                    type: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '类型'}
+                    ],
+                    departmentName: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '部门'}
+                    ]
+                },
+                guestListLoading: false,
+                guestList: undefined,
+                guestTotal: undefined,
+                guestSelectedRows: [],
+                departmentCascader: [],
+                departmentCascaderBack: [],
+                departmentCascaderLength: 0,
+                inputDepartmentName: undefined,
+                increment: 1
             }
         },
         computed: {
@@ -484,23 +706,58 @@
                 return {
                     create: this.permission.model_create,
                     update: this.permission.model_update,
-                    delete: this.permission.model_delete
+                    delete: this.permission.model_delete,
+                    live:   this.permission.model_live,
+                    guest:  this.permission.model_guest,
+                    guestCreate: this.permission.guest_create,
+                    guestUpdate: this.permission.guest_update,
+                    guestDelete: this.permission.guest_delete
                 };
+            },
+            departmentTreePosition: {
+                get() {
+                    if (this.guest.departmentTreePosition) {
+                        return this.guest.departmentTreePosition.substr(1).split('&')
+                    }
+                },
+                set(v) {
+                    if (v.length > 0) {
+                        this.guest.departmentId = v[v.length - 1];
+                        this.guest.departmentTreePosition = '&' + v.join('&');
+                        let targetList = this.departmentCascader;
+                        for (let i = 0; i < v.length; i++) {
+                            for (let j = 0; j < targetList.length; j++) {
+                                let item = targetList[j];
+                                if (v[i] === item.value) {
+                                    this.guest.departmentName = item.label;
+                                    targetList = item.children;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        this.guest.departmentId = undefined;
+                        this.guest.departmentName = undefined;
+                        this.guest.departmentTreePosition = undefined;
+                    }
+                }
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = true;
             this.reloadList();
             this.loadCategory();
         },
         methods: {
             loadCategory() {
-                getAllCategoryList().then(response => {
+                getAllCategoryList({siteId: this.$store.state.common.siteId}).then(response => {
                     this.categorys = response.data;
                 }).catch((error)=>{
                     this.$message.error(error);
                 });
             },
             resetSearch(){
+                this.listQuery.categoryId = undefined;
                 this.listQuery.name = undefined;
             },
             reloadList(){
@@ -771,7 +1028,6 @@
             sendOperateLiveMessage(data) {
                 operateLiveMessage(data).then((response) => {
                     if (response.status == 200 && response.data) {
-                        this.$refs['appendEditor'].setUeContent('');
                         this.resetLiveMessage();
                     } else {
                         this.$message.error("发送失败");
@@ -961,6 +1217,222 @@
             },
             handlerImagesError() {
                 this.$message.error("上传失败");
+            },
+
+            // 嘉宾管理
+            btnGuest(row) {
+                this.resetModel();
+                this.guestResetSearch();
+                if (row.id) {
+                    this.model = deepClone(row);
+                } else {
+                    this.model = deepClone(this.selectedRows[0]);
+                }
+                this.titleGuest = this.model.name + ' - 嘉宾管理';
+                this.guestDialogVisible = true;
+                this.guestReloadList();
+                this.getDepartmentCascader();
+            },
+            guestCloseModelDialog() {
+                this.guestDialogVisible = false;
+                this.guestResetSearch();
+            },
+            guestResetSearch(){
+                this.guestListQuery.modelId = undefined;
+                this.guestListQuery.name = undefined;
+                this.guestListQuery.type = undefined;
+            },
+            guestReloadList(){
+                this.guestListLoading = true;
+                this.guestList = undefined;
+                this.guestTotal = undefined;
+                this.guestListQuery.modelId = this.model.id;
+                getGuestList(this.guestListQuery).then(response => {
+                    this.guestListLoading = false;
+                    this.guestList = response.data.records;
+                    this.guestTotal = response.data.total;
+                })
+            },
+            btnGuestCreate(){
+                this.resetGuest();
+                this.guestDialogTitle = 'create';
+                this.guestDialogVisibleCreateUpdate = true;
+                this.guest.modelId = this.model.id;
+                this.departmentCascader = deepClone(this.departmentCascaderBack);
+            },
+            btnGuestUpdate(row){
+                this.resetGuest();
+                if (row.id) {
+                    this.guest = deepClone(row);
+                } else {
+                    this.guest = deepClone(this.guestSelectedRows[0]);
+                }
+                this.guestDialogTitle = 'update';
+                this.guestDialogVisibleCreateUpdate = true;
+                this.guest.modelId = this.model.id;
+                let list = deepClone(this.departmentCascaderBack);
+                // 输入值时
+                if (!this.guest.departmentId) {
+                    let value = this.getCascaderItemValue();
+                    let item = {
+                        value: value,
+                        label: this.guest.departmentName,
+                        children: undefined,
+                        disabled: false
+                    };
+                    list.push(item);
+                    this.guest.departmentTreePosition = '&' + value;
+                } else {
+                    if (this.guest.departmentTreePosition) {
+                        this.guest.departmentTreePosition += '&' + this.guest.departmentId
+                    } else {
+                        this.guest.departmentTreePosition = '&' + this.guest.departmentId
+                    }
+                }
+                this.departmentCascader = list;
+
+            },
+            btnGuestDelete(row){
+                let ids = [];
+                if (row.id) {
+                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                        ids.push(row.id);
+                        this.doGuestDelete(ids);
+                    })
+                } else {
+                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                        for(const deleteRow of this.guestSelectedRows){
+                            ids.push(deleteRow.id);
+                        }
+                        this.doGuestDelete(ids);
+                    })
+                }
+            },
+            doGuestCreate(){
+                this.$refs['guestDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        if (this.guest.departmentId.length < 3) {
+                            this.guest.departmentId = undefined;
+                        } else {
+                            this.guest.departmentName = undefined;
+                        }
+                        createOrUpdateGuest(this.guest).then(() => {
+                            this.resetGuestDialogAndList();
+                            this.$message.success(this.$t("table.createSuccess"));
+                        })
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            doGuestUpdate(){
+                this.$refs['guestDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        if (this.guest.departmentId.length < 3) {
+                            this.guest.departmentId = undefined;
+                        } else {
+                            this.guest.departmentName = undefined;
+                        }
+                        createOrUpdateGuest(this.guest).then(() => {
+                            this.resetGuestDialogAndList();
+                            this.$message.success(this.$t("table.updateSuccess"));
+                        })
+                    } else {
+                        return false;
+                    }
+                })
+            },
+            doGuestDelete(ids){
+                this.guestListLoading = true;
+                delGuests(ids).then(() => {
+                    this.guestReloadList();
+                    this.$message.success(this.$t("table.deleteSuccess"));
+                })
+            },
+            resetGuest(){
+                this.guest = {
+                    id: undefined,
+                    modelId: undefined,
+                    name: undefined,
+                    photo: undefined,
+                    job: undefined,
+                    type: undefined,
+                    departmentId: undefined,
+                    departmentName: undefined,
+                    departmentTreePosition: undefined
+                }
+            },
+            resetGuestDialogAndList(){
+                this.guestCloseDialogCreateUpdate();
+                this.submitLoading = false;
+                this.guestReloadList();
+            },
+            guestHandleSelectionChange(rows){
+                this.guestSelectedRows = rows;
+            },
+            guestHandleSizeChange(val){
+                this.guestListQuery.size = val;
+                this.guestReloadList();
+            },
+            guestHandleCurrentChange(val){
+                this.guestListQuery.page = val;
+                this.guestReloadList();
+            },
+            guestCloseDialogCreateUpdate() {
+                this.guestDialogVisibleCreateUpdate = false;
+                this.resetGuest();
+                this.$refs['guestDialogForm'].resetFields();
+            },
+            handlePhotoSuccess(res) {
+                if (res.status === 200 && res.data.state === 'SUCCESS') {
+                    this.guest.photo = res.data.url;
+                    this.$message.success('上传成功！');
+                } else {
+                    this.$message.error('上传失败！');
+                }
+            },
+            handlerPhotoError() {
+                this.$message.error("上传失败");
+            },
+            getDepartmentCascader() {
+                getDepartmentCascader().then(response => {
+                    this.departmentCascaderLength = response.data.length;
+                    this.departmentCascaderBack = deepClone(response.data);
+                    this.departmentCascader = response.data;
+                })
+            },
+            beforeFilterDepartment: function(value) {
+                this.inputDepartmentName = value;
+                return false;
+            },
+            getCascaderItemValue() {
+                this.increment = this.increment + 1;
+                if (this.increment > 99) this.increment = 1;
+                return this.increment + '';
+            },
+            blurDepartmentName() {
+                if (!this.inputDepartmentName) return;
+                let value = this.getCascaderItemValue();
+                let item = {
+                    value: value,
+                    label: this.inputDepartmentName,
+                    children: undefined,
+                    disabled: false
+                };
+                this.$set(this.departmentCascader, this.departmentCascaderLength, item);
+                let position = [];
+                position.push(value);
+                this.$refs.mycascader.handlePick(position);
+                this.guest.departmentTreePosition = '&' + value;
+                this.inputDepartmentName = undefined;
+            },
+            btntest() {
+                let position = [];
+                position.push('1135791211647340546');
+                this.$refs.mycascader.handlePick(position);
+
             }
         }
     }
@@ -1091,5 +1563,38 @@
         height: 150px;
     }
 
+
+
+    .photo-uploader {
+        width: 200px;
+        height: 250px;
+    }
+
+    .photo-uploader .el-upload {
+        border: 1px solid #dcdfe6;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .photo-uploader .el-upload:hover {
+        border-color: #409EFF;
+    }
+
+    .photo-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 200px;
+        height: 250px;
+        line-height: 250px;
+        text-align: center;
+    }
+
+    .photo-add {
+        width: 200px;
+        height: 250px;
+        display: block;
+    }
 
 </style>

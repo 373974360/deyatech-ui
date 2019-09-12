@@ -69,8 +69,8 @@ export function getFileContent(path) {
         params: query
     });
 }
-export function unzip(filePath,siteId) {
-    const query = {filePath:filePath,siteId:siteId};
+export function unzip(filePath,dirPath,fileName,siteId) {
+    const query = {filePath:filePath,dirPath:dirPath,fileName:fileName,siteId:siteId};
     return request({
         url: '/manage/template/stationGit/unzip',
         method: 'get',

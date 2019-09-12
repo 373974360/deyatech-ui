@@ -3,11 +3,6 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
-                    <el-form-item >
-                        <el-cascader ref="queryStationGroupClassificationCascader" :options="stationGroupClassificationCascader"
-                                     v-model.trim="listQuery.stationGroupClassificationArray"
-                                     clearable placeholder="请选择分类" style="width: 300px;" :size="searchSize"></el-cascader>
-                    </el-form-item>
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" clearable></el-input>
                     </el-form-item>
@@ -19,9 +14,11 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-show="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
-                    <el-button v-show="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-show="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-show="btnEnable.create"  type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+                    <el-button v-show="btnEnable.update"  type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
+                    <el-button v-show="btnEnable.delete"  type="danger"  :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting" :disabled="selectedRows.length != 1">设置</el-button>
+                    <el-button v-show="btnEnable.domain"  type="primary" :size="btnSize" @click.stop="btnDomain" :disabled="selectedRows.length != 1">域名</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting">全局设置</el-button>
                 </div>
                 <div class="deyatech-menu_right">
@@ -29,45 +26,64 @@
                 </div>
             </div>
 
-            <el-table :data="stationGroupList" v-loading.body="listLoading" stripe border highlight-current-row
-                      @selection-change="handleSelectionChange">
-                <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="所属分类" prop="stationGroupClassificationName"/>
-                <el-table-column align="center" label="名称" prop="name">
-                    <template slot-scope="scope">
-                        <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="英文名称" prop="englishName"/>
-                <el-table-column align="center" label="简称" prop="abbreviation"/>
-                <el-table-column align="center" label="排序号" prop="sortNo"/>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="100">
-                    <template slot-scope="scope">
-                        <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                            {{scope.row.enable == 1 ? "启用" : (scope.row.enable == 0 ? "停用" : "") }}
-                        </el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
-                    <template slot-scope="scope">
-                        <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop="btnUpdate(scope.row)"></el-button>
-                        <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 1"
-                                   @click.stop="btnDelete(scope.row)"></el-button>
-                        <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
-                                   @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
-                        <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
-                                   @click.stop="btnCtrl(scope.row, 'run')"></el-button>
-                        <el-button v-show="btnEnable.setting" title="设置" type="primary" icon="el-icon-setting" :size="btnSize" circle
-                                   @click.stop="btnSetting(scope.row)"></el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
-            <el-pagination class="deyatech-pagination pull-right" background
-                           :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
-                           @size-change="handleSizeChange" @current-change="handleCurrentChange">
-            </el-pagination>
+            <el-row :span="24">
+                <el-col :span="4">
+                    <div class="classificationTree">
+                        <el-tree ref="stationGroupClassificationTree" style="max-width:500px;"
+                                 :data="stationGroupClassificationCascader"
+                                 node-key="value"
+                                 :highlight-current="true"
+                                 :default-expand-all="true"
+                                 :expand-on-click-node="false"
+                                 @node-click="handleStationGroupClassificationNodeClick">
+                        </el-tree>
+                    </div>
+                </el-col>
+                <el-col :span="20">
+                    <el-table :data="stationGroupList" v-loading.body="listLoading" stripe border highlight-current-row
+                              @selection-change="handleSelectionChange">
+                        <el-table-column type="selection" width="50" align="center"/>
+                        <!--<el-table-column align="center" label="所属分类" prop="stationGroupClassificationName"/>-->
+                        <el-table-column align="center" label="名称" prop="name">
+                            <template slot-scope="scope">
+                                <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column align="center" label="英文名称" prop="englishName"/>
+                        <el-table-column align="center" label="简称" prop="abbreviation"/>
+                        <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
+                        <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                                    {{scope.row.enable == 1 ? "启用" : (scope.row.enable == 0 ? "停用" : "") }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="260">
+                            <template slot-scope="scope">
+                                <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                                           @click.stop="btnUpdate(scope.row)"></el-button>
+                                <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 1"
+                                           @click.stop="btnDelete(scope.row)"></el-button>
+                                <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
+                                           @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
+                                <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
+                                           @click.stop="btnCtrl(scope.row, 'run')"></el-button>
+                                <el-button v-show="btnEnable.setting" title="设置" type="primary" icon="el-icon-setting" :size="btnSize" circle
+                                           @click.stop="btnSetting(scope.row)"></el-button>
+                                <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="el-icon-more" :size="btnSize" circle
+                                           @click.stop="btnDomain(scope.row)"></el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination class="deyatech-pagination pull-right" background
+                                   :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                   :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
+                                   @size-change="handleSizeChange" @current-change="handleCurrentChange">
+                    </el-pagination>
+                </el-col>
+            </el-row>
+
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeStationGroupDialog">
@@ -129,23 +145,24 @@
                 </span>
             </el-dialog>
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogSettingVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeSettingDialog">
+
+            <!--站群设置-->
+            <el-dialog :title="titleSetting" :visible.sync="dialogSettingVisible" :close-on-click-modal="closeOnClickModal" @close="closeSettingDialog">
                 <el-form ref="settingDialogForm" class="deyatech-form" :model="setting" label-position="right" label-width="160px" :rules="settingRules">
-                    <el-row :gutter="20" :span="24">
+                    <!--<el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站群" prop="stationGroupId" :rules="setting.stationGroupId ? settingRules.stationGroupId : []">
                                 <span v-if="setting.stationGroupId" v-text="setting.stationGroupName" style="color: blue; font-weight: bold;"></span>
                                 <span v-else>全局设置所有站群</span>
                             </el-form-item>
                         </el-col>
-
-                    </el-row>
+                    </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="允许上传的附件类型" prop="uploadFileType">
                                 <el-select v-model="uploadFileTypeArray" @change="uploadFileTypeChange" clearable multiple style="width: 100%">
                                     <el-option v-for="item in enums['UploadFileTypeEnum']"
+                                               :key="item.code"
                                                :label="item.value"
                                                :value="item.code"></el-option>
                                 </el-select>
@@ -162,6 +179,7 @@
                             <el-form-item label="是否生成缩略图" prop="thumbnailEnable">
                                 <el-select v-model="setting.thumbnailEnable" style="width: 100%" @change="thumbnailEnableChange">
                                     <el-option v-for="item in enums['YesNoEnum']"
+                                               :key="item.code"
                                                :label="item.value"
                                                :value="item.code"></el-option>
                                 </el-select>
@@ -185,6 +203,7 @@
                             <el-form-item label="是否生成水印" prop="watermarkEnable">
                                 <el-select v-model="setting.watermarkEnable" style="width:100%" @change="watermarkEnableChange">
                                     <el-option v-for="item in enums['YesNoEnum']"
+                                               :key="item.code"
                                                :label="item.value"
                                                :value="item.code"></el-option>
                                 </el-select>
@@ -194,6 +213,7 @@
                             <el-form-item label="水印类型" prop="watermarkType" ref="watermarkTypeField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkType">
                                 <el-select v-model="setting.watermarkType" style="width:100%" @change="watermarkTypeChange">
                                     <el-option v-for="item in enums['WaterMarkTypeEnum']"
+                                               :key="item.code"
                                                :label="item.value"
                                                :value="item.code"></el-option>
                                 </el-select>
@@ -295,6 +315,126 @@
                     <el-button :size="btnSize" @click="closeSettingDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
+
+            <!--域名管理 列表-->
+            <el-dialog :title="titleDomain" :visible.sync="dialogDomainVisible" :close-on-click-modal="closeOnClickModal" @close="closeDomainDialog">
+                <div class="deyatech-header">
+                    <el-form :inline="true" ref="searchForm">
+                        <el-form-item>
+                            <el-input :size="searchSize" placeholder="请输入域名" v-model.trim="domainListQuery.name" clearable></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="domainReloadList">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="domainResetSearch">{{$t('table.clear')}}</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div class="deyatech-menu">
+                    <div class="deyatech-menu_left">
+                        <el-button v-if="btnEnable.domainCreate" type="primary" :size="btnSize" @click="btnDomainCreate">{{$t('table.create')}}</el-button>
+                        <el-button v-if="btnEnable.domainUpdate" type="primary" :size="btnSize" @click="btnDomainUpdate" :disabled="domainSelectedRows.length != 1">{{$t('table.update')}}</el-button>
+                        <el-button v-if="btnEnable.domainDelete" type="danger" :size="btnSize" @click="btnDomainDelete" :disabled="domainSelectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    </div>
+                    <div class="deyatech-menu_right">
+                        <el-button icon="el-icon-refresh" :size="btnSize" circle @click="domainReloadList"></el-button>
+                    </div>
+                </div>
+                <el-table :data="domainList" v-loading.body="domainListLoading" stripe border highlight-current-row
+                          @selection-change="domainHandleSelectionChange">
+                    <el-table-column type="selection" width="50" align="center"/>
+                    <el-table-column align="left" label="域名" prop="name">
+                        <template slot-scope="scope">
+                            <span class="link-type" @click='btnDomainUpdate(scope.row)'>{{scope.row.name}}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column align="center" label="英文名" prop="englishName"/>
+                    <el-table-column align="center" label="端口" prop="port" width="90"/>
+                    <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
+                    <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                        <template slot-scope="scope">
+                            <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                                {{scope.row.enable == 1 ? "启用" : (scope.row.enable == 0 ? "停用" : "") }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
+                        <template slot-scope="scope">
+                            <el-button v-if="btnEnable.domainUpdate" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                                       @click.stop="btnDomainUpdate(scope.row)"></el-button>
+                            <el-button v-if="btnEnable.domainDelete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 1"
+                                       @click.stop="btnDomainDelete(scope.row)"></el-button>
+                            <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
+                                       @click.stop="btnDomainCtrl(scope.row, 'stop')"></el-button>
+                            <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
+                                       @click.stop="btnDomainCtrl(scope.row, 'run')"></el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-pagination class="deyatech-pagination pull-right" background
+                               :current-page.sync="domainListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                               :page-size="domainListQuery.size" :layout="this.$store.state.common.pageLayout" :total="domainTotal"
+                               @size-change="domainHandleSizeChange" @current-change="domainHandleCurrentChange">
+                </el-pagination>
+            </el-dialog>
+
+
+            <!--域名管理 表单-->
+            <el-dialog :title="titleMap[domainFormDialogTitle]" :visible.sync="domainFormDialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeDomainFormDialog">
+                <el-form ref="domainDialogForm" class="deyatech-form" :model="domain" label-position="right" label-width="80px" :rules="domainRules">
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="所属站群" prop="stationGroupId">
+                                <el-input :value="stationGroup.name" readonly></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="域名" prop="name">
+                                <el-input v-model.trim="domain.name" maxlength="30"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="英文名称" prop="englishName">
+                                <el-input v-model.trim="domain.englishName" maxlength="30"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="端口" prop="port">
+                                <el-input v-model.trim="domain.port" maxlength="5"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="排序号" prop="sortNo">
+                                <el-input v-model.trim="domain.sortNo" maxlength="3"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="描述" prop="description">
+                                <el-input type="textarea" v-model.trim="domain.description" :rows="3" maxlength="400"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item :label="$t('table.remark')">
+                                <el-input type="textarea" v-model.trim="domain.remark" :rows="3" maxlength="400"/>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button v-if="domainFormDialogTitle=='create'" type="primary" :size="btnSize" @click="doDomainCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-else type="primary" :size="btnSize" @click="doDomainUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeDomainFormDialog">{{$t('table.cancel')}}</el-button>
+                </span>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -303,7 +443,6 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
-    import {getStore} from '@/util/store';
     import {
         getStationGroupList,
         createOrUpdateStationGroup,
@@ -319,6 +458,15 @@
         getSettingByStationGroupId,
         createOrUpdateSetting
     } from '@/api/resource/setting';
+    import {
+        getDomainList,
+        createOrUpdateDomain,
+        delDomains,
+        isDomainNameExist,
+        isDomainEnglishNameExist,
+        runOrStopDomainById
+    } from '@/api/resource/domain';
+
 
     export default {
         name: 'stationGroup',
@@ -334,12 +482,6 @@
                         callback();
                     }
                 }).catch(() => {});
-                // this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
-                //     if (!errorMsg) {
-                //     } else {
-                //         callback(new Error("没有选择分类，名称无法校验"));
-                //     }
-                // });
             };
             const checkEnglishName = (rule, value, callback) => {
                 if (!isEnglish(value)) {
@@ -356,12 +498,6 @@
                         callback();
                     }
                 }).catch(() => {});
-                // this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
-                //     if (!errorMsg) {
-                //     } else {
-                //         callback(new Error("没有选择分类，英文名称无法校验"));
-                //     }
-                // });
             };
             const checkAbbreviation = (rule, value, callback) => {
                 isAbbreviationExist({
@@ -374,14 +510,50 @@
                         callback();
                     }
                 }).catch(() => {});
-                // this.$refs['stationGroupDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
-                //     if (!errorMsg) {
-                //     } else {
-                //         callback(new Error("没有选择分类，简称无法校验"));
-                //     }
-                // });
             };
             const checkNumber = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入整数'));
+                } else {
+                    callback();
+                }
+            };
+            // 域名管理
+            const checkDomainName = (rule, value, callback) => {
+                isDomainNameExist({
+                    id: this.domain.id,
+                    name: this.domain.name}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                    } else {
+                        callback();
+                    }
+                }).catch(() => {});
+
+            };
+            const checkDomainEnglishName = (rule, value, callback) => {
+                if (!isEnglish(value)) {
+                    callback(new Error('只能输入英文字母'));
+                    return;
+                }
+                isDomainEnglishNameExist({
+                    id: this.domain.id,
+                    englishName: this.domain.englishName}).then(response => {
+                    if (response.status == 200 && response.data) {
+                        callback(new Error(response.message));
+                    } else {
+                        callback();
+                    }
+                }).catch(() => {});
+            };
+            const checkDomainPort = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入整数'));
+                } else {
+                    callback();
+                }
+            };
+            const checkSortNo = (rule, value, callback) => {
                 if (/[^\d]/g.test(value)) {
                     callback(new Error('请输入整数'));
                 } else {
@@ -396,8 +568,8 @@
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     name: undefined,
-                    stationGroupClassificationId: undefined,
-                    stationGroupClassificationArray: []
+                    stationGroupClassificationTreePosition: undefined,
+                    stationGroupClassificationId: undefined
                 },
                 stationGroup: {
                     id: undefined,
@@ -511,7 +683,56 @@
                 },
                 dialogSettingVisible: false,
                 uploadFileTypeArray: [],
-                imageUrl: '/manage/common/showPicImg?filePath='
+                imageUrl: '/manage/common/showPicImg?filePath=',
+                titleSetting: undefined,
+
+                // 域名管理
+                titleDomain: undefined,
+                dialogDomainVisible: false,
+                domainList: undefined,
+                domainTotal: undefined,
+                domainListLoading: true,
+                domainListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    name: undefined,
+                    stationGroupId: undefined
+                },
+                domain: {
+                    id: undefined,
+                    name: undefined,
+                    description: undefined,
+                    sortNo: undefined,
+                    stationGroupId: undefined,
+                    port: 80
+                },
+                domainRules: {
+                    name: [
+                        {required: true, message: this.$t("table.pleaseInput") + '域名名称'},
+                        {validator: checkDomainName, trigger: 'blur'}
+                    ],
+                    englishName: [
+                        {required: true, message: this.$t("table.pleaseInput") + '英文名称'},
+                        {validator: checkDomainEnglishName, trigger: 'blur'}
+                    ],
+                    description: [
+                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
+                    ],
+                    sortNo: [
+                        {required: true, message: this.$t("table.pleaseInput") + '排序号'},
+                        {validator: checkSortNo, trigger: ['blur','change']}
+                    ],
+                    stationGroupId: [
+                        {required: true, message: this.$t("table.pleaseInput") + '所属站群'}
+                    ],
+                    port: [
+                        {required: true, message: this.$t("table.pleaseInput") + '端口'},
+                        {validator: checkDomainPort, trigger: ['blur','change']}
+                    ]
+                },
+                domainSelectedRows: [],
+                domainFormDialogVisible: false,
+                domainFormDialogTitle: undefined
             }
         },
         computed: {
@@ -545,7 +766,11 @@
                     update: this.permission.stationGroup_update,
                     delete: this.permission.stationGroup_delete,
                     ctrl: this.permission.stationGroup_ctrl,
-                    setting: this.permission.stationGroup_setting
+                    setting: this.permission.stationGroup_setting,
+                    domain: this.permission.stationGroup_domain,
+                    domainCreate: this.permission.domain_create,
+                    domainUpdate: this.permission.domain_update,
+                    domainDelete: this.permission.domain_delete
                 };
             }
         },
@@ -571,21 +796,26 @@
                     this.stationGroupClassificationCascader = response.data;
                 })
             },
+            handleStationGroupClassificationNodeClick(data) {
+                if (data.children && data.children.length > 0) {
+                    if (this.listQuery.stationGroupClassificationId) {
+                        this.$refs.stationGroupClassificationTree.setCurrentKey(this.listQuery.stationGroupClassificationId);
+                    } else {
+                        this.$refs.stationGroupClassificationTree.setCurrentKey(null);
+                    }
+                    return;
+                }
+                this.listQuery.stationGroupClassificationId = data.value;
+                this.listQuery.stationGroupClassificationTreePosition = data.treePosition + '&' + data.value;
+                this.handleCurrentChange(1);
+            },
             resetSearch(){
-                let obj = {};
-                obj.stopPropagation = () =>{};
-                this.$refs.queryStationGroupClassificationCascader.clearValue(obj);
                 this.listQuery.name = undefined;
             },
             reloadList(){
                 this.listLoading = true;
                 this.stationGroupList = undefined;
                 this.total = undefined;
-                if (this.listQuery.stationGroupClassificationArray && this.listQuery.stationGroupClassificationArray.length > 0) {
-                    this.listQuery.stationGroupClassificationId = this.listQuery.stationGroupClassificationArray[this.listQuery.stationGroupClassificationArray.length - 1];
-                } else {
-                    this.listQuery.stationGroupClassificationId = undefined;
-                }
                 getStationGroupList({
                     page: this.listQuery.page,
                     size: this.listQuery.size,
@@ -612,6 +842,8 @@
                 this.resetStationGroup();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                this.stationGroup.stationGroupClassificationId = this.listQuery.stationGroupClassificationId;
+                this.stationGroup.stationGroupClassificationTreePosition = this.listQuery.stationGroupClassificationTreePosition;
             },
             btnUpdate(row){
                 this.resetStationGroup();
@@ -748,6 +980,15 @@
                 let stationGroupId = undefined;
                 if (row.id) {
                     stationGroupId = row.id;
+                    this.titleSetting = row.name;
+                } else {
+                    if (this.selectedRows.length == 1) {
+                        this.stationGroup = deepClone(this.selectedRows[0]);
+                        stationGroupId = this.stationGroup.id;
+                        this.titleSetting = this.stationGroup.name;
+                    } else {
+                        this.titleSetting = "站群全局设置";
+                    }
                 }
                 this.resetSetting();
                 this.setting.stationGroupId = stationGroupId;
@@ -822,6 +1063,7 @@
             },
             resetSettingDialogAndList(){
                 this.closeSettingDialog();
+                this.reloadList();
                 this.submitLoading = false;
             },
             closeSettingDialog() {
@@ -895,13 +1137,180 @@
             },
             uploadError() {
                 this.$message.error("上传失败");
+            },
+
+            // 域名管理
+            btnDomain(row) {
+                this.domainListQuery.page = 1;
+                this.resetStationGroup();
+                if (row.id) {
+                    this.stationGroup = deepClone(row);
+                } else {
+                    this.stationGroup = deepClone(this.selectedRows[0]);
+                }
+                this.domainReloadList();
+                this.titleDomain = this.stationGroup.name + ' - 域名管理';
+                this.dialogDomainVisible = true;
+            },
+            closeDomainDialog() {
+                this.dialogDomainVisible = false;
+            },
+            domainResetSearch(){
+                this.domainListQuery.name = undefined;
+            },
+            domainReloadList(){
+                this.domainListLoading = true;
+                this.domainList = undefined;
+                this.domainTotal = undefined;
+                this.domainListQuery.stationGroupId = this.stationGroup.id;
+                getDomainList(this.domainListQuery).then(response => {
+                    this.domainListLoading = false;
+                    this.domainList = response.data.records;
+                    this.domainTotal = response.data.total;
+                })
+            },
+            domainHandleSizeChange(val){
+                this.domainListQuery.size = val;
+                this.domainReloadList();
+            },
+            domainHandleCurrentChange(val){
+                this.domainListQuery.page = val;
+                this.domainReloadList();
+            },
+            domainHandleSelectionChange(rows){
+                this.domainSelectedRows = rows;
+            },
+            btnDomainCreate(){
+                this.resetDomain();
+                this.domainFormDialogTitle = 'create';
+                this.domainFormDialogVisible = true;
+                this.domain.stationGroupId = this.stationGroup.id;
+            },
+            btnDomainUpdate(row){
+                this.resetDomain();
+                if (row.id) {
+                    this.domain = deepClone(row);
+                } else {
+                    this.domain = deepClone(this.domainSelectedRows[0]);
+                }
+                this.domainFormDialogTitle = 'update';
+                this.domainFormDialogVisible = true;
+            },
+            btnDomainDelete(row){
+                let ids = [];
+                if (row.id) {
+                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                        ids.push(row.id);
+                        this.doDomainDelete(ids);
+                    })
+                } else {
+                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                        for(const deleteRow of this.selectedRows){
+                            ids.push(deleteRow.id);
+                        }
+                        this.doDomainDelete(ids);
+                    })
+                }
+            },
+            btnDomainCtrl(row, flag){
+                let msg = flag === 'run' ? "启用" : "停用";
+                this.domainListLoading = true;
+                runOrStopDomainById({
+                    id: row.id,
+                    flag: flag
+                }).then((response) => {
+                    if (response.status == 200 && response.data) {
+                        this.domainReloadList();
+                        this.$message.success(msg + "操作成功");
+                    } else {
+                        this.domainListLoading = false;
+                        this.$message.error(msg + "操作失败");
+                    }
+                }).catch(error=>{
+                    this.domainListLoading = false;
+                    this.$message.error(error);
+                });
+            },
+            doDomainCreate(){
+                this.$refs['domainDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        createOrUpdateDomain(this.domain).then(() => {
+                            this.resetDomainDialogAndList();
+                            this.$message.success(this.$t("table.createSuccess"));
+                        })
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            doDomainUpdate(){
+                this.$refs['domainDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        createOrUpdateDomain(this.domain).then(() => {
+                            this.resetDomainDialogAndList();
+                            this.$message.success(this.$t("table.updateSuccess"));
+                        })
+                    } else {
+                        return false;
+                    }
+                })
+            },
+            doDomainDelete(ids){
+                this.domainListLoading = true;
+                delDomains(ids).then((response) => {
+                    if (response.status == 200 && response.data) {
+                        this.domainReloadList();
+                        this.$message.success(this.$t("table.deleteSuccess"));
+                    } else {
+                        this.domainListLoading = false;
+                        this.$message.error("域名删除失败");
+                    }
+                }).catch(error=>{
+                    this.domainListLoading = false;
+                    this.$message.error(error);
+                });
+            },
+            resetDomain(){
+                this.domain = {
+                    id: undefined,
+                    name: undefined,
+                    description: undefined,
+                    sortNo: undefined,
+                    stationGroupId: undefined,
+                    port: 80
+                }
+            },
+            resetDomainDialogAndList(){
+                this.closeDomainFormDialog();
+                this.submitLoading = false;
+                this.domainReloadList();
+            },
+            closeDomainFormDialog() {
+                this.domainFormDialogVisible = false;
+                this.resetDomain();
+                this.$refs['domainDialogForm'].resetFields();
             }
+
         }
     }
 </script>
 
 
 <style>
+    .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+        background-color: #a6d1ff;
+    }
+
+    .classificationTree {
+        border:1px solid #eceef5;
+        overflow-x: scroll;
+        margin-right:10px;
+        padding: 10px;
+        height: 100%;
+    }
+
     .avatar-uploader .el-upload {
         border: 1px dashed #d9d9d9;
         border-radius: 6px;

@@ -22,7 +22,7 @@
                         </el-upload>
                     </el-form-item>
                     <el-form-item>
-                        <div style="font-size:12px;color: red;">上传zip格式的压缩包</div>
+                        <div style="font-size:12px;color: red;">上传zip,jpg,png,jpeg,bmp,gif,js,css,html格式的文件</div>
                     </el-form-item>
                 </el-form>
             </div>
@@ -138,7 +138,7 @@
                 mode: undefined,
                 dialogWindow: true,
                 uploadAction: this.$store.state.common.uploadUrl,
-                acceptTypes: 'application/zip',
+                uploadTypes: 'application/zip, image/jpg, image/jpeg, image/png, image/bmp, image/gif,text/html,application/x-javascript,text/css',
                 uploadDesabled: true
             }
         },
@@ -188,6 +188,7 @@
                 })
             },
             getChildFiles (path) {
+                console.log(path);
                 this.filePath = path;
                 this.listTemplateFiles();
             },
@@ -247,6 +248,8 @@
                             this.dialogVisible = false;
                             this.submitLoading = false;
                             this.listTemplateFiles();
+                        }).catch(() => {
+                            this.submitLoading = false
                         })
                     } else {
                         return false;
@@ -267,7 +270,7 @@
             },
             handleAvatarSuccess(res, file, fileList) {
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
-                    unzip(res.data.filePath,this.stationGit.siteId).then(response => {
+                    unzip(res.data.filePath,this.filePath,res.data.title,this.stationGit.siteId).then(response => {
                         if(response.data){
                             this.$message.success('上传成功！');
                             this.listTemplateFiles();
@@ -283,12 +286,12 @@
                 this.$message.error("网络不稳定，上传失败");
             },
             beforeAvatarUpload(file) {
-                let isZip = this.acceptTypes.includes(file.type);
+                let isZip = this.uploadTypes.includes(file.type);
                 if(file.type == ''){
                     isZip = false;
                 }
                 if (!isZip) {
-                    this.$message.error('请上传zip格式的文件!');
+                    this.$message.error('仅允许上传zip,jpg,png,jpeg,bmp,gif,js,css,html格式的文件!');
                 }
                 return isZip;
             },

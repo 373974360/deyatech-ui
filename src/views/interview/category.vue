@@ -4,16 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select v-model.trim="listQuery.siteId" :size="searchSize" placeholder="请选择站点">
-                            <el-option v-for="o in stationGroups"
-                                       :key="o.id"
-                                       :label="o.name"
-                                       :value="o.id">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" placeholder="请输入名称"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入名称" v-model.trim="listQuery.name" ></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -79,13 +70,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站点" prop="siteId">
-                                <el-select v-model.trim="category.siteId" placeholder="请选择站点" style="width: 100%">
-                                    <el-option v-for = "o in stationGroups"
-                                               :key="o.id"
-                                               :label="o.name"
-                                               :value="o.id">
-                                    </el-option>
-                                </el-select>
+
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -116,9 +101,6 @@
         createOrUpdateCategory,
         delCategorys
     } from '@/api/interview/category';
-    import {
-        getAllStationGroup
-    } from '@/api/resource/stationGroup';
 
     export default {
         name: 'category',
@@ -149,8 +131,7 @@
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false,
-                stationGroups: []
+                submitLoading: false
             }
         },
         computed: {
@@ -171,19 +152,10 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = true;
             this.reloadList();
-            this.loadStationGroup();
         },
         methods: {
-            loadStationGroup() {
-                getAllStationGroup().then(response => {
-                    if (response.status == 200) {
-                        this.stationGroups = response.data;
-                    }
-                }).catch((error)=>{
-                    this.$message.error(error);
-                });
-            },
             resetSearch(){
                 this.listQuery.siteId = undefined;
                 this.listQuery.name = undefined;
@@ -192,6 +164,8 @@
                 this.listLoading = true;
                 this.categoryList = undefined;
                 this.total = undefined;
+                this.listQuery.siteId = this.$store.state.common.siteId;
+                console.dir(this.listQuery);
                 getCategoryListByNameAndSiteId(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.categoryList = response.data.records;

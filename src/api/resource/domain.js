@@ -46,7 +46,21 @@ export function isNameExist(query) {
         params: query
     });
 }
+export function isDomainNameExist(query) {
+    return request({
+        url: '/manage/resource/domain/isNameExist',
+        method: 'get',
+        params: query
+    });
+}
 export function isEnglishNameExist(query) {
+    return request({
+        url: '/manage/resource/domain/isEnglishNameExist',
+        method: 'get',
+        params: query
+    });
+}
+export function isDomainEnglishNameExist(query) {
     return request({
         url: '/manage/resource/domain/isEnglishNameExist',
         method: 'get',

@@ -84,3 +84,10 @@ export function runOrStopStationById(query) {
     });
 }
 
+export function getClassificationStationCascader(query) {
+    return request({
+        url: '/manage/resource/stationGroup/getClassificationStationCascader',
+        method: 'get',
+        params: query
+    });
+}

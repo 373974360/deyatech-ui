@@ -1,25 +1,20 @@
 <template>
-    <el-select v-if="this.$store.state.common.selectSiteDisplay" v-model="siteId" placeholder="请选择站点" style="margin-top:12px;" @change="siteChange">
-        <el-option
-            v-for="item in stationGroupList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id">
-        </el-option>
-    </el-select>
+    <el-cascader v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
+                 :options="stationGroupList" v-model="stationGroupTreePosition" @change="siteChange" size="small">
+    </el-cascader>
 </template>
 
 <script>
     import {
-        getAllStationGroup
+        getClassificationStationCascader
     } from '@/api/resource/stationGroup';
 
     export default {
         name: "topSite",
         data() {
             return {
-                siteId: undefined,
-                stationGroupList: []
+                stationGroupList: undefined,
+                stationGroupTreePosition: undefined
             };
         },
         inject: ['reloadMainView'],
@@ -29,18 +24,31 @@
         methods: {
             getAllStationGroup(){
                 this.stationGroupList = [];
-                getAllStationGroup().then(response => {
+                getClassificationStationCascader().then(response => {
                     this.stationGroupList = response.data;
-                    if(this.stationGroupList.length>0){
-                        this.siteId = this.stationGroupList[0].id;
-                        this.$store.state.common.siteId = this.siteId;
+                    if(this.stationGroupList.length > 0){
+                        let result = [];
+                        this.getDefault(result, this.stationGroupList);
+                        this.stationGroupTreePosition = result;
+                        if (result.length > 0) {
+                            this.$store.state.common.siteId = result[result.length - 1];
+                        }
                     }
                 })
             },
-            siteChange(val){
-                this.$store.state.common.siteId = val;
+            getDefault(result, list) {
+                if (list) {
+                    result.push(list[0].value);
+                    this.getDefault(result, list[0].children);
+                }
+            },
+            siteChange(v){
+                console.dir(v);
+                if (v.length > 0) {
+                    this.$store.state.common.siteId = v[v.length - 1];
+                    this.reloadMainView();
+                }
                 // this.$router.go(0);
-                this.reloadMainView();
                 // this.$router.history.current.meta.keepAlive = false
             }
         }

@@ -82,7 +82,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="模型" prop="modelId">
-                                <el-select v-model.trim="guest.modelId" clearable placeholder="请选择模型" style="width: 100%;">
+                                <el-select v-model.trim="guest.modelId" placeholder="请选择模型" style="width: 100%;">
                                     <el-option v-for="i in models" :key="i.id" :label="i.name" :value="i.id"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -219,6 +219,7 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
             this.loadModel();
         },

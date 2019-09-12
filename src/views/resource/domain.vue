@@ -166,13 +166,6 @@
                         callback();
                     }
                 }).catch(() => {});
-                // this.$refs['domainDialogForm'].validateField('stationGroupId', errorMsg => {
-                //     if (!errorMsg) {
-                //
-                //     } else {
-                //         callback(new Error("没有选择所属站群，域名无法校验"));
-                //     }
-                // });
 
             };
             const checkEnglishName = (rule, value, callback) => {
@@ -189,13 +182,6 @@
                         callback();
                     }
                 }).catch(() => {});
-                // this.$refs['domainDialogForm'].validateField('stationGroupClassificationId', errorMsg => {
-                //     if (!errorMsg) {
-                //
-                //     } else {
-                //         callback(new Error("没有选择分类，英文名称无法校验"));
-                //     }
-                // });
             };
             const checkPort = (rule, value, callback) => {
                 if (/[^\d]/g.test(value)) {
