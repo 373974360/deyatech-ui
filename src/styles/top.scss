@@ -66,11 +66,13 @@
     height: 64px;
     position: absolute;
     top: 0;
-
     i {
         line-height: 64px;
         font-size: 18px !important;
     }
+}
+.top-bar__right .el-select i{
+    line-height: 0px;
 }
 
 .top-bar__left {
