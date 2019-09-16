@@ -94,7 +94,7 @@
                 <div v-if="stepsActive == 0">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item :label="$t('table.parent')">
+                            <el-form-item :label="$t('table.parent')" prop="parent">
                                 <el-cascader :options="catalogCascader" v-model="catalogTreePosition"
                                              show-all-levels expand-trigger="click" clearable
                                              change-on-select style="width: 100%"></el-cascader>
@@ -262,7 +262,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="工作流" prop="workflowKey" v-if="display">
+                            <el-form-item label="工作流" prop="workflowKey" v-if="catalog.workflowEnable == 1">
                                 <el-select v-model="catalog.workflowKey" placeholder="请选择工作流">
                                     <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                                 </el-select>
@@ -362,7 +362,7 @@
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
-                <el-button v-if="catalog.flagExternal == 0 && stepsActive != 2 && (stepsActive == 0 || catalog.flagAggregation == 1)"
+                <el-button v-if="(catalog.flagExternal == 0 && stepsActive == 0) || (stepsActive == 1 && catalog.flagAggregation == 1)"
                            type="primary" :size="btnSize" @click="nextStep" :loading="submitLoading">下一步</el-button>
                 <el-button v-if="dialogTitle=='create' && (catalog.flagExternal == 1 || stepsActive == 2  || (stepsActive == 1 && catalog.flagAggregation == 0))"
                            type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
@@ -684,7 +684,6 @@
                 },
                 selectListTemplate: undefined,
                 workflowList: [],
-                display: false,
                 modelList: [],
                 selectContentModelIds: [],
                 stepsActive: 0,
@@ -973,6 +972,7 @@
                     });
                 }
                 var confirm = true;
+                // 外链栏目、聚合栏目不覆盖子栏目
                 if (this.catalog.children && this.catalog.flagExternal == 0 && this.catalog.flagAggregation == 0) {
                     confirm = new Promise(function(resolve, reject) {
                         _this.$confirm('是否覆盖子栏目信息', _this.$t("table.tip"), {
@@ -1069,7 +1069,6 @@
                 this.getCatalogCascader();
             },
             closeCatalogDialog() {
-                this.display = false;
                 this.dialogVisible = false;
                 this.selectListTemplate = undefined;
                 this.workflowList = [];
@@ -1126,6 +1125,10 @@
                 })
             },
             previousStep() {
+                // 防止把栏目设置成聚合栏目又退回第一步把栏目设置成外链栏目，导致提交表单验证错误
+                if (this.stepsActive == 1) {
+                    this.catalog.flagAggregation = 0;
+                }
                 this.$refs['catalogDialogForm'].clearValidate();
                 this.stepsActive --;
             },
