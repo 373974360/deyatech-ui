@@ -48,7 +48,7 @@ export function getCategoryListByNameAndSiteId(query) {
 }
 export function getAllCategoryList(query) {
     return request({
-        url: '/manage/interview/category/listByCategory',
+        url: '/manage/interview/category/listByNameAndSiteId',
         method: 'get',
         params: query
     });

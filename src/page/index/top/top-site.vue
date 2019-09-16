@@ -1,5 +1,5 @@
 <template>
-    <el-cascader v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
+    <el-cascader ref="topSiteCascader" v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
                  :options="stationGroupList" v-model="stationGroupTreePosition" @change="siteChange" size="small">
     </el-cascader>
 </template>
@@ -27,11 +27,13 @@
                 getClassificationStationCascader().then(response => {
                     this.stationGroupList = response.data;
                     if(this.stationGroupList.length > 0){
-                        let result = [];
-                        this.getDefault(result, this.stationGroupList);
-                        this.stationGroupTreePosition = result;
-                        if (result.length > 0) {
-                            this.$store.state.common.siteId = result[result.length - 1];
+                        let v = [];
+                        this.getDefault(v, this.stationGroupList);
+                        this.stationGroupTreePosition = v;
+                        if (v.length > 0) {
+                            this.$store.state.common.siteId = v[v.length - 1];
+                            this.$store.state.common.siteName = this.currentLabels(v);
+                            this.reloadMainView();
                         }
                     }
                 })
@@ -43,13 +45,26 @@
                 }
             },
             siteChange(v){
-                console.dir(v);
                 if (v.length > 0) {
                     this.$store.state.common.siteId = v[v.length - 1];
+                    this.$store.state.common.siteName = this.currentLabels(v);
                     this.reloadMainView();
                 }
-                // this.$router.go(0);
+                // this.$router.go(0);siteName
                 // this.$router.history.current.meta.keepAlive = false
+            },
+            currentLabels(v) {
+                let options = this.stationGroupList;
+                let labels = [];
+                v.forEach(value => {
+                    const targetOption = options && options.filter(option => option['value'] === value)[0];
+                    if (targetOption) {
+                        labels.push(targetOption['label']);
+                        options = targetOption['children'];
+                    }
+                });
+                //labels[labels.length - 1]
+                return labels.join('/');
             }
         }
     };

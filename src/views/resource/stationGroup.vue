@@ -4,7 +4,12 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" clearable></el-input>
+                        <el-cascader :options="departmentCascader"
+                                     v-model.trim="listQueryDepartmentTreePosition"
+                                     placeholder="请选择部门" :size="btnSize" style="width:300px"></el-cascader>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -18,8 +23,9 @@
                     <el-button v-show="btnEnable.update"  type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-show="btnEnable.delete"  type="danger"  :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting" :disabled="selectedRows.length != 1">设置</el-button>
-                    <el-button v-show="btnEnable.domain"  type="primary" :size="btnSize" @click.stop="btnDomain" :disabled="selectedRows.length != 1">域名</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting">全局设置</el-button>
+                    <el-button v-show="btnEnable.domain"  type="primary" :size="btnSize" @click="btnDomain" :disabled="selectedRows.length != 1">域名</el-button>
+                    <el-button v-show="btnEnable.user"    type="primary" :size="btnSize" @click="btnUser" :disabled="selectedRows.length != 1">用户</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -29,6 +35,7 @@
             <el-row :span="24">
                 <el-col :span="4">
                     <div class="classificationTree">
+                        <!--左侧树-->
                         <el-tree ref="stationGroupClassificationTree" style="max-width:500px;"
                                  :data="stationGroupClassificationCascader"
                                  node-key="value"
@@ -40,6 +47,7 @@
                     </div>
                 </el-col>
                 <el-col :span="20">
+                    <!--右侧一览-->
                     <el-table :data="stationGroupList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="50" align="center"/>
@@ -51,6 +59,7 @@
                         </el-table-column>
                         <el-table-column align="center" label="英文名称" prop="englishName"/>
                         <el-table-column align="center" label="简称" prop="abbreviation"/>
+                        <el-table-column align="center" label="部门" prop="departmentName"/>
                         <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
                         <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
@@ -59,8 +68,9 @@
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="260">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="300">
                             <template slot-scope="scope">
+                                <div style="padding-top: 8px;">
                                 <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop="btnUpdate(scope.row)"></el-button>
                                 <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 1"
@@ -73,6 +83,11 @@
                                            @click.stop="btnSetting(scope.row)"></el-button>
                                 <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="el-icon-more" :size="btnSize" circle
                                            @click.stop="btnDomain(scope.row)"></el-button>
+                                <el-badge :hidden="scope.row.userNumber <= 0" :value="scope.row.userNumber" :max="99" style="margin-left:10px">
+                                    <el-button v-show="btnEnable.user" title="用户" type="primary" icon="iconadd-account" :size="btnSize" circle
+                                               @click.stop="btnUser(scope.row)"></el-button>
+                                </el-badge>
+                                </div>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -90,11 +105,18 @@
                 <el-form ref="stationGroupDialogForm" class="deyatech-form" :model="stationGroup" label-position="right"
                          label-width="80px" :rules="stationGroupRules">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="所属分类" prop="stationGroupClassificationId">
-                                <el-cascader ref="addOrEditStationGroupClassificationCascader" :options="stationGroupClassificationCascader"
+                        <el-col :span="12">
+                            <el-form-item label="分类" prop="stationGroupClassificationId">
+                                <el-cascader :options="stationGroupClassificationCascader"
                                              v-model.trim="stationGroupClassificationTreePosition"
-                                             clearable placeholder="请选择分类" style="width: 100%;" ></el-cascader>
+                                             placeholder="请选择分类" style="width: 100%;" ></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="部门" prop="departmentId">
+                                <el-cascader :options="departmentCascader"
+                                             v-model.trim="formDepartmentTreePosition"
+                                             placeholder="请选择部门" style="width: 100%;"></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -435,6 +457,45 @@
                 </span>
             </el-dialog>
 
+
+            <!--关联用户-->
+            <el-dialog :title="titleMap['associateUser']" :visible.sync="dialogStationGroupUserVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
+                <div v-loading="dialogFormLoading">
+                    <div class="dialog-search">
+                        <el-cascader v-model="userDepartmentTreePosition"
+                                     :options="departmentCascader" @change="handleDepartmentChange"
+                                     class="dialog-search-item dialog-keywords"
+                                     :show-all-levels="false" expand-trigger="hover" clearable change-on-select
+                                     :size="searchSize" placeholder="根据部门筛选"></el-cascader>
+                        <el-input v-model="userListQuery.name" class="dialog-search-item dialog-keywords"
+                                  clearable :size="searchSize" placeholder="根据姓名或帐户查询"></el-input>
+                        <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
+                    </div>
+                    <div class="dialog-search">
+                        <el-checkbox v-model="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
+                    </div>
+                    <div>
+                        <el-table ref="stationGroupUserTable" :data="userList" border @select="selectRowUser"
+                                  @select-all="selectAllUser" @selection-change="handleSelectionChangeStationGroupUser">
+                            <el-table-column type="selection" width="50" align="center"></el-table-column>
+                            <el-table-column prop="departmentName" label="部门"></el-table-column>
+                            <el-table-column prop="name" label="姓名"></el-table-column>
+                            <el-table-column prop="account" label="登录帐户"></el-table-column>
+                        </el-table>
+                        <el-pagination class="deyatech-pagination pull-right" background
+                                       :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                       :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotal"
+                                       @size-change="handleSizeChangeStationGroupUser" @current-change="handleCurrentChangeStationGroupUser">
+                        </el-pagination>
+                    </div>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveStationGroupUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeStationGroupUserDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -466,7 +527,8 @@
         isDomainEnglishNameExist,
         runOrStopDomainById
     } from '@/api/resource/domain';
-
+    import {getDepartmentCascader} from '@/api/admin/department';
+    import {getAllStationGroupUser, getAllUserByStationGroupUserVo, setStationGroupUsers} from "@/api/resource/stationGroupUser";
 
     export default {
         name: 'stationGroup',
@@ -563,13 +625,15 @@
             return {
                 stationGroupList: undefined,
                 total: undefined,
-                listLoading: true,
+                listLoading: false,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     name: undefined,
                     stationGroupClassificationTreePosition: undefined,
-                    stationGroupClassificationId: undefined
+                    stationGroupClassificationId: undefined,
+                    departmentId: undefined,
+                    departmentTreePosition: undefined
                 },
                 stationGroup: {
                     id: undefined,
@@ -579,11 +643,16 @@
                     description: undefined,
                     sortNo: undefined,
                     stationGroupClassificationId: undefined,
-                    stationGroupClassificationTreePosition: undefined
+                    stationGroupClassificationTreePosition: undefined,
+                    departmentId: undefined,
+                    departmentTreePosition: undefined
                 },
                 stationGroupRules: {
                     stationGroupClassificationId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '分类'}
+                    ],
+                    departmentId: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '部门'}
                     ],
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '名称'},
@@ -605,6 +674,7 @@
                         {validator: checkNumber, trigger: ['blur','change']}
                     ]
                 },
+                departmentCascader: [],
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
@@ -732,7 +802,24 @@
                 },
                 domainSelectedRows: [],
                 domainFormDialogVisible: false,
-                domainFormDialogTitle: undefined
+                domainFormDialogTitle: undefined,
+
+                // 关联用户
+                dialogStationGroupUserVisible: false,
+                dialogFormLoading: false,
+                userListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    departmentId: undefined,
+                    name: undefined,
+                    stationGroupId: undefined
+                },
+                showRelatedFlag: false,
+                userTotal: 0,
+                userList: [],
+                selectAllUserId: [],
+                selectedRowsUser: [],
+                userDepartmentTreePosition: undefined
             }
         },
         computed: {
@@ -760,6 +847,39 @@
                     }
                 }
             },
+            listQueryDepartmentTreePosition: {
+                get() {
+                    if (this.listQuery.departmentTreePosition) {
+                        return this.listQuery.departmentTreePosition.substr(1).split('&')
+                    }
+
+                },
+                set(v) {
+                    if (v.length > 0) {
+                        this.listQuery.departmentId = v[v.length - 1];
+                        this.listQuery.departmentTreePosition = '&' + v.join('&');
+                    } else {
+                        this.listQuery.departmentId = undefined;
+                        this.listQuery.departmentTreePosition = undefined;
+                    }
+                }
+            },
+            formDepartmentTreePosition: {
+                get() {
+                    if (this.stationGroup.departmentTreePosition) {
+                        return this.stationGroup.departmentTreePosition.substr(1).split('&')
+                    }
+                },
+                set(v) {
+                    if (v.length > 0) {
+                        this.stationGroup.departmentId = v[v.length - 1];
+                        this.stationGroup.departmentTreePosition = '&' + v.join('&');
+                    } else {
+                        this.stationGroup.departmentId = undefined;
+                        this.stationGroup.departmentTreePosition = undefined;
+                    }
+                }
+            },
             btnEnable() {
                 return {
                     create: this.permission.stationGroup_create,
@@ -767,6 +887,7 @@
                     delete: this.permission.stationGroup_delete,
                     ctrl: this.permission.stationGroup_ctrl,
                     setting: this.permission.stationGroup_setting,
+                    user: this.permission.stationGroup_user,
                     domain: this.permission.stationGroup_domain,
                     domainCreate: this.permission.domain_create,
                     domainUpdate: this.permission.domain_update,
@@ -776,10 +897,18 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = false;
-            this.reloadList();
-            this.getStationGroupClassificationCascader(null);
+            if (this.$store.state.common.siteId) {
+                this.getStationGroupClassificationCascader(null);
+                this.getDepartmentCascader();
+            }
         },
         methods: {
+            getDepartmentCascader() {
+                this.submitLoading = true;
+                getDepartmentCascader().then(response => {
+                    this.departmentCascader = response.data;
+                })
+            },
             loadSetting(stationGroupId) {
                 return new Promise((resolve, reject) => {
                     getSettingByStationGroupId(stationGroupId).then(response=>{
@@ -789,12 +918,30 @@
                     });
                 });
             },
-            getStationGroupClassificationCascader(id){
+            getStationGroupClassificationCascader(id) {
                 this.submitLoading = true;
                 getStationGroupClassificationCascader(id).then(response => {
                     this.submitLoading = false;
                     this.stationGroupClassificationCascader = response.data;
-                })
+                    if (this.stationGroupClassificationCascader && this.stationGroupClassificationCascader.length > 0) {
+                        let defaultSelect = this.getDefault(this.stationGroupClassificationCascader[0]);
+                        if (defaultSelect) {
+                            this.listQuery.stationGroupClassificationId = defaultSelect.value;
+                            this.listQuery.stationGroupClassificationTreePosition = defaultSelect.treePosition + '&' + defaultSelect.value;
+                            this.reloadList();
+                            this.$nextTick(()=>{
+                                this.$refs.stationGroupClassificationTree.setCurrentKey(this.listQuery.stationGroupClassificationId);
+                            });
+                        }
+                    }
+                });
+            },
+            getDefault(v) {
+                if (v.children && v.children.length > 0) {
+                    return this.getDefault(v.children[0]);
+                } else {
+                    return v;
+                }
             },
             handleStationGroupClassificationNodeClick(data) {
                 if (data.children && data.children.length > 0) {
@@ -810,18 +957,14 @@
                 this.handleCurrentChange(1);
             },
             resetSearch(){
+                this.listQueryDepartmentTreePosition = [];
                 this.listQuery.name = undefined;
             },
             reloadList(){
                 this.listLoading = true;
                 this.stationGroupList = undefined;
                 this.total = undefined;
-                getStationGroupList({
-                    page: this.listQuery.page,
-                    size: this.listQuery.size,
-                    stationGroupClassificationId: this.listQuery.stationGroupClassificationId,
-                    name: this.listQuery.name
-                }).then(response => {
+                getStationGroupList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.stationGroupList = response.data.records;
                     this.total = response.data.total;
@@ -853,6 +996,7 @@
                     this.stationGroup = deepClone(this.selectedRows[0]);
                 }
                 this.stationGroup.stationGroupClassificationTreePosition += '&' + this.stationGroup.stationGroupClassificationId;
+                this.stationGroup.departmentTreePosition += '&' + this.stationGroup.departmentId;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -875,7 +1019,7 @@
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        for(const deleteRow of this.selectedRows){
+                        for(const deleteRow of this.selectedRows) {
                             ids.push(deleteRow.id);
                         }
                         this.doDelete(ids);
@@ -932,15 +1076,16 @@
                 });
             },
             resetStationGroup(){
-                this.stationGroup = {
-                    id: undefined,
-                    name: undefined,
-                    englishName: undefined,
-                    abbreviation: undefined,
-                    description: undefined,
-                    sortNo: undefined,
-                    stationGroupClassificationId: undefined
-                }
+                this.stationGroup.id = undefined;
+                this.stationGroup.name = undefined;
+                this.stationGroup.englishName = undefined;
+                this.stationGroup.abbreviation = undefined;
+                this.stationGroup.description = undefined;
+                this.stationGroup.sortNo = undefined;
+                this.stationGroup.stationGroupClassificationId = undefined;
+                this.stationGroup.stationGroupClassificationTreePosition = undefined;
+                this.stationGroup.departmentId = undefined;
+                this.stationGroup.departmentTreePosition = undefined;
             },
             resetStationGroupDialogAndList(){
                 this.closeStationGroupDialog();
@@ -950,10 +1095,9 @@
             closeStationGroupDialog() {
                 this.dialogVisible = false;
                 this.resetStationGroup();
+                this.formDepartmentTreePosition = [];
+                this.stationGroupClassificationTreePosition = [];
                 this.$refs['stationGroupDialogForm'].resetFields();
-                let obj = {};
-                obj.stopPropagation = () =>{};
-                this.$refs.addOrEditStationGroupClassificationCascader.clearValue(obj);
             },
             resetSetting(){
                 this.setting = {
@@ -1291,14 +1435,148 @@
                 this.domainFormDialogVisible = false;
                 this.resetDomain();
                 this.$refs['domainDialogForm'].resetFields();
-            }
+            },
 
+            // 关联用户
+            btnUser(row) {
+                this.resetStationGroup();
+                this.userListQuery.stationGroupId = undefined;
+                this.userListQuery.name = undefined;
+                this.userListQuery.departmentId = undefined;
+                this.userDepartmentTreePosition = [];
+                if (row.id) {
+                    this.stationGroup = deepClone(row);
+                } else {
+                    this.stationGroup = deepClone(this.selectedRows[0]);
+                }
+                this.dialogStationGroupUserVisible = true;
+                this.dialogFormLoading = true;
+                this.selectAllUserId = [];
+                this.loadStationGroupUser(row.id).then(res => {
+                    if (res && res.length > 0) {
+                        for (let stationGroupUser of res) {
+                            this.selectAllUserId.push(stationGroupUser.userId)
+                        }
+                        this.showRelatedFlag = true;
+                        this.handleShowRelated(true);
+                    } else {
+                        this.showRelatedFlag = false;
+                        this.handleShowRelated(false);
+                    }
+                })
+            },
+            loadStationGroupUser(stationGroupId) {
+                let query = {stationGroupId}
+                return new Promise((resolve, reject) => {
+                    getAllStationGroupUser(query).then(response => {
+                        resolve(response.data)
+                    }).catch(err => {
+                        reject(err)
+                    })
+                });
+            },
+            handleShowRelated(checked) {
+                if (checked) {
+                    this.userListQuery.stationGroupId = this.stationGroup.id;
+                } else {
+                    this.userListQuery.stationGroupId = undefined;
+                }
+                this.reloadUserList();
+            },
+            closeStationGroupUserDialog() {
+                this.dialogStationGroupUserVisible = false;
+                this.submitLoading = false;
+            },
+            handleDepartmentChange(val) {
+                if (val.length > 0) {
+                    this.userListQuery.departmentId = val[val.length - 1]
+                } else {
+                    this.userListQuery.departmentId = undefined
+                }
+            },
+            reloadUserList() {
+                this.handleCurrentChangeStationGroupUser(1)
+            },
+            selectRowUser(selection, row) {
+                let i = this.selectAllUserId.indexOf(row.userId)
+                if (i < 0) {
+                    this.selectAllUserId.push(row.userId)
+                } else {
+                    this.selectAllUserId.splice(i, 1)
+                }
+            },
+            selectAllUser(selection) {
+                if (selection.length > 0) {
+                    for (let user of this.userList) {
+                        if (this.selectAllUserId.indexOf(user.userId) < 0) {
+                            this.selectAllUserId.push(user.userId)
+                        }
+                    }
+                } else {
+                    for (let user of this.userList) {
+                        let i = this.selectAllUserId.indexOf(user.userId)
+                        if (i >= 0) {
+                            this.selectAllUserId.splice(i, 1)
+                        }
+                    }
+                }
+            },
+            handleSelectionChangeStationGroupUser(rows) {
+                this.selectedRowsUser = rows;
+            },
+            handleSizeChangeStationGroupUser(val) {
+                this.userListQuery.size = val;
+                this.loadUserList().then(() => {
+                    this.checkRelatedUserRows();
+                });
+            },
+            handleCurrentChangeStationGroupUser(val) {
+                this.userListQuery.page = val;
+                this.loadUserList().then(() => {
+                    this.checkRelatedUserRows();
+                });
+            },
+            loadUserList() {
+                return new Promise((resolve, reject) => {
+                    this.dialogFormLoading = true;
+                    getAllUserByStationGroupUserVo(this.userListQuery).then(response => {
+                        this.dialogFormLoading = false;
+                        this.userList = response.data.records;
+                        this.userTotal = response.data.total;
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
+            },
+            checkRelatedUserRows() {
+                this.$nextTick(() => {
+                    if (this.selectAllUserId && this.selectAllUserId.length > 0) {
+                        for (let row of this.userList) {
+                            if (this.selectAllUserId.includes(row.userId)) {
+                                this.$refs['stationGroupUserTable'].toggleRowSelection(row, true)
+                            }
+                        }
+                    }
+                });
+            },
+            doSaveStationGroupUser() {
+                this.submitLoading = true;
+                setStationGroupUsers(this.stationGroup.id, this.selectAllUserId).then(() => {
+                    this.closeStationGroupUserDialog();
+                    this.reloadList();
+                    this.$message.success(this.$t("table.updateSuccess"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
+            },
         }
     }
 </script>
 
 
 <style>
+
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
         background-color: #a6d1ff;
     }

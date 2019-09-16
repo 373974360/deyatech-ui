@@ -49,6 +49,7 @@ const common = {
         lockPasswd: getStore({name: 'lockPasswd'}) || '',
         website: website,
         siteId: undefined,
+        siteName: undefined,
         selectSiteDisplay: false,
         activitiModelEditUrl: './modeler.html'
     },

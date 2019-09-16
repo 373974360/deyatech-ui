@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入名称" v-model.trim="listQuery.name" ></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -24,15 +24,11 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="categoryList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table :data="stationGroupUserList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="分类名称" prop="name">
-                    <template slot-scope="scope">
-                        <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="站点" prop="siteName"/>
+                <el-table-column align="center" label="站群id" prop="stationGroupId"/>
+                <el-table-column align="center" label="用户id" prop="userId"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -43,9 +39,9 @@
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop="btnUpdate(scope.row)"></el-button>
+                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -57,27 +53,25 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeCategoryDialog">
-                <el-form ref="categoryDialogForm" class="deyatech-form" :model="category" label-position="right"
-                         label-width="80px" :rules="categoryRules">
+                       :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
+                <el-form ref="stationGroupUserDialogForm" class="deyatech-form" :model="stationGroupUser" label-position="right"
+                         label-width="80px" :rules="stationGroupUserRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="站点" prop="siteId">
-                                <span v-text="this.$store.state.common.siteName"></span>
+                            <el-form-item label="站群id" prop="stationGroupId">
+                                <el-input v-model="stationGroupUser.stationGroupId"></el-input>
                             </el-form-item>
                         </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="分类名称" prop="name">
-                                <el-input v-model.trim="category.name" maxlength="50" placeholder="请输入分类名称"></el-input>
+                        <el-col :span="12">
+                            <el-form-item label="用户id" prop="userId">
+                                <el-input v-model="stationGroupUser.userId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="category.remark" :rows="3" maxlength="500" placeholder="请输入备注"/>
+                                <el-input type="textarea" v-model="stationGroupUser.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -85,7 +79,7 @@
                 <span slot="footer" class="dialog-footer">
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeCategoryDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeStationGroupUserDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -97,35 +91,34 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getCategoryListByNameAndSiteId,
-        createOrUpdateCategory,
-        delCategorys
-    } from '@/api/interview/category';
+        getStationGroupUserList,
+        createOrUpdateStationGroupUser,
+        delStationGroupUsers
+    } from '@/api/resource/stationGroupUser';
 
     export default {
-        name: 'category',
+        name: 'stationGroupUser',
         data() {
             return {
-                categoryList: undefined,
+                stationGroupUserList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined,
-                    siteId: undefined
+                    name: undefined
                 },
-                category: {
+                stationGroupUser: {
                     id: undefined,
-                    name: undefined,
-                    siteId: undefined
+                    stationGroupId: undefined,
+                    userId: undefined
                 },
-                categoryRules: {
-                    name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '分类名称'}
+                stationGroupUserRules: {
+                    stationGroupId: [
+                        {required: true, message: this.$t("table.pleaseInput") + '站群id'}
                     ],
-                    siteId: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '站点'}
+                    userId: [
+                        {required: true, message: this.$t("table.pleaseInput") + '用户id'}
                     ]
                 },
                 selectedRows: [],
@@ -145,29 +138,26 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.category_create,
-                    update: this.permission.category_update,
-                    delete: this.permission.category_delete
+                    create: this.permission.stationGroupUser_create,
+                    update: this.permission.stationGroupUser_update,
+                    delete: this.permission.stationGroupUser_delete
                 };
             }
         },
         created(){
-            this.$store.state.common.selectSiteDisplay = true;
             this.reloadList();
         },
         methods: {
             resetSearch(){
-                this.listQuery.siteId = undefined;
                 this.listQuery.name = undefined;
             },
             reloadList(){
                 this.listLoading = true;
-                this.categoryList = undefined;
+                this.stationGroupUserList = undefined;
                 this.total = undefined;
-                this.listQuery.siteId = this.$store.state.common.siteId;
-                getCategoryListByNameAndSiteId(this.listQuery).then(response => {
+                getStationGroupUserList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.categoryList = response.data.records;
+                    this.stationGroupUserList = response.data.records;
                     this.total = response.data.total;
                 })
             },
@@ -183,17 +173,16 @@
                 this.selectedRows = rows;
             },
             btnCreate(){
-                this.resetCategory();
+                this.resetStationGroupUser();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
-                this.category.siteId = this.$store.state.common.siteId;
             },
             btnUpdate(row){
-                this.resetCategory();
+                this.resetStationGroupUser();
                 if (row.id) {
-                    this.category = deepClone(row);
+                    this.stationGroupUser = deepClone(row);
                 } else {
-                    this.category = deepClone(this.selectedRows[0]);
+                    this.stationGroupUser = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -215,11 +204,11 @@
                 }
             },
             doCreate(){
-                this.$refs['categoryDialogForm'].validate(valid => {
+                this.$refs['stationGroupUserDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateCategory(this.category).then(() => {
-                            this.resetCategoryDialogAndList();
+                        createOrUpdateStationGroupUser(this.stationGroupUser).then(() => {
+                            this.resetStationGroupUserDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -228,11 +217,11 @@
                 });
             },
             doUpdate(){
-                this.$refs['categoryDialogForm'].validate(valid => {
+                this.$refs['stationGroupUserDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateCategory(this.category).then(() => {
-                            this.resetCategoryDialogAndList();
+                        createOrUpdateStationGroupUser(this.stationGroupUser).then(() => {
+                            this.resetStationGroupUserDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -242,27 +231,27 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delCategorys(ids).then(() => {
+                delStationGroupUsers(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetCategory(){
-                this.category = {
+            resetStationGroupUser(){
+                this.stationGroupUser = {
                     id: undefined,
-                    name: undefined,
-                    siteId: undefined
+                    stationGroupId: undefined,
+                    userId: undefined
                 }
             },
-            resetCategoryDialogAndList(){
-                this.closeCategoryDialog();
+            resetStationGroupUserDialogAndList(){
+                this.closeStationGroupUserDialog();
                 this.submitLoading = false;
                 this.reloadList();
             },
-            closeCategoryDialog() {
+            closeStationGroupUserDialog() {
                 this.dialogVisible = false;
-                this.resetCategory();
-                this.$refs['categoryDialogForm'].resetFields();
+                this.resetStationGroupUser();
+                this.$refs['stationGroupUserDialogForm'].resetFields();
             }
         }
     }

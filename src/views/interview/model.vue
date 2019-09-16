@@ -15,20 +15,20 @@
                         <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList" :disabled="!this.listQuery.categoryId">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="!this.listQuery.categoryId">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnLiveUpdate" :disabled="selectedRows.length != 1">直播</el-button>
                 </div>
                 <div class="deyatech-menu_right">
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
+                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList" :disabled="!this.listQuery.categoryId"></el-button>
                 </div>
             </div>
 
@@ -60,9 +60,9 @@
                                    @click.stop="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop="btnDelete(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.live" title="直播" type="primary" icon="el-icon-sort" :size="btnSize" circle
+                        <el-button v-if="btnEnable.live" title="直播" type="primary" icon="iconvideo" :size="btnSize" circle
                                    @click.stop="btnLiveUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.guest" title="嘉宾" type="primary" icon="el-icon-star-off" :size="btnSize" circle
+                        <el-button v-if="btnEnable.guest" title="嘉宾" type="primary" icon="iconadd-account" :size="btnSize" circle
                                    @click.stop="btnGuest(scope.row)"></el-button>
                     </template>
                 </el-table-column>
@@ -195,7 +195,7 @@
 
                         <el-row :span="24">
                             <el-col :span="24">
-                                <div class="live-contentimage" id="idLiveImage">
+                                <div class="live-content-image" id="idLiveImage">
                                     <div class="live-row" v-for="i in liveImageArray" :key="i.key">
                                         <img class="live-image" :src="showPicImgUrl + i.url"/>
                                         <div style="text-align: center">
@@ -210,7 +210,7 @@
 
                         <el-form ref="liveImageDialogForm" class="deyatech-form" :model="liveImage" label-position="right" label-width="0" :rules="liveImageRules">
                             <el-row :span="24">
-                                <el-col :span="24">
+                                <el-col :span="24" style="margin-bottom: 0">
                                     <el-form-item label="" prop="url" style="line-height: 14px">
                                         <el-input v-model="liveImage.url" v-show="false"></el-input>
                                         <el-upload class="image-uploader" name="file"
@@ -225,13 +225,16 @@
                                     </el-form-item>
                                 </el-col>
                             </el-row>
-
+                            <el-row :span="24">
+                                <el-col :span="24" style="margin-bottom: 0">
+                                    <el-form-item label="" prop="name">
+                                        <el-input v-model="liveImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 100%;"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
                             <el-row :span="24">
                                 <el-col :span="24">
-                                    <el-form-item label="" prop="name" style="margin-bottom: 0">
-                                        <el-input v-model="liveImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 200px;"></el-input>
-                                        <el-button type="primary" style="margin-left: 20px" @click="appendLiveImage" :size="btnSize">发送</el-button>
-                                    </el-form-item>
+                                    <el-button type="primary" @click="appendLiveImage" :size="btnSize">发送</el-button>
                                 </el-col>
                             </el-row>
                         </el-form>
@@ -243,9 +246,9 @@
                     <el-col :span="18">
                         <el-form ref="liveMessageDialogForm" class="deyatech-form" :model="liveMessage" label-position="right" label-width="0" :rules="liveMessageRules">
                             <el-row :span="24">
-                                <el-col :span="24">
+                                <el-col :span="24" style="margin-bottom: 0;">
                                     <el-form-item label="" prop="message">
-                                        <div class="live-content" id="idLiveContent">
+                                        <div class="live-content-message" id="idLiveContent">
                                             <div class="live-row" v-for="i in liveMessageArray" :key="i.key">
                                                 <div>
                                                     <span class="live-type" v-text="i.type == 1 ? '主持人：' : '嘉宾：'"></span>
@@ -277,10 +280,10 @@
 
 
 
-            <el-dialog title="修改图片" :visible.sync="modifyLiveImageDialogVisible" width="30%" :close-on-click-modal="closeOnClickModal" @close="modifyLiveImageCloseModelDialog">
+            <el-dialog title="修改图片" :visible.sync="modifyLiveImageDialogVisible" :close-on-click-modal="closeOnClickModal" @close="modifyLiveImageCloseModelDialog">
                 <el-form ref="modifyLiveImageDialogForm" class="deyatech-form" :model="liveModifyImage" label-position="right" label-width="0" :rules="liveImageRules">
                     <el-row :span="24">
-                        <el-col :span="24">
+                        <el-col :span="6">
                             <el-form-item label="" prop="url" style="line-height: 14px">
                                 <el-input v-model="liveModifyImage.url" v-show="false"></el-input>
                                 <el-upload class="image-uploader" name="file"
@@ -483,7 +486,6 @@
                     <el-button v-if="guestDialogTitle=='create'" type="primary" :size="btnSize" @click="doGuestCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doGuestUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="guestCloseDialogCreateUpdate">{{$t('table.cancel')}}</el-button>
-                    <el-button :size="btnSize" @click="btntest">test</el-button>
                 </span>
             </el-dialog>
 
@@ -542,7 +544,7 @@
                 showPicImgUrl: this.$store.state.common.showPicImgUrl,
                 modelList: undefined,
                 total: undefined,
-                listLoading: true,
+                listLoading: false,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -745,27 +747,37 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = true;
-            this.reloadList();
-            this.loadCategory();
+            if (this.$store.state.common.siteId) {
+                this.loadCategory();
+            }
         },
         methods: {
             loadCategory() {
                 getAllCategoryList({siteId: this.$store.state.common.siteId}).then(response => {
                     this.categorys = response.data;
+                    if (this.categorys && this.categorys.length > 0) {
+                        this.listQuery.categoryId = this.categorys[0].id;
+                        this.reloadList();
+                    }
                 }).catch((error)=>{
                     this.$message.error(error);
                 });
             },
-            resetSearch(){
-                this.listQuery.categoryId = undefined;
+            resetSearch() {
                 this.listQuery.name = undefined;
             },
             reloadList(){
+                if (!this.listQuery.categoryId) {
+                    return;
+                }
                 this.listLoading = true;
                 this.modelList = undefined;
                 this.total = undefined;
+                console.log('reloadList');
+                console.dir(this.listQuery);
                 getModelListByCategoryAndName(this.listQuery).then(response => {
                     this.listLoading = false;
+                    console.dir(response.data.records);
                     this.modelList = response.data.records;
                     this.total = response.data.total;
                 })
@@ -785,6 +797,7 @@
                 this.resetModel();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                this.model.categoryId = this.listQuery.categoryId;
             },
             btnUpdate(row){
                 this.resetModel();
@@ -895,6 +908,8 @@
                 this.liveImageSockJS = undefined;
                 this.reconnectionSockJS = false;
                 this.reloadList();
+                this.$refs['liveImageDialogForm'].resetFields();
+                this.$refs['liveMessageDialogForm'].resetFields();
             },
             // 打开直播
             btnLiveUpdate(row){
@@ -1427,12 +1442,6 @@
                 this.$refs.mycascader.handlePick(position);
                 this.guest.departmentTreePosition = '&' + value;
                 this.inputDepartmentName = undefined;
-            },
-            btntest() {
-                let position = [];
-                position.push('1135791211647340546');
-                this.$refs.mycascader.handlePick(position);
-
             }
         }
     }
@@ -1487,10 +1496,10 @@
 
 
     /*图片展示*/
-    .live-contentimage {
+    .live-content-image {
         border: 1px solid #dcdfe6;
         border-radius: 4px;
-        height: 328px;
+        height: 300px;
         scroll-y: scroll;
         overflow-x: hidden;
         overflow-y: auto;
@@ -1498,10 +1507,10 @@
         margin-bottom: 10px;
     }
     /*消息展示*/
-    .live-content {
+    .live-content-message {
         border: 1px solid #dcdfe6;
         border-radius: 4px;
-        height: 355px;
+        height: 280px;
         scroll-y: scroll;
         overflow-x: hidden;
         overflow-y: auto;
@@ -1538,14 +1547,16 @@
         font-weight: bold;
     }
 
-
+    .image-uploader {
+        height: 152px;
+    }
     .image-uploader .el-upload {
         border: 1px solid #dcdfe6;
         border-radius: 6px;
         cursor: pointer;
         position: relative;
         overflow: hidden;
-        width: 200px;
+        width: 100%;
         height: 150px;
 
     }
@@ -1559,7 +1570,7 @@
         top: 50px;
     }
     .image-add {
-        width: 200px;
+        width: 100%;
         height: 150px;
     }
 
