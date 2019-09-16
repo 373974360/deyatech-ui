@@ -94,17 +94,19 @@
                                     <el-radio-group v-model="processTaskSetting.candidateType">
                                         <el-radio :label="1">按用户分配</el-radio>
                                         <el-radio :label="2">按角色分配</el-radio>
+                                        <el-radio :label="3">按部门分配</el-radio>
                                     </el-radio-group>
                                 </div>
                                 <div class="con-bank-20"></div>
                                 <div>
                                     <div v-show="processTaskSetting.candidateType === 1">
-                                        <el-select v-model="selectedUser" remote :remote-method="getUserOptions"
+                                        <!--<el-select v-model="selectedUser" remote :remote-method="getUserOptions"
                                                    filterable placeholder="请输入姓名或帐号查询" style="width: 60%">
                                             <el-option v-for="item in userOptions" :key="item.id" :label="item.name" :value="item.id">
                                             </el-option>
-                                        </el-select>
-                                        <el-button type="primary" :size="btnSize" style="margin-left: 10px" @click="addCandidateUser">添加</el-button>
+                                        </el-select>-->
+                                        <el-button type="primary" :size="btnSize" @click="btnSelectUser">添加用户</el-button>
+                                        <!--<el-button type="primary" :size="btnSize" style="margin-left: 10px" @click="addCandidateUser">添加</el-button>-->
                                         <div class="con-bank-20"></div>
                                         <el-table :data="candidateUserList" border>
                                             <el-table-column prop="empNo" label="工号"/>
@@ -124,6 +126,13 @@
                                         <el-option v-for="item in groupOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
+                                    <el-cascader v-show="processTaskSetting.candidateType === 3" v-model="selectedDepartment"
+                                                 :options="departmentCascader" style="width: 75%"
+                                                 show-all-levels expand-trigger="hover"
+                                                 filterable clearable change-on-select
+                                                 :props="{ multiple: true, checkStrictly: true }"
+                                                 placeholder="请选择">
+                                    </el-cascader>
                                 </div>
                             </div>
                             <div class="con-bank-20"></div>
@@ -138,6 +147,42 @@
                         </div>
                     </el-col>
                 </el-row>
+            </el-dialog>
+
+            <el-dialog :title="titleMap['associateUser']" :visible.sync="dialogUserVisible" width="80%"
+                       :close-on-click-modal="closeOnClickModal" @close="closeUserDialog" @open="initUserTable">
+                <div v-loading="dialogFormLoading">
+                    <div class="dialog-search">
+                        <el-cascader :options="departmentCascader" @change="handleDepartmentChange"
+                                     class="dialog-search-item dialog-keywords"
+                                     :show-all-levels="false" expand-trigger="hover" clearable change-on-select
+                                     :size="searchSize" placeholder="根据部门筛选">
+                        </el-cascader>
+                        <el-input v-model="userListQuery.name" class="dialog-search-item dialog-keywords"
+                                  clearable :size="searchSize" placeholder="根据姓名或帐户查询">
+                        </el-input>
+                        <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
+                    </div>
+                    <div>
+                        <el-table ref="userTable" :data="userList" border @select="selectRowUser"
+                                  @select-all="selectAllUser" @selection-change="handleSelectionChangeUser">
+                            <el-table-column type="selection" width="50" align="center"></el-table-column>
+                            <el-table-column prop="departmentName" label="部门"></el-table-column>
+                            <el-table-column prop="name" label="姓名"></el-table-column>
+                            <el-table-column prop="account" label="登录帐户"></el-table-column>
+                        </el-table>
+                        <el-pagination class="deyatech-pagination pull-right" background
+                                       :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                       :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotal"
+                                       @size-change="handleSizeChangeUser" @current-change="handleCurrentChangeUser">
+                        </el-pagination>
+                    </div>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doAddCandidateUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeUserDialog">{{$t('table.cancel')}}</el-button>
+                </div>
             </el-dialog>
         </div>
     </basic-container>
@@ -165,6 +210,10 @@
     import {
         getAllRole
     } from "../../api/admin/role";
+    import {
+        getDepartmentCascader,
+        findDepartmentByIds
+    } from "../../api/admin/department";
 
     export default {
         name: 'processDefinition',
@@ -205,14 +254,29 @@
                     candidateType: undefined,
                     candidateUsers: undefined,
                     candidateGroups: undefined,
+                    candidateDepartments: undefined,
                     autoPass: false
                 },
-                userOptions: [],
+                dialogUserVisible: false,
+                dialogFormLoading: false,
+                userListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    departmentId: undefined,
+                    name: undefined
+                },
+                departmentCascader: [],
+                userTotal: 0,
+                userList: [],
+                selectedRowsUser: [],
+                selectedAllUserId: [],
+                selectedAllUser: [],
                 groupOptions: [],
                 userLoading: false,
                 selectedUser: undefined,
                 candidateUserList: [],
-                candidateGroupList: []
+                candidateGroupList: [],
+                candidateDepartmentTreePosition: []
             }
         },
         computed: {
@@ -255,12 +319,39 @@
                     }
                 }
                 return false;
+            },
+            selectedDepartment: {
+                get() {
+                    if (this.candidateDepartmentTreePosition.length > 0) {
+                        let departments = [];
+                        for (let item of this.candidateDepartmentTreePosition) {
+                            departments.push(item.substr(1).split('&'));
+                        }
+                        return departments;
+                    }
+                },
+                set(v) {
+                    if (v.length > 0) {
+                        let departmentIds = [];
+                        let departmentTreePosition = [];
+                        for (let item of v) {
+                            departmentIds.push(item[item.length - 1]);
+                            departmentTreePosition.push('&' + item.join('&'));
+                        }
+                        this.processTaskSetting.candidateDepartments = departmentIds.join();
+                        this.candidateDepartmentTreePosition = departmentTreePosition;
+                    } else {
+                        this.processTaskSetting.candidateDepartments = undefined;
+                        this.candidateDepartmentTreePosition = [];
+                    }
+                }
             }
         },
         created(){
             this.reloadList();
             this.init();
             this.getGroupOptions();
+            this.loadDepartment();
         },
         methods: {
             resetSearch(){
@@ -276,6 +367,22 @@
                     this.total = response.data.total;
                 })
             },
+            loadDepartment() {
+                getDepartmentCascader().then(response => {
+                    this.departmentCascader = response.data;
+                })
+            },
+            loadUserList() {
+                this.dialogFormLoading = true;
+                return new Promise((resolve, reject) => {
+                    getUserList(this.userListQuery).then(response => {
+                        this.dialogFormLoading = false;
+                        this.userList = response.data.records;
+                        this.userTotal = response.data.total;
+                        resolve()
+                    })
+                })
+            },
             handleSizeChange(val){
                 this.listQuery.size = val;
                 this.reloadList();
@@ -286,6 +393,21 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+            },
+            handleSizeChangeUser(val) {
+                this.userListQuery.size = val;
+                this.loadUserList().then(() => {
+                    this.checkSelectedRowsUser();
+                })
+            },
+            handleCurrentChangeUser(val) {
+                this.userListQuery.page = val;
+                this.loadUserList().then(() => {
+                    this.checkSelectedRowsUser();
+                })
+            },
+            handleSelectionChangeUser(rows) {
+                this.selectedRowsUser = rows;
             },
             btnCreate(){
                 this.resetProcessDefinition();
@@ -352,6 +474,9 @@
                 this.dialogTaskSettingVisible = true;
                 this.processDefinition = deepClone(row);
                 this.flush(row.actDefinitionId);
+            },
+            btnSelectUser() {
+                this.dialogUserVisible = true;
             },
             doCreate(){
                 this.$refs['processDefinitionDialogForm'].validate(valid => {
@@ -429,12 +554,105 @@
                     candidateType: undefined,
                     candidateUsers: undefined,
                     candidateGroups: undefined,
+                    candidateDepartments: undefined,
                     autoPass: false
                 };
                 this.selectedUser = undefined;
                 this.userOptions = [];
                 this.candidateUserList = [];
                 this.candidateGroupList = []
+            },
+            initUserTable() {
+                Promise.all([this.loadUserList(), this.$nextTick()]).then(() => {
+                    this.selectedAllUserId = [];
+                    for (let item of this.candidateUserList) {
+                        this.selectedAllUserId.push(item.id);
+                    }
+                    this.checkSelectedRowsUser();
+                })
+            },
+            handleDepartmentChange(val) {
+                if (val.length > 0) {
+                    this.userListQuery.departmentId = val[val.length - 1]
+                } else {
+                    this.userListQuery.departmentId = undefined
+                }
+            },
+            reloadUserList() {
+                this.handleCurrentChangeUser(1);
+            },
+            selectRowUser(selection, row) {
+                let i = this.selectedAllUserId.indexOf(row.id);
+                if (i < 0) {
+                    this.selectedAllUserId.push(row.id);
+                    this.selectedAllUser.push(deepClone(row));
+                } else {
+                    this.selectedAllUserId.splice(i, 1);
+                    for (let [index, item] of this.selectedAllUser.entries()) {
+                        if (item.id === row.id) {
+                            this.selectedAllUser.splice(index, 1);
+                            break;
+                        }
+                    }
+                }
+            },
+            selectAllUser(selection) {
+                if (selection.length > 0) {
+                    for (let row of this.userList) {
+                        if (this.selectedAllUserId.indexOf(row.id) < 0) {
+                            this.selectedAllUserId.push(row.id);
+                            this.selectedAllUser.push(deepClone(row));
+                        }
+                    }
+                } else {
+                    for (let row of this.userList) {
+                        let i = this.selectedAllUserId.indexOf(row.id);
+                        if (i >= 0) {
+                            this.selectedAllUserId.splice(i, 1)
+                        }
+                        for (let [index, item] of this.selectedAllUser.entries()) {
+                            if (item.id === row.id) {
+                                this.selectedAllUser.splice(index, 1);
+                                break;
+                            }
+                        }
+                    }
+                }
+            },
+            checkSelectedRowsUser() {
+                for (let row of this.userList) {
+                    if (this.selectedAllUserId.includes(row.id)) {
+                        this.$refs['userTable'].toggleRowSelection(row, true);
+                    }
+                }
+            },
+            doAddCandidateUser() {
+                for (const row of this.selectedAllUser) {
+                    let addFlag = true;
+                    for (const related of this.candidateUserList) {
+                        if (related.id === row.id) {
+                            addFlag = false;
+                            break;
+                        }
+                    }
+                    if (addFlag) {
+                        this.candidateUserList.push(deepClone(row));
+                    }
+                }
+                this.closeUserDialog();
+            },
+            closeUserDialog() {
+                this.dialogUserVisible = false;
+                this.$refs['userTable'].clearSelection();
+                this.selectedRowsUser = [];
+                this.selectedAllUserId = [];
+                this.selectedAllUser = [];
+                this.userListQuery = {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    departmentId: undefined,
+                    name: undefined
+                }
             },
             getUserOptions(name) {
                 if (!name) {
@@ -450,11 +668,6 @@
                 getUserList(query).then(response => {
                     this.userLoading = false;
                     this.userOptions = response.data.records;
-                })
-            },
-            getGroupOptions() {
-                getAllRole().then(response => {
-                    this.groupOptions = response.data;
                 })
             },
             addCandidateUser() {
@@ -479,6 +692,11 @@
             delCandidateUser(index) {
                 this.candidateUserList.splice(index, 1);
             },
+            getGroupOptions() {
+                getAllRole().then(response => {
+                    this.groupOptions = response.data;
+                })
+            },
             getTaskSetting(actDefinitionId, actTaskDefinitionId) {
                 getProcessTaskSetting({actDefinitionId, actTaskDefinitionId}).then(response => {
                     if (response.data) {
@@ -487,6 +705,14 @@
                             this.getCandidateUserList(this.processTaskSetting.candidateUsers);
                         } else if (this.processTaskSetting.candidateType === 2) {
                             this.candidateGroupList = this.processTaskSetting.candidateGroups.split(',')
+                        } else if (this.processTaskSetting.candidateType === 3) {
+                            this.getCandidateDepartmentList(this.processTaskSetting.candidateDepartments).then(data => {
+                                this.candidateDepartmentTreePosition = [];
+                                for (let item of data) {
+                                    this.candidateDepartmentTreePosition.push(item.treePosition + '&' + item.id);
+                                }
+                                console.log(this.candidateDepartmentTreePosition)
+                            })
                         }
                     }
                     this.processTaskSetting.actDefinitionId = actDefinitionId;
@@ -496,6 +722,13 @@
             getCandidateUserList(ids) {
                 findUserByIds(ids).then(response => {
                     this.candidateUserList = response.data;
+                })
+            },
+            getCandidateDepartmentList(ids) {
+                return new Promise((resolve, reject) => {
+                    findDepartmentByIds(ids).then(response => {
+                        resolve(response.data);
+                    })
                 })
             },
             init() {
