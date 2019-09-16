@@ -59,4 +59,10 @@ export function getAllDepartments(query) {
     });
 }
 
-
+export function findDepartmentByIds(ids) {
+    return request({
+        url: '/manage/admin/department/findByIds',
+        method: 'get',
+        params: {ids}
+    })
+}
