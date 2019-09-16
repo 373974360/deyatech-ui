@@ -70,6 +70,7 @@
                         </el-table-column>
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="300">
                             <template slot-scope="scope">
+                                <div style="padding-top: 8px;">
                                 <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop="btnUpdate(scope.row)"></el-button>
                                 <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 1"
@@ -82,8 +83,11 @@
                                            @click.stop="btnSetting(scope.row)"></el-button>
                                 <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="el-icon-more" :size="btnSize" circle
                                            @click.stop="btnDomain(scope.row)"></el-button>
-                                <el-button v-show="btnEnable.user" title="用户" type="primary" icon="iconadd-account" :size="btnSize" circle
-                                           @click.stop="btnUser(scope.row)"></el-button>
+                                <el-badge :hidden="scope.row.userNumber <= 0" :value="scope.row.userNumber" :max="99" style="margin-left:10px">
+                                    <el-button v-show="btnEnable.user" title="用户" type="primary" icon="iconadd-account" :size="btnSize" circle
+                                               @click.stop="btnUser(scope.row)"></el-button>
+                                </el-badge>
+                                </div>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -453,6 +457,45 @@
                 </span>
             </el-dialog>
 
+
+            <!--关联用户-->
+            <el-dialog :title="titleMap['associateUser']" :visible.sync="dialogStationGroupUserVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
+                <div v-loading="dialogFormLoading">
+                    <div class="dialog-search">
+                        <el-cascader v-model="userDepartmentTreePosition"
+                                     :options="departmentCascader" @change="handleDepartmentChange"
+                                     class="dialog-search-item dialog-keywords"
+                                     :show-all-levels="false" expand-trigger="hover" clearable change-on-select
+                                     :size="searchSize" placeholder="根据部门筛选"></el-cascader>
+                        <el-input v-model="userListQuery.name" class="dialog-search-item dialog-keywords"
+                                  clearable :size="searchSize" placeholder="根据姓名或帐户查询"></el-input>
+                        <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
+                    </div>
+                    <div class="dialog-search">
+                        <el-checkbox v-model="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
+                    </div>
+                    <div>
+                        <el-table ref="stationGroupUserTable" :data="userList" border @select="selectRowUser"
+                                  @select-all="selectAllUser" @selection-change="handleSelectionChangeStationGroupUser">
+                            <el-table-column type="selection" width="50" align="center"></el-table-column>
+                            <el-table-column prop="departmentName" label="部门"></el-table-column>
+                            <el-table-column prop="name" label="姓名"></el-table-column>
+                            <el-table-column prop="account" label="登录帐户"></el-table-column>
+                        </el-table>
+                        <el-pagination class="deyatech-pagination pull-right" background
+                                       :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                       :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotal"
+                                       @size-change="handleSizeChangeStationGroupUser" @current-change="handleCurrentChangeStationGroupUser">
+                        </el-pagination>
+                    </div>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveStationGroupUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeStationGroupUserDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -485,6 +528,7 @@
         runOrStopDomainById
     } from '@/api/resource/domain';
     import {getDepartmentCascader} from '@/api/admin/department';
+    import {getAllStationGroupUser, getAllUserByStationGroupUserVo, setStationGroupUsers} from "@/api/resource/stationGroupUser";
 
     export default {
         name: 'stationGroup',
@@ -758,7 +802,24 @@
                 },
                 domainSelectedRows: [],
                 domainFormDialogVisible: false,
-                domainFormDialogTitle: undefined
+                domainFormDialogTitle: undefined,
+
+                // 关联用户
+                dialogStationGroupUserVisible: false,
+                dialogFormLoading: false,
+                userListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    departmentId: undefined,
+                    name: undefined,
+                    stationGroupId: undefined
+                },
+                showRelatedFlag: false,
+                userTotal: 0,
+                userList: [],
+                selectAllUserId: [],
+                selectedRowsUser: [],
+                userDepartmentTreePosition: undefined
             }
         },
         computed: {
@@ -1375,17 +1436,147 @@
                 this.resetDomain();
                 this.$refs['domainDialogForm'].resetFields();
             },
+
             // 关联用户
             btnUser(row) {
-
-            }
-
+                this.resetStationGroup();
+                this.userListQuery.stationGroupId = undefined;
+                this.userListQuery.name = undefined;
+                this.userListQuery.departmentId = undefined;
+                this.userDepartmentTreePosition = [];
+                if (row.id) {
+                    this.stationGroup = deepClone(row);
+                } else {
+                    this.stationGroup = deepClone(this.selectedRows[0]);
+                }
+                this.dialogStationGroupUserVisible = true;
+                this.dialogFormLoading = true;
+                this.selectAllUserId = [];
+                this.loadStationGroupUser(row.id).then(res => {
+                    if (res && res.length > 0) {
+                        for (let stationGroupUser of res) {
+                            this.selectAllUserId.push(stationGroupUser.userId)
+                        }
+                        this.showRelatedFlag = true;
+                        this.handleShowRelated(true);
+                    } else {
+                        this.showRelatedFlag = false;
+                        this.handleShowRelated(false);
+                    }
+                })
+            },
+            loadStationGroupUser(stationGroupId) {
+                let query = {stationGroupId}
+                return new Promise((resolve, reject) => {
+                    getAllStationGroupUser(query).then(response => {
+                        resolve(response.data)
+                    }).catch(err => {
+                        reject(err)
+                    })
+                });
+            },
+            handleShowRelated(checked) {
+                if (checked) {
+                    this.userListQuery.stationGroupId = this.stationGroup.id;
+                } else {
+                    this.userListQuery.stationGroupId = undefined;
+                }
+                this.reloadUserList();
+            },
+            closeStationGroupUserDialog() {
+                this.dialogStationGroupUserVisible = false;
+                this.submitLoading = false;
+            },
+            handleDepartmentChange(val) {
+                if (val.length > 0) {
+                    this.userListQuery.departmentId = val[val.length - 1]
+                } else {
+                    this.userListQuery.departmentId = undefined
+                }
+            },
+            reloadUserList() {
+                this.handleCurrentChangeStationGroupUser(1)
+            },
+            selectRowUser(selection, row) {
+                let i = this.selectAllUserId.indexOf(row.userId)
+                if (i < 0) {
+                    this.selectAllUserId.push(row.userId)
+                } else {
+                    this.selectAllUserId.splice(i, 1)
+                }
+            },
+            selectAllUser(selection) {
+                if (selection.length > 0) {
+                    for (let user of this.userList) {
+                        if (this.selectAllUserId.indexOf(user.userId) < 0) {
+                            this.selectAllUserId.push(user.userId)
+                        }
+                    }
+                } else {
+                    for (let user of this.userList) {
+                        let i = this.selectAllUserId.indexOf(user.userId)
+                        if (i >= 0) {
+                            this.selectAllUserId.splice(i, 1)
+                        }
+                    }
+                }
+            },
+            handleSelectionChangeStationGroupUser(rows) {
+                this.selectedRowsUser = rows;
+            },
+            handleSizeChangeStationGroupUser(val) {
+                this.userListQuery.size = val;
+                this.loadUserList().then(() => {
+                    this.checkRelatedUserRows();
+                });
+            },
+            handleCurrentChangeStationGroupUser(val) {
+                this.userListQuery.page = val;
+                this.loadUserList().then(() => {
+                    this.checkRelatedUserRows();
+                });
+            },
+            loadUserList() {
+                return new Promise((resolve, reject) => {
+                    this.dialogFormLoading = true;
+                    getAllUserByStationGroupUserVo(this.userListQuery).then(response => {
+                        this.dialogFormLoading = false;
+                        this.userList = response.data.records;
+                        this.userTotal = response.data.total;
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
+            },
+            checkRelatedUserRows() {
+                this.$nextTick(() => {
+                    if (this.selectAllUserId && this.selectAllUserId.length > 0) {
+                        for (let row of this.userList) {
+                            if (this.selectAllUserId.includes(row.userId)) {
+                                this.$refs['stationGroupUserTable'].toggleRowSelection(row, true)
+                            }
+                        }
+                    }
+                });
+            },
+            doSaveStationGroupUser() {
+                this.submitLoading = true;
+                setStationGroupUsers(this.stationGroup.id, this.selectAllUserId).then(() => {
+                    this.closeStationGroupUserDialog();
+                    this.reloadList();
+                    this.$message.success(this.$t("table.updateSuccess"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
+            },
         }
     }
 </script>
 
 
 <style>
+
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
         background-color: #a6d1ff;
     }
