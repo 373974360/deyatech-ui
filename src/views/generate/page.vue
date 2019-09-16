@@ -31,6 +31,7 @@
                 <el-table-column align="center" label="英文名称" prop="pageEnglishName"/>
                 <el-table-column align="center" label="页面路径" prop="pagePath"/>
                 <el-table-column align="center" label="模板地址" prop="templatePath"/>
+                <el-table-column align="center" label="更新频率" prop="pageInterval"/>
                 <el-table-column align="center" label="备注" prop="remark"/>
                 <!--<el-table-column align="center" label="站点id" prop="siteId"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
@@ -96,6 +97,25 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="更新频率" prop="pageInterval">
+                                <el-input v-model.number="page.pageInterval"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="栏目绑定">
+                                <el-cascader
+                                    style="width: 100%"
+                                    placeholder="请选择绑定栏目"
+                                    :options="catalogList"
+                                    :props="catalogProps"
+                                    v-model="pageCatalogList"
+                                    collapse-tags
+                                    clearable></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
                     <!--<el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站点id" prop="siteId">
@@ -133,7 +153,11 @@
         existsPagePath,
         replay
     } from '@/api/generate/page';
+    import {
+        getCatalogTree,
+    } from '@/api/station/catalog';
     import {listTemplateAllFiles} from '@/api/template/template';
+    import {getPageCatalogList} from '@/api/generate/pageCatalog';
 
     export default {
         name: 'page',
@@ -192,7 +216,9 @@
                     pageEnglishName: undefined,
                     pagePath: undefined,
                     templatePath: undefined,
-                    siteId: undefined
+                    siteId: undefined,
+                    pageInterval: undefined,
+                    ids: undefined
                 },
                 pageRules: {
                     pageName: [
@@ -212,6 +238,10 @@
                     templatePath: [
                         {required: true, validator: validateTemplatePath, trigger: 'change'}
                     ],
+                    pageInterval: [
+                        { required: true, message: this.$t("table.pleaseInput") + '更新频率'},
+                        { type: 'number', message: '更新频率必须为数字值', trigger: 'blur'}
+                    ],
                     remark: [
                         {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
                     ],
@@ -226,7 +256,15 @@
                     label: 'fileName',
                     children: 'children'
                 },
-                selectTemplatePath: undefined
+                catalogProps: {
+                    multiple: true,
+                    value: 'id',
+                    label: 'name',
+                    children: 'children'
+                },
+                selectTemplatePath: undefined,
+                catalogList: undefined,
+                pageCatalogList: undefined
             }
         },
         computed: {
@@ -276,6 +314,21 @@
                     this.total = response.data.total;
                 })
             },
+            getCatalogTree(){
+                const query = {siteId: this.listQuery.siteId}
+                getCatalogTree(query).then(response => {
+                    this.catalogList = response.data;
+                })
+            },
+            getPageCatalogList(pageId){
+                let ids = [];
+                getPageCatalogList({pageId:pageId}).then(response => {
+                    for(const row of response.data){
+                        ids.push(row.catId.split(","));
+                    }
+                })
+                this.pageCatalogList = ids;
+            },
             listTemplateAllFiles(){
                 this.templateTreeData = [];
                 listTemplateAllFiles(this.listQuery.siteId).then(response => {
@@ -300,6 +353,7 @@
                     return
                 }
                 this.resetPage();
+                this.getCatalogTree();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
@@ -310,9 +364,11 @@
                 } else {
                     this.page = deepClone(this.selectedRows[0]);
                 }
+                this.getCatalogTree();
                 this.selectTemplatePath = this.page.templatePath.split('/').slice(1);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
+                this.getPageCatalogList(row.id);
             },
             btnDelete(row){
                 let ids = [];
@@ -353,6 +409,14 @@
                 this.$refs['pageDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        let ids = [];
+                        if(this.pageCatalogList != undefined){
+                            console.log(this.pageCatalogList);
+                            for(const pageCatalog of this.pageCatalogList){
+                                ids.push(pageCatalog.join(","))
+                            }
+                        }
+                        this.page.ids = ids;
                         createOrUpdatePage(this.page).then(() => {
                             this.resetPageDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -376,8 +440,11 @@
                     pageEnglishName: undefined,
                     pagePath: undefined,
                     templatePath: undefined,
-                    siteId: undefined
+                    siteId: undefined,
+                    pageInterval: undefined,
+                    ids: undefined
                 }
+                this.pageCatalogList = undefined;
             },
             resetPageDialogAndList(){
                 this.closePageDialog();
