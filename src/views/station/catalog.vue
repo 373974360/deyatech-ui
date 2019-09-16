@@ -294,16 +294,17 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="栏目" prop="cmsCatalogId">
-                            <ele-multi-cascader
+                            <el-cascader
                                 style="width: 100%"
                                 placeholder="请选择栏目"
-                                show-all-levels
+                                clearable
                                 collapse-tags
                                 expand-trigger="hover"
                                 :options="catalogCascader"
                                 v-model="selectCatalogIds"
+                                :props="{ multiple: true, checkStrictly: true }"
                                 @change="handleChange">
-                            </ele-multi-cascader>
+                            </el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -394,7 +395,6 @@
         getAllModel
     } from '@/api/station/model';
     import {validateURL} from '@/util/validate';
-    import "ele-multi-cascader/dist/cascader.css"
 
     export default {
         name: 'catalog',
@@ -503,7 +503,7 @@
                 if (this.selectCatalogIds.length == 0) {
                     callback(new Error('请选择栏目'))
                 } else {
-                    this.catalogAggregation.cmsCatalogId = this.selectCatalogIds.join();
+                    this.catalogAggregation.cmsCatalogId = this.selectCatalogIds.join('&');
                     if (this.catalogAggregation.cmsCatalogId.length > 4000) {
                         callback(new Error('选择栏目过多，最多 4000 个字符'))
                         this.catalogAggregation.cmsCatalogId = undefined;
@@ -814,13 +814,6 @@
                 this.resetCatalog();
                 if (row.id) {
                     this.catalog = deepClone(row);
-                    // 聚合栏目
-                    if (this.catalog.catalogAggregation) {
-                        this.catalogAggregation = row.catalogAggregation;
-                        this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
-                        this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
-                        this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
-                    }
                     if(row.treePosition){
                         this.catalog.treePosition = row.treePosition + "&" + row.id;
                     }else{
@@ -830,13 +823,6 @@
                 } else {
                     if (this.selectedRows.length == 1) {
                         this.catalog = deepClone(this.selectedRows[0]);
-                        // 聚合栏目
-                        if (this.catalog.catalogAggregation) {
-                            this.catalogAggregation = row.catalogAggregation;
-                            this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
-                            this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
-                            this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
-                        }
                         if(this.selectedRows[0].treePosition){
                             this.catalog.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
                         }else{
@@ -857,6 +843,16 @@
                 this.catalog.pathName = undefined;
                 this.catalog.version = undefined;
 
+                // 聚合栏目
+                if (this.catalog.flagAggregation == 1) {
+                    this.catalogAggregation = this.catalog.catalogAggregation;
+                    this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split('&') : [];
+                    this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
+                    this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
+                    // 一些字段不需要覆盖
+                    this.catalogAggregation.id = undefined;
+                }
+
                 this.catalog.children = undefined;
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';
@@ -872,12 +868,13 @@
                 this.isWorkflowEnable(this.catalog.workflowEnable);
                 this.selectListTemplate = this.catalog.listTemplate.split('/').slice(1);
                 // 聚合栏目
-                if (this.catalog.catalogAggregation) {
+                if (this.catalog.flagAggregation == 1) {
                     this.catalogAggregation = this.catalog.catalogAggregation;
-                    this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
+                    this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split('&') : [];
                     this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
                     this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
                 }
+                // console.log('catalogAggregation: '+ JSON.stringify(this.catalog.catalogAggregation))
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
