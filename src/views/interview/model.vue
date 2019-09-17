@@ -460,7 +460,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="照片" prop="photo">
-                                        <el-input v-model.trim="guest.photo" v-if="false"></el-input>
+                                        <el-input v-model.trim="guest.photo" v-show="false"></el-input>
                                         <el-upload class="photo-uploader" name="file"
                                                    :action="$store.state.common.uploadUrl"
                                                    :accept="$store.state.common.imageAccepts"
@@ -1432,7 +1432,9 @@
                 };
                 this.$set(this.departmentCascader, this.departmentCascaderLength, item);
                 this.departmentValue = [value];
+                this.guest.departmentName = this.inputDepartmentName;
                 this.inputDepartmentName = undefined;
+                console.log(this.guest.departmentName);
             },
             focusDepartment() {
                 this.$refs.mycascader.$refs.input.$refs.input.select();
