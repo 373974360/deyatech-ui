@@ -70,11 +70,3 @@ export function getAllModelBySiteId(query) {
         params: query
     });
 }
-
-export function getAllIndexName(query) {
-    return request({
-        url: '/manage/station/model/getAllIndexName',
-        method: 'get',
-        params: query
-    });
-}

@@ -45,7 +45,7 @@
                             <el-dropdown-item command="handleSiteStaticContent">生成站点所有内容页</el-dropdown-item>
                             <el-dropdown-item command="handleCheckedReindex" divided>生成勾选的索引</el-dropdown-item>
                             <el-dropdown-item command="handleCatalogReindex">生成当前栏目索引</el-dropdown-item>
-                            <el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>
+<!--                            <el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>-->
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
@@ -758,11 +758,14 @@
             reloadList(){
                 this.listLoading = true;
                 this.templateList = undefined;
-                this.total = undefined;
+                // this.total = undefined;
                 getTemplateList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.templateList = response.data.records;
                     this.total = response.data.total;
+                }).catch(() => {
+                    this.listLoading = false;
+                    this.total = 0;
                 })
             },
             handleSizeChange(val){
@@ -1202,9 +1205,9 @@
                     this.handleCatalogReindex();
                 }
                 // 生成整个站点的索引
-                if (command == 'handleSiteReindex') {
+                /*if (command == 'handleSiteReindex') {
                     this.handleSiteReindex();
-                }
+                }*/
             },
             // 批量生成勾选的内容页
             handleCheckedStaticContent() {
@@ -1347,13 +1350,13 @@
                 })
             },
             // 批量生成整个站点的索引
-            handleSiteReindex() {
+            /*handleSiteReindex() {
                 if (!this.listQuery.siteId) {
                     this.$message.error('请先选择站点！')
                     return
                 }
                 // 校验
-                /*const titles = [];
+                /!*const titles = [];
                 for (let t of this.templateList) {
                     if (!t.flagSearch) {
                         titles.push(t.title);
@@ -1362,7 +1365,7 @@
                 if (titles.length > 0) {
                     this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
                     return;
-                }*/
+                }*!/
                 reindex({siteId: this.listQuery.siteId}).then(response => {
                     if (response.status == 200) {
                         this.$message.success('生成中，请稍后查看！')
@@ -1371,7 +1374,7 @@
                         this.$message.error('生成失败！')
                     }
                 })
-            },
+            },*/
             isFlagExternal (value) {
                 // if (!value) {
                     if (this.template.url) {
