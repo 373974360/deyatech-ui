@@ -196,11 +196,14 @@
             reloadList(){
                 this.listLoading = true;
                 this.reviewProcessList = undefined;
-                this.total = undefined;
+                // this.total = undefined;
                 getCurrentTaskList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.reviewProcessList = response.data.records;
                     this.total = response.data.total;
+                }).catch(() => {
+                    this.listLoading = false;
+                    this.total = 0;
                 })
             },
             handleSizeChange(val){

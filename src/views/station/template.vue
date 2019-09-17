@@ -14,7 +14,7 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-<!--                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>-->
+                    <!--                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>-->
 
                     <el-dropdown v-if="btnEnable.create" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
                         <el-button type="primary" :size="btnSize">
@@ -45,14 +45,14 @@
                             <el-dropdown-item command="handleSiteStaticContent">生成站点所有内容页</el-dropdown-item>
                             <el-dropdown-item command="handleCheckedReindex" divided>生成勾选的索引</el-dropdown-item>
                             <el-dropdown-item command="handleCatalogReindex">生成当前栏目索引</el-dropdown-item>
-                            <el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>
+                            <!--                            <el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>-->
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-<!--                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>-->
+                    <!--                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>-->
                 </div>
             </div>
             <div class="standard-text">
@@ -97,25 +97,25 @@
                             <a :href="'/api/manage/cms/m/'+scope.row.siteId+'/' + scope.row.id" target="_blank">动态</a>
                         </template>-->
                     </el-table-column>
-<!--                    <el-table-column align="center" label="排序号" prop="sortNo"/>-->
-<!--                    <el-table-column align="center" label="是否置顶" prop="flagTop">-->
-<!--                        <template slot-scope="scope">-->
-<!--                            {{scope.row.flagTop ? '是' : '否'}}-->
-<!--                        </template>-->
-<!--                    </el-table-column>-->
-<!--                    <el-table-column align="center" label="站点id" prop="siteId"/>-->
-<!--                    <el-table-column align="center" label="模板路径" prop="templatePath"/>-->
-<!--                    <el-table-column align="center" label="栏目ID" prop="cmsCatalogId"/>-->
-<!--                    <el-table-column align="center" label="内容模型ID" prop="contentModelId"/>-->
-<!--                    <el-table-column align="center" label="内容唯一ID" prop="contentId"/>-->
-<!--                    <el-table-column align="center" label="状态" prop="status"/>-->
-<!--                    <el-table-column align="center" label="内容模型模板ID" prop="contentModelTemplateId"/>-->
-<!--                    <el-table-column align="center" label="编辑姓名" prop="editor"/>-->
-<!--                    <el-table-column align="center" label="来源" prop="source"/>-->
-<!--                    <el-table-column align="center" label="缩略图" prop="thumbnail"/>-->
-<!--                    <el-table-column align="center" label="是否允许搜索到" prop="flagSearch"/>-->
-<!--                    <el-table-column align="center" label="浏览次数" prop="views"/>-->
-<!--                    <el-table-column align="center" label="是否是外链" prop="flagExternal"/>-->
+                    <!--                    <el-table-column align="center" label="排序号" prop="sortNo"/>-->
+                    <!--                    <el-table-column align="center" label="是否置顶" prop="flagTop">-->
+                    <!--                        <template slot-scope="scope">-->
+                    <!--                            {{scope.row.flagTop ? '是' : '否'}}-->
+                    <!--                        </template>-->
+                    <!--                    </el-table-column>-->
+                    <!--                    <el-table-column align="center" label="站点id" prop="siteId"/>-->
+                    <!--                    <el-table-column align="center" label="模板路径" prop="templatePath"/>-->
+                    <!--                    <el-table-column align="center" label="栏目ID" prop="cmsCatalogId"/>-->
+                    <!--                    <el-table-column align="center" label="内容模型ID" prop="contentModelId"/>-->
+                    <!--                    <el-table-column align="center" label="内容唯一ID" prop="contentId"/>-->
+                    <!--                    <el-table-column align="center" label="状态" prop="status"/>-->
+                    <!--                    <el-table-column align="center" label="内容模型模板ID" prop="contentModelTemplateId"/>-->
+                    <!--                    <el-table-column align="center" label="编辑姓名" prop="editor"/>-->
+                    <!--                    <el-table-column align="center" label="来源" prop="source"/>-->
+                    <!--                    <el-table-column align="center" label="缩略图" prop="thumbnail"/>-->
+                    <!--                    <el-table-column align="center" label="是否允许搜索到" prop="flagSearch"/>-->
+                    <!--                    <el-table-column align="center" label="浏览次数" prop="views"/>-->
+                    <!--                    <el-table-column align="center" label="是否是外链" prop="flagExternal"/>-->
                     <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                         <template slot-scope="scope">
                             <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -402,7 +402,7 @@
                                type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-if="dialogTitle=='update' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
                                type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-<!--                    <el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>-->
+                    <!--                    <el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>-->
                 </span>
             </el-dialog>
         </div>
@@ -760,11 +760,14 @@
             reloadList(){
                 this.listLoading = true;
                 this.templateList = undefined;
-                this.total = undefined;
+                // this.total = undefined;
                 getTemplateList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.templateList = response.data.records;
                     this.total = response.data.total;
+                }).catch(() => {
+                    this.listLoading = false;
+                    this.total = 0;
                 })
             },
             handleSizeChange(val){
@@ -1058,9 +1061,9 @@
                 $('#ueditor_textarea_editorValue').remove()
                 this.stepsActive = 0;
             },
-/*            handleModelChange() {
-                this.getContentForm();
-            },*/
+            /*            handleModelChange() {
+                            this.getContentForm();
+                        },*/
             // 获取内容对象 TODO
             getContentForm() {
                 for (let model of this.modelList) {
@@ -1204,9 +1207,9 @@
                     this.handleCatalogReindex();
                 }
                 // 生成整个站点的索引
-                if (command == 'handleSiteReindex') {
+                /*if (command == 'handleSiteReindex') {
                     this.handleSiteReindex();
-                }
+                }*/
             },
             // 批量生成勾选的内容页
             handleCheckedStaticContent() {
@@ -1349,13 +1352,13 @@
                 })
             },
             // 批量生成整个站点的索引
-            handleSiteReindex() {
+            /*handleSiteReindex() {
                 if (!this.listQuery.siteId) {
                     this.$message.error('请先选择站点！')
                     return
                 }
                 // 校验
-                /*const titles = [];
+                /!*const titles = [];
                 for (let t of this.templateList) {
                     if (!t.flagSearch) {
                         titles.push(t.title);
@@ -1364,7 +1367,7 @@
                 if (titles.length > 0) {
                     this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
                     return;
-                }*/
+                }*!/
                 reindex({siteId: this.listQuery.siteId}).then(response => {
                     if (response.status == 200) {
                         this.$message.success('生成中，请稍后查看！')
@@ -1373,12 +1376,12 @@
                         this.$message.error('生成失败！')
                     }
                 })
-            },
+            },*/
             isFlagExternal (value) {
                 // if (!value) {
-                    if (this.template.url) {
-                        this.template.url = undefined;
-                    }
+                if (this.template.url) {
+                    this.template.url = undefined;
+                }
                 // }
             },
             beforeUpload(file) {

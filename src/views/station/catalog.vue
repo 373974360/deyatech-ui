@@ -1,17 +1,17 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-<!--            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>-->
+            <!--            <div class="deyatech-header">
+                            <el-form :inline="true" ref="searchForm">
+                                <el-form-item>
+                                    <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </div>-->
 
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
@@ -40,34 +40,34 @@
             </el-table-tree-column>
             <el-table-column align="center" label="栏目别名" prop="aliasName"/>
             <el-table-column align="center" label="排序" prop="sortNo"/>
-<!--            <el-table-column align="center" label="英文名称" prop="ename"/>-->
-<!--            <el-table-column align="center" label="是否显示" prop="showable"/>-->
-                <el-table-column align="center" label="URL" prop="linkUrl"/>
-<!--            <el-table-column align="center" label="工作流ID" prop="workflowId"/>-->
-<!--            <el-table-column align="center" label="首页模板" prop="indexTemplate"/>-->
-<!--            <el-table-column align="center" label="列表页模板" prop="listTemplate"/>-->
-<!--            <el-table-column align="center" label="在树结构中位置" prop="treePosition"/>
-            <el-table-column align="center" label="状态" prop="status"/>
-            <el-table-column align="center" label="是否允许评论" prop="allowComment"/>
-            <el-table-column align="center" label="是否允许分享: 0.否 1.是" prop="allowShare"/>
-            <el-table-column align="center" label="应用id" prop="applicationId"/>
-            <el-table-column align="center" label="属性id" prop="attributeId"/>
-            <el-table-column align="center" label="自动发布:0.否 1.是" prop="autoRelease"/>
-            <el-table-column align="center" label="内容对象id" prop="contectObjectId"/>
-            <el-table-column align="center" label="显示条数" prop="displayNumber"/>
-            <el-table-column align="center" label="生成栏目首页:0.否 1.是" prop="generateHome"/>
-            <el-table-column align="center" label="在导航中显示: 0.否 1.是" prop="navigationShowAble"/>
-            <el-table-column align="center" label="参与人员:0.会员 1.所有人" prop="participant"/>
-            <el-table-column align="center" label="在树中显示: 0.否 1.是" prop="treeShowAble"/>
-            <el-table-column align="center" label="是否启用工作流: 0.否 1.是" prop="workflowEnable"/>
-            <el-table-column align="center" label="路径名，如果是多级栏目则用/分隔各级ename" prop="pathName"/>
-            <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
-                <template slot-scope="scope">
-                    <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                        {{scope.row.enable | enums('EnableEnum')}}
-                    </el-tag>
-                </template>
-            </el-table-column>-->
+            <!--            <el-table-column align="center" label="英文名称" prop="ename"/>-->
+            <!--            <el-table-column align="center" label="是否显示" prop="showable"/>-->
+            <el-table-column align="center" label="URL" prop="linkUrl"/>
+            <!--            <el-table-column align="center" label="工作流ID" prop="workflowId"/>-->
+            <!--            <el-table-column align="center" label="首页模板" prop="indexTemplate"/>-->
+            <!--            <el-table-column align="center" label="列表页模板" prop="listTemplate"/>-->
+            <!--            <el-table-column align="center" label="在树结构中位置" prop="treePosition"/>
+                        <el-table-column align="center" label="状态" prop="status"/>
+                        <el-table-column align="center" label="是否允许评论" prop="allowComment"/>
+                        <el-table-column align="center" label="是否允许分享: 0.否 1.是" prop="allowShare"/>
+                        <el-table-column align="center" label="应用id" prop="applicationId"/>
+                        <el-table-column align="center" label="属性id" prop="attributeId"/>
+                        <el-table-column align="center" label="自动发布:0.否 1.是" prop="autoRelease"/>
+                        <el-table-column align="center" label="内容对象id" prop="contectObjectId"/>
+                        <el-table-column align="center" label="显示条数" prop="displayNumber"/>
+                        <el-table-column align="center" label="生成栏目首页:0.否 1.是" prop="generateHome"/>
+                        <el-table-column align="center" label="在导航中显示: 0.否 1.是" prop="navigationShowAble"/>
+                        <el-table-column align="center" label="参与人员:0.会员 1.所有人" prop="participant"/>
+                        <el-table-column align="center" label="在树中显示: 0.否 1.是" prop="treeShowAble"/>
+                        <el-table-column align="center" label="是否启用工作流: 0.否 1.是" prop="workflowEnable"/>
+                        <el-table-column align="center" label="路径名，如果是多级栏目则用/分隔各级ename" prop="pathName"/>
+                        <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                                    {{scope.row.enable | enums('EnableEnum')}}
+                                </el-tag>
+                            </template>
+                        </el-table-column>-->
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                 <template slot-scope="scope">
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
@@ -128,11 +128,39 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="英文名称" prop="ename" label-width="140px">
+                            <el-form-item label="英文名称" prop="ename">
                                 <el-input v-model="catalog.ename"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
+
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="字段名" prop="columnName">
+                                <el-input v-model="catalog.columnName"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="字段类型" prop="columnType">
+                                <el-input v-model="catalog.columnType"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="字段描述" prop="columnDescription">
+                                <el-input type="textarea" v-model="catalog.columnDescription" :rows="3"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="字段关键字" prop="columnKeywords">
+                                <el-input v-model="catalog.columnKeywords"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否外链" prop="flagExternal">
@@ -146,7 +174,7 @@
                 </div>
 
                 <!--外链属性设置-->
-                <div v-if="catalog.flagExternal == 1">
+                <div v-if="catalog.flagExternal">
                     <el-row :gutter="20" :span="24" v-if="">
                         <el-col :span="24">
                             <el-form-item label="外部链接地址" prop="linkUrl">
@@ -269,13 +297,13 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-<!--                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item :label="$t('table.remark')" prop="remark" label-width="140px">
-                                <el-input type="textarea" v-model="catalog.remark" :rows="3"/>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>-->
+                    <!--                    <el-row :gutter="20" :span="24">
+                                            <el-col :span="24">
+                                                <el-form-item :label="$t('table.remark')" prop="remark" label-width="140px">
+                                                    <el-input type="textarea" v-model="catalog.remark" :rows="3"/>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否设置聚合规则" prop="flagAggregation">
@@ -363,13 +391,13 @@
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
-                <el-button v-if="(catalog.flagExternal == 0 && stepsActive == 0) || (stepsActive == 1 && catalog.flagAggregation == 1)"
+                <el-button v-if="(!catalog.flagExternal && stepsActive == 0) || (stepsActive == 1 && catalog.flagAggregation)"
                            type="primary" :size="btnSize" @click="nextStep" :loading="submitLoading">下一步</el-button>
-                <el-button v-if="dialogTitle=='create' && (catalog.flagExternal == 1 || stepsActive == 2  || (stepsActive == 1 && catalog.flagAggregation == 0))"
+                <el-button v-if="dialogTitle=='create' && (catalog.flagExternal || stepsActive == 2  || (stepsActive == 1 && !catalog.flagAggregation))"
                            type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                <el-button v-if="dialogTitle=='update' && (catalog.flagExternal == 1 || stepsActive == 2  || (stepsActive == 1 && catalog.flagAggregation == 0))"
+                <el-button v-if="dialogTitle=='update' && (catalog.flagExternal || stepsActive == 2  || (stepsActive == 1 && !catalog.flagAggregation))"
                            type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-<!--                <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>-->
+                <!--                <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>-->
             </span>
         </el-dialog>
     </basic-container>
@@ -487,7 +515,7 @@
                 }
             }
             const validateUrl = (rule, value, callback) => {
-                if (this.catalog.flagExternal == 1) {
+                if (this.catalog.flagExternal) {
                     if (!value) {
                         callback(new Error('请输入URL'))
                     } else {
@@ -563,7 +591,11 @@
                     coverage: undefined,
                     flagAggregation: 0,
                     aggregationId: undefined,
-                    catalogAggregationInfo: undefined
+                    catalogAggregationInfo: undefined,
+                    columnName: undefined,
+                    columnDescription: undefined,
+                    columnKeywords: undefined,
+                    columnType: undefined,
                 },
                 catalogCascader: [],
                 dialogVisible: false,
@@ -673,6 +705,19 @@
                     flagAggregation: [
                         {required: true, message: this.$t("table.pleaseSelect") + '是否设置聚合规则'}
                     ],
+                    columnName: [
+                        {max: 50, message: '长度最多 50 个字符', trigger: 'blur'}
+                    ],
+                    columnDescription: [
+                        {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
+                    ],
+                    columnKeywords: [
+                        {max: 200, message: '长度最多 200 个字符', trigger: 'blur'}
+                    ],
+                    columnType: [
+                        {max: 20, message: '长度最多 20 个字符', trigger: 'blur'}
+                    ],
+
                 },
                 lastExpanded: undefined,
                 tableReset: true,
@@ -741,7 +786,7 @@
                     }
                 },
                 set(v) {
-                    if (v.length > 0) {
+                    if (v && v.length > 0) {
                         this.catalog.parentId = v[v.length - 1];
                         this.catalog.treePosition = "&" + v.join('&') + "&" + this.catalog.parentId;
                     } else {
@@ -767,9 +812,9 @@
             }
         },
         methods: {
-/*            resetSearch(){
-                this.listQuery.siteId = this.$store.state.common.siteId;
-            },*/
+            /*            resetSearch(){
+                            this.listQuery.siteId = this.$store.state.common.siteId;
+                        },*/
             reloadList(){
                 if (!this.listQuery.siteId) {
                     this.$message.warning("请先选择站点");
@@ -799,9 +844,9 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
             },
-/*            loadEnum(name) {
-                return getStore({name: 'enums'})[name]
-            },*/
+            /*            loadEnum(name) {
+                            return getStore({name: 'enums'})[name]
+                        },*/
             // 获取模板
             listTemplateAllFiles(){
                 this.templateTreeData = [];
@@ -842,9 +887,11 @@
                 this.catalog.sortNo = undefined;
                 this.catalog.pathName = undefined;
                 this.catalog.version = undefined;
+                this.catalog.aggregationId = undefined;
+                this.catalog.children = undefined;
 
                 // 聚合栏目
-                if (this.catalog.flagAggregation == 1) {
+                if (this.catalog.flagAggregation) {
                     this.catalogAggregation = this.catalog.catalogAggregation;
                     this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split('&') : [];
                     this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
@@ -853,7 +900,6 @@
                     this.catalogAggregation.id = undefined;
                 }
 
-                this.catalog.children = undefined;
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
@@ -866,15 +912,15 @@
                     this.catalog = deepClone(this.selectedRows[0]);
                 }
                 this.isWorkflowEnable(this.catalog.workflowEnable);
-                this.selectListTemplate = this.catalog.listTemplate.split('/').slice(1);
                 // 聚合栏目
-                if (this.catalog.flagAggregation == 1) {
+                if (this.catalog.flagAggregation) {
                     this.catalogAggregation = this.catalog.catalogAggregation;
                     this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split('&') : [];
                     this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
                     this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
                 }
                 // console.log('catalogAggregation: '+ JSON.stringify(this.catalog.catalogAggregation))
+                this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -917,7 +963,7 @@
                     })
                 });
                 var validateForm2 = true;
-                if (this.catalog.flagAggregation == 1) {
+                if (this.catalog.flagAggregation) {
                     validateForm2 = new Promise(function(resolve, reject) {
                         _this.$refs['catalogAggregationDialogForm'].validate(valid => {
                             if(valid) {
@@ -931,8 +977,8 @@
 
                 Promise.all([validateForm1, validateForm2]).then(function(){
                     _this.catalog.siteId = _this.listQuery.siteId;
-                    // 集合栏目信息
-                    if (_this.catalog.flagAggregation == 1) {
+                    // 聚合栏目信息
+                    if (_this.catalog.flagAggregation) {
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
@@ -957,7 +1003,7 @@
                     })
                 });
                 var validateForm2 = true;
-                if (this.catalog.flagAggregation == 1) {
+                if (this.catalog.flagAggregation && !this.catalog.flagExternal) {
                     validateForm2 = new Promise(function(resolve, reject) {
                         _this.$refs['catalogAggregationDialogForm'].validate(valid => {
                             if(valid) {
@@ -970,7 +1016,7 @@
                 }
                 var confirm = true;
                 // 外链栏目、聚合栏目不覆盖子栏目
-                if (this.catalog.children && this.catalog.flagExternal == 0 && this.catalog.flagAggregation == 0) {
+                if (this.catalog.children) {
                     confirm = new Promise(function(resolve, reject) {
                         _this.$confirm('是否覆盖子栏目信息', _this.$t("table.tip"), {
                             confirmButtonText: '覆盖',
@@ -990,8 +1036,8 @@
 
                 Promise.all([validateForm1, validateForm2, confirm]).then(function(){
                     _this.catalog.children = undefined;
-                    // 集合栏目信息
-                    if (_this.catalog.flagAggregation == 1) {
+                    // 聚合栏目信息
+                    if (_this.catalog.flagAggregation) {
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
@@ -1007,6 +1053,7 @@
             doDelete(ids){
                 this.listLoading = true;
                 delCatalogs(ids).then(() => {
+                    this.selectedRows = [];
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
@@ -1046,7 +1093,11 @@
                     flagExternal: 0,
                     coverage: undefined,
                     flagAggregation: 0,
-                    catalogAggregationInfo: undefined
+                    catalogAggregationInfo: undefined,
+                    columnName: undefined,
+                    columnDescription: undefined,
+                    columnKeywords: undefined,
+                    columnType: undefined,
                 }
             },
             resetCatalogAggregation(){
@@ -1066,6 +1117,7 @@
                 this.getCatalogCascader();
             },
             closeCatalogDialog() {
+                this.selectedRows = [];
                 this.dialogVisible = false;
                 this.selectListTemplate = undefined;
                 this.workflowList = [];
@@ -1122,10 +1174,6 @@
                 })
             },
             previousStep() {
-                // 防止把栏目设置成聚合栏目又退回第一步把栏目设置成外链栏目，导致提交表单验证错误
-                if (this.stepsActive == 1) {
-                    this.catalog.flagAggregation = 0;
-                }
                 this.$refs['catalogDialogForm'].clearValidate();
                 this.stepsActive --;
             },
@@ -1141,6 +1189,10 @@
             isFlagExternal(value) {
                 if (!value && this.catalog.linkUrl) {
                     this.catalog.linkUrl = '';
+                }
+                // 如果是外链，就不能是聚合栏目
+                if (value) {
+                    this.catalog.flagAggregation = 0;
                 }
             },
             // 动态添加关键字 start
