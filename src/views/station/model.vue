@@ -206,12 +206,12 @@
                                                 <span>{{data.name}}</span>
                                                 <el-cascader
                                                     :options="templateTreeData"
-                                                     v-model="catalogTemplate[data.id].templatePath"
-                                                     :props="cascaderProps"
-                                                     :ref="'catalogTemplate' + data.id"
-                                                     @change="handleCatalogTemplateChange(data)"
-                                                     :clearable="true"
-                                                     size="mini">
+                                                    v-model="catalogTemplate[data.id].templatePath"
+                                                    :props="cascaderProps"
+                                                    :ref="'catalogTemplate' + data.id"
+                                                    @change="handleCatalogTemplateChange(data)"
+                                                    :clearable="true"
+                                                    size="mini">
                                                 </el-cascader>
                                             </div>
                                         </el-tree>
@@ -487,11 +487,14 @@
             reloadList(){
                 this.listLoading = true;
                 this.modelList = undefined;
-                this.total = undefined;
+                // this.total = undefined;
                 getModelList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.modelList = response.data.records;
                     this.total = response.data.total;
+                }).catch(() => {
+                    this.listLoading = false;
+                    this.total = 0;
                 })
             },
             handleSizeChange(val){
@@ -841,7 +844,7 @@
                         this.submitLoading = true;
                         createOrUpdateModelTemplateBatch(JSON.stringify(catalogTemplateList).toString()).then(() => {
                             this.resetModelTemplateDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
+                            this.$message.success(this.$t("table.updateSuccess"));
                         }).catch(error => {
                             this.submitLoading = false;
                         });
