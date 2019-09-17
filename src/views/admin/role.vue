@@ -293,12 +293,14 @@
             reloadList() {
                 this.listLoading = true;
                 this.roleList = undefined;
-                this.total = undefined;
                 getRoleList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.roleList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             loadUserList() {
                 return new Promise((resolve, reject) => {

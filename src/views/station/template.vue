@@ -297,7 +297,7 @@
                                     <el-upload class="avatar-uploader"
                                                :class="{hide: template.thumbnailUrl}"
                                                :action="uploadUrlCms"
-                                               :data="{'path': siteUploadPath}"
+                                               :data="{'path': siteUploadPath, 'siteId': template.siteId}"
                                                :accept="$store.state.common.imageAccepts"
                                                :file-list="thumbnailList"
                                                list-type="picture-card"
@@ -380,7 +380,7 @@
 
                             <el-upload v-if="item.controlType === 'fileElement'"
                                        :action="uploadUrlCms"
-                                       :data="{'path': siteUploadPath}"
+                                       :data="{'path': siteUploadPath, 'siteId': template.siteId}"
                                        multiple
                                        :file-list="uploadFileReader"
                                        :before-upload="beforeUpload"
@@ -420,10 +420,12 @@
         delTemplates,
         checkTitleExist,
         genStaticPage,
-        reindex,
-        getSiteUploadPath,
-        getUploadFile
+        reindex
     } from '@/api/station/template';
+    import {
+        getSiteUploadPath,
+        getMaterial
+    } from "../../api/station/material";
     import {
         getCatalogTree
     } from '@/api/station/catalog';
@@ -1117,7 +1119,7 @@
                             let fileIds = this.template.content[item.fieldName].split(',')
                             this.$set(this.uploadFileList, item.fieldName, [])
                             for (let id of fileIds) {
-                                getUploadFile(id).then(response => {
+                                getMaterial(id).then(response => {
                                     if (response.status == 200) {
                                         let uploadFile = {
                                             id: response.data.id,
