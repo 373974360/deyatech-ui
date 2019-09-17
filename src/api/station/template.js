@@ -73,18 +73,3 @@ export function updateContentStatus(id){
     })
 }
 
-export function getSiteUploadPath(params) {
-    return request({
-        url: '/manage/station/material/getSiteUploadPath',
-        method: 'get',
-        params: params
-    });
-}
-
-export function getUploadFile(id) {
-    return request({
-        url: '/manage/station/material/getByMaterial',
-        method: 'get',
-        params: {id}
-    })
-}
