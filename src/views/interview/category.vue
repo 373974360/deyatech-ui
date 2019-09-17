@@ -163,13 +163,15 @@
             reloadList(){
                 this.listLoading = true;
                 this.categoryList = undefined;
-                this.total = undefined;
                 this.listQuery.siteId = this.$store.state.common.siteId;
                 getCategoryListByNameAndSiteId(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.categoryList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;

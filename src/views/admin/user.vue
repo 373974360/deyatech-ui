@@ -361,12 +361,14 @@
             reloadList() {
                 this.listLoading = true;
                 this.userList = undefined;
-                this.total = undefined;
                 getUserList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.userList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             getDepartmentCascader() {
                 this.submitLoading = true;
