@@ -445,11 +445,12 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="部门" prop="departmentName">
-                                        <el-cascader ref="mycascader" :options="departmentCascader" v-model="departmentTreePosition"
-                                                     :show-all-levels="true" expand-trigger="click" filterable :debounce="1"
-                                                     change-on-select style="width: 100%"
+                                        <el-cascader ref="mycascader" :options="departmentCascader" v-model="departmentValue"
+                                                     :props="{ checkStrictly: true }"
+                                                     filterable :debounce="500" style="width: 100%"
                                                      :before-filter="beforeFilterDepartment"
-                                                     @blur="blurDepartmentName"
+                                                     @blur="blurDepartment"
+                                                     @focus="focusDepartment"
                                         ></el-cascader>
                                     </el-form-item>
                                 </el-col>
@@ -692,6 +693,7 @@
                 departmentCascaderBack: [],
                 departmentCascaderLength: 0,
                 inputDepartmentName: undefined,
+                departmentValue: undefined,
                 increment: 1
             }
         },
@@ -715,34 +717,6 @@
                     guestUpdate: this.permission.guest_update,
                     guestDelete: this.permission.guest_delete
                 };
-            },
-            departmentTreePosition: {
-                get() {
-                    if (this.guest.departmentTreePosition) {
-                        return this.guest.departmentTreePosition.substr(1).split('&')
-                    }
-                },
-                set(v) {
-                    if (v.length > 0) {
-                        this.guest.departmentId = v[v.length - 1];
-                        this.guest.departmentTreePosition = '&' + v.join('&');
-                        let targetList = this.departmentCascader;
-                        for (let i = 0; i < v.length; i++) {
-                            for (let j = 0; j < targetList.length; j++) {
-                                let item = targetList[j];
-                                if (v[i] === item.value) {
-                                    this.guest.departmentName = item.label;
-                                    targetList = item.children;
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        this.guest.departmentId = undefined;
-                        this.guest.departmentName = undefined;
-                        this.guest.departmentTreePosition = undefined;
-                    }
-                }
             }
         },
         created(){
@@ -772,15 +746,14 @@
                 }
                 this.listLoading = true;
                 this.modelList = undefined;
-                this.total = undefined;
-                console.log('reloadList');
-                console.dir(this.listQuery);
                 getModelListByCategoryAndName(this.listQuery).then(response => {
                     this.listLoading = false;
-                    console.dir(response.data.records);
                     this.modelList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;
@@ -1260,13 +1233,15 @@
             guestReloadList(){
                 this.guestListLoading = true;
                 this.guestList = undefined;
-                this.guestTotal = undefined;
                 this.guestListQuery.modelId = this.model.id;
                 getGuestList(this.guestListQuery).then(response => {
                     this.guestListLoading = false;
                     this.guestList = response.data.records;
                     this.guestTotal = response.data.total;
-                })
+                }).catch(()=>{
+                    this.guestListLoading = false;
+                    this.guestTotal = 0;
+                });
             },
             btnGuestCreate(){
                 this.resetGuest();
@@ -1274,6 +1249,7 @@
                 this.guestDialogVisibleCreateUpdate = true;
                 this.guest.modelId = this.model.id;
                 this.departmentCascader = deepClone(this.departmentCascaderBack);
+                this.departmentValue = [];
             },
             btnGuestUpdate(row){
                 this.resetGuest();
@@ -1305,7 +1281,7 @@
                     }
                 }
                 this.departmentCascader = list;
-
+                this.departmentValue = this.guest.departmentTreePosition.substr(1).split('&');
             },
             btnGuestDelete(row){
                 let ids = [];
@@ -1323,7 +1299,8 @@
                     })
                 }
             },
-            doGuestCreate(){
+            doGuestCreate() {
+                this.getSelectDepartment();
                 this.$refs['guestDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
@@ -1341,7 +1318,8 @@
                     }
                 });
             },
-            doGuestUpdate(){
+            doGuestUpdate() {
+                this.getSelectDepartment();
                 this.$refs['guestDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
@@ -1358,6 +1336,22 @@
                         return false;
                     }
                 })
+            },
+            getSelectDepartment() {
+                if (this.departmentValue && this.departmentValue.length > 0) {
+                    this.guest.departmentId = this.departmentValue[this.departmentValue.length - 1];
+                    let targetList = this.departmentCascader;
+                    for (let i = 0; i < this.departmentValue.length; i++) {
+                        for (let j = 0; j < targetList.length; j++) {
+                            let item = targetList[j];
+                            if (this.departmentValue[i] === item.value) {
+                                this.guest.departmentName = item.label;
+                                targetList = item.children;
+                                break;
+                            }
+                        }
+                    }
+                }
             },
             doGuestDelete(ids){
                 this.guestListLoading = true;
@@ -1427,7 +1421,7 @@
                 if (this.increment > 99) this.increment = 1;
                 return this.increment + '';
             },
-            blurDepartmentName() {
+            blurDepartment() {
                 if (!this.inputDepartmentName) return;
                 let value = this.getCascaderItemValue();
                 let item = {
@@ -1437,11 +1431,11 @@
                     disabled: false
                 };
                 this.$set(this.departmentCascader, this.departmentCascaderLength, item);
-                let position = [];
-                position.push(value);
-                this.$refs.mycascader.handlePick(position);
-                this.guest.departmentTreePosition = '&' + value;
+                this.departmentValue = [value];
                 this.inputDepartmentName = undefined;
+            },
+            focusDepartment() {
+                this.$refs.mycascader.$refs.input.$refs.input.select();
             }
         }
     }

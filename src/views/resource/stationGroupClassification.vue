@@ -188,7 +188,7 @@
                     }
                 },
                 set(v) {
-                    if (v.length > 0) {
+                    if (v && v.length > 0) {
                         this.stationGroupClassification.parentId = v[v.length - 1];
                         this.stationGroupClassification.treePosition = '&' + v.join('&');
                     } else {
@@ -238,7 +238,6 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
                 this.stationCount = 0;
-                console.dir(rows);
                 for(let r of rows) {
                     this.stationCount += r.stationCount;
                 }

@@ -188,7 +188,6 @@ export const setExpanded = (menuList, treePosition) => {
         const parentIds = treePosition.split('&');
         for (let j = 0; j < parentIds.length; j++) {
             if (parentIds[j] != '' && menuList[i].id == parentIds[j]) {
-                console.dir("12312313")
                 menuList[i].expanded = 1;
             }
         }

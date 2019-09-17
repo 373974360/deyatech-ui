@@ -81,7 +81,7 @@
                                            @click.stop="btnCtrl(scope.row, 'run')"></el-button>
                                 <el-button v-show="btnEnable.setting" title="设置" type="primary" icon="el-icon-setting" :size="btnSize" circle
                                            @click.stop="btnSetting(scope.row)"></el-button>
-                                <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="el-icon-more" :size="btnSize" circle
+                                <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="iconcustoms-clearance" :size="btnSize" circle
                                            @click.stop="btnDomain(scope.row)"></el-button>
                                 <el-badge :hidden="scope.row.userNumber <= 0" :value="scope.row.userNumber" :max="99" style="margin-left:10px">
                                     <el-button v-show="btnEnable.user" title="用户" type="primary" icon="iconadd-account" :size="btnSize" circle
@@ -838,7 +838,7 @@
                     }
                 },
                 set(v) {
-                    if (v.length > 0) {
+                    if (v && v.length > 0) {
                         this.stationGroup.stationGroupClassificationId = v[v.length - 1];
                         this.stationGroup.stationGroupClassificationTreePosition = '&' + v.join('&');
                     } else {
@@ -855,7 +855,7 @@
 
                 },
                 set(v) {
-                    if (v.length > 0) {
+                    if (v && v.length > 0) {
                         this.listQuery.departmentId = v[v.length - 1];
                         this.listQuery.departmentTreePosition = '&' + v.join('&');
                     } else {
@@ -871,7 +871,7 @@
                     }
                 },
                 set(v) {
-                    if (v.length > 0) {
+                    if (v && v.length > 0) {
                         this.stationGroup.departmentId = v[v.length - 1];
                         this.stationGroup.departmentTreePosition = '&' + v.join('&');
                     } else {
@@ -963,12 +963,14 @@
             reloadList(){
                 this.listLoading = true;
                 this.stationGroupList = undefined;
-                this.total = undefined;
                 getStationGroupList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.stationGroupList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;
@@ -1305,13 +1307,15 @@
             domainReloadList(){
                 this.domainListLoading = true;
                 this.domainList = undefined;
-                this.domainTotal = undefined;
                 this.domainListQuery.stationGroupId = this.stationGroup.id;
                 getDomainList(this.domainListQuery).then(response => {
                     this.domainListLoading = false;
                     this.domainList = response.data.records;
                     this.domainTotal = response.data.total;
-                })
+                }).catch(()=>{
+                    this.domainListLoading = false;
+                    this.domainTotal = 0;
+                });
             },
             domainHandleSizeChange(val){
                 this.domainListQuery.size = val;
