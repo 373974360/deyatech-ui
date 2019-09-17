@@ -21,7 +21,7 @@
                 <div class="deyatech-menu_left">
                     <el-button v-show="btnEnable.create"  type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-show="btnEnable.update"  type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-show="btnEnable.delete"  type="danger"  :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-show="btnEnable.delete"  type="danger"  :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || disableDelete">{{$t('table.delete')}}</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting" :disabled="selectedRows.length != 1">设置</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting">全局设置</el-button>
                     <el-button v-show="btnEnable.domain"  type="primary" :size="btnSize" @click="btnDomain" :disabled="selectedRows.length != 1">域名</el-button>
@@ -73,7 +73,8 @@
                                 <div style="padding-top: 8px;">
                                 <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop="btnUpdate(scope.row)"></el-button>
-                                <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="scope.row.enable == 1"
+                                <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                           :disabled="scope.row.enable == 1"
                                            @click.stop="btnDelete(scope.row)"></el-button>
                                 <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
                                            @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
@@ -143,12 +144,28 @@
                                 <el-input v-model.trim="stationGroup.sortNo" maxlength="3"></el-input>
                             </el-form-item>
                         </el-col>
-
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="标识码" prop="siteCode">
+                                <el-input v-model.trim="stationGroup.siteCode" maxlength="30"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="ICP备案" prop="icpCode">
+                                <el-input v-model.trim="stationGroup.icpCode" maxlength="30"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="公安备案" prop="policeCode">
+                                <el-input v-model.trim="stationGroup.policeCode" maxlength="30"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
                             <el-form-item label="描述" prop="description">
-                                <el-input type="textarea" v-model.trim="stationGroup.description" :rows="3" maxlength="500"/>
+                                <el-input v-model.trim="stationGroup.description" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -171,14 +188,6 @@
             <!--站群设置-->
             <el-dialog :title="titleSetting" :visible.sync="dialogSettingVisible" :close-on-click-modal="closeOnClickModal" @close="closeSettingDialog">
                 <el-form ref="settingDialogForm" class="deyatech-form" :model="setting" label-position="right" label-width="160px" :rules="settingRules">
-                    <!--<el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="站群" prop="stationGroupId" :rules="setting.stationGroupId ? settingRules.stationGroupId : []">
-                                <span v-if="setting.stationGroupId" v-text="setting.stationGroupName" style="color: blue; font-weight: bold;"></span>
-                                <span v-else>全局设置所有站群</span>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="允许上传的附件类型" prop="uploadFileType">
@@ -356,7 +365,7 @@
                     <div class="deyatech-menu_left">
                         <el-button v-if="btnEnable.domainCreate" type="primary" :size="btnSize" @click="btnDomainCreate">{{$t('table.create')}}</el-button>
                         <el-button v-if="btnEnable.domainUpdate" type="primary" :size="btnSize" @click="btnDomainUpdate" :disabled="domainSelectedRows.length != 1">{{$t('table.update')}}</el-button>
-                        <el-button v-if="btnEnable.domainDelete" type="danger" :size="btnSize" @click="btnDomainDelete" :disabled="domainSelectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                        <el-button v-if="btnEnable.domainDelete" type="danger" :size="btnSize" @click="btnDomainDelete" :disabled="domainSelectedRows.length < 1 || domainDisableDelete">{{$t('table.delete')}}</el-button>
                     </div>
                     <div class="deyatech-menu_right">
                         <el-button icon="el-icon-refresh" :size="btnSize" circle @click="domainReloadList"></el-button>
@@ -645,7 +654,10 @@
                     stationGroupClassificationId: undefined,
                     stationGroupClassificationTreePosition: undefined,
                     departmentId: undefined,
-                    departmentTreePosition: undefined
+                    departmentTreePosition: undefined,
+                    siteCode: undefined,
+                    icpCode: undefined,
+                    policeCode: undefined
                 },
                 stationGroupRules: {
                     stationGroupClassificationId: [
@@ -672,10 +684,20 @@
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'},
                         {validator: checkNumber, trigger: ['blur','change']}
+                    ],
+                    siteCode: [
+                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
+                    ],
+                    icpCode: [
+                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
+                    ],
+                    policeCode: [
+                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
                     ]
                 },
                 departmentCascader: [],
                 selectedRows: [],
+                disableDelete: false,
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
@@ -759,6 +781,7 @@
                 // 域名管理
                 titleDomain: undefined,
                 dialogDomainVisible: false,
+                domainDisableDelete: false,
                 domainList: undefined,
                 domainTotal: undefined,
                 domainListLoading: true,
@@ -982,6 +1005,16 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                if (this.selectedRows && this.selectedRows.length > 0) {
+                    for (let r of rows) {
+                        if (r.enable == 1) {
+                            this.disableDelete = true;
+                            break;
+                        }
+                    }
+                } else {
+                    this.disableDelete = false;
+                }
             },
             btnCreate(){
                 this.resetStationGroup();
@@ -1088,6 +1121,9 @@
                 this.stationGroup.stationGroupClassificationTreePosition = undefined;
                 this.stationGroup.departmentId = undefined;
                 this.stationGroup.departmentTreePosition = undefined;
+                this.stationGroup.siteCode = undefined;
+                this.stationGroup.icpCode = undefined;
+                this.stationGroup.policeCode = undefined;
             },
             resetStationGroupDialogAndList(){
                 this.closeStationGroupDialog();
@@ -1327,6 +1363,16 @@
             },
             domainHandleSelectionChange(rows){
                 this.domainSelectedRows = rows;
+                if (this.domainSelectedRows && this.domainSelectedRows.length > 0) {
+                    for (let r of rows) {
+                        if (r.enable == 1) {
+                            this.domainDisableDelete = true;
+                            break;
+                        }
+                    }
+                } else {
+                    this.domainDisableDelete = false;
+                }
             },
             btnDomainCreate(){
                 this.resetDomain();
@@ -1573,7 +1619,7 @@
                 }).catch(() => {
                     this.submitLoading = false;
                 })
-            },
+            }
         }
     }
 </script>
