@@ -42,9 +42,13 @@
         methods: {
             getUeContent() {
                 return this.ue.getContent()
+            },
+            setUeContent(v) {
+                return this.ue.setContent(v)
             }
         },
         beforeDestroy() {
+            console.log('销毁富文本id: ' + this.id);
             this.ue.destroy()
             this.ue = null
         }

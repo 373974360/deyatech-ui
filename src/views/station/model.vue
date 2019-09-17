@@ -413,17 +413,7 @@
                 modelTemplateTotal: undefined,
                 selectedModelTemplateRows: [],
                 stationGroup: [],
-                templateTreeData: [{
-                    value: 'deyatech',
-                    label: '德雅通科技',
-                    children: [{
-                        value: 'xiangmu.html',
-                        label: '项目',
-                    },{
-                        value: 'yanfa.html',
-                        label: '研发',
-                    }]
-                }],
+                templateTreeData: [],
                 cascaderProps: {
                     value: 'fileName',
                     label: 'fileName',

@@ -14,12 +14,29 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+<!--                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>-->
+
+                    <el-dropdown v-if="btnEnable.create" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
+                        <el-button type="primary" :size="btnSize">
+                            {{$t('table.create')}}<i class="el-icon-arrow-down el-icon--right"></i>
+                        </el-button>
+                        <el-dropdown-menu slot="dropdown">
+                            <div v-if="modelList.length > 0">
+                                <el-dropdown-item v-for="m in modelList" :command="m.id">请选择内容模型：{{m.name}}</el-dropdown-item>
+                            </div>
+                            <div v-else>
+                                <el-dropdown-item>
+                                    该站点未配置内容模型
+                                </el-dropdown-item>
+                            </div>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
 
                     <el-dropdown style="margin-left: 10px" placement="bottom" @command="handleCommand">
-                        <el-button type="warning" size="small">
+                        <el-button type="warning" :size="btnSize">
                             生成内容页或索引<i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
                         <el-dropdown-menu slot="dropdown">
@@ -61,7 +78,7 @@
                     <!--元数据相关 TODO-->
                     <el-table-column type="expand">
                         <template slot-scope="scope">
-                            <el-form label-position="right" inline v-if="scope.row.metadataCollectionVo.metadataList" class="table-expand">
+                            <el-form label-position="right" inline v-if="scope.row.metadataCollectionVo" class="table-expand">
                                 <el-form-item v-for="item in scope.row.metadataCollectionVo.metadataList"
                                               v-if="item.tableHead" :key="item.id" :label="'[元数据名称]: ' + item.metadata.name">
                                     <span>[元数据值]: {{scope.row.content[item.fieldName]}}</span>
@@ -80,12 +97,12 @@
                             <a :href="'/api/manage/cms/m/'+scope.row.siteId+'/' + scope.row.id" target="_blank">动态</a>
                         </template>-->
                     </el-table-column>
-                    <el-table-column align="center" label="排序号" prop="sortNo"/>
-                    <el-table-column align="center" label="是否置顶" prop="flagTop">
-                        <template slot-scope="scope">
-                            {{scope.row.flagTop ? '是' : '否'}}
-                        </template>
-                    </el-table-column>
+<!--                    <el-table-column align="center" label="排序号" prop="sortNo"/>-->
+<!--                    <el-table-column align="center" label="是否置顶" prop="flagTop">-->
+<!--                        <template slot-scope="scope">-->
+<!--                            {{scope.row.flagTop ? '是' : '否'}}-->
+<!--                        </template>-->
+<!--                    </el-table-column>-->
 <!--                    <el-table-column align="center" label="站点id" prop="siteId"/>-->
 <!--                    <el-table-column align="center" label="模板路径" prop="templatePath"/>-->
 <!--                    <el-table-column align="center" label="栏目ID" prop="cmsCatalogId"/>-->
@@ -128,188 +145,209 @@
                 <el-form ref="templateDialogForm" class="deyatech-form" :model="template" label-position="right"
                          label-width="80px" :rules="templateRules">
 
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="内容模型" prop="contentModelId">
-                                <el-select v-model="template.contentModelId" placeholder="请选择内容模型"
-                                           @change="handleModelChange" :disabled="dialogTitle == 'update'">
-                                    <el-option
-                                        v-for="m in modelList"
-                                        :key="m.id"
-                                        :label="m.name"
-                                        :value="m.id">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="标题" prop="title">
-                                <el-input v-model="template.title"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="资源分类" prop="resourceCategory"> <!--TODO-->
-                                <el-select v-model="template.resourceCategory" placeholder="请选择资源分类">
-                                    <!--<el-option
-                                        v-for="m in modelList"
-                                        :key="m.id"
-                                        :label="m.name"
-                                        :value="m.id">
-                                    </el-option>-->
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="作者姓名" prop="author">
-                                <el-input v-model="template.author"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <!--<el-col :span="12">
-                            <el-form-item label="编辑姓名" prop="editor">
-                                <el-input v-model="template.editor"></el-input>
-                            </el-form-item>
-                        </el-col>-->
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="摘要" prop="resourceSummary">
-                                <el-input type="textarea" v-model="template.resourceSummary" :rows="3"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="内容" prop="resourceContent">
-                                <el-input type="textarea" v-model="template.resourceContent" :rows="3"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="关键字" prop="keyword">
-                                <el-tag
-                                    :key="tag"
-                                    v-for="tag in dynamicTags"
-                                    closable
-                                    :disable-transitions="false"
-                                    @close="handleClose(tag)">
-                                    {{tag}}
-                                </el-tag>
-                                <el-input
-                                    class="input-new-tag"
-                                    v-if="inputVisible"
-                                    v-model="inputValue"
-                                    ref="saveTagInput"
-                                    size="small"
-                                    @keyup.enter.native="handleInputConfirm"
-                                    @blur="handleInputConfirm"
-                                    placeholder="最多二十个字"
-                                    maxlength="20"
-                                >
-                                </el-input>
-                                <el-button :disabled="dynamicTags.length >= 5" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多5个)</el-button>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="来源" prop="source">
-                                <el-input v-model="template.source"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
+                    <h2>内容模型：{{template.contentModelName}}</h2>
 
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="排序号" prop="sortNo">
-                                <el-input-number v-model="template.sortNo" :min=1 :max=65535></el-input-number>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="缩略图" prop="thumbnail">
-                                <!--<el-upload class="avatar-uploader"
-                                           :action="uploadUrlCms"
-                                           :data="{'path': siteUploadPath}"
-                                           :accept="$store.state.common.imageAccepts"
-                                           :show-file-list="false"
-                                           :on-success="handleAvatarSuccess"
-                                           :on-error="handleAvatarError"
-                                           :before-upload="beforeAvatarUpload">
-                                    <img v-if="template.thumbnailUrl" :src="showPicImgUrl"
-                                         class="avatar">
-                                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                                </el-upload>-->
+                    <el-steps :active="stepsActive" finish-status="success" simple style="margin-bottom: 30px">
+                        <el-step title="基本属性设置" ></el-step>
+                        <el-step title="核心属性设置" v-if="stepsActive != 0"></el-step>
+                        <el-step title="元数据属性设置" v-if="stepsActive == 2"></el-step>
+                    </el-steps>
 
-                                <el-upload class="avatar-uploader"
-                                           :class="{hide: template.thumbnailUrl}"
-                                           :action="uploadUrlCms"
-                                           :data="{'path': siteUploadPath}"
-                                           :accept="$store.state.common.imageAccepts"
-                                           :file-list="thumbnailList"
-                                           list-type="picture-card"
-                                           :on-success="handleAvatarSuccess"
-                                           :on-error="handleAvatarError"
-                                           :before-upload="beforeAvatarUpload"
-                                           :on-preview="handlePictureCardPreview"
-                                           :on-remove="handleAvatarRemove">
-                                    <i class="el-icon-plus avatar-uploader-icon"></i>
-                                </el-upload>
-                                <el-dialog :visible.sync="dialogVisiblePicture" z-index="1000">
-                                    <img width="100%" :src="dialogImageUrl" alt="">
-                                </el-dialog>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="搜索可见" prop="flagSearch">
-                                <el-switch v-model="template.flagSearch">
-                                </el-switch>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="是否置顶" prop="flagTop">
-                                <el-switch v-model="template.flagTop">
-                                </el-switch>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="是否外链" prop="flagExternal">
-                                <el-switch v-model="template.flagExternal" @change="isFlagExternal">
-                                </el-switch>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="URL" prop="url" v-if="template.flagExternal">
-                                <el-input v-model="template.url"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
+                    <!--基本属性设置-->
+                    <div v-show="stepsActive == 0">
+                        <el-row :gutter="20" :span="24">
+                            <!--<el-col :span="12" v-if="dialogTitle == 'update'">
+                                <el-form-item label="内容模型" prop="contentModelId">
+                                    <el-select v-model="template.contentModelId" placeholder="请选择内容模型"
+                                               @change="handleModelChange" :disabled="dialogTitle == 'update'">
+                                        <el-option
+                                            v-for="m in modelList"
+                                            :key="m.id"
+                                            :label="m.name"
+                                            :value="m.id">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>-->
+                            <el-col :span="12">
+                                <el-form-item label="标题" prop="title">
+                                    <el-input v-model="template.title"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="作者姓名" prop="author">
+                                    <el-input v-model="template.author"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="来源" prop="source">
+                                    <el-input v-model="template.source"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="是否外链" prop="flagExternal">
+                                    <el-switch v-model="template.flagExternal" @change="isFlagExternal"
+                                               active-text="是" inactive-text="否">
+                                    </el-switch>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
 
-                    <!-- 选择内容模型后，元数据等相关 TODO -->
-                    <el-form-item v-if="metadataCollection.metadataList"
-                        class="el-form-item" v-for="(item, index) in metadataCollection.metadataList"
-                                  :key="item.id" :label="item.metadata.name" label-width="80px"
-                                  :prop="'content.' + item.fieldName"
-                                  :rules="item | formItemRules">
-<!--                        <template slot-scope>-->
+                    <!--外链属性设置-->
+                    <div v-if="template.flagExternal">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="URL" prop="url">
+                                    <el-input v-model="template.url"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+                    <!--核心属性设置-->
+                    <div v-show="stepsActive == 1">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="资源分类" prop="resourceCategory"> <!--TODO-->
+                                    <el-select v-model="template.resourceCategory" placeholder="请选择资源分类">
+                                        <el-option
+                                            v-for="item in resourceCategoryList"
+                                            :key="item.id"
+                                            :label="item.codeText"
+                                            :value="item.id">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <!--<el-col :span="12">
+                                <el-form-item label="编辑姓名" prop="editor">
+                                    <el-input v-model="template.editor"></el-input>
+                                </el-form-item>
+                            </el-col>-->
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="摘要" prop="resourceSummary">
+                                    <el-input type="textarea" v-model="template.resourceSummary" :rows="3"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="内容" prop="resourceContent">
+                                    <editor ref="resourceContent" :id="'editor'"
+                                            :default-msg="template.resourceContent" :config="editorConfig"></editor>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="关键字" prop="keyword">
+                                    <el-tag
+                                        :key="tag"
+                                        v-for="tag in dynamicTags"
+                                        closable
+                                        :disable-transitions="false"
+                                        @close="handleClose(tag)">
+                                        {{tag}}
+                                    </el-tag>
+                                    <el-input
+                                        class="input-new-tag"
+                                        v-if="inputVisible"
+                                        v-model="inputValue"
+                                        ref="saveTagInput"
+                                        size="small"
+                                        @keyup.enter.native="handleInputConfirm"
+                                        @blur="handleInputConfirm"
+                                        placeholder="最多二十个字"
+                                        maxlength="20">
+                                    </el-input>
+                                    <el-button :disabled="dynamicTags.length >= 10" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多10个)</el-button>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="排序号" prop="sortNo">
+                                    <el-input-number v-model="template.sortNo" :min=1 :max=65535></el-input-number>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="缩略图" prop="thumbnail">
+                                    <!--<el-upload class="avatar-uploader"
+                                               :action="uploadUrlCms"
+                                               :data="{'path': siteUploadPath}"
+                                               :accept="$store.state.common.imageAccepts"
+                                               :show-file-list="false"
+                                               :on-success="handleAvatarSuccess"
+                                               :on-error="handleAvatarError"
+                                               :before-upload="beforeAvatarUpload">
+                                        <img v-if="template.thumbnailUrl" :src="showPicImgUrl"
+                                             class="avatar">
+                                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>-->
+
+                                    <el-upload class="avatar-uploader"
+                                               :class="{hide: template.thumbnailUrl}"
+                                               :action="uploadUrlCms"
+                                               :data="{'path': siteUploadPath}"
+                                               :accept="$store.state.common.imageAccepts"
+                                               :file-list="thumbnailList"
+                                               list-type="picture-card"
+                                               :on-success="handleAvatarSuccess"
+                                               :on-error="handleAvatarError"
+                                               :before-upload="beforeAvatarUpload"
+                                               :on-preview="handlePictureCardPreview"
+                                               :on-remove="handleAvatarRemove">
+                                        <i class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>
+                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
+                                        <img width="100%" :src="dialogImageUrl" alt="">
+                                    </el-dialog>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <!--<el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="搜索可见" prop="flagSearch">
+                                    <el-switch v-model="template.flagSearch">
+                                    </el-switch>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>-->
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="是否置顶" prop="flagTop">
+                                    <el-switch v-model="template.flagTop" active-text="是" inactive-text="否">
+                                    </el-switch>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+                    <!--元数据属性设置-->
+                    <div v-show="stepsActive == 2 && metadataCollection.metadataList.length > 0">
+                        <!-- 选择内容模型后，元数据等相关 TODO -->
+                        <el-form-item
+                            class="el-form-item" v-for="(item, index) in metadataCollection.metadataList"
+                            :key="item.id" :label="item.metadata.name" label-width="80px"
+                            :prop="'content.' + item.fieldName"
+                            :rules="item | formItemRules">
+                            <!--                        <template slot-scope>-->
                             <!-- 输入框 -->
                             <el-input v-if="item.controlType === 'inputElement'"
                                       v-model="template.content[item.fieldName]"></el-input>
                             <!-- 选择器 -->
                             <el-select v-if="item.controlType === 'selectElement'&& contentItemOptions[item.id]" v-model="template.content[item.fieldName]" placeholder="请选择">
                                 <el-option v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.codeText"
-                                       :value="opt.id"></el-option>
+                                           :value="opt.id"></el-option>
                             </el-select>
                             <!-- 单选框 -->
                             <el-radio-group v-if="item.controlType === 'radioElement' && contentItemOptions[item.id]" v-model="template.content[item.fieldName]">
@@ -352,14 +390,19 @@
                                        :before-remove="pickUploader(item.fieldName)">
                                 <el-button size="small" type="primary" @click="pickUploader(item.fieldName)">点击上传</el-button>
                             </el-upload>
-<!--                        </template>-->
-                    </el-form-item>
-
+                            <!--                        </template>-->
+                        </el-form-item>
+                    </div>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
+                    <el-button v-if="(!template.flagExternal && stepsActive == 0) || (stepsActive == 1 && metadataCollection.metadataList.length > 0)"
+                               type="primary" :size="btnSize" @click="nextStep" :loading="submitLoading">下一步</el-button>
+                    <el-button v-if="dialogTitle=='create' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='update' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+<!--                    <el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>-->
                 </span>
             </el-dialog>
         </div>
@@ -500,7 +543,8 @@
                         {required: true, message: this.$t("table.pleaseInput") + '内容模型模板ID'}
                     ],
                     url: [
-                        // {required: true, message: this.$t("table.pleaseInput") + 'URL'}
+                        {required: true, message: this.$t("table.pleaseInput") + '外部链接地址'},
+                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
                         {validator: validateUrl, trigger: 'blur'}
                     ],
                     author: [
@@ -512,6 +556,7 @@
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
                     ],
                     source: [
+                        {required: true, message: this.$t("table.pleaseInput") + '来源'},
                         {max: 255, message: '长度最多 255 个字符', trigger: 'blur'}
                     ],
                     thumbnail: [
@@ -541,7 +586,7 @@
                         {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
                     ],
                     resourceContent: [
-                        {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
+                        {max: 4000, message: '长度最多 4000 个字符', trigger: 'blur'}
                     ],
                 },
                 selectedRows: [],
@@ -573,6 +618,8 @@
                 thumbnailList: [],
                 dialogImageUrl: undefined,
                 dialogVisiblePicture: undefined,
+                stepsActive: 0,
+                resourceCategoryList: [],
             }
         },
         watch: {
@@ -639,6 +686,8 @@
                 this.getAllModelBySiteId();
                 // 获取站点上传路径
                 this.getSiteUploadPath();
+                // 获取资源分类
+                this.getResourceCategoryList();
             }else{
                 this.$message.error('请选择站点！');
             }
@@ -690,6 +739,16 @@
                     }
                 })
             },
+            // 资源分类
+            getResourceCategoryList() {
+                getDictionaryList({indexId: 'ziyuanfenlei'}).then(response => {
+                    if (response.status == 200) {
+                        this.resourceCategoryList = response.data;
+                    } else {
+                        this.$message.error('获取字典项失败')
+                    }
+                })
+            },
             resetSearch(){
                 this.listQuery.title = undefined;
             },
@@ -717,35 +776,46 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
             },
-            btnCreate(){
-                let catalogNode = this.$refs.catalogTree.getCurrentNode()
-                if (!catalogNode) {
-                    this.$message.warning('请先选择栏目再执行此操作')
-                    return
+            btnCreate(command){
+                if (command) {
+                    let catalogNode = this.$refs.catalogTree.getCurrentNode()
+                    if (!catalogNode) {
+                        this.$message.warning('请先选择栏目再执行此操作')
+                        return
+                    }
+                    this.resetTemplate();
+                    this.template.contentModelId = command;
+                    this.template.siteId = this.listQuery.siteId;
+                    this.template.cmsCatalogId = this.listQuery.cmsCatalogId;
+                    this.template.workflowKey = this.workflowKey;
+                    this.dialogTitle = 'create';
+                    this.dialogVisible = true;
+                    this.getContentForm();
                 }
-                this.resetTemplate();
-                this.template.siteId = this.listQuery.siteId;
-                this.template.cmsCatalogId = this.listQuery.cmsCatalogId;
-                this.template.workflowKey = this.workflowKey;
-                this.dialogTitle = 'create';
-                this.dialogVisible = true;
             },
             btnUpdate(row){
                 this.resetTemplate();
                 if (row.id) {
                     this.template = deepClone(row);
-                    this.metadataCollection = row.metadataCollectionVo;
-                    // this.template.content = row.content;
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
-                    this.metadataCollection = this.selectedRows[0].metadataCollectionVo;
-                    // this.template.content = row.content;
                 }
+                this.metadataCollection = this.template.metadataCollectionVo;
+                // 删除查询出来的元数据信息，否则保存时报错
+                Vue.delete(this.template, 'metadataCollectionVo');
                 if (this.template.thumbnailUrl) {
                     this.thumbnailList.push({
                         id: this.template.thumbnail,
                         url: this.$store.state.common.showPicImgUrl + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
                     })
+                }
+                // 必须这么设置
+                if (!this.template.content) {
+                    this.$set(this.template, 'content', {})
+                }
+                // 设置内容
+                if (this.$refs['resourceContent'] && this.template.resourceContent) {
+                    this.$refs['resourceContent'].setUeContent(this.template.resourceContent);
                 }
                 this.dynamicTags = this.template.keyword ? this.template.keyword.split(',') : [];
                 this.template.workflowKey = this.workflowKey;
@@ -760,7 +830,8 @@
                         ids.push({
                             id: row.id,
                             metaDataCollectionId: row.metaDataCollectionId,
-                            contentId: row.content.id_
+                            contentId: row.content.id_,
+                            contentModelId: row.contentModelId
                         });
                         // console.log("ids: " + JSON.stringify(ids))
                         this.doDelete(ids);
@@ -771,7 +842,8 @@
                             ids.push({
                                 id: deleteRow.id,
                                 metaDataCollectionId: deleteRow.metaDataCollectionId,
-                                contentId: deleteRow.content.id_
+                                contentId: deleteRow.content.id_,
+                                contentModelId: deleteRow.contentModelId
                             });
                         }
                         // console.log("ids: " + JSON.stringify(ids))
@@ -780,90 +852,142 @@
                 }
             },
             doCreate(){
-
-                // 元数据相关 TODO
-                // 富文本
-                for (let item of this.metadataCollection.metadataList) {
-                    if (item.controlType === 'richTextElement') {
-                        this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
-                    }
-                }
-                // 文件上传
-                for (let item in this.uploadFileList) {
-                    let ids = []
-                    for (let file of this.uploadFileList[item]) {
-                        ids.push(file.id)
-                    }
-                    this.template.content[item] = ids.join()
-                }
-
-                this.$refs['templateDialogForm'].validate(valid => {
-                    if(valid) {
-                        // 元数据信息字符串
-                        this.template.contentMapStr = JSON.stringify(this.template.content);
-
-                        if (!this.template.flagSearch) {
-                            this.template.flagSearch = false;
-                        }
-                        if (!this.template.flagTop) {
-                            this.template.flagTop = false;
-                        }
-                        if (!this.template.flagExternal) {
-                            this.template.flagExternal = false;
-                        }
-
-                        // 关键字标签
-                        this.template.keyword = this.dynamicTags.join();
-
-                        console.log("template: " + JSON.stringify(this.template))
-                        this.submitLoading = true;
-                        createOrUpdateTemplate(this.template).then(() => {
-                            this.resetTemplateDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
+                // 外链
+                if (this.template.flagExternal) {
+                    var _this = this;
+                    var title = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var author = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var source = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var flagExternal = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var url = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('url', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    Promise.all([title, author, source, flagExternal, url]).then(function(){
+                        _this.submitLoading = true;
+                        createOrUpdateTemplate(_this.template).then(() => {
+                            _this.resetTemplateDialogAndList();
+                            _this.$message.success(_this.$t("table.createSuccess"));
                         })
-                    } else {
-                        return false;
+                    });
+                } else {
+                    // 元数据相关 TODO
+                    // 富文本
+                    for (let item of this.metadataCollection.metadataList) {
+                        if (item.controlType === 'richTextElement') {
+                            this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
+                        }
                     }
-                });
+                    // 文件上传
+                    for (let item in this.uploadFileList) {
+                        let ids = []
+                        for (let file of this.uploadFileList[item]) {
+                            ids.push(file.id)
+                        }
+                        this.template.content[item] = ids.join()
+                    }
+
+                    this.$refs['templateDialogForm'].validate(valid => {
+                        if(valid) {
+                            // 元数据信息字符串
+                            this.template.contentMapStr = JSON.stringify(this.template.content);
+
+                            /*if (!this.template.flagSearch) {
+                                this.template.flagSearch = false;
+                            }*/
+                            if (!this.template.flagTop) {
+                                this.template.flagTop = false;
+                            }
+
+                            this.template.flagExternal = false;
+
+                            // 关键字标签
+                            this.template.keyword = this.dynamicTags.join();
+                            // 内容
+                            this.template.resourceContent = this.$refs['resourceContent'].getUeContent()
+
+                            console.log("template: " + JSON.stringify(this.template))
+                            this.submitLoading = true;
+                            createOrUpdateTemplate(this.template).then(() => {
+                                this.resetTemplateDialogAndList();
+                                this.$message.success(this.$t("table.createSuccess"));
+                            })
+                        } else {
+                            return false;
+                        }
+                    });
+                }
             },
             doUpdate(){
-                // 元数据相关 TODO
-                // 富文本
-                for (let item of this.metadataCollection.metadataList) {
-                    if (item.controlType === 'richTextElement') {
-                        this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
-                    }
-                }
-                // 文件上传
-                for (let item in this.uploadFileList) {
-                    let ids = []
-                    for (let file of this.uploadFileList[item]) {
-                        ids.push(file.id)
-                    }
-                    this.template.content[item] = ids.join()
-                }
-
-                this.$refs['templateDialogForm'].validate(valid => {
-                    if(valid) {
-                        // 元数据信息字符串
-                        this.template.contentMapStr = JSON.stringify(this.template.content);
-
-                        // 删除查询出来的元数据信息
-                        // Vue.delete(this.template, 'content');
-                        Vue.delete(this.template, 'metadataCollectionVo');
-
-                        // 关键字标签
-                        this.template.keyword = this.dynamicTags.join();
-
-                        this.submitLoading = true;
-                        createOrUpdateTemplate(this.template).then(() => {
-                            this.resetTemplateDialogAndList();
-                            this.$message.success(this.$t("table.updateSuccess"));
+                // 外链
+                if (this.template.flagExternal) {
+                    var _this = this;
+                    var title = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var author = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var source = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var flagExternal = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var url = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('url', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    Promise.all([title, author, source, flagExternal, url]).then(function(){
+                        _this.submitLoading = true;
+                        createOrUpdateTemplate(_this.template).then(() => {
+                            _this.resetTemplateDialogAndList();
+                            _this.$message.success(_this.$t("table.updateSuccess"));
                         })
-                    } else {
-                        return false;
+                    });
+                } else {
+                    // 元数据相关 TODO
+                    // 富文本
+                    for (let item of this.metadataCollection.metadataList) {
+                        if (item.controlType === 'richTextElement') {
+                            this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
+                        }
                     }
-                })
+                    // 文件上传
+                    for (let item in this.uploadFileList) {
+                        let ids = []
+                        for (let file of this.uploadFileList[item]) {
+                            ids.push(file.id)
+                        }
+                        this.template.content[item] = ids.join()
+                    }
+
+                    this.$refs['templateDialogForm'].validate(valid => {
+                        if (valid) {
+                            // 元数据信息字符串
+                            this.template.contentMapStr = JSON.stringify(this.template.content);
+
+                            // 关键字标签
+                            this.template.keyword = this.dynamicTags.join();
+                            // 内容
+                            this.template.resourceContent = this.$refs['resourceContent'].getUeContent()
+
+                            this.submitLoading = true;
+                            createOrUpdateTemplate(this.template).then(() => {
+                                this.resetTemplateDialogAndList();
+                                this.$message.success(this.$t("table.updateSuccess"));
+                            })
+                        } else {
+                            return false;
+                        }
+                    })
+                }
             },
             doDelete(ids){
                 this.listLoading = true;
@@ -913,6 +1037,7 @@
             closeTemplateDialog() {
                 this.dialogVisible = false;
                 this.metadataCollection = {};
+                this.metadataCollection.metadataList = [];
                 this.editorDefaultMsg = {};
                 this.contentItemOptions = {};
                 this.contentItemArray = {};
@@ -922,17 +1047,18 @@
                 this.dynamicTags = [];
                 this.thumbnailList = [];
                 this.resetTemplate();
+                this.$refs['templateDialogForm'].resetFields();
+                // 清空内容
+                if (this.$refs['resourceContent']) {
+                    this.$refs['resourceContent'].setUeContent('');
+                }
                 // 清除富文本缓存，否则二次以后加载失败
                 $('#ueditor_textarea_editorValue').remove()
-                this.$refs['templateDialogForm'].resetFields();
+                this.stepsActive = 0;
             },
-            handleModelChange() {
-                // 清除已经填值的其他元数据集的元数据信息
-                this.template.content = {};
-                // 清除富文本缓存，否则切换内容模型会出现多余的富文本框
-                $('#ueditor_textarea_editorValue').remove()
+/*            handleModelChange() {
                 this.getContentForm();
-            },
+            },*/
             // 获取内容对象 TODO
             getContentForm() {
                 for (let model of this.modelList) {
@@ -1006,6 +1132,7 @@
                             }
                         }
                     }
+
                     // 数据源是数据字典
                     if (item.dataSource === 'dataItem') {
                         // 根据字典id查询字典项
@@ -1159,7 +1286,7 @@
                     return
                 }
                 // 校验
-                const titles = [];
+                /*const titles = [];
                 for (let t of this.templateList) {
                     for (let id of ids) {
                         if (id == t.id && !t.flagSearch) {
@@ -1170,7 +1297,7 @@
                 if (titles.length > 0) {
                     this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
                     return;
-                }
+                }*/
 
                 let params = {
                     ids: ids.join(),
@@ -1196,7 +1323,7 @@
                     return
                 }
                 // 校验
-                const titles = [];
+                /*const titles = [];
                 for (let t of this.templateList) {
                     if (this.listQuery.cmsCatalogId == t.cmsCatalogId && !t.flagSearch) {
                         titles.push(t.title);
@@ -1205,7 +1332,7 @@
                 if (titles.length > 0) {
                     this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
                     return;
-                }
+                }*/
                 let params = {
                     cmsCatalogId: this.listQuery.cmsCatalogId,
                     siteId: this.listQuery.siteId
@@ -1226,7 +1353,7 @@
                     return
                 }
                 // 校验
-                const titles = [];
+                /*const titles = [];
                 for (let t of this.templateList) {
                     if (!t.flagSearch) {
                         titles.push(t.title);
@@ -1235,7 +1362,7 @@
                 if (titles.length > 0) {
                     this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
                     return;
-                }
+                }*/
                 reindex({siteId: this.listQuery.siteId}).then(response => {
                     if (response.status == 200) {
                         this.$message.success('生成中，请稍后查看！')
@@ -1246,11 +1373,11 @@
                 })
             },
             isFlagExternal (value) {
-                if (!value) {
+                // if (!value) {
                     if (this.template.url) {
                         this.template.url = undefined;
                     }
-                }
+                // }
             },
             beforeUpload(file) {
                 const isLt2M = file.size / 1024 / 1024 < 2;
@@ -1314,6 +1441,50 @@
                 this.inputValue = '';
             },
             // 动态添加关键字 end
+            previousStep() {
+                this.$refs['templateDialogForm'].clearValidate();
+                this.stepsActive --;
+            },
+            nextStep() {
+                var _this = this;
+                // 基本属性
+                if (this.stepsActive == 0) {
+                    var title = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var author = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var source = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var flagExternal = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    Promise.all([title, author, source, flagExternal]).then(function(){
+                        _this.stepsActive ++;
+                    });
+                }
+
+                // 核心属性
+                if (this.stepsActive == 1) {
+                    var resourceSummary = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('resourceSummary', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var resourceContent = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('resourceContent', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var sortNo = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('sortNo', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    var flagTop = new Promise(function(resolve, reject) {
+                        _this.$refs['templateDialogForm'].validateField('flagTop', function (errorMessage) {if (!errorMessage) {resolve();}});
+                    });
+                    Promise.all([resourceSummary, resourceContent, sortNo, flagTop]).then(function(){
+                        _this.stepsActive ++;
+                    });
+                }
+            },
         }
     }
 </script>

@@ -94,7 +94,7 @@
                 <div v-if="stepsActive == 0">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item :label="$t('table.parent')">
+                            <el-form-item :label="$t('table.parent')" prop="parent">
                                 <el-cascader :options="catalogCascader" v-model="catalogTreePosition"
                                              show-all-levels expand-trigger="click" clearable
                                              change-on-select style="width: 100%"></el-cascader>
@@ -262,7 +262,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="工作流" prop="workflowKey" v-if="display">
+                            <el-form-item label="工作流" prop="workflowKey" v-if="catalog.workflowEnable == 1">
                                 <el-select v-model="catalog.workflowKey" placeholder="请选择工作流">
                                     <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                                 </el-select>
@@ -294,16 +294,17 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="栏目" prop="cmsCatalogId">
-                            <ele-multi-cascader
+                            <el-cascader
                                 style="width: 100%"
                                 placeholder="请选择栏目"
-                                show-all-levels
+                                clearable
                                 collapse-tags
                                 expand-trigger="hover"
                                 :options="catalogCascader"
                                 v-model="selectCatalogIds"
+                                :props="{ multiple: true, checkStrictly: true }"
                                 @change="handleChange">
-                            </ele-multi-cascader>
+                            </el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -362,7 +363,7 @@
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
-                <el-button v-if="catalog.flagExternal == 0 && stepsActive != 2 && (stepsActive == 0 || catalog.flagAggregation == 1)"
+                <el-button v-if="(catalog.flagExternal == 0 && stepsActive == 0) || (stepsActive == 1 && catalog.flagAggregation == 1)"
                            type="primary" :size="btnSize" @click="nextStep" :loading="submitLoading">下一步</el-button>
                 <el-button v-if="dialogTitle=='create' && (catalog.flagExternal == 1 || stepsActive == 2  || (stepsActive == 1 && catalog.flagAggregation == 0))"
                            type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
@@ -394,7 +395,6 @@
         getAllModel
     } from '@/api/station/model';
     import {validateURL} from '@/util/validate';
-    import "ele-multi-cascader/dist/cascader.css"
 
     export default {
         name: 'catalog',
@@ -503,7 +503,7 @@
                 if (this.selectCatalogIds.length == 0) {
                     callback(new Error('请选择栏目'))
                 } else {
-                    this.catalogAggregation.cmsCatalogId = this.selectCatalogIds.join();
+                    this.catalogAggregation.cmsCatalogId = this.selectCatalogIds.join('&');
                     if (this.catalogAggregation.cmsCatalogId.length > 4000) {
                         callback(new Error('选择栏目过多，最多 4000 个字符'))
                         this.catalogAggregation.cmsCatalogId = undefined;
@@ -684,7 +684,6 @@
                 },
                 selectListTemplate: undefined,
                 workflowList: [],
-                display: false,
                 modelList: [],
                 selectContentModelIds: [],
                 stepsActive: 0,
@@ -815,13 +814,6 @@
                 this.resetCatalog();
                 if (row.id) {
                     this.catalog = deepClone(row);
-                    // 聚合栏目
-                    if (this.catalog.catalogAggregation) {
-                        this.catalogAggregation = row.catalogAggregation;
-                        this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
-                        this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
-                        this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
-                    }
                     if(row.treePosition){
                         this.catalog.treePosition = row.treePosition + "&" + row.id;
                     }else{
@@ -831,13 +823,6 @@
                 } else {
                     if (this.selectedRows.length == 1) {
                         this.catalog = deepClone(this.selectedRows[0]);
-                        // 聚合栏目
-                        if (this.catalog.catalogAggregation) {
-                            this.catalogAggregation = row.catalogAggregation;
-                            this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
-                            this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
-                            this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
-                        }
                         if(this.selectedRows[0].treePosition){
                             this.catalog.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
                         }else{
@@ -858,6 +843,16 @@
                 this.catalog.pathName = undefined;
                 this.catalog.version = undefined;
 
+                // 聚合栏目
+                if (this.catalog.flagAggregation == 1) {
+                    this.catalogAggregation = this.catalog.catalogAggregation;
+                    this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split('&') : [];
+                    this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
+                    this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
+                    // 一些字段不需要覆盖
+                    this.catalogAggregation.id = undefined;
+                }
+
                 this.catalog.children = undefined;
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';
@@ -873,12 +868,13 @@
                 this.isWorkflowEnable(this.catalog.workflowEnable);
                 this.selectListTemplate = this.catalog.listTemplate.split('/').slice(1);
                 // 聚合栏目
-                if (this.catalog.catalogAggregation) {
+                if (this.catalog.flagAggregation == 1) {
                     this.catalogAggregation = this.catalog.catalogAggregation;
-                    this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split(',') : [];
+                    this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split('&') : [];
                     this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
                     this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
                 }
+                // console.log('catalogAggregation: '+ JSON.stringify(this.catalog.catalogAggregation))
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -973,6 +969,7 @@
                     });
                 }
                 var confirm = true;
+                // 外链栏目、聚合栏目不覆盖子栏目
                 if (this.catalog.children && this.catalog.flagExternal == 0 && this.catalog.flagAggregation == 0) {
                     confirm = new Promise(function(resolve, reject) {
                         _this.$confirm('是否覆盖子栏目信息', _this.$t("table.tip"), {
@@ -1069,7 +1066,6 @@
                 this.getCatalogCascader();
             },
             closeCatalogDialog() {
-                this.display = false;
                 this.dialogVisible = false;
                 this.selectListTemplate = undefined;
                 this.workflowList = [];
@@ -1126,6 +1122,10 @@
                 })
             },
             previousStep() {
+                // 防止把栏目设置成聚合栏目又退回第一步把栏目设置成外链栏目，导致提交表单验证错误
+                if (this.stepsActive == 1) {
+                    this.catalog.flagAggregation = 0;
+                }
                 this.$refs['catalogDialogForm'].clearValidate();
                 this.stepsActive --;
             },
