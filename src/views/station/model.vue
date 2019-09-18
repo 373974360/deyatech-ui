@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入对象名称或英文名称" v-model="listQuery.name" style="width: 200px"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入内容模型或英文名称" v-model="listQuery.name" style="width: 200px"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-select v-model="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize">
@@ -37,7 +37,7 @@
             <el-table :data="modelList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="内容对象名称" prop="name">
+                <el-table-column align="center" label="内容模型" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
@@ -57,7 +57,7 @@
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button title="内容模型设置" type="success" icon="el-icon-setting" :size="btnSize" circle
+                        <el-button title="内容模型模板设置" type="success" icon="el-icon-setting" :size="btnSize" circle
                                    @click.stop.safe="btnModelTemplate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -77,7 +77,7 @@
                          label-width="80px" :rules="modelRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="内容对象名称" prop="name" label-width="110px">
+                            <el-form-item label="内容模型" prop="name" label-width="110px">
                                 <el-input v-model="model.name"></el-input>
                             </el-form-item>
                         </el-col>
@@ -161,13 +161,14 @@
 
                 <!-- 内层弹窗 -->
                 <el-dialog :title="titleMap[modelTemplateSaveOrUpdateDialogTitle] + '内容模型'" :visible.sync="modelTemplateSaveOrUpdateDialogVisible"
-                           :close-on-click-modal="closeOnClickModal" @close="closeModelTemplateSaveOrUpdateDialog" append-to-body>
+                           :close-on-click-modal="closeOnClickModal" @close="closeModelTemplateSaveOrUpdateDialog" :append-to-body="true">
                     <el-form ref="modelTemplateDialogForm" class="deyatech-form" :model="modelTemplate" label-position="right"
                              label-width="80px" :rules="modelTemplateRules">
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="站点" prop="siteId">
-                                    <el-select v-model="modelTemplate.siteId" placeholder="请选择站点" @change="getInfoBySiteId" :disabled="modelTemplateSaveOrUpdateDialogTitle == 'update'">
+                                    <el-select v-model="modelTemplate.siteId" placeholder="请选择站点" @change="getInfoBySiteId"
+                                               :disabled="modelTemplateSaveOrUpdateDialogTitle == 'update'" style="width: 100%">
                                         <el-option
                                             v-for="s in stationGroup"
                                             :key="s.id"
@@ -180,12 +181,12 @@
                         </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
-                                <el-form-item label="默认模版" prop="templatePath">
+                                <el-form-item label="默认模版" prop="templatePath" v-if="modelTemplateSaveOrUpdateDialogVisible">
                                     <el-cascader
                                         style="width: 100%"
                                         placeholder="请选择模板地址"
                                         clearable
-                                        expand-trigger="hover"
+                                        ref="templatePath"
                                         :options="templateTreeData"
                                         v-model="selectTemplatePath"
                                         :props="cascaderProps"
@@ -193,24 +194,23 @@
                                     </el-cascader>
                                 </el-form-item>
                             </el-col>
-                            <span style="color: #f56c6c">* 未设置的栏目使用默认模版</span>
+                            <span style="color: #f56c6c; line-height: 40px; height: 40px">* 未设置的栏目使用默认模版</span>
                         </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="栏目">
                                     <el-input placeholder="输入关键字进行过滤" v-model="filterText"></el-input>
-                                    <div class="content-template-catelog">
+                                    <div class="content-template-catalog">
                                         <el-tree ref="catalogTree" :data="catalogList" :props="defaultTreeProps" node-key="id" highlight-current
                                                  :default-expand-all="true" :expand-on-click-node="false" :filter-node-method="filterNode">
-                                            <div class="custom-tree-node" slot-scope="{data}">
-                                                <span>{{data.name}}</span>
+                                            <div class="custom-tree-node" slot-scope="{ node, data }">
+                                                <span>{{ node.label }}</span>
                                                 <el-cascader
                                                     :options="templateTreeData"
                                                     v-model="catalogTemplate[data.id].templatePath"
                                                     :props="cascaderProps"
-                                                    :ref="'catalogTemplate' + data.id"
-                                                    @change="handleCatalogTemplateChange(data)"
-                                                    :clearable="true"
+                                                    @change="handleCatalogTemplateChange(node, data)"
+                                                    clearable
                                                     size="mini">
                                                 </el-cascader>
                                             </div>
@@ -420,7 +420,7 @@
                     children: 'children'
                 },
                 selectTemplatePath: undefined,
-                catalogList: undefined,
+                catalogList: [],
                 defaultTreeProps: {
                     children: 'children',
                     label: 'name'
@@ -438,7 +438,6 @@
                     size: this.$store.state.common.size,
                     contentModelId: undefined
                 },
-                allModelTemplate: undefined
             }
         },
         watch: {
@@ -643,38 +642,45 @@
                 this.getCatalogTree(siteId);
             },
             listTemplateAllFiles(siteId){
-                this.templateTreeData = [];
-                listTemplateAllFiles(siteId).then(response => {
-                    let result = JSON.parse(response.data)
-                    this.templateTreeData = result.files
+                return new Promise((resolve, reject) => {
+                    this.templateTreeData = [];
+                    listTemplateAllFiles(siteId).then(response => {
+                        if (response.status == 200) {
+                            let result = JSON.parse(response.data);
+                            this.templateTreeData = result.files;
+                            resolve()
+                        }
+                    })
                 })
             },
             getCatalogTree(siteId){
-                this.listLoading = true;
-                const query = {siteId: siteId}
-                getCatalogTree(query).then(response => {
-                    this.catalogList = response.data;
-                    this.listLoading = false;
-                    this.initCatalogTemplate(this.catalogList)
+                return new Promise((resolve, reject) => {
+                    const query = {siteId: siteId}
+                    getCatalogTree(query).then(response => {
+                        if (response.status == 200) {
+                            this.catalogList = response.data;
+                            this.initCatalogTemplate(this.catalogList);
+                            resolve()
+                        }
+                    })
                 })
             },
             initCatalogTemplate(catalogList) {
                 if (catalogList && catalogList.length > 0) {
                     for (let catalog of catalogList) {
-                        // if (catalog.listTemplate == '/') {
-                        //     catalog.listTemplate = ''
-                        // }
-                        this.catalogTemplate[catalog.id] = {
+                        // 必须这么设置，否则不是响应式
+                        this.$set(this.catalogTemplate, catalog.id, {
                             id: undefined,
-                            // templatePath: catalog.listTemplate.split('/').slice(1)
                             templatePath: []
-                        }
+                        })
+                        /*this.catalogTemplate[catalog.id] = {
+                            id: undefined,
+                            templatePath: []
+                        }*/
                         if (catalog.children && catalog.children.length > 0) {
                             this.initCatalogTemplate(catalog.children)
                         }
                     }
-                } else {
-                    this.catalogTemplate = {}
                 }
             },
             handleChange(value) {
@@ -685,13 +691,13 @@
                 return data.name.indexOf(value) !== -1;
             },
             // 将子栏目的路径改为父栏目路径
-            handleCatalogTemplateChange(data) {
+            handleCatalogTemplateChange(node, data) {
                 // data: 栏目对象
                 // templatePath: 选择的值
-                const templatePath = this.catalogTemplate[data.id].templatePath
+                const templatePath = this.catalogTemplate[data.id].templatePath;
                 // console.log("templatePath: " + templatePath)
                 if (templatePath && templatePath.length > 0) {
-                    this.checkChildrenTemplate(data.children, templatePath)
+                    this.checkChildrenTemplate(data.children, templatePath);
                 }
             },
             checkChildrenTemplate(children, templatePath) {
@@ -700,16 +706,17 @@
                     // 遍历子栏目
                     for (let node of children) {
                         this.catalogTemplate[node.id].templatePath = templatePath;
-                        this.$refs['catalogTemplate' + node.id].value = this.catalogTemplate[node.id].templatePath;
-                        this.checkChildrenTemplate(node.children, templatePath)
+                        // this.$refs['catalogTemplate' + node.id].value = this.catalogTemplate[node.id].templatePath;
+                        this.checkChildrenTemplate(node.children, templatePath);
                     }
                 }
             },
             closeModelTemplateSaveOrUpdateDialog() {
                 this.modelTemplateSaveOrUpdateDialogVisible = false;
                 this.resetModelTemplate();
+                this.templateTreeData = [];
                 this.selectTemplatePath = undefined;
-                this.catalogList = undefined;
+                this.catalogList = [];
                 this.filterText = '';
                 this.catalogTemplate = {
                     /*'-1': {
@@ -775,36 +782,41 @@
             modelTemplateBtnUpdate(row) {
                 this.modelTemplateSaveOrUpdateDialogTitle = 'update';
                 this.modelTemplateSaveOrUpdateDialogVisible = true;
-                this.listTemplateAllFiles(row.siteId);
-                const query = {
-                    siteId: row.siteId,
-                    defaultFlag: false
-                };
-                getAllModelTemplate(query).then(response => {
-                    this.allModelTemplate = response.data;
-                    Promise.all([this.getCatalogTree(row.siteId)]).then(() => {
-                        // 特殊配置
-                        for (let modelTemplate of this.allModelTemplate) {
-                            if (this.catalogTemplate[modelTemplate.cmsCatalogId]) {
-                                this.catalogTemplate[modelTemplate.cmsCatalogId] = {
-                                    id: modelTemplate.id,
-                                    templatePath: modelTemplate.templatePath.split('/').slice(1)
-                                }
-                            } else {
-                                // 当某个栏目已删除，删除原有相关栏目配置
-                                if (modelTemplate.cmsCatalogId) {
+
+                this.modelTemplate.id = row.id;
+                this.modelTemplate.siteId = row.siteId;
+                // 默认模板
+                this.selectTemplatePath = row.templatePath.split('/').slice(1);
+
+                Promise.all([this.listTemplateAllFiles(row.siteId), this.getCatalogTree(row.siteId)]).then(() => {
+                    const query = {
+                        siteId: row.siteId,
+                        contentModelId: this.model.id,
+                        defaultFlag: false
+                    };
+                    getAllModelTemplate(query).then(response => {
+                        if (response.status == 200) {
+                            // 特殊配置
+                            for (let modelTemplate of response.data) {
+                                if (this.catalogTemplate[modelTemplate.cmsCatalogId]) {
                                     this.catalogTemplate[modelTemplate.cmsCatalogId] = {
                                         id: modelTemplate.id,
-                                        templatePath: []
+                                        templatePath: modelTemplate.templatePath.split('/').slice(1)
+                                    }
+                                } else {
+                                    // 当某个栏目已删除，删除原有相关栏目配置
+                                    if (modelTemplate.cmsCatalogId) {
+                                        this.catalogTemplate[modelTemplate.cmsCatalogId] = {
+                                            id: modelTemplate.id,
+                                            templatePath: []
+                                        }
                                     }
                                 }
                             }
+                            // console.log('catalogTemplate: ', JSON.stringify(this.catalogTemplate))
                         }
                     })
                 })
-                this.modelTemplate.id = row.id;
-                this.modelTemplate.siteId = row.siteId;
-                this.selectTemplatePath = row.templatePath.split('/').slice(1)
             },
             modelTemplateDoUpdate() {
                 this.$refs['modelTemplateDialogForm'].validate(valid => {
@@ -893,16 +905,16 @@
 </script>
 
 <style>
-    .content-template-catelog {
+    .content-template-catalog {
         margin-top: 12px;
         padding: 8px;
         border: 1px solid rgba(215, 215, 215, 1);
 
     }
-    /deep/ .content-template-catelog .el-tree-node__content {
+    /deep/ .content-template-catalog .el-tree-node__content {
         height: 36px;
     }
-    .content-template-catelog .custom-tree-node {
+    .content-template-catalog .custom-tree-node {
         width: 100%;
     }
     .custom-tree-node {
@@ -913,14 +925,14 @@
         padding-right: 8px;
         height: 38px;
     }
-    .content-template-catelog .el-cascader {
+    .content-template-catalog .el-cascader {
         float: right;
         line-height: 38px;
     }
     /*表格样式根据elementUIIndex样式文件来设置*/
     /*树节点选中状态高亮色的设置*/
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-        /*background-color: #ebb563;*/
+        background-color: #a6d1ff;
     }
     /deep/ .el-tree-node > .el-tree-node__children {
         overflow: visible !important;
