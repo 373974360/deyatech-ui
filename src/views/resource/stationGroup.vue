@@ -1595,6 +1595,8 @@
                         this.userTotal = response.data.total;
                         resolve();
                     }).catch(err => {
+                        this.dialogFormLoading = false;
+                        this.userTotal = 0;
                         reject(err);
                     })
                 });

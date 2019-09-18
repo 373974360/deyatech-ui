@@ -451,6 +451,7 @@
                                                      :before-filter="beforeFilterDepartment"
                                                      @blur="blurDepartment"
                                                      @focus="focusDepartment"
+                                                     @change="changeDepartment"
                                         ></el-cascader>
                                     </el-form-item>
                                 </el-col>
@@ -1434,10 +1435,14 @@
                 this.departmentValue = [value];
                 this.guest.departmentName = this.inputDepartmentName;
                 this.inputDepartmentName = undefined;
-                console.log(this.guest.departmentName);
+                this.$refs.guestDialogForm.validateField('departmentName', errorMsg => {});
             },
             focusDepartment() {
                 this.$refs.mycascader.$refs.input.$refs.input.select();
+            },
+            changeDepartment() {
+                this.getSelectDepartment();
+                this.$refs.guestDialogForm.validateField('departmentName', errorMsg => {});
             }
         }
     }
