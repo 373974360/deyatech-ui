@@ -835,7 +835,7 @@
                         ids.push({
                             id: row.id,
                             metaDataCollectionId: row.metaDataCollectionId,
-                            contentId: row.content.id_,
+                            contentId: row.content ? row.content.id_ : undefined,
                             contentModelId: row.contentModelId
                         });
                         // console.log("ids: " + JSON.stringify(ids))
@@ -847,7 +847,7 @@
                             ids.push({
                                 id: deleteRow.id,
                                 metaDataCollectionId: deleteRow.metaDataCollectionId,
-                                contentId: deleteRow.content.id_,
+                                contentId: deleteRow.content ? deleteRow.content.id_ : undefined,
                                 contentModelId: deleteRow.contentModelId
                             });
                         }
@@ -1558,7 +1558,7 @@
     /*表格样式根据elementUIIndex样式文件来设置*/
     /*树节点选中状态高亮色的设置*/
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-        /*background-color: #ebb563;*/
+        background-color: #a6d1ff;
     }
     /deep/ .el-tree-node > .el-tree-node__children {
         overflow: visible !important;
@@ -1576,6 +1576,8 @@
     .table-list{
         width: 100% !important;
         margin-top: 0px !important;
+        /*margin-top: 1px !important;
+        margin-left: 1px !important;*/
     }
 
     /*缩略图*/
