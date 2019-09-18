@@ -686,13 +686,13 @@
                         {validator: checkNumber, trigger: ['blur','change']}
                     ],
                     siteCode: [
-                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
+                        {required: true, message: this.$t("table.pleaseInput") + '标识码'}
                     ],
                     icpCode: [
-                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
+                        {required: true, message: this.$t("table.pleaseInput") + 'ICP备案'}
                     ],
                     policeCode: [
-                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
+                        {required: true, message: this.$t("table.pleaseInput") + '公安备案'}
                     ]
                 },
                 departmentCascader: [],
