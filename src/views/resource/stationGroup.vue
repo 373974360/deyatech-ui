@@ -9,10 +9,10 @@
                                      placeholder="请选择部门" :size="btnSize" style="width:300px"></el-cascader>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -136,7 +136,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="简称" prop="abbreviation">
-                                <el-input v-model.trim="stationGroup.abbreviation" maxlength="10"></el-input>
+                                <el-input v-model.trim="stationGroup.abbreviation" maxlength="20"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -356,7 +356,7 @@
                             <el-input :size="searchSize" placeholder="请输入域名" v-model.trim="domainListQuery.name" clearable></el-input>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="domainReloadList">{{$t('table.search')}}</el-button>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchDomainList">{{$t('table.search')}}</el-button>
                             <el-button icon="el-icon-delete" :size="searchSize" @click="domainResetSearch">{{$t('table.clear')}}</el-button>
                         </el-form-item>
                     </el-form>
@@ -977,11 +977,16 @@
                 }
                 this.listQuery.stationGroupClassificationId = data.value;
                 this.listQuery.stationGroupClassificationTreePosition = data.treePosition + '&' + data.value;
+                this.resetSearch();
                 this.handleCurrentChange(1);
             },
             resetSearch(){
                 this.listQueryDepartmentTreePosition = [];
                 this.listQuery.name = undefined;
+            },
+            searchList(){
+                this.listQuery.page = 1;
+                this.reloadList();
             },
             reloadList(){
                 this.listLoading = true;
@@ -1339,6 +1344,10 @@
             },
             domainResetSearch(){
                 this.domainListQuery.name = undefined;
+            },
+            searchDomainList(){
+                this.domainListQuery.page = 1;
+                this.domainReloadList();
             },
             domainReloadList(){
                 this.domainListLoading = true;

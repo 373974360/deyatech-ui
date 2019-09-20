@@ -7,7 +7,7 @@
                         <el-input :size="searchSize" placeholder="请输入名称" v-model.trim="listQuery.name" ></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -159,6 +159,10 @@
             resetSearch(){
                 this.listQuery.siteId = undefined;
                 this.listQuery.name = undefined;
+            },
+            searchList(){
+                this.listQuery.page = 1;
+                this.reloadList();
             },
             reloadList(){
                 this.listLoading = true;

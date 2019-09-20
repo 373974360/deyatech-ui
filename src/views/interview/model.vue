@@ -15,7 +15,7 @@
                         <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList" :disabled="!this.listQuery.categoryId">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList" :disabled="!this.listQuery.categoryId">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -348,7 +348,7 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="guestReloadList">{{$t('table.search')}}</el-button>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchGuestList">{{$t('table.search')}}</el-button>
                             <el-button icon="el-icon-delete" :size="searchSize" @click="guestResetSearch">{{$t('table.clear')}}</el-button>
                         </el-form-item>
                     </el-form>
@@ -600,8 +600,8 @@
                 submitLoading: false,
                 categorys: [],
                 liveDialogVisible: false,
-                liveMessageSockJS: undefined,
-                liveImageSockJS: undefined,
+                liveMessageStomp: undefined,
+                liveImageStomp: undefined,
                 reconnectionSockJS: false,
                 liveImageArray: [],
                 liveImage: {
@@ -635,7 +635,7 @@
                 },
                 liveMessageRules: {
                     type: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '类型'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '类型', trigger: 'blur'}
                     ],
                     message: [
                         {required: true, message: this.$t("table.pleaseInput") + '消息内容'}
@@ -740,6 +740,10 @@
             },
             resetSearch() {
                 this.listQuery.name = undefined;
+            },
+            searchList() {
+                this.listQuery.page = 1;
+                this.reloadList();
             },
             reloadList(){
                 if (!this.listQuery.categoryId) {
@@ -872,18 +876,26 @@
             liveCloseModelDialog() {
                 this.liveDialogVisible = false;
                 this.resetModel();
-                if(this.liveMessageSockJS) {
-                    this.liveMessageSockJS.close();
-                }
-                if(this.liveImageSockJS) {
-                    this.liveImageSockJS.close();
-                }
-                this.liveMessageSockJS = undefined;
-                this.liveImageSockJS = undefined;
-                this.reconnectionSockJS = false;
+                this.disconnectWebSocket();
                 this.reloadList();
                 this.$refs['liveImageDialogForm'].resetFields();
                 this.$refs['liveMessageDialogForm'].resetFields();
+            },
+            // 关闭连接
+            disconnectWebSocket() {
+                if(this.liveMessageStomp) {
+                    this.liveMessageStomp.disconnect(function() {
+                        console.log('消息 WebSocket 关闭');
+                    });
+                }
+                if(this.liveImageStomp) {
+                    this.liveImageStomp.disconnect(function() {
+                        console.log('图片 WebSocket 关闭');
+                    });
+                }
+                this.liveMessageStomp = undefined;
+                this.liveImageStomp = undefined;
+                this.reconnectionSockJS = false;
             },
             // 打开直播
             btnLiveUpdate(row){
@@ -954,15 +966,14 @@
                             }
                         }
                     });
-                    console.log('消息 WebSocket 连接...');
                 });
                 sockJS.onclose = function () {
-                    console.log("消息 WebSocket 连接已经断开");
                     if (this.reconnectionSockJS) {
+                        // console.log("消息 WebSocket 重连");
                         setTimeout(function () {_this.waitingLiveMessage();}, 5000);
                     }
                 }
-                this.liveMessageSockJS = sockJS;
+                this.liveMessageStomp = stompClient;
             },
             // 等待图片消息
             waitingLiveImage: function() {
@@ -1003,15 +1014,14 @@
                             }
                         }
                     });
-                    console.log('图片 WebSocket 连接...');
                 });
                 sockJS.onclose = function () {
-                    console.log("图片 WebSocket 连接已经断开");
                     if (this.reconnectionSockJS) {
+                        // console.log("图片 WebSocket 重连");
                         setTimeout(function () {_this.waitingLiveImage();}, 5000);
                     }
                 }
-                this.liveImageSockJS = sockJS;
+                this.liveImageStomp = stompClient;
             },
             // 保存消息
             sendOperateLiveMessage(data) {
@@ -1230,6 +1240,10 @@
                 this.guestListQuery.modelId = undefined;
                 this.guestListQuery.name = undefined;
                 this.guestListQuery.type = undefined;
+            },
+            searchGuestList(){
+                this.guestListQuery.page = 1;
+                this.guestReloadList();
             },
             guestReloadList(){
                 this.guestListLoading = true;
