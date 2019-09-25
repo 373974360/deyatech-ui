@@ -396,6 +396,14 @@
                     if(valid) {
                         this.submitLoading = true;
                         this.page.siteId = this.listQuery.siteId;
+                        let ids = [];
+                        if(this.pageCatalogList != undefined){
+                            console.log(this.pageCatalogList);
+                            for(const pageCatalog of this.pageCatalogList){
+                                ids.push(pageCatalog.join(","))
+                            }
+                        }
+                        this.page.ids = ids;
                         createOrUpdatePage(this.page).then(() => {
                             this.resetPageDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
