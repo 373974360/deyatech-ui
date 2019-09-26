@@ -48,6 +48,7 @@ const common = {
         themeName: getStore({name: 'themeName'}) || 'theme-default',
         lockPasswd: getStore({name: 'lockPasswd'}) || '',
         website: website,
+        callThirdPartyInterface: false // 是否调用第三方接口
     },
     actions: {
         // 获取后台的所有枚举json数据

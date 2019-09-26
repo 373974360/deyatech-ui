@@ -4,16 +4,6 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select :size="searchSize" v-model="listQuery.levelCode" clearable :placeholder="$t('table.pleaseSelect') + '评价等级'">
-                            <el-option
-                                v-for="item in loadEnum('EvaluationLevelEnum')"
-                                :key="item.code"
-                                :label="item.value"
-                                :value="item.code">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
                         <el-select :size="searchSize" v-model="listQuery.channel" clearable :placeholder="$t('table.pleaseSelect') + '评价渠道'">
                             <el-option
                                 v-for="item in loadEnum('EvaluationChannelEnum')"
@@ -72,26 +62,6 @@
                     <el-form-item>
                         <el-input clearable :size="searchSize" :placeholder="$t('table.pleaseInput') + '用户姓名'" v-model="listQuery.userName" style="width: 187px"></el-input>
                     </el-form-item>
-
-<!--                    <el-form-item>
-                        <el-switch
-                            v-model="listQuery.anonymityFlag"
-                            active-value="2"
-                            inactive-value="1"
-                            active-text="不匿名"
-                            inactive-text="匿名">
-                        </el-switch>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-switch
-                            v-model="listQuery.publicFlag"
-                            active-value="2"
-                            inactive-value="1"
-                            active-text="不公开"
-                            inactive-text="公开">
-                        </el-switch>
-                    </el-form-item>-->
-
                     <el-form-item>
                         <el-date-picker
                             style="width: 384px"
@@ -107,10 +77,10 @@
                         </el-date-picker>
                     </el-form-item>
 
-<!--                    <el-form-item >
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>-->
+                    <!--                    <el-form-item >
+                                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
+                                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                                        </el-form-item>-->
                 </el-form>
             </div>
             <div class="deyatech-menu">
@@ -122,22 +92,16 @@
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-<!--                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>-->
+                    <!--                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>-->
                     <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
                     <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
             </div>
             <el-table :data="detailList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
-<!--                <el-table-column type="selection" width="50" align="center"/>-->
-<!--                <el-table-column align="center" label="事项编码" prop="itemCode"/>-->
+
                 <el-table-column align="center" label="事项名称" prop="itemName"/>
                 <el-table-column align="center" label="受理部门" prop="proDepartment"/>
-<!--                <el-table-column align="center" label="评价渠道" prop="channel" width="180px">
-                    <template slot-scope="scope">
-                        {{scope.row.channel | enums('EvaluationChannelEnum')}}
-                    </template>
-                </el-table-column>-->
                 <el-table-column align="center" label="整体满意度" prop="levelCode">
                     <template slot-scope="scope">
                         <el-rate
@@ -151,38 +115,29 @@
                 </el-table-column>
                 <el-table-column align="center" label="评价人姓名" prop="userName"/>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
-<!--                <el-table-column align="center" label="审核状态" prop="status" width="90px">
-                    <template slot-scope="scope">
-                        {{scope.row.status | enums('EvaluationStatusEnum')}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="是否匿名" prop="anonymityFlag" width="90px">
-                    <template slot-scope="scope">
-                        {{scope.row.anonymityFlag | enums('EvaluationAnonymityEnum')}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="是否公开" prop="publicFlag" width="90px">
-                    <template slot-scope="scope">
-                        {{scope.row.publicFlag | enums('EvaluationPublicEnum')}}
-                    </template>
-                </el-table-column>-->
-<!--                <el-table-column align="center" label="整改回复内容" prop="reformContent" width="120px"/>-->
-<!--                <el-table-column align="center" label="整改期限" prop="reformDate" width="120px"/>-->
 
-
-
-
-<!--                <el-table-column align="center" label="组织机构代码" prop="organizationalCode"/>
+<!--                <el-table-column type="selection" width="50" align="center"/>
+                <el-table-column align="center" label="组织机构代码" prop="organizationalCode"/>
+                <el-table-column align="center" label="事项编码" prop="itemCode"/>
                 <el-table-column align="center" label="事项办理项编码" prop="processItemCode"/>
-                <el-table-column align="center" label="事项主题" prop="subMatter"/>
+                <el-table-column align="center" label="事项名称" prop="itemName"/>
+                <el-table-column align="center" label="事项主题（个人=1，法人=2）" prop="subMatter"/>
                 <el-table-column align="center" label="办件编号" prop="processNumber"/>
                 <el-table-column align="center" label="办件状态" prop="proStatus"/>
+                <el-table-column align="center" label="受理部门" prop="proDepartment"/>
                 <el-table-column align="center" label="经办人" prop="proManager"/>
+                <el-table-column align="center" label="评价渠道（pc端=1，移动端=2，二维码=3，政务大厅平板电脑=4，政务大厅其他终端=5）" prop="channel"/>
                 <el-table-column align="center" label="评价人身份唯一标识" prop="userId"/>
+                <el-table-column align="center" label="评价人姓名" prop="userName"/>
                 <el-table-column align="center" label="用户属性（个人=1、法人=2）" prop="userProp"/>
+                <el-table-column align="center" label="是否匿名（是=1、否=2）" prop="anonymityFlag"/>
+                <el-table-column align="center" label="评价等级（整体满意度）" prop="levelCode"/>
                 <el-table-column align="center" label="测评指标编码（501，502），多选用,隔开" prop="contentCode"/>
                 <el-table-column align="center" label="文字评价" prop="words"/>
+                <el-table-column align="center" label="提交时间" prop="submitTime"/>
                 <el-table-column align="center" label="评价次数（首次评价=1，二次评价=2）" prop="number"/>
+                <el-table-column align="center" label="审核状态（无需审核=1，已审核=2，未审核=3）无审核系统默认为1" prop="status"/>
+                <el-table-column align="center" label="是否公开（公开=1，不公开=2）无审核系统默认为1" prop="publicFlag"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -190,13 +145,15 @@
                         </el-tag>
                     </template>
                 </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="120">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
-                        <el-button type="primary" :size="btnSize" @click.stop.safe="showDetails(scope.row)">详情</el-button>
+                        <el-button v-if="!scope.row.reformContent && !scope.row.reformDate" title="整改" type="primary" :size="btnSize"
+                                   @click.stop.safe="btnReform(scope.row)">整改回复</el-button>
+                        <el-tag v-else type="success">已整改回复</el-tag>
                     </template>
                 </el-table-column>
             </el-table>
@@ -206,201 +163,62 @@
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
-            <!--详情-->
-            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails"
-                       :close-on-click-modal="closeOnClickModal" @close="closeDetailDialogDetails">
-                <table class="mailTable">
-                    <tr>
-                        <td class="column">事项编码</td>
-                        <td>{{detail.itemCode}}</td>
-                        <td class="column">事项名称</td>
-                        <td>{{detail.itemName}}</td>
-                    </tr>
-                    <tr>
-                        <td class="column">受理部门</td>
-                        <td>{{detail.proDepartment}}</td>
-                        <td class="column">审核状态</td>
-                        <td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
-                    </tr>
-                    <tr>
-                        <td class="column">整体满意度</td>
-                        <td>
-                            <el-rate
-                                disabled
-                                v-model="detail.levelCode | levelParseInt"
-                                :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                                show-text
-                                :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
-                            </el-rate>
-                        </td>
-                        <td class="column">评价渠道</td>
-                        <td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
-                    </tr>
-                    <tr>
-                        <td class="column">评价人姓名</td>
-                        <td>{{detail.userName}}</td>
-                        <td class="column">评价时间</td>
-                        <td>{{detail.submitTime}}</td>
-                    </tr>
-                    <tr>
-                        <td class="column">是否匿名</td>
-                        <td>{{detail.anonymityFlag | enums('EvaluationAnonymityEnum')}}</td>
-                        <td class="column">是否公开</td>
-                        <td>{{detail.publicFlag | enums('EvaluationPublicEnum')}}</td>
-                    </tr>
-                    <tr v-if="detail.reformContent">
-                        <td class="column">整改回复内容</td>
-                        <td class="reform" colspan="3">{{detail.reformContent}}</td>
-                    </tr>
-                    <tr v-if="detail.reformDate">
-                        <td class="column">整改期限</td>
-                        <td colspan="3">{{detail.reformDate}}</td>
-                    </tr>
-                </table>
-            </el-dialog>
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
+            <el-dialog title="整改" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialog">
                 <el-form ref="detailDialogForm" class="deyatech-form" :model="detail" label-position="right"
-                         label-width="80px" :rules="detailRules">
+                         label-width="100px" :rules="detailRules">
+
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="组织机构代码" prop="organizationalCode">
-                                <el-input v-model="detail.organizationalCode"></el-input>
+                            <el-form-item label="整体满意度">
+                                <el-rate
+                                    style="margin-top: 10px"
+                                    disabled
+                                    v-model="detail.levelCode | levelParseInt"
+                                    :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                                    show-text
+                                    :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
+                                </el-rate>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="事项编码" prop="itemCode">
-                                <el-input v-model="detail.itemCode"></el-input>
+                            <el-form-item label="事项名称">
+                                <el-input disabled v-model="detail.itemName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="事项办理项编码" prop="processItemCode">
-                                <el-input v-model="detail.processItemCode"></el-input>
+                            <el-form-item label="受理部门">
+                                <el-input disabled v-model="detail.proDepartment"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="事项名称" prop="itemName">
-                                <el-input v-model="detail.itemName"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="事项主题（个人=1，法人=2）" prop="subMatter">
-                                <el-input v-model="detail.subMatter"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="办件编号" prop="processNumber">
-                                <el-input v-model="detail.processNumber"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="办件状态" prop="proStatus">
-                                <el-input v-model="detail.proStatus"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="受理部门" prop="proDepartment">
-                                <el-input v-model="detail.proDepartment"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="经办人" prop="proManager">
-                                <el-input v-model="detail.proManager"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="评价渠道（pc端=1，移动端=2，二维码=3，政务大厅平板电脑=4，政务大厅其他终端=5）" prop="channel">
-                                <el-input v-model="detail.channel"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="评价人身份唯一标识" prop="userId">
-                                <el-input v-model="detail.userId"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="评价人姓名" prop="userName">
-                                <el-input v-model="detail.userName"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="用户属性（个人=1、法人=2）" prop="userProp">
-                                <el-input v-model="detail.userProp"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="是否匿名（是=1、否=2）" prop="anonymityFlag">
-                                <el-input v-model="detail.anonymityFlag"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="评价等级（整体满意度）" prop="levelCode">
-                                <el-input v-model="detail.levelCode"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="测评指标编码（501，502），多选用,隔开" prop="contentCode">
-                                <el-input v-model="detail.contentCode"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="文字评价" prop="words">
-                                <el-input v-model="detail.words"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="提交时间" prop="submitTime">
-                                <el-input v-model="detail.submitTime"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="评价次数（首次评价=1，二次评价=2）" prop="number">
-                                <el-input v-model="detail.number"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="审核状态（无需审核=1，已审核=2，未审核=3）无审核系统默认为1" prop="status">
-                                <el-input v-model="detail.status"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="是否公开（公开=1，不公开=2）无审核系统默认为1" prop="public">
-                                <el-input v-model="detail.publicFlag"></el-input>
+                            <el-form-item label="评价人姓名">
+                                <el-input disabled v-model="detail.userName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="detail.remark" :rows="3"/>
+                            <el-form-item label="整改内容" prop="reformContent">
+                                <el-input type="textarea" v-model="detail.reformContent" :rows="3"/>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24" >
+                        <el-col :span="24">
+                            <el-form-item label="整改期限" prop="reformDate">
+                                <el-input v-model="detail.reformDate"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+<!--                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>-->
+                    <el-button type="primary" :size="btnSize" @click="doReform" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closeDetailDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
@@ -414,9 +232,10 @@
     import {deepClone} from '@/util/util';
     import {getStore} from '@/util/store';
     import {
-        getDetailList,
+        getReplyDetailList,
         createOrUpdateDetail,
-        delDetails
+        delDetails,
+        saveReply
     } from '@/api/evaluate/detail';
 
     export default {
@@ -440,7 +259,6 @@
                     subMatter: undefined,
                     proDepartment: undefined,
                     userName: undefined,
-                    levelCode: undefined,
                     anonymityFlag: undefined,
                     publicFlag: undefined,
                     evaluationTimeStart: undefined,
@@ -535,7 +353,15 @@
                     ],
                     publicFlag: [
                         {required: true, message: this.$t("table.pleaseInput") + '是否公开（公开=1，不公开=2）无审核系统默认为1'}
-                    ]
+                    ],
+                    reformContent: [
+                        {required: true, message: this.$t("table.pleaseInput") + '整改内容'},
+                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
+                    ],
+                    reformDate: [
+                        {required: true, message: this.$t("table.pleaseInput") + '整改期限'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
+                    ],
                 },
                 selectedRows: [],
                 dialogVisible: false,
@@ -544,7 +370,6 @@
                 departmentList: [], //TODO  阿里提供接口查询
                 submitTimeRange: [],
                 levelParseInt: {},
-                dialogVisibleDetails: false,
             }
         },
         computed: {
@@ -575,7 +400,6 @@
                 this.listQuery.subMatter = undefined;
                 this.listQuery.proDepartment = undefined;
                 this.listQuery.userName = undefined;
-                this.listQuery.levelCode = undefined;
                 this.listQuery.anonymityFlag = undefined;
                 this.listQuery.publicFlag = undefined;
                 this.listQuery.evaluationTimeStart = undefined;
@@ -589,7 +413,7 @@
                 this.listLoading = true;
                 this.detailList = undefined;
                 this.total = undefined;
-                getDetailList(this.listQuery).then(response => {
+                getReplyDetailList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.detailList = response.data.records;
                     this.total = response.data.total;
@@ -720,41 +544,26 @@
                     this.listQuery.evaluationTimeEnd = undefined;
                 }
             },
-            showDetails(row){
-                this.detail = deepClone(row);
-                this.dialogVisibleDetails = true;
-            },
-            closeDetailDialogDetails() {
-                this.dialogVisibleDetails = false;
+            btnReform(row) {
                 this.resetDetail();
+                this.detail = deepClone(row);
+                this.dialogVisible = true;
+            },
+            doReform(){
+                this.$refs['detailDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        saveReply(this.detail).then(() => {
+                            this.resetDetailDialogAndList();
+                            this.$message.success(this.$t("table.submitSuccess"));
+                        })
+                    } else {
+                        return false;
+                    }
+                });
             },
         }
     }
 </script>
 
-<style>
-    .mailTable, .mailTable tr, .mailTable tr td {
-        border:1px solid #E6EAEE;
-    }
-    .mailTable {
-        font-size: 14px;
-        color: #71787E;
-    }
-    .mailTable tr td {
-        border:1px solid #E6EAEE;
-        width: 225px;
-        height: 40px;
-        line-height: 40px;
-        box-sizing: border-box;
-        padding: 0 10px;
-    }
-    .mailTable tr td.column {
-        width: 175px;
-        background-color: #EFF3F6;
-        color: #393C3E;
-    }
-    .mailTable tr td.reform {
-        height: auto;
-        line-height: 30px;
-    }
-</style>
+

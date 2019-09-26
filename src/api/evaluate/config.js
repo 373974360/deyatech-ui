@@ -40,4 +40,19 @@ export function getConfigList(query) {
     });
 }
 
+export function getEvaluateConfig(query) {
+    return request({
+        url: '/manage/evaluate/config/getEvaluateConfig',
+        method: 'get',
+        params: query
+    });
+}
 
+export function delConfigsByLevel(levels) {
+    const data = {levels};
+    return request({
+        url: '/manage/evaluate/config/removeByLevels',
+        method: 'post',
+        data
+    })
+}

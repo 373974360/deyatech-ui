@@ -40,4 +40,19 @@ export function getDetailList(query) {
     });
 }
 
+export function getReplyDetailList(query) {
+    return request({
+        url: '/manage/evaluate/detail/pageReplyByDetail',
+        method: 'get',
+        params: query
+    });
+}
 
+export function saveReply(detailVo){
+    const data = detailVo;
+    return request({
+        url: '/manage/evaluate/detail/saveReply',
+        method: 'post',
+        data
+    })
+}
