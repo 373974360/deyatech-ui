@@ -19,14 +19,12 @@
                   @selection-change="handleSelectionChange" v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
-                                  parentKey="parentId" prop="name" label="名称" width="200">
+                                  parentKey="parentId" prop="name" label="名称">
                 <template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                 </template>
             </el-table-tree-column>
-            <el-table-column align="center" label="上级节点id" prop="parentId"/>
-            <el-table-column align="center" label="树结构中的位置" prop="treePosition"/>
-            <el-table-column align="center" label="排序" prop="sortNo"/>
+            <el-table-column align="center" label="排序" prop="sortNo" width="90"/>
             <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                 <template slot-scope="scope">
                     <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -55,7 +53,7 @@
                         <el-form-item :label="$t('table.parent')" prop="parentId">
                             <el-cascader :options="metadataCategoryCascader" v-model="metadataCategoryTreePosition"
                                          show-all-levels expand-trigger="click" clearable
-                                         change-on-select></el-cascader>
+                                         change-on-select style="width: 100%;"></el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -68,7 +66,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="排序" prop="sortNo">
-                            <el-input-number v-model="metadataCategory.sortNo" :min="1" :max="999"></el-input-number>
+                            <el-input v-model="metadataCategory.sortNo" maxlength="3"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -112,6 +110,13 @@
                     }
                 })
             };
+            const checkSortNo = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入正整数'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 metadataCategoryList: undefined,
                 listLoading: true,
@@ -135,7 +140,8 @@
                         {validator: validateParentId, trigger: 'change'}
                     ],
                     sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序'}
+                        {required: true, message: this.$t("table.pleaseInput") + '排序'},
+                        {validator: checkSortNo, trigger: ['blur','change']}
                     ]
                 },
                 lastExpanded: undefined,

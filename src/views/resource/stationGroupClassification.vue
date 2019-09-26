@@ -133,7 +133,7 @@
             };
             const checkSortNo = (rule, value, callback) => {
                 if (/[^\d]/g.test(value)) {
-                    callback(new Error('请输入整数'));
+                    callback(new Error('请输入正整数'));
                 } else {
                     callback();
                 }
