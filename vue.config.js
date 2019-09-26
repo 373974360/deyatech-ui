@@ -36,10 +36,10 @@ module.exports = {
                 }
             },
             '/web/websocket': {
-                target: 'http://localhost:8088',
+                target: url,
                 ws: true,
                 pathRewrite: {
-                    '^/web/websocket': '/websocket'
+                    '^/web/websocket': '/web/websocket'
                 }
             }
         }
