@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -92,24 +92,24 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="中文名称" prop="name">
-                                <el-input v-model="metadata.name"></el-input>
+                                <el-input v-model.trim="metadata.name"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="字段名" prop="briefName">
-                                <el-input v-model="metadata.briefName"></el-input>
+                                <el-input v-model.trim="metadata.briefName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <!--<el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="enName">
-                                <el-input v-model="metadata.enName"></el-input>
+                                <el-input v-model.trim="metadata.enName"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="类型" prop="type">
-                                <el-radio-group v-model="metadata.type">
+                                <el-radio-group v-model.trim="metadata.type">
                                     <el-radio :label="1">基本类型</el-radio>
                                     <el-radio :label="2">复合类型</el-radio>
                                 </el-radio-group>
@@ -119,7 +119,7 @@
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="数据类型" prop="dataType">
-                                <el-select v-model="metadata.dataType" placeholder="请选择">
+                                <el-select v-model.trim="metadata.dataType" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in dataTypeOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -127,7 +127,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="控件类型" prop="controlType">
-                                <el-select v-model="metadata.controlType" placeholder="请选择">
+                                <el-select v-model.trim="metadata.controlType" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in controlTypeOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -137,7 +137,7 @@
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="校验方式" prop="checkModel">
-                                <el-select v-model="metadata.checkModel" placeholder="请选择">
+                                <el-select v-model.trim="metadata.checkModel" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in checkModelOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -145,14 +145,14 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="数据长度" prop="dataLength">
-                                <el-input type="number" v-model="metadata.dataLength"></el-input>
+                                <el-input v-model.trim="metadata.dataLength" maxlength="5"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="数据来源" prop="dataSource">
-                                <el-select v-model="metadata.dataSource" placeholder="请选择">
+                                <el-select v-model.trim="metadata.dataSource" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in dataSourceOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -160,7 +160,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="数据字典" prop="dictionaryId" v-if="metadata.dataSource === 'dataItem'">
-                                <el-select v-model="metadata.dictionaryId" placeholder="请选择">
+                                <el-select v-model.trim="metadata.dictionaryId" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item of dictOptions" :key="item.id" :label="item.name" :value="item.key">
                                     </el-option>
                                 </el-select>
@@ -170,48 +170,44 @@
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="定义" prop="definition">
-                                <el-input v-model="metadata.definition"></el-input>
+                                <el-input v-model.trim="metadata.definition"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="值域" prop="field">
-                                <el-input v-model="metadata.field"></el-input>
+                                <el-input v-model.trim="metadata.field"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="控件长度" prop="controlLength">
-                                <el-radio-group v-model="metadata.controlLength">
-                                    <el-radio :label="1">半行</el-radio>
-                                    <el-radio :label="2">整行</el-radio>
+                                <el-radio-group v-model.trim="metadata.controlLength">
+                                    <el-radio :label="1" border>半行</el-radio>
+                                    <el-radio :label="2" border>整行</el-radio>
                                 </el-radio-group>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="出现次数" prop="annotationCount">
+                                <el-input-number v-model.trim="metadata.annotationCount" :min="1" :max="99" :disabled="!metadata.multiFlag"></el-input-number>
+                                <el-checkbox v-model.trim="metadata.multiFlag" style="margin-left: 20px">允许出现多次</el-checkbox>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
+
                         <el-col :span="12">
-                            <el-form-item prop="mandatory" style="display: inline-block">
-                                <el-checkbox v-model="metadata.mandatory">必选</el-checkbox>
-                            </el-form-item>
-                            <el-form-item prop="required" label-width="20px" style="display: inline-block">
-                                <el-checkbox v-model="metadata.required">必填</el-checkbox>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item prop="multiFlag" style="display: inline-block">
-                                <el-checkbox v-model="metadata.multiFlag">允许出现多次</el-checkbox>
-                            </el-form-item>
-                            <el-form-item prop="annotationCount" label-width="10px" style="display: inline-block">
-                                <el-input-number v-model="metadata.annotationCount" :min="1" :max="99" size="mini" :disabled="!metadata.multiFlag">
-                                </el-input-number>
+                            <el-form-item label="选填控制" prop="mandatory">
+                                <el-checkbox v-model.trim="metadata.mandatory" border>必选</el-checkbox>
+                                <el-checkbox v-model.trim="metadata.required" border>必填</el-checkbox>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="metadata.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="metadata.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -335,6 +331,13 @@
                     })
                 }
             };
+            const checkDataLength = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入正整数'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 metadataCategoryTree: undefined,
                 metadataList: undefined,
@@ -402,6 +405,9 @@
                     ],*/
                     annotationCount: [
                         {required: true, message: this.$t("table.pleaseInput") + '出现次数'}
+                    ],
+                    dataLength: [
+                        {validator: checkDataLength, trigger: ['blur','change']}
                     ]
                 },
                 selectedRows: [],

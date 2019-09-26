@@ -3,7 +3,7 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || dataCount > 0">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                 </div>
@@ -35,7 +35,7 @@
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                 <template slot-scope="scope">
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
-                               @click.stop.safe="btnCreate(scope.row)"></el-button>
+                               @click.stop.safe="btnCreate(scope.row)" :disabled="scope.row.dataCount > 0"></el-button>
                     <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                @click.stop.safe="btnUpdate(scope.row)"></el-button>
                     <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
@@ -102,6 +102,10 @@
         name: 'metadataCategory',
         data() {
             const validateParentId = (rule, value, callback) => {
+                if (this.metadataCategory.id && this.metadataCategory.id === value) {
+                    callback(new Error('不能添加自己'));
+                    return;
+                }
                 checkMetadataExist(value).then(response => {
                     if (response.data) {
                         callback(new Error('当前分类下已存在元数据，不能添加分类'))
@@ -124,7 +128,7 @@
                     id: undefined,
                     name: undefined,
                     parentId: 0,
-                    treePosition: '&',
+                    treePosition: undefined,
                     sortNo: undefined
                 },
                 metadataCategoryCascader: [],
@@ -145,7 +149,8 @@
                     ]
                 },
                 lastExpanded: undefined,
-                tableReset: false
+                tableReset: false,
+                dataCount: 0
             }
         },
         created() {
@@ -155,13 +160,13 @@
             metadataCategoryTreePosition: {
                 get() {
                     if (this.metadataCategory.treePosition) {
-                        return this.metadataCategory.treePosition.split('&');
+                        return this.metadataCategory.treePosition.substr(1).split('&');
                     }
                 },
                 set(v) {
-                    if (v.length > 0) {
+                    if (v && v.length > 0) {
                         this.metadataCategory.parentId = v[v.length - 1];
-                        this.metadataCategory.treePosition = v.join('&') + "&" + this.metadataCategory.parentId;
+                        this.metadataCategory.treePosition = '&' + v.join('&');
                     } else {
                         this.metadataCategory.parentId = 0;
                         this.metadataCategory.treePosition = undefined;
@@ -208,6 +213,10 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.dataCount = 0;
+                for(let r of rows) {
+                    this.dataCount += r.dataCount;
+                }
             },
             btnCreate(row){
                 if (row.id) {
@@ -257,6 +266,7 @@
                 this.getMetadataCategoryCascader(this.metadataCategory.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
+                console.dir(this.metadataCategory);
             },
             btnDelete(row){
                 let ids = [];
@@ -316,7 +326,7 @@
                     id: undefined,
                     name: undefined,
                     parentId: 0,
-                    treePosition: '&',
+                    treePosition: undefined,
                     sortNo: undefined
                 }
             },

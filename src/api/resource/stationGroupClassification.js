@@ -73,4 +73,10 @@ export function hasStationOrClassification(ids) {
     })
 }
 
-
+export function hasStation(query) {
+    return request({
+        url: '/manage/resource/stationGroupClassification/hasStation',
+        method: 'get',
+        params: query
+    });
+}

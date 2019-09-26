@@ -49,7 +49,7 @@
                      label-width="80px" :rules="stationGroupClassificationRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
-                        <el-form-item label="上级分类">
+                        <el-form-item label="上级分类" prop="parentId">
                             <el-cascader :options="stationGroupClassificationCascader" v-model.trim="stationGroupClassificationTreePosition"
                                          change-on-select show-all-levels expand-trigger="click" clearable style="width: 100%;" ></el-cascader>
                         </el-form-item>
@@ -99,7 +99,8 @@
         delStationGroupClassifications,
         isNameExist,
         isEnglishNameExist,
-        hasStationOrClassification} from '@/api/resource/stationGroupClassification';
+        hasStationOrClassification,
+        hasStation} from '@/api/resource/stationGroupClassification';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
     import {isEnglish} from '@/util/validate';
@@ -107,6 +108,19 @@
     export default {
         name: 'stationGroupClassification',
         data() {
+            const checkParentId = (rule, value, callback) => {
+                if (this.stationGroupClassification.id && this.stationGroupClassification.id === value) {
+                    callback(new Error('不能添加自己'));
+                    return;
+                }
+                hasStation({id:value}).then(response => {
+                    if (response.data) {
+                        callback(new Error('当前分类下已存在站群，不能添加分类'))
+                    } else {
+                        callback()
+                    }
+                })
+            };
             const checkName = (rule, value, callback) => {
                 isNameExist({id: this.stationGroupClassification.id, parentId: this.stationGroupClassification.parentId, name: this.stationGroupClassification.name}).then(response => {
                     if (response.status == 200 && response.data) {
@@ -165,7 +179,7 @@
                         {validator: checkEnglishName, trigger: 'blur'}
                     ],
                     parentId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '上级分类编号'}
+                        {validator: checkParentId, trigger: 'change'}
                     ],
                     sortNo: [
                         {required: true, message: this.$t("table.pleaseInput") + '排序号'},
