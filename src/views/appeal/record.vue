@@ -796,6 +796,8 @@
                 this.listQuery.purId = undefined;
                 this.listQuery.timeFrame = undefined;
                 this.timeFrame = undefined;
+                this.listQuery.isPublish = 0;
+                this.listQuery.flag = 1;
             },
             reloadList(){
                 this.listLoading = true;
