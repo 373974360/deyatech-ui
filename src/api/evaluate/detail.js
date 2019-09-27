@@ -56,3 +56,11 @@ export function saveReply(detailVo){
         data
     })
 }
+
+export function getStatistics(query) {
+    return request({
+        url: '/manage/evaluate/detail/getStatistics',
+        method: 'get',
+        params: query
+    });
+}
