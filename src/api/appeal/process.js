@@ -39,5 +39,12 @@ export function getProcessList(query) {
         params: query
     });
 }
+export function getProcessAllList(query) {
+    return request({
+        url: '/manage/appeal/process/listByProcess',
+        method: 'get',
+        params: query
+    });
+}
 
 
