@@ -371,6 +371,7 @@ function InfoAjax(url, AjaxObject) {
         info = {};
       }
     }
+    rtt = 60000;//TODO ycx
     self.emit('finish', info, rtt);
     self.removeAllListeners();
   });

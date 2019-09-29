@@ -184,7 +184,7 @@
 
 
             <el-dialog title="直播互动" :fullscreen="false" :visible.sync="liveDialogVisible" :close-on-click-modal="closeOnClickModal" @close="liveCloseModelDialog">
-                <el-row>
+                <el-row v-loading="liveDialogLoading">
                     <!--左侧-->
                     <el-col :span="6">
                         <el-row :span="24">
@@ -541,7 +541,7 @@
                     serverUrl: this.$store.state.common.uploadUrl,
                     initialFrameWidth: '100%',
                     initialFrameHeight: 200,
-                    zIndex: 3000
+                    zIndex: 1999
                 },
                 showPicImgUrl: this.$store.state.common.showPicImgUrl,
                 modelList: undefined,
@@ -599,6 +599,7 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 categorys: [],
+                liveDialogLoading: undefined,
                 liveDialogVisible: false,
                 liveMessageStomp: undefined,
                 liveImageStomp: undefined,
@@ -926,6 +927,7 @@
                 }
                 this.liveDialogVisible = true;
                 this.reconnectionSockJS = true;
+                this.liveDialogLoading = true;
             },
             // 等待直播消息
             waitingLiveMessage: function() {
@@ -966,6 +968,7 @@
                             }
                         }
                     });
+                    _this.liveDialogLoading = false;
                 });
                 sockJS.onclose = function () {
                     if (this.reconnectionSockJS) {
@@ -1014,6 +1017,7 @@
                             }
                         }
                     });
+                    _this.liveDialogLoading = false;
                 });
                 sockJS.onclose = function () {
                     if (this.reconnectionSockJS) {
