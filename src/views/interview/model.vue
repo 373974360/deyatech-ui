@@ -967,7 +967,6 @@
                 });
                 sockJS.onclose = function () {
                     if (this.reconnectionSockJS) {
-                        // console.log("消息 WebSocket 重连");
                         setTimeout(function () {_this.waitingLiveMessage();}, 5000);
                     }
                 }
@@ -1016,7 +1015,6 @@
                 });
                 sockJS.onclose = function () {
                     if (this.reconnectionSockJS) {
-                        // console.log("图片 WebSocket 重连");
                         setTimeout(function () {_this.waitingLiveImage();}, 5000);
                     }
                 }

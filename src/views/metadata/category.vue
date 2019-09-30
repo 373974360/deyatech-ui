@@ -51,14 +51,14 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item :label="$t('table.parent')" prop="parentId">
-                            <el-cascader :options="metadataCategoryCascader" v-model="metadataCategoryTreePosition"
+                            <el-cascader :options="metadataCategoryCascader" v-model.trim="metadataCategoryTreePosition"
                                          show-all-levels expand-trigger="click" clearable
                                          change-on-select style="width: 100%;"></el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item :label="$t('table.searchName')" prop="name">
-                            <el-input v-model="metadataCategory.name"/>
+                            <el-input v-model.trim="metadataCategory.name"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -66,14 +66,14 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="排序" prop="sortNo">
-                            <el-input v-model="metadataCategory.sortNo" maxlength="3"></el-input>
+                            <el-input v-model.trim="metadataCategory.sortNo" maxlength="3"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item :label="$t('table.remark')">
-                            <el-input type="textarea" v-model="metadataCategory.remark" :rows="3"/>
+                            <el-input type="textarea" v-model.trim="metadataCategory.remark" :rows="3"/>
                         </el-form-item>
                     </el-col>
                 </el-row>

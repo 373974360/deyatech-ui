@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -68,42 +68,42 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="名称" prop="name">
-                                <el-input v-model="metadataCollection.name" :disabled="dialogTitle === 'addVersion'"></el-input>
+                                <el-input v-model.trim="metadataCollection.name" :disabled="dialogTitle === 'addVersion'"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="enName">
-                                <el-input v-model="metadataCollection.enName" :disabled="dialogTitle !== 'create'"></el-input>
+                                <el-input v-model.trim="metadataCollection.enName" :disabled="dialogTitle !== 'create'"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="元数据集前缀" prop="mdcPrefix">
-                                <el-input v-model="metadataCollection.mdcPrefix" disabled></el-input>
+                                <el-input v-model.trim="metadataCollection.mdcPrefix" disabled></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="元数据前缀" prop="mdPrefix">
-                                <el-input v-model="metadataCollection.mdPrefix" disabled></el-input>
+                                <el-input v-model.trim="metadataCollection.mdPrefix" disabled></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="版本" prop="mdcVersion">
-                                <el-select v-if="dialogTitle === 'update'" v-model="metadataCollection.mdcVersion" @change="handleMdcVersionChange">
+                                <el-select v-if="dialogTitle === 'update'" v-model.trim="metadataCollection.mdcVersion" @change="handleMdcVersionChange">
                                     <el-option v-for="item in collectionVersionList" :key="item.id" :label="item.mdcVersion" :value="item.mdcVersion">
                                     </el-option>
                                 </el-select>
-                                <el-input v-else v-model="metadataCollection.mdcVersion"></el-input>
+                                <el-input v-else v-model.trim="metadataCollection.mdcVersion"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="metadataCollection.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="metadataCollection.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -118,14 +118,14 @@
                             <el-table-column label="字段名" prop="fieldName"/>
                             <el-table-column label="标签名称">
                                 <template slot-scope="scope">
-                                    <el-input v-model="relationDataReal[scope.$index].label" placeholder="请输入">
+                                    <el-input v-model.trim="relationDataReal[scope.$index].label" placeholder="请输入">
                                     </el-input>
                                 </template>
                             </el-table-column>
                             <el-table-column label="数据类型" prop="dataType" :formatter="filterDataType"/>
                             <el-table-column label="控件类型">
                                 <template slot-scope="scope">
-                                    <el-select v-model="relationDataReal[scope.$index].controlType" placeholder="请选择" @change="handleControlTypeChange(scope.$index)">
+                                    <el-select v-model.trim="relationDataReal[scope.$index].controlType" placeholder="请选择" @change="handleControlTypeChange(scope.$index)">
                                         <el-option v-for="item in scope.row.controlTypeOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
@@ -133,11 +133,11 @@
                             </el-table-column>
                             <el-table-column label="数据来源">
                                 <template slot-scope="scope">
-                                    <el-select v-model="relationDataReal[scope.$index].dataSource" placeholder="请选择">
+                                    <el-select v-model.trim="relationDataReal[scope.$index].dataSource" placeholder="请选择">
                                         <el-option v-for="item in relationDataReal[scope.$index].dataSourceOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
-                                    <el-select v-model="relationDataReal[scope.$index].dictionaryId" placeholder="请选择"
+                                    <el-select v-model.trim="relationDataReal[scope.$index].dictionaryId" placeholder="请选择"
                                                v-if="relationDataReal[scope.$index].dataSource === 'dataItem'">
                                         <el-option v-for="item in dictOptions" :key="item.id" :label="item.name" :value="item.key">
                                         </el-option>
@@ -146,7 +146,7 @@
                             </el-table-column>
                             <el-table-column label="校验方式">
                                 <template slot-scope="scope">
-                                    <el-select v-model="relationDataReal[scope.$index].checkModel" placeholder="请选择">
+                                    <el-select v-model.trim="relationDataReal[scope.$index].checkModel" placeholder="请选择">
                                         <el-option v-for="item in relationDataReal[scope.$index].checkModelOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
@@ -154,22 +154,22 @@
                             </el-table-column>
                             <el-table-column label="是否为列头">
                                 <template slot-scope="scope">
-                                    <el-checkbox v-model="relationDataReal[scope.$index].tableHead"></el-checkbox>
+                                    <el-checkbox v-model.trim="relationDataReal[scope.$index].tableHead"></el-checkbox>
                                 </template>
                             </el-table-column>
                             <el-table-column label="是否高级查询">
                                 <template slot-scope="scope">
-                                    <el-checkbox v-model="relationDataReal[scope.$index].advancedQuery"></el-checkbox>
+                                    <el-checkbox v-model.trim="relationDataReal[scope.$index].advancedQuery"></el-checkbox>
                                 </template>
                             </el-table-column>
                             <!--<el-table-column label="是否添加索引">
                                 <template slot-scope="scope">
-                                    <el-checkbox v-model="relationDataReal[scope.$index].useIndex"></el-checkbox>
+                                    <el-checkbox v-model.trim="relationDataReal[scope.$index].useIndex"></el-checkbox>
                                 </template>
                             </el-table-column>-->
                             <el-table-column label="是否全文检索">
                                 <template slot-scope="scope">
-                                    <el-checkbox v-model="relationDataReal[scope.$index].useFullIndex"></el-checkbox>
+                                    <el-checkbox v-model.trim="relationDataReal[scope.$index].useFullIndex"></el-checkbox>
                                 </template>
                             </el-table-column>
                             <el-table-column label="操作">
@@ -198,7 +198,7 @@
                                  :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                  :size="searchSize" placeholder="根据分类筛选">
                     </el-cascader>
-                    <el-input v-model="candidateQuery.name" class="dialog-search-item dialog-keywords"
+                    <el-input v-model.trim="candidateQuery.name" class="dialog-search-item dialog-keywords"
                               clearable :size="searchSize" placeholder="根据中文名称查询">
                     </el-input>
                     <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadCandidateList">{{$t('table.search')}}</el-button>
@@ -232,7 +232,7 @@
             <el-dialog title="设置主版本" :visible.sync="dialogVersionVisible" :before-close="resetDialogVersion"
                        :close-on-click-modal="closeOnClickModal">
                 <div style="width: 90%; margin: 0 auto">
-                    <el-radio-group v-model="mainVersionId">
+                    <el-radio-group v-model.trim="mainVersionId">
                         <el-radio v-for="item in collectionVersionList" :label="item.id">{{item.mdcVersion}}</el-radio>
                     </el-radio-group>
                 </div>
@@ -631,7 +631,9 @@
                         createOrUpdateMetadataCollection(this.metadataCollection).then(() => {
                             this.resetMetadataCollectionDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
-                        })
+                        }).catch(err=>{
+                            this.$message.error(err);
+                        });
                     } else {
                         return false;
                     }

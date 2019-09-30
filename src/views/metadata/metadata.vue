@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -92,19 +92,19 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="中文名称" prop="name">
-                                <el-input v-model.trim="metadata.name"></el-input>
+                                <el-input v-model.trim="metadata.name" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="字段名" prop="briefName">
-                                <el-input v-model.trim="metadata.briefName"></el-input>
+                                <el-input v-model.trim="metadata.briefName" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <!--<el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="enName">
-                                <el-input v-model.trim="metadata.enName"></el-input>
+                                <el-input v-model.trim="metadata.enName" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -145,7 +145,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="数据长度" prop="dataLength">
-                                <el-input v-model.trim="metadata.dataLength" maxlength="5"></el-input>
+                                <el-input v-model.trim="metadata.dataLength" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -170,12 +170,12 @@
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="定义" prop="definition">
-                                <el-input v-model.trim="metadata.definition"></el-input>
+                                <el-input v-model.trim="metadata.definition" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="值域" prop="field">
-                                <el-input v-model.trim="metadata.field"></el-input>
+                                <el-input v-model.trim="metadata.field" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -207,7 +207,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="metadata.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="metadata.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
