@@ -901,41 +901,36 @@
             // 打开直播
             btnLiveUpdate(row){
                 this.resetModel();
-
                 this.resetLiveMessage();
                 this.resetLiveImage();
-
-                this.waitingLiveMessage();
-                this.waitingLiveImage();
-
                 if (row.id) {
                     this.model = deepClone(row);
                 } else {
                     this.model = deepClone(this.selectedRows[0]);
                 }
-
                 if (this.model.images) {
                     this.liveImageArray = JSON.parse(this.model.images);
                 } else {
                     this.liveImageArray = [];
                 }
-
                 if (this.model.content) {
                     this.liveMessageArray = JSON.parse(this.model.content);
                 } else {
                     this.liveMessageArray = [];
                 }
+                this.waitingLiveMessage(this.model.id);
+                this.waitingLiveImage(this.model.id);
                 this.liveDialogVisible = true;
                 this.reconnectionSockJS = true;
                 this.liveDialogLoading = true;
             },
             // 等待直播消息
-            waitingLiveMessage: function() {
+            waitingLiveMessage: function(modelId) {
                 let _this = this;
-                let sockJS = new SockJS("/web/websocket/");
+                let sockJS = new SockJS('/web/websocket/');
                 let stompClient = Stomp.over(sockJS);
                 stompClient.connect({}, function () {
-                    stompClient.subscribe('/topic/live/message/', function (response) {
+                    stompClient.subscribe('/topic/live/message/' + modelId + '/', function (response) {
                         //append,modify,delete
                         let operate = JSON.parse(response.body);
                         let arr = operate.key.split(',');
@@ -979,12 +974,12 @@
                 this.liveMessageStomp = stompClient;
             },
             // 等待图片消息
-            waitingLiveImage: function() {
+            waitingLiveImage: function(modelId) {
                 let _this = this;
-                let sockJS = new SockJS("/web/websocket/");
+                let sockJS = new SockJS('/web/websocket/');
                 let stompClient = Stomp.over(sockJS);
                 stompClient.connect({}, function () {
-                    stompClient.subscribe('/topic/live/image/', function (response) {
+                    stompClient.subscribe('/topic/live/image/' + modelId + '/', function (response) {
                         //append,modify,delete
                         let operate = JSON.parse(response.body)
                         let arr = operate.key.split(',');
