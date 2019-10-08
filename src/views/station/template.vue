@@ -264,7 +264,7 @@
                                         size="small"
                                         @keyup.enter.native="handleInputConfirm"
                                         @blur="handleInputConfirm"
-                                        placeholder="最多二十个字"
+                                        placeholder="请输入关键字"
                                         maxlength="20">
                                     </el-input>
                                     <el-button :disabled="dynamicTags.length >= 10" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多10个)</el-button>

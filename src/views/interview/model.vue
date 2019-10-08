@@ -12,7 +12,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList" :disabled="!this.listQuery.categoryId">{{$t('table.search')}}</el-button>
@@ -340,7 +340,7 @@
                 <div class="deyatech-header">
                     <el-form :inline="true" ref="guestSearchForm">
                         <el-form-item>
-                            <el-input :size="searchSize" placeholder="请输入条件" v-model.trim="guestListQuery.name"></el-input>
+                            <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="guestListQuery.name"></el-input>
                         </el-form-item>
                         <el-form-item>
                             <el-select :size="searchSize" v-model.trim="guestListQuery.type" placeholder="请选择类型">

@@ -407,6 +407,7 @@
                         {required: true, message: this.$t("table.pleaseInput") + '出现次数'}
                     ],
                     dataLength: [
+                        {required: true, message: this.$t("table.pleaseInput") + '数据长度'},
                         {validator: checkDataLength, trigger: ['blur','change']}
                     ]
                 },
@@ -733,5 +734,11 @@
 <style>
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
         background-color: #a6d1ff;
+    }
+    .el-radio.is-bordered+.el-radio.is-bordered {
+        margin-left: 0;
+    }
+    .el-checkbox.is-bordered+.el-checkbox.is-bordered {
+        margin-left: 0;
     }
 </style>
