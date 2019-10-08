@@ -4,22 +4,22 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="标题/姓名/编码/身份证号" v-model="listQuery.title"></el-input>
+                        <el-input :size="searchSize" placeholder="标题/姓名/编码/身份证号" v-model.trim="listQuery.title"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-select :size="searchSize" v-model="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
+                        <el-select :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
                             <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-select :size="searchSize" v-model="listQuery.purId" clearable placeholder="诉求目的" style="width:120px;">
+                        <el-select :size="searchSize" v-model.trim="listQuery.purId" clearable placeholder="诉求目的" style="width:120px;">
                             <el-option v-for="item in purposeList" :label="item.purposeName" :value="item.id"></el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item>
                         <el-date-picker
                             :size="searchSize"
-                            v-model="timeFrame"
+                            v-model.trim="timeFrame"
                             type="daterange"
                             align="right"
                             unlink-panels
@@ -48,7 +48,7 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-tabs v-model="activeTabName" type="card" @tab-click="handleTabClick">
+            <el-tabs v-model.trim="activeTabName" type="card" @tab-click="handleTabClick">
                 <el-tab-pane label="未处理" name="first"></el-tab-pane>
                 <el-tab-pane label="已受理" name="second"></el-tab-pane>
                 <el-tab-pane label="办理中" name="third"></el-tab-pane>
@@ -116,12 +116,12 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="标题" prop="title">
-                                <el-input v-model="record.title"></el-input>
+                                <el-input v-model.trim="record.title"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="信件状态" prop="flag">
-                                <el-radio-group v-model="record.flag">
+                                <el-radio-group v-model.trim="record.flag">
                                     <el-radio :label="2">已受理</el-radio>
                                     <el-radio :label="3">办理中</el-radio>
                                     <el-radio :label="4">已办结</el-radio>
@@ -132,14 +132,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="业务模型" prop="modelId">
-                                <el-select v-model="record.modelId" placeholder="请选择业务模型" style="width:100%">
+                                <el-select v-model.trim="record.modelId" placeholder="请选择业务模型" style="width:100%">
                                     <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="诉求目的" prop="purId">
-                                <el-select v-model="record.purId" placeholder="请选择业务模型" style="width:100%">
+                                <el-select v-model.trim="record.purId" placeholder="请选择业务模型" style="width:100%">
                                     <el-option v-for="item in purposeList" :label="item.purposeName" :value="item.id"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -148,31 +148,31 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="来信人姓名" prop="userName">
-                                <el-input v-model="record.userName"></el-input>
+                                <el-input v-model.trim="record.userName"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="身份证号码" prop="cardId">
-                                <el-input v-model="record.cardId"></el-input>
+                                <el-input v-model.trim="record.cardId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="手机号码" prop="phone">
-                                <el-input v-model="record.phone"></el-input>
+                                <el-input v-model.trim="record.phone"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="电子邮箱" prop="email">
-                                <el-input v-model="record.email"></el-input>
+                                <el-input v-model.trim="record.email"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="通讯地址" prop="address">
-                                <el-input v-model="record.address"></el-input>
+                                <el-input v-model.trim="record.address"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -181,7 +181,7 @@
                             <el-form-item label="来信时间" prop="createTime">
                                 <el-date-picker
                                     style="width:100%;"
-                                    v-model="record.createTime"
+                                    v-model.trim="record.createTime"
                                     type="datetime"
                                     value-format="yyyy-MM-dd HH:mm:ss"
                                     placeholder="选择来信时间">
@@ -190,7 +190,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="收件部门" prop="deptId">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model="record.deptId"
+                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="record.deptId"
                                              expand-trigger="hover" ></el-cascader>
                             </el-form-item>
                         </el-col>
@@ -199,7 +199,7 @@
                         <el-col :span="12">
                             <el-form-item label="公开意愿" prop="isOpen">
                                 <el-switch
-                                    v-model="record.isOpen"
+                                    v-model.trim="record.isOpen"
                                     active-text="是"
                                     inactive-text="否"
                                     :active-value=1 :inactive-value=2>
@@ -209,7 +209,7 @@
                         <el-col :span="12">
                             <el-form-item label="是否发布" prop="isPublish">
                                 <el-switch
-                                    v-model="record.isPublish"
+                                    v-model.trim="record.isPublish"
                                     active-text="是"
                                     inactive-text="否"
                                     :active-value=1 :inactive-value=2>
@@ -220,7 +220,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="来信内容" prop="content">
-                                <editor v-model="record.content" :config="editorConfig" :default-msg="record.content" ref="content" id="content_index"></editor>
+                                <editor v-model.trim="record.content" :config="editorConfig" :default-msg="record.content" ref="content" id="content_index"></editor>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -229,7 +229,7 @@
                             <el-form-item label="回复时间" prop="replyTime">
                                 <el-date-picker
                                     style="width:100%;"
-                                    v-model="record.replyTime"
+                                    v-model.trim="record.replyTime"
                                     type="datetime"
                                     value-format="yyyy-MM-dd HH:mm:ss"
                                     placeholder="选择来信时间">
@@ -238,7 +238,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="回复部门" prop="replyDeptId">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model="record.replyDeptId"
+                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="record.replyDeptId"
                                              expand-trigger="hover" ></el-cascader>
                             </el-form-item>
                         </el-col>
@@ -246,7 +246,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="回复内容" prop="replyContent">
-                                <editor v-model="record.replyContent" :config="editorConfig" :default-msg="record.replyContent" ref="replyContent" id="replyContent_index"></editor>
+                                <editor v-model.trim="record.replyContent" :config="editorConfig" :default-msg="record.replyContent" ref="replyContent" id="replyContent_index"></editor>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -264,7 +264,7 @@
             ***********************************************-->
             <el-dialog title="信件办理" :visible.sync="dialogProcessVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeProcessDialog" width="70%">
-                <el-collapse v-model="activeName" accordion>
+                <el-collapse v-model.trim="activeName" accordion>
                     <el-collapse-item title="网民信息" name="1">
                         <table class="appeal_table">
                             <tr>
@@ -413,14 +413,14 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="标题" prop="title" :hidden="titleDisabled">
-                                        <el-input v-model="process.title"></el-input>
+                                        <el-input v-model.trim="process.title"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="来信内容" prop="content" :hidden="contentDisabled">
-                                        <editor v-model="process.content" :config="editorConfig" :default-msg="process.content" ref="processContent" id="processContent_index"></editor>
+                                        <editor v-model.trim="process.content" :config="editorConfig" :default-msg="process.content" ref="processContent" id="processContent_index"></editor>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
@@ -429,7 +429,7 @@
                                     <el-form-item :label="proTimeLabel" prop="proTime" :hidden="proTimeDisabled">
                                         <el-date-picker
                                             style="width:100%;"
-                                            v-model="process.proTime"
+                                            v-model.trim="process.proTime"
                                             type="datetime"
                                             value-format="yyyy-MM-dd HH:mm:ss"
                                             placeholder="选择时间">
@@ -440,7 +440,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="移交部门" prop="toDeptId" :hidden="toDeptIdDisabled">
-                                        <el-cascader style="width: 100%" :options="departmentCascader" v-model="process.toDeptId"
+                                        <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="process.toDeptId"
                                                      expand-trigger="hover" ></el-cascader>
                                     </el-form-item>
                                 </el-col>
@@ -449,7 +449,7 @@
                                 <el-col :span="12">
                                     <el-form-item label="是否公开" prop="isOpen" :hidden="isOpenDisabled">
                                         <el-switch
-                                            v-model="process.isOpen"
+                                            v-model.trim="process.isOpen"
                                             active-text="是"
                                             inactive-text="否"
                                             :active-value=1 :inactive-value=2>
@@ -459,7 +459,7 @@
                                 <el-col :span="12">
                                     <el-form-item label="是否发布" prop="isPublish" :hidden="isPublishDisabled">
                                         <el-switch
-                                            v-model="process.isPublish"
+                                            v-model.trim="process.isPublish"
                                             active-text="是"
                                             inactive-text="否"
                                             :active-value=1 :inactive-value=2>
@@ -470,7 +470,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item :label="proContentLabel" prop="proContent" :hidden="proContentDisabled">
-                                        <editor v-model="process.proContent" :config="editorConfig" :default-msg="process.proContent" ref="proContent" id="proContent_index"></editor>
+                                        <editor v-model.trim="process.proContent" :config="editorConfig" :default-msg="process.proContent" ref="proContent" id="proContent_index"></editor>
                                     </el-form-item>
                                 </el-col>
                             </el-row>

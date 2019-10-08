@@ -74,7 +74,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="上级菜单">
-                            <el-cascader :options="menuCascader" v-model="menuTreePosition"
+                            <el-cascader :options="menuCascader" v-model.trim="menuTreePosition"
                                          show-all-levels expand-trigger="click" clearable
                                          change-on-select></el-cascader>
                         </el-form-item>
@@ -88,7 +88,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="菜单类型" prop="type">
-                            <el-radio-group v-model="menu.type">
+                            <el-radio-group v-model.trim="menu.type">
                                 <el-radio v-for="item in enums['MenuTypeEnum']"
                                           :key="item.code"
                                           :label="item.code"
@@ -100,7 +100,7 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="图标" prop="icon">
-                            <icon-select v-model="menu.icon"/>
+                            <icon-select v-model.trim="menu.icon"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -124,7 +124,7 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="排序号" prop="sortNo">
-                            <el-input-number v-model="menu.sortNo" :min="1" :max="100"/>
+                            <el-input-number v-model.trim="menu.sortNo" :min="1" :max="100"/>
                         </el-form-item>
                     </el-col>
                 </el-row>

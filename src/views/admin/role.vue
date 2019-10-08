@@ -89,7 +89,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="角色类型" prop="type">
-                                <el-select v-model="role.type">
+                                <el-select v-model.trim="role.type">
                                     <el-option v-for="item in enums['RoleTypeEnum']" :key="item.code" :label="item.value"
                                                :value="item.code"></el-option>
                                 </el-select>
@@ -120,12 +120,12 @@
                                      class="dialog-search-item dialog-keywords"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                      :size="searchSize" placeholder="根据部门筛选"></el-cascader>
-                        <el-input v-model="userListQuery.name" class="dialog-search-item dialog-keywords"
+                        <el-input v-model.trim="userListQuery.name" class="dialog-search-item dialog-keywords"
                                   clearable :size="searchSize" placeholder="根据姓名或帐户查询"></el-input>
                         <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
                     </div>
                     <div class="dialog-search">
-                        <el-checkbox v-model="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
+                        <el-checkbox v-model.trim="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
                     </div>
                     <div>
                         <el-table ref="roleUserTable" :data="userList" border @select="selectRowUser"

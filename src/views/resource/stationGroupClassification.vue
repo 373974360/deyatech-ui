@@ -298,7 +298,6 @@
                 this.dialogVisible = true;
             },
             btnDelete(row){
-                alert(1);
                 let ids = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {

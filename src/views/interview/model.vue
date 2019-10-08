@@ -212,7 +212,7 @@
                             <el-row :span="24">
                                 <el-col :span="24" style="margin-bottom: 0">
                                     <el-form-item label="" prop="url" style="line-height: 14px">
-                                        <el-input v-model="liveImage.url" v-show="false"></el-input>
+                                        <el-input v-model.trim="liveImage.url" v-show="false"></el-input>
                                         <el-upload class="image-uploader" name="file"
                                                    :action="$store.state.common.uploadUrl"
                                                    :accept="$store.state.common.imageAccepts"
@@ -228,7 +228,7 @@
                             <el-row :span="24">
                                 <el-col :span="24" style="margin-bottom: 0">
                                     <el-form-item label="" prop="name">
-                                        <el-input v-model="liveImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 100%;"></el-input>
+                                        <el-input v-model.trim="liveImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 100%;"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
@@ -266,7 +266,7 @@
                             <el-row :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="" prop="type">
-                                        <el-select v-model="liveMessage.type" placeholder="请选择类型" :size="btnSize">
+                                        <el-select v-model.trim="liveMessage.type" placeholder="请选择类型" :size="btnSize">
                                             <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                         </el-select>
                                         <el-button type="primary" style="margin-left: 20px" @click="appendLiveMessage" :loading="submitLoading" :size="btnSize">发送</el-button>
@@ -285,7 +285,7 @@
                     <el-row :span="24">
                         <el-col :span="6">
                             <el-form-item label="" prop="url" style="line-height: 14px">
-                                <el-input v-model="liveModifyImage.url" v-show="false"></el-input>
+                                <el-input v-model.trim="liveModifyImage.url" v-show="false"></el-input>
                                 <el-upload class="image-uploader" name="file"
                                            :action="$store.state.common.uploadUrl"
                                            :accept="$store.state.common.imageAccepts"
@@ -302,7 +302,7 @@
                     <el-row :span="24">
                         <el-col :span="24">
                             <el-form-item label="" prop="name" style="margin-bottom: 0">
-                                <el-input v-model="liveModifyImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 200px;"></el-input>
+                                <el-input v-model.trim="liveModifyImage.name" :size="btnSize" maxlength="30" placeholder="请输入图片名称" style="width: 200px;"></el-input>
                                 <el-button type="primary" style="margin-left: 20px" @click="modifyLiveImage" :size="btnSize">修改</el-button>
                             </el-form-item>
                         </el-col>
@@ -324,7 +324,7 @@
                     <el-row :span="24">
                         <el-col :span="24">
                             <el-form-item label="" prop="type">
-                                <el-select v-model="liveModifyMessage.type" placeholder="请选择类型" :size="btnSize">
+                                <el-select v-model.trim="liveModifyMessage.type" placeholder="请选择类型" :size="btnSize">
                                     <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                 </el-select>
                                 <el-button type="primary" style="margin-left: 20px" @click="modifyLiveMessage" :loading="submitLoading" :size="btnSize">修改</el-button>
@@ -445,7 +445,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="部门" prop="departmentName">
-                                        <el-cascader ref="mycascader" :options="departmentCascader" v-model="departmentValue"
+                                        <el-cascader ref="mycascader" :options="departmentCascader" v-model.trim="departmentValue"
                                                      :props="{ checkStrictly: true }"
                                                      filterable :debounce="500" style="width: 100%"
                                                      :before-filter="beforeFilterDepartment"

@@ -540,16 +540,21 @@
                 }
                 findMetadataCollectionAllData({enName: row.enName}).then(response => {
                     this.collectionVersionList = response.data;
-                    for (const item of this.collectionVersionList) {
-                        if (item.id === row.id) {
-                            this.metadataCollection = deepClone(item);
-                            this.relationData = this.mapRelatedList(item.metadataList);
-                            this.relationDataReal = deepClone(this.relationData);
+                    if (this.collectionVersionList && this.collectionVersionList.length > 0) {
+                        for (const item of this.collectionVersionList) {
+                            if (item.id === row.id) {
+                                this.metadataCollection = deepClone(item);
+                                this.relationData = this.mapRelatedList(item.metadataList);
+                                this.relationDataReal = deepClone(this.relationData);
+                            }
                         }
+                    } else {
+                        this.metadataCollection = deepClone(row);
                     }
                 });
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
+                console.dir(this.metadataCollection);
             },
             handleMdcVersionChange(value) {
                 for (const item of this.collectionVersionList) {

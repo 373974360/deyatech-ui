@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -89,14 +89,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="业务名称" prop="modelName">
-                                <el-input v-model="model.modelName"></el-input>
+                                <el-input v-model.trim="model.modelName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="6">
                             <el-form-item label="参与人员" prop="participant">
-                                <el-radio-group v-model="model.participant">
+                                <el-radio-group v-model.trim="model.participant">
                                     <el-radio :label="1">会员</el-radio>
                                     <el-radio :label="2">所有人</el-radio>
                                 </el-radio-group>
@@ -105,7 +105,7 @@
                         <el-col :span="6">
                             <el-form-item label="自动发布" prop="autoPublish">
                                 <el-switch
-                                    v-model="model.autoPublish"
+                                    v-model.trim="model.autoPublish"
                                     active-text="是"
                                     inactive-text="否"
                                     :active-value=1 :inactive-value=2>
@@ -114,7 +114,7 @@
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="业务模式" prop="busType">
-                                <el-radio-group v-model="model.busType">
+                                <el-radio-group v-model.trim="model.busType">
                                     <el-radio :label="1">转发</el-radio>
                                     <el-radio :label="2">直投</el-radio>
                                 </el-radio-group>
@@ -123,7 +123,7 @@
                         <el-col :span="6">
                             <el-form-item label="部门间转办" prop="deptTransfer">
                                 <el-switch
-                                    v-model="model.deptTransfer"
+                                    v-model.trim="model.deptTransfer"
                                     active-text="是"
                                     inactive-text="否"
                                     :active-value=1 :inactive-value=2>
@@ -134,22 +134,22 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="6">
                             <el-form-item label="办理时限" prop="limitDay">
-                                <el-input v-model="model.limitDay"></el-input>
+                                <el-input v-model.trim="model.limitDay"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="提醒件" prop="reminderDay">
-                                <el-input v-model="model.reminderDay"></el-input>
+                                <el-input v-model.trim="model.reminderDay"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="黄牌件" prop="yellowDay">
-                                <el-input v-model="model.yellowDay"></el-input>
+                                <el-input v-model.trim="model.yellowDay"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="红牌件" prop="redDay">
-                                <el-input v-model="model.redDay"></el-input>
+                                <el-input v-model.trim="model.redDay"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -158,7 +158,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="主管部门" prop="competentDept">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model="model.competentDept"
+                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="model.competentDept"
                                              expand-trigger="hover" ></el-cascader>
                             </el-form-item>
                         </el-col>
@@ -168,7 +168,7 @@
                                     style="width: 100%"
                                     placeholder="请选择绑定栏目"
                                     :options="departmentCascader"
-                                    v-model="model.partDept"
+                                    v-model.trim="model.partDept"
                                     :props="props"
                                     collapse-tags
                                     clearable></el-cascader>
@@ -178,17 +178,17 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="6">
                             <el-form-item label="业务码" prop="busCode">
-                                <el-input v-model="model.busCode"></el-input>
+                                <el-input v-model.trim="model.busCode"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="间隔符" prop="spacera">
-                                <el-input v-model="model.spacera"></el-input>
+                                <el-input v-model.trim="model.spacera"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="日期码" prop="dayCode">
-                                <el-select style="width: 100%;" v-model="model.dayCode" placeholder="请选择">
+                                <el-select style="width: 100%;" v-model.trim="model.dayCode" placeholder="请选择">
                                     <el-option
                                         v-for="item in dayCodeOptions"
                                         :key="item.value"
@@ -200,14 +200,14 @@
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="间隔符" prop="spacerb">
-                                <el-input v-model="model.spacerb"></el-input>
+                                <el-input v-model.trim="model.spacerb"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="随机码位数" prop="randomcodeCount">
-                                <el-select style="width: 100%;" v-model="model.randomcodeCount" placeholder="请选择">
+                                <el-select style="width: 100%;" v-model.trim="model.randomcodeCount" placeholder="请选择">
                                     <el-option
                                         v-for="item in codeLengthOptions"
                                         :key="item.value"
@@ -219,7 +219,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="查询码位数" prop="querycodeCount">
-                                <el-select style="width: 100%;" v-model="model.querycodeCount" placeholder="请选择">
+                                <el-select style="width: 100%;" v-model.trim="model.querycodeCount" placeholder="请选择">
                                     <el-option
                                         v-for="item in codeLengthOptions"
                                         :key="item.value"
@@ -239,7 +239,7 @@
                                     clearable
                                     expand-trigger="hover"
                                     :options="templateTreeData"
-                                    v-model="model.formTemplet"
+                                    v-model.trim="model.formTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
@@ -252,7 +252,7 @@
                                     clearable
                                     expand-trigger="hover"
                                     :options="templateTreeData"
-                                    v-model="model.listTemplet"
+                                    v-model.trim="model.listTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
@@ -267,7 +267,7 @@
                                     clearable
                                     expand-trigger="hover"
                                     :options="templateTreeData"
-                                    v-model="model.viewTemplet"
+                                    v-model.trim="model.viewTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
@@ -280,7 +280,7 @@
                                     clearable
                                     expand-trigger="hover"
                                     :options="templateTreeData"
-                                    v-model="model.printTemplet"
+                                    v-model.trim="model.printTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
@@ -290,7 +290,7 @@
                         <el-col :span="12">
                             <el-form-item label="启用工作流" prop="workflowType">
                                 <el-switch
-                                    v-model="model.workflowType"
+                                    v-model.trim="model.workflowType"
                                     active-text="是"
                                     inactive-text="否"
                                     :active-value=1 :inactive-value=2 @change="isWorkflowEnable">
@@ -299,7 +299,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="选择工作流" prop="workflowId" v-if="model.workflowType == 1">
-                                <el-select v-model="model.workflowId" placeholder="请选择工作流" style="width:100%">
+                                <el-select v-model.trim="model.workflowId" placeholder="请选择工作流" style="width:100%">
                                     <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -308,7 +308,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="model.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="model.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

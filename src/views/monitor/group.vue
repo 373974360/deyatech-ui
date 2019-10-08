@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -81,14 +81,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="任务名称" prop="groupName">
-                                <el-input v-model="group.groupName"></el-input>
+                                <el-input v-model.trim="group.groupName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="触发模式" prop="triggerType">
-                                <el-radio-group v-model="group.triggerType" @change="changeTriggerType(group.triggerType)">
+                                <el-radio-group v-model.trim="group.triggerType" @change="changeTriggerType(group.triggerType)">
                                     <el-radio :label="1" border>固定时刻</el-radio>
                                     <el-radio :label="2" border>日历周期</el-radio>
                                 </el-radio-group>
@@ -96,7 +96,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="触发类型" prop="calendarType">
-                                <el-radio-group v-model="group.calendarType" @change="changeCalendarType(group.calendarType)" :disabled="calendarTypeDisabled">
+                                <el-radio-group v-model.trim="group.calendarType" @change="changeCalendarType(group.calendarType)" :disabled="calendarTypeDisabled">
                                     <el-radio :label="1" border>每日</el-radio>
                                     <el-radio :label="2" border>每周</el-radio>
                                 </el-radio-group>
@@ -106,13 +106,13 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="间隔时间" prop="incrementSeconds">
-                                <el-input v-model="group.incrementSeconds" :disabled="incrementSecondsDisabled"></el-input>
+                                <el-input v-model.trim="group.incrementSeconds" :disabled="incrementSecondsDisabled"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="触发时间" prop="calendarTime">
                                 <el-time-select
-                                    v-model="group.calendarTime"
+                                    v-model.trim="group.calendarTime"
                                     :picker-options="{
                                         start: '00:00',
                                         step: '00:30',
@@ -126,7 +126,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="每周" prop="calendarWorkday">
-                                <el-checkbox-group v-model="group.calendarWorkday" :disabled="calendarWorkdayDisabled">
+                                <el-checkbox-group v-model.trim="group.calendarWorkday" :disabled="calendarWorkdayDisabled">
                                     <el-checkbox label="1">周一</el-checkbox>
                                     <el-checkbox label="2">周二</el-checkbox>
                                     <el-checkbox label="3">周三</el-checkbox>
@@ -141,7 +141,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="group.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="group.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

@@ -5,7 +5,7 @@
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')"
-                                  v-model="listQuery.name"></el-input>
+                                  v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
@@ -75,38 +75,38 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="数据字典索引编号" prop="indexId">
-                                <el-input v-model="dictionary.indexId"></el-input>
+                                <el-input v-model.trim="dictionary.indexId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文代码" prop="code">
-                                <el-input v-model="dictionary.code"></el-input>
+                                <el-input v-model.trim="dictionary.code"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="文字说明" prop="codeText">
-                                <el-input v-model="dictionary.codeText"></el-input>
+                                <el-input v-model.trim="dictionary.codeText"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
-                                <el-input v-model="dictionary.sortNo"></el-input>
+                                <el-input v-model.trim="dictionary.sortNo"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否可编辑" prop="editable">
-                                <el-input v-model="dictionary.editable"></el-input>
+                                <el-input v-model.trim="dictionary.editable"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="dictionary.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="dictionary.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="stationGitForm" :model="stationGit" :rules="stationGitRules">
                     <el-form-item prop="gitUrl">
-                        <el-input :size="searchSize" placeholder="Git地址" v-model="stationGit.gitUrl" :disabled="gitUrlInputDisabled"></el-input>
+                        <el-input :size="searchSize" placeholder="Git地址" v-model.trim="stationGit.gitUrl" :disabled="gitUrlInputDisabled"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button v-if="btnEnable.sync" type="primary" icon="el-icon-refresh" :size="searchSize" @click="doCreateOrUpdate" :loading="submitLoading">同步</el-button>
@@ -50,14 +50,14 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item label="用户名" prop="userName">
-                            <el-input v-model="synchronize.userName"></el-input>
+                            <el-input v-model.trim="synchronize.userName"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item label="密码" prop="passWord">
-                            <el-input type="password" v-model="synchronize.passWord"></el-input>
+                            <el-input type="password" v-model.trim="synchronize.passWord"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>

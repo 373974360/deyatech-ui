@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -65,55 +65,55 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="" prop="actDefinitionId">
-                                <el-input v-model="processTaskSetting.actDefinitionId"></el-input>
+                                <el-input v-model.trim="processTaskSetting.actDefinitionId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="" prop="actTaskDefinitionId">
-                                <el-input v-model="processTaskSetting.actTaskDefinitionId"></el-input>
+                                <el-input v-model.trim="processTaskSetting.actTaskDefinitionId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="" prop="source">
-                                <el-input v-model="processTaskSetting.source"></el-input>
+                                <el-input v-model.trim="processTaskSetting.source"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="" prop="assignee">
-                                <el-input v-model="processTaskSetting.assignee"></el-input>
+                                <el-input v-model.trim="processTaskSetting.assignee"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="" prop="candidateType">
-                                <el-input v-model="processTaskSetting.candidateType"></el-input>
+                                <el-input v-model.trim="processTaskSetting.candidateType"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="" prop="candidateUsers">
-                                <el-input v-model="processTaskSetting.candidateUsers"></el-input>
+                                <el-input v-model.trim="processTaskSetting.candidateUsers"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="" prop="candidateGroups">
-                                <el-input v-model="processTaskSetting.candidateGroups"></el-input>
+                                <el-input v-model.trim="processTaskSetting.candidateGroups"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="" prop="autoPass">
-                                <el-input v-model="processTaskSetting.autoPass"></el-input>
+                                <el-input v-model.trim="processTaskSetting.autoPass"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="processTaskSetting.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="processTaskSetting.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

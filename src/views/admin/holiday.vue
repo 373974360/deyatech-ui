@@ -9,18 +9,18 @@
             </div>
             <div class="deyatech-menu" style="margin-top:20px;">
                 <div v-show="!listLoading">
-                    <date-picker v-model="value" :list="list" :year="year" :month="1" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="2" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="3" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="4" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="5" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="6" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="7" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="8" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="9" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="10" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="11" :weekends="true" :isShow="true"></date-picker>
-                    <date-picker v-model="value" :list="list" :year="year" :month="12" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="1" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="2" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="3" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="4" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="5" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="6" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="7" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="8" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="9" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="10" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="11" :weekends="true" :isShow="true"></date-picker>
+                    <date-picker v-model.trim="value" :list="list" :year="year" :month="12" :weekends="true" :isShow="true"></date-picker>
                 </div>
             </div>
         </div>

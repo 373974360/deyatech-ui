@@ -272,10 +272,10 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
+                        <el-col :span="24">
                             <el-form-item label="参与人员" prop="participant">
-                                <el-radio v-model.trim="catalog.participant" border :label="1">会员</el-radio>
-                                <el-radio v-model.trim="catalog.participant" border :label="2">所有人</el-radio>
+                                <el-radio v-model.trim="catalog.participant" border :label="1" @change="participantChange">会员</el-radio>
+                                <el-radio v-model.trim="catalog.participant" border :label="2" @change="participantChange">所有人</el-radio>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -381,7 +381,7 @@
                                 size="small"
                                 @keyup.enter.native="handleInputConfirm"
                                 @blur="handleInputConfirm"
-                                placeholder="最多二十个字"
+                                placeholder="请输入关键字"
                                 maxlength="20">
                             </el-input>
                             <el-button :disabled="dynamicTags.length >= 10" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多10个)</el-button>
@@ -422,7 +422,7 @@
     import {
         getAllModel
     } from '@/api/station/model';
-    import {validateURL} from '@/util/validate';
+    import {validateURL,isEnglish} from '@/util/validate';
 
     export default {
         name: 'catalog',
@@ -471,6 +471,10 @@
                 })
             }
             const validateEname = (rule, value, callback) => {
+                if (!isEnglish(value)) {
+                    callback(new Error('只能输入英文字母'));
+                    return;
+                }
                 const query = {
                     id: this.catalog.id,
                     parentId: this.catalog.parentId ? this.catalog.parentId : '0',
@@ -812,6 +816,9 @@
             }
         },
         methods: {
+            participantChange() {
+                this.$refs.catalogDialogForm.validateField('participant', errorMsg => {});
+            },
             /*            resetSearch(){
                             this.listQuery.siteId = this.$store.state.common.siteId;
                         },*/

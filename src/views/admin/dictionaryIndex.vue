@@ -166,24 +166,24 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="英文代码" prop="code">
-                                <el-input v-model="dictionary.code"></el-input>
+                                <el-input v-model.trim="dictionary.code"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="中文名称" prop="codeText">
-                                <el-input v-model="dictionary.codeText"></el-input>
+                                <el-input v-model.trim="dictionary.codeText"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="排序" prop="sortNo">
-                                <el-input-number v-model="dictionary.sortNo" :min="1"></el-input-number>
+                                <el-input-number v-model.trim="dictionary.sortNo" :min="1"></el-input-number>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="编辑选项" prop="editable">
-                                <el-radio-group v-model="dictionary.editable">
+                                <el-radio-group v-model.trim="dictionary.editable">
                                     <el-radio :label="1">可编辑</el-radio>
                                     <el-radio :label="2">不可编辑</el-radio>
                                 </el-radio-group>
@@ -193,7 +193,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="dictionary.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="dictionary.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

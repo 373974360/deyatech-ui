@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -91,7 +91,7 @@
                             <div v-show="taskUserEditorVisible">
                                 <h3>人员安排设置</h3>
                                 <div>
-                                    <el-radio-group v-model="processTaskSetting.candidateType">
+                                    <el-radio-group v-model.trim="processTaskSetting.candidateType">
                                         <el-radio :label="1">按用户分配</el-radio>
                                         <el-radio :label="2">按角色分配</el-radio>
                                         <el-radio :label="3">按部门分配</el-radio>
@@ -100,7 +100,7 @@
                                 <div class="con-bank-20"></div>
                                 <div>
                                     <div v-show="processTaskSetting.candidateType === 1">
-                                        <!--<el-select v-model="selectedUser" remote :remote-method="getUserOptions"
+                                        <!--<el-select v-model.trim="selectedUser" remote :remote-method="getUserOptions"
                                                    filterable placeholder="请输入姓名或帐号查询" style="width: 60%">
                                             <el-option v-for="item in userOptions" :key="item.id" :label="item.name" :value="item.id">
                                             </el-option>
@@ -121,12 +121,12 @@
                                             </el-table-column>
                                         </el-table>
                                     </div>
-                                    <el-select v-show="processTaskSetting.candidateType === 2" v-model="candidateGroupList" multiple
+                                    <el-select v-show="processTaskSetting.candidateType === 2" v-model.trim="candidateGroupList" multiple
                                                filterable placeholder="请选择" style="width: 75%">
                                         <el-option v-for="item in groupOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
-                                    <el-cascader v-show="processTaskSetting.candidateType === 3" v-model="selectedDepartment"
+                                    <el-cascader v-show="processTaskSetting.candidateType === 3" v-model.trim="selectedDepartment"
                                                  :options="departmentCascader" style="width: 75%"
                                                  show-all-levels expand-trigger="hover"
                                                  filterable clearable change-on-select
@@ -138,7 +138,7 @@
                             <div class="con-bank-20"></div>
                             <div v-show="userTaskSettingVisible">
                                 <h3>用户任务其他设置</h3>
-                                <el-checkbox v-model="processTaskSetting.autoPass">没有对应审批人员时自动进入下一个审批环节</el-checkbox>
+                                <el-checkbox v-model.trim="processTaskSetting.autoPass">没有对应审批人员时自动进入下一个审批环节</el-checkbox>
                             </div>
                             <div class="con-bank-20"></div>
                             <div v-show="userTaskSettingVisible">
@@ -158,7 +158,7 @@
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                      :size="searchSize" placeholder="根据部门筛选">
                         </el-cascader>
-                        <el-input v-model="userListQuery.name" class="dialog-search-item dialog-keywords"
+                        <el-input v-model.trim="userListQuery.name" class="dialog-search-item dialog-keywords"
                                   clearable :size="searchSize" placeholder="根据姓名或帐户查询">
                         </el-input>
                         <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>

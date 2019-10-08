@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -59,19 +59,19 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站群id" prop="stationGroupId">
-                                <el-input v-model="stationGroupUser.stationGroupId"></el-input>
+                                <el-input v-model.trim="stationGroupUser.stationGroupId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="用户id" prop="userId">
-                                <el-input v-model="stationGroupUser.userId"></el-input>
+                                <el-input v-model.trim="stationGroupUser.userId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="stationGroupUser.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="stationGroupUser.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

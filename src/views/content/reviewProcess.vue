@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入标题或作者" v-model="listQuery.titleOrAuthor"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入标题或作者" v-model.trim="listQuery.titleOrAuthor"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
@@ -80,26 +80,26 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="内容id" prop="contentId">
-                                <el-input v-model="reviewProcess.contentId"></el-input>
+                                <el-input v-model.trim="reviewProcess.contentId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="工作流id" prop="workflowId">
-                                <el-input v-model="reviewProcess.workflowId"></el-input>
+                                <el-input v-model.trim="reviewProcess.workflowId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="审核生命周期状态：0.启动 1.审核 2.完成" prop="status">
-                                <el-input v-model="reviewProcess.status"></el-input>
+                                <el-input v-model.trim="reviewProcess.status"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="reviewProcess.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="reviewProcess.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
