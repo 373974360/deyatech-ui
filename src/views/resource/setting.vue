@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -72,98 +72,98 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站群ID(为空则全站群共享)" prop="stationGroupId">
-                                <el-input v-model="setting.stationGroupId"></el-input>
+                                <el-input v-model.trim="setting.stationGroupId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="允许上传的附件类型" prop="uploadFileType">
-                                <el-input v-model="setting.uploadFileType"></el-input>
+                                <el-input v-model.trim="setting.uploadFileType"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="允许上传文件大小M" prop="uploadFileSize">
-                                <el-input v-model="setting.uploadFileSize"></el-input>
+                                <el-input v-model.trim="setting.uploadFileSize"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否生成缩略图" prop="thumbnailEnable">
-                                <el-input v-model="setting.thumbnailEnable"></el-input>
+                                <el-input v-model.trim="setting.thumbnailEnable"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="缩略图宽度" prop="thumbnailWidth">
-                                <el-input v-model="setting.thumbnailWidth"></el-input>
+                                <el-input v-model.trim="setting.thumbnailWidth"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="缩略图高度" prop="thumbnailHeight">
-                                <el-input v-model="setting.thumbnailHeight"></el-input>
+                                <el-input v-model.trim="setting.thumbnailHeight"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否生成水印" prop="watermarkEnable">
-                                <el-input v-model="setting.watermarkEnable"></el-input>
+                                <el-input v-model.trim="setting.watermarkEnable"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="水印类型：1图片、2文字" prop="watermarkType">
-                                <el-input v-model="setting.watermarkType"></el-input>
+                                <el-input v-model.trim="setting.watermarkType"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="水印图片高度" prop="watermarkWidth">
-                                <el-input v-model="setting.watermarkWidth"></el-input>
+                                <el-input v-model.trim="setting.watermarkWidth"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="水印图片宽度" prop="watermarkHeight">
-                                <el-input v-model="setting.watermarkHeight"></el-input>
+                                <el-input v-model.trim="setting.watermarkHeight"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="水印透明度%(0不透明~100透明)" prop="watermarkTransparency">
-                                <el-input v-model="setting.watermarkTransparency"></el-input>
+                                <el-input v-model.trim="setting.watermarkTransparency"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="水印图片url" prop="watermarkUrl">
-                                <el-input v-model="setting.watermarkUrl"></el-input>
+                                <el-input v-model.trim="setting.watermarkUrl"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="水印文字" prop="watermarkWord">
-                                <el-input v-model="setting.watermarkWord"></el-input>
+                                <el-input v-model.trim="setting.watermarkWord"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="水印位置：九宫格" prop="watermarkPosition">
-                                <el-input v-model="setting.watermarkPosition"></el-input>
+                                <el-input v-model.trim="setting.watermarkPosition"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="ico图片url" prop="icoUrl">
-                                <el-input v-model="setting.icoUrl"></el-input>
+                                <el-input v-model.trim="setting.icoUrl"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="setting.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="setting.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

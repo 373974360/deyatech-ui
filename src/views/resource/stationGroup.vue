@@ -191,7 +191,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="允许上传的附件类型" prop="uploadFileType">
-                                <el-select v-model="uploadFileTypeArray" @change="uploadFileTypeChange" clearable multiple style="width: 100%">
+                                <el-select v-model.trim="uploadFileTypeArray" @change="uploadFileTypeChange" clearable multiple style="width: 100%">
                                     <el-option v-for="item in enums['UploadFileTypeEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -203,12 +203,12 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="允许上传文件大小(M)" prop="uploadFileSize">
-                                <el-input v-model="setting.uploadFileSize" maxlength="3"></el-input>
+                                <el-input v-model.trim="setting.uploadFileSize" maxlength="3"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否生成缩略图" prop="thumbnailEnable">
-                                <el-select v-model="setting.thumbnailEnable" style="width: 100%" @change="thumbnailEnableChange">
+                                <el-select v-model.trim="setting.thumbnailEnable" style="width: 100%" @change="thumbnailEnableChange">
                                     <el-option v-for="item in enums['YesNoEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -220,19 +220,19 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="缩略图宽度(px)" prop="thumbnailWidth" ref="thumbnailWidthField" v-show="setting.thumbnailEnable == 1" :rules="setting.thumbnailEnable == 0 ? [] : settingRules.thumbnailWidth">
-                                <el-input v-model="setting.thumbnailWidth" maxlength="4"></el-input>
+                                <el-input v-model.trim="setting.thumbnailWidth" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="缩略图高度(px)" prop="thumbnailHeight" ref="thumbnailHeightField" v-show="setting.thumbnailEnable == 1" :rules="setting.thumbnailEnable == 0 ? [] : settingRules.thumbnailHeight">
-                                <el-input v-model="setting.thumbnailHeight" maxlength="4"></el-input>
+                                <el-input v-model.trim="setting.thumbnailHeight" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否生成水印" prop="watermarkEnable">
-                                <el-select v-model="setting.watermarkEnable" style="width:100%" @change="watermarkEnableChange">
+                                <el-select v-model.trim="setting.watermarkEnable" style="width:100%" @change="watermarkEnableChange">
                                     <el-option v-for="item in enums['YesNoEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -242,7 +242,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="水印类型" prop="watermarkType" ref="watermarkTypeField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkType">
-                                <el-select v-model="setting.watermarkType" style="width:100%" @change="watermarkTypeChange">
+                                <el-select v-model.trim="setting.watermarkType" style="width:100%" @change="watermarkTypeChange">
                                     <el-option v-for="item in enums['WaterMarkTypeEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -254,26 +254,25 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="水印宽度(px)" prop="watermarkWidth" ref="watermarkWidthField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkWidth">
-                                <el-input v-model="setting.watermarkWidth" maxlength="4"></el-input>
+                                <el-input v-model.trim="setting.watermarkWidth" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="水印高度(px)" prop="watermarkHeight" ref="watermarkHeightField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkHeight">
-                                <el-input v-model="setting.watermarkHeight" maxlength="4"></el-input>
+                                <el-input v-model.trim="setting.watermarkHeight" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="水印透明度(px)" prop="watermarkTransparency" ref="watermarkTransparencyField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkTransparency">
-                                <el-slider v-model="setting.watermarkTransparency" :min="1" :max="100" :step="1" show-input/>
+                                <el-slider v-model.trim="setting.watermarkTransparency" :min="1" :max="100" :step="1" show-input/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="水印图片" prop="watermarkUrl" ref="watermarkUrlField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 1" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 2 ? [] : settingRules.watermarkUrl">
-                                <!--<el-input v-model="setting.watermarkUrl" maxlength="1000"></el-input>-->
                                 <el-upload name="file"
                                            class="avatar-uploader"
                                            :action="this.$store.state.common.uploadUrl"
@@ -290,7 +289,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="水印文字" prop="watermarkWord" ref="watermarkWordField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 2" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 1 ? [] : settingRules.watermarkWord">
-                                <el-input v-model="setting.watermarkWord" maxlength="50"></el-input>
+                                <el-input v-model.trim="setting.watermarkWord" maxlength="50"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -298,19 +297,19 @@
                         <el-col :span="24">
                             <el-form-item label="水印位置" prop="watermarkPosition" ref="watermarkPositionField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkPosition">
                                 <div>
-                                    <el-radio v-model="setting.watermarkPosition" :label="1" border>左上</el-radio>
-                                    <el-radio v-model="setting.watermarkPosition" :label="2" border>上边</el-radio>
-                                    <el-radio v-model="setting.watermarkPosition" :label="3" border>右上</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="1" border>左上</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="2" border>上边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="3" border>右上</el-radio>
                                 </div>
                                 <div style="margin-top: 10px">
-                                    <el-radio v-model="setting.watermarkPosition" :label="4" border>左边</el-radio>
-                                    <el-radio v-model="setting.watermarkPosition" :label="5" border>中间</el-radio>
-                                    <el-radio v-model="setting.watermarkPosition" :label="6" border>右边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="4" border>左边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="5" border>中间</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="6" border>右边</el-radio>
                                 </div>
                                 <div style="margin-top: 10px">
-                                    <el-radio v-model="setting.watermarkPosition" :label="7" border>左下</el-radio>
-                                    <el-radio v-model="setting.watermarkPosition" :label="8" border>下边</el-radio>
-                                    <el-radio v-model="setting.watermarkPosition" :label="9" border>右下</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="7" border>左下</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="8" border>下边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" :label="9" border>右下</el-radio>
                                 </div>
                             </el-form-item>
                         </el-col>
@@ -318,7 +317,6 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="ICO图片" prop="icoUrl">
-                                <!--<el-input v-model="setting.icoUrl" maxlength="1000"></el-input>-->
                                 <el-upload name="file"
                                            class="avatar-uploader"
                                            :action="this.$store.state.common.uploadUrl"
@@ -335,7 +333,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="setting.remark" :rows="3" maxlength="400"/>
+                                <el-input type="textarea" v-model.trim="setting.remark" :rows="3" maxlength="400"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -472,17 +470,17 @@
                        :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
                 <div v-loading="dialogFormLoading">
                     <div class="dialog-search">
-                        <el-cascader v-model="userDepartmentTreePosition"
+                        <el-cascader v-model.trim="userDepartmentTreePosition"
                                      :options="departmentCascader" @change="handleDepartmentChange"
                                      class="dialog-search-item dialog-keywords"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                      :size="searchSize" placeholder="根据部门筛选"></el-cascader>
-                        <el-input v-model="userListQuery.name" class="dialog-search-item dialog-keywords"
-                                  clearable :size="searchSize" placeholder="根据姓名或帐户查询"></el-input>
+                        <el-input v-model.trim="userListQuery.name" class="dialog-search-item dialog-keywords"
+                                  clearable :size="searchSize" placeholder="根据姓名或帐户查询" maxlength="50"></el-input>
                         <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
                     </div>
                     <div class="dialog-search">
-                        <el-checkbox v-model="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
+                        <el-checkbox v-model.trim="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
                     </div>
                     <div>
                         <el-table ref="stationGroupUserTable" :data="userList" border @select="selectRowUser"
@@ -1010,6 +1008,7 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.disableDelete = false;
                 if (this.selectedRows && this.selectedRows.length > 0) {
                     for (let r of rows) {
                         if (r.enable == 1) {

@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.pageName"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.pageName"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -66,31 +66,31 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="页面名称" prop="pageName">
-                                <el-input v-model="page.pageName"></el-input>
+                                <el-input v-model.trim="page.pageName" maxlength="200"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="pageEnglishName">
-                                <el-input v-model="page.pageEnglishName"></el-input>
+                                <el-input v-model.trim="page.pageEnglishName" maxlength="200"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="页面路径" prop="pagePath">
-                                <el-input v-model="page.pagePath"></el-input>
+                                <el-input v-model.trim="page.pagePath" maxlength="250"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="模板地址" prop="templatePath">
-<!--                                <el-input v-model="page.templatePath"></el-input>-->
+<!--                                <el-input v-model.trim="page.templatePath"></el-input>-->
                                 <el-cascader
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
                                     :options="templateTreeData"
-                                    v-model="selectTemplatePath"
+                                    v-model.trim="selectTemplatePath"
                                     :props="cascaderProps"
                                     @change="handleChange">
                                 </el-cascader>
@@ -100,7 +100,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="更新频率" prop="pageInterval">
-                                <el-input v-model.number="page.pageInterval"></el-input>
+                                <el-input v-model.trim.number="page.pageInterval" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -110,7 +110,7 @@
                                     placeholder="请选择绑定栏目"
                                     :options="catalogList"
                                     :props="catalogProps"
-                                    v-model="pageCatalogList"
+                                    v-model.trim="pageCatalogList"
                                     collapse-tags
                                     clearable></el-cascader>
                             </el-form-item>
@@ -119,14 +119,14 @@
                     <!--<el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站点id" prop="siteId">
-                                <el-input v-model="page.siteId"></el-input>
+                                <el-input v-model.trim="page.siteId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark">
-                                <el-input type="textarea" v-model="page.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="page.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

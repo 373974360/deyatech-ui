@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入标题或作者" v-model="listQuery.title"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入标题或作者" v-model.trim="listQuery.title"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
@@ -158,7 +158,7 @@
                         <el-row :gutter="20" :span="24">
                             <!--<el-col :span="12" v-if="dialogTitle == 'update'">
                                 <el-form-item label="内容模型" prop="contentModelId">
-                                    <el-select v-model="template.contentModelId" placeholder="请选择内容模型"
+                                    <el-select v-model.trim="template.contentModelId" placeholder="请选择内容模型"
                                                @change="handleModelChange" :disabled="dialogTitle == 'update'">
                                         <el-option
                                             v-for="m in modelList"
@@ -171,26 +171,26 @@
                             </el-col>-->
                             <el-col :span="12">
                                 <el-form-item label="标题" prop="title">
-                                    <el-input v-model="template.title"></el-input>
+                                    <el-input v-model.trim="template.title"></el-input>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="12">
                                 <el-form-item label="作者姓名" prop="author">
-                                    <el-input v-model="template.author"></el-input>
+                                    <el-input v-model.trim="template.author"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="来源" prop="source">
-                                    <el-input v-model="template.source"></el-input>
+                                    <el-input v-model.trim="template.source"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="是否外链" prop="flagExternal">
-                                    <el-switch v-model="template.flagExternal" @change="isFlagExternal"
+                                    <el-switch v-model.trim="template.flagExternal" @change="isFlagExternal"
                                                active-text="是" inactive-text="否">
                                     </el-switch>
                                 </el-form-item>
@@ -203,7 +203,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="URL" prop="url">
-                                    <el-input v-model="template.url"></el-input>
+                                    <el-input v-model.trim="template.url"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -214,7 +214,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="资源分类" prop="resourceCategory"> <!--TODO-->
-                                    <el-select v-model="template.resourceCategory" placeholder="请选择资源分类">
+                                    <el-select v-model.trim="template.resourceCategory" placeholder="请选择资源分类">
                                         <el-option
                                             v-for="item in resourceCategoryList"
                                             :key="item.id"
@@ -226,14 +226,14 @@
                             </el-col>
                             <!--<el-col :span="12">
                                 <el-form-item label="编辑姓名" prop="editor">
-                                    <el-input v-model="template.editor"></el-input>
+                                    <el-input v-model.trim="template.editor"></el-input>
                                 </el-form-item>
                             </el-col>-->
                         </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="摘要" prop="resourceSummary">
-                                    <el-input type="textarea" v-model="template.resourceSummary" :rows="3"></el-input>
+                                    <el-input type="textarea" v-model.trim="template.resourceSummary" :rows="3"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -259,7 +259,7 @@
                                     <el-input
                                         class="input-new-tag"
                                         v-if="inputVisible"
-                                        v-model="inputValue"
+                                        v-model.trim="inputValue"
                                         ref="saveTagInput"
                                         size="small"
                                         @keyup.enter.native="handleInputConfirm"
@@ -274,7 +274,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="排序号" prop="sortNo">
-                                    <el-input-number v-model="template.sortNo" :min=1 :max=65535></el-input-number>
+                                    <el-input-number v-model.trim="template.sortNo" :min=1 :max=65535></el-input-number>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -317,7 +317,7 @@
                         <!--<el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="搜索可见" prop="flagSearch">
-                                    <el-switch v-model="template.flagSearch">
+                                    <el-switch v-model.trim="template.flagSearch">
                                     </el-switch>
                                 </el-form-item>
                             </el-col>
@@ -325,7 +325,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="是否置顶" prop="flagTop">
-                                    <el-switch v-model="template.flagTop" active-text="是" inactive-text="否">
+                                    <el-switch v-model.trim="template.flagTop" active-text="是" inactive-text="否">
                                     </el-switch>
                                 </el-form-item>
                             </el-col>
@@ -343,38 +343,38 @@
                             <!--                        <template slot-scope>-->
                             <!-- 输入框 -->
                             <el-input v-if="item.controlType === 'inputElement'"
-                                      v-model="template.content[item.fieldName]"></el-input>
+                                      v-model.trim="template.content[item.fieldName]"></el-input>
                             <!-- 选择器 -->
-                            <el-select v-if="item.controlType === 'selectElement'&& contentItemOptions[item.id]" v-model="template.content[item.fieldName]" placeholder="请选择">
+                            <el-select v-if="item.controlType === 'selectElement'&& contentItemOptions[item.id]" v-model.trim="template.content[item.fieldName]" placeholder="请选择">
                                 <el-option v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.codeText"
                                            :value="opt.id"></el-option>
                             </el-select>
                             <!-- 单选框 -->
-                            <el-radio-group v-if="item.controlType === 'radioElement' && contentItemOptions[item.id]" v-model="template.content[item.fieldName]">
+                            <el-radio-group v-if="item.controlType === 'radioElement' && contentItemOptions[item.id]" v-model.trim="template.content[item.fieldName]">
                                 <el-radio v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
                                     {{opt.codeText}}
                                 </el-radio>
                             </el-radio-group>
                             <!-- 多选框 -->
-                            <el-checkbox-group v-if="item.controlType === 'checkboxElement' && contentItemOptions[item.id]" v-model="contentItemArray[item.fieldName]">
+                            <el-checkbox-group v-if="item.controlType === 'checkboxElement' && contentItemOptions[item.id]" v-model.trim="contentItemArray[item.fieldName]">
                                 <el-checkbox v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
                                     {{opt.codeText}}
                                 </el-checkbox>
                             </el-checkbox-group>
                             <!-- 文本域 -->
                             <el-input type="textarea" v-if="item.controlType === 'textareaElement'"
-                                      v-model="template.content[item.fieldName]"></el-input>
+                                      v-model.trim="template.content[item.fieldName]"></el-input>
                             <!-- 富文本 -->
                             <editor v-if="item.controlType === 'richTextElement'" :ref="item.id" :id="'editor' + index"
                                     :default-msg="editorDefaultMsg[item.id]" :config="editorConfig"></editor>
                             <!-- 时间类型 -->
                             <template v-if="item.metadata.dataType === 'date'">
-                                <el-time-picker v-if="item.controlType === 'timeElement'" v-model="template.content[item.fieldName]"
+                                <el-time-picker v-if="item.controlType === 'timeElement'" v-model.trim="template.content[item.fieldName]"
                                                 value-format="HH:mm:ss" placeholder="请选择时间"></el-time-picker>
                                 <el-date-picker v-else-if="item.controlType === 'datetimeElement'"
-                                                v-model="template.content[item.fieldName]"
+                                                v-model.trim="template.content[item.fieldName]"
                                                 type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择时间"></el-date-picker>
-                                <el-date-picker v-else v-model="template.content[item.fieldName]" type="date" value-format="yyyy-MM-dd"
+                                <el-date-picker v-else v-model.trim="template.content[item.fieldName]" type="date" value-format="yyyy-MM-dd"
                                                 placeholder="请选择日期"></el-date-picker>
                             </template>
 

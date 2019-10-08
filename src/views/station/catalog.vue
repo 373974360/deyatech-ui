@@ -4,7 +4,7 @@
             <!--            <div class="deyatech-header">
                             <el-form :inline="true" ref="searchForm">
                                 <el-form-item>
-                                    <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                                    <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                                 </el-form-item>
                                 <el-form-item>
                                     <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -95,7 +95,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item :label="$t('table.parent')" prop="parent">
-                                <el-cascader :options="catalogCascader" v-model="catalogTreePosition"
+                                <el-cascader :options="catalogCascader" v-model.trim="catalogTreePosition"
                                              show-all-levels expand-trigger="click" clearable
                                              change-on-select style="width: 100%"></el-cascader>
                             </el-form-item>
@@ -104,7 +104,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="内容模型" prop="contentModelId">
-                                <el-select v-model="selectContentModelIds" placeholder="请选择内容模型"
+                                <el-select v-model.trim="selectContentModelIds" placeholder="请选择内容模型"
                                            multiple style="width: 100%">
                                     <el-option
                                         v-for="m in modelList"
@@ -117,19 +117,19 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="栏目名称" prop="name">
-                                <el-input v-model="catalog.name"/>
+                                <el-input v-model.trim="catalog.name"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="栏目别名" prop="aliasName">
-                                <el-input v-model="catalog.aliasName"></el-input>
+                                <el-input v-model.trim="catalog.aliasName"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="ename">
-                                <el-input v-model="catalog.ename"></el-input>
+                                <el-input v-model.trim="catalog.ename"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -137,26 +137,26 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="字段名" prop="columnName">
-                                <el-input v-model="catalog.columnName"></el-input>
+                                <el-input v-model.trim="catalog.columnName"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="字段类型" prop="columnType">
-                                <el-input v-model="catalog.columnType"></el-input>
+                                <el-input v-model.trim="catalog.columnType"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="字段描述" prop="columnDescription">
-                                <el-input type="textarea" v-model="catalog.columnDescription" :rows="3"></el-input>
+                                <el-input type="textarea" v-model.trim="catalog.columnDescription" :rows="3"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="字段关键字" prop="columnKeywords">
-                                <el-input v-model="catalog.columnKeywords"></el-input>
+                                <el-input v-model.trim="catalog.columnKeywords"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -164,7 +164,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否外链" prop="flagExternal">
-                                <el-switch v-model="catalog.flagExternal" :active-value=1 :inactive-value=0 @change="isFlagExternal"
+                                <el-switch v-model.trim="catalog.flagExternal" :active-value=1 :inactive-value=0 @change="isFlagExternal"
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
@@ -178,7 +178,7 @@
                     <el-row :gutter="20" :span="24" v-if="">
                         <el-col :span="24">
                             <el-form-item label="外部链接地址" prop="linkUrl">
-                                <el-input v-model="catalog.linkUrl"></el-input>
+                                <el-input v-model.trim="catalog.linkUrl"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -189,7 +189,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="首页模板" prop="indexTemplate">
-                                <el-input v-model="catalog.indexTemplate"></el-input>
+                                <el-input v-model.trim="catalog.indexTemplate"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -200,7 +200,7 @@
                                     clearable
                                     expand-trigger="hover"
                                     :options="templateTreeData"
-                                    v-model="selectListTemplate"
+                                    v-model.trim="selectListTemplate"
                                     :props="cascaderProps"
                                     @change="handleChange">
                                 </el-cascader>
@@ -210,21 +210,21 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="列表页显示条数" prop="displayNumber">
-                                <el-input-number v-model="catalog.displayNumber" :min=1 :max=100 style="width: 100%"></el-input-number>
+                                <el-input-number v-model.trim="catalog.displayNumber" :min=1 :max=100 style="width: 100%"></el-input-number>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否自动发布" prop="autoRelease">
-                                <el-switch v-model="catalog.autoRelease" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.autoRelease" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否允许评论" prop="allowComment">
-                                <el-switch v-model="catalog.allowComment" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.allowComment" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
@@ -233,14 +233,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否允许分享" prop="allowShare">
-                                <el-switch v-model="catalog.allowShare" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.allowShare" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否生成栏目首页" prop="generateHome">
-                                <el-switch v-model="catalog.generateHome" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.generateHome" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
@@ -249,14 +249,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否在导航中显示" prop="navigationShowAble">
-                                <el-switch v-model="catalog.navigationShowAble" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.navigationShowAble" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否在树中显示" prop="treeShowAble">
-                                <el-switch v-model="catalog.treeShowAble" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.treeShowAble" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
@@ -265,7 +265,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否归档" prop="placeOnFile">
-                                <el-switch v-model="catalog.placeOnFile" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.placeOnFile" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
@@ -274,15 +274,15 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="参与人员" prop="participant">
-                                <el-radio v-model="catalog.participant" border :label="1">会员</el-radio>
-                                <el-radio v-model="catalog.participant" border :label="2">所有人</el-radio>
+                                <el-radio v-model.trim="catalog.participant" border :label="1">会员</el-radio>
+                                <el-radio v-model.trim="catalog.participant" border :label="2">所有人</el-radio>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否启用工作流" prop="workflowEnable">
-                                <el-switch v-model="catalog.workflowEnable" :active-value=1 :inactive-value=0 @change="isWorkflowEnable"
+                                <el-switch v-model.trim="catalog.workflowEnable" :active-value=1 :inactive-value=0 @change="isWorkflowEnable"
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
@@ -291,7 +291,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="工作流" prop="workflowKey" v-if="catalog.workflowEnable == 1">
-                                <el-select v-model="catalog.workflowKey" placeholder="请选择工作流">
+                                <el-select v-model.trim="catalog.workflowKey" placeholder="请选择工作流">
                                     <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -300,14 +300,14 @@
                     <!--                    <el-row :gutter="20" :span="24">
                                             <el-col :span="24">
                                                 <el-form-item :label="$t('table.remark')" prop="remark" label-width="140px">
-                                                    <el-input type="textarea" v-model="catalog.remark" :rows="3"/>
+                                                    <el-input type="textarea" v-model.trim="catalog.remark" :rows="3"/>
                                                 </el-form-item>
                                             </el-col>
                                         </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否设置聚合规则" prop="flagAggregation">
-                                <el-switch v-model="catalog.flagAggregation" :active-value=1 :inactive-value=0
+                                <el-switch v-model.trim="catalog.flagAggregation" :active-value=1 :inactive-value=0
                                            active-text="是" inactive-text="否">
                                 </el-switch>
                             </el-form-item>
@@ -329,7 +329,7 @@
                                 collapse-tags
                                 expand-trigger="hover"
                                 :options="catalogCascader"
-                                v-model="selectCatalogIds"
+                                v-model.trim="selectCatalogIds"
                                 :props="{ multiple: true, checkStrictly: true }"
                                 @change="handleChange">
                             </el-cascader>
@@ -337,14 +337,14 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="发布人" prop="publisher">
-                            <el-input v-model="catalogAggregation.publisher"></el-input>
+                            <el-input v-model.trim="catalogAggregation.publisher"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item label="发布机构" prop="publishOrganization">
-                            <el-input v-model="catalogAggregation.publishOrganization"></el-input>
+                            <el-input v-model.trim="catalogAggregation.publishOrganization"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -352,7 +352,7 @@
                     <el-col :span="24">
                         <el-form-item label="发布时间段" prop="publishTime">
                             <el-date-picker
-                                v-model="selectPublishTime"
+                                v-model.trim="selectPublishTime"
                                 type="datetimerange"
                                 start-placeholder="开始日期"
                                 end-placeholder="结束日期"
@@ -376,7 +376,7 @@
                             <el-input
                                 class="input-new-tag"
                                 v-if="inputVisible"
-                                v-model="inputValue"
+                                v-model.trim="inputValue"
                                 ref="saveTagInput"
                                 size="small"
                                 @keyup.enter.native="handleInputConfirm"

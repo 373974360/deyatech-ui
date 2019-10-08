@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -62,38 +62,38 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="栏目id" prop="cmsCatalogId">
-                                <el-input v-model="catalogAggregation.cmsCatalogId"></el-input>
+                                <el-input v-model.trim="catalogAggregation.cmsCatalogId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="关键字" prop="keyword">
-                                <el-input v-model="catalogAggregation.keyword"></el-input>
+                                <el-input v-model.trim="catalogAggregation.keyword"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="发布机构" prop="publishOrganization">
-                                <el-input v-model="catalogAggregation.publishOrganization"></el-input>
+                                <el-input v-model.trim="catalogAggregation.publishOrganization"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="发布时间段" prop="publishTime">
-                                <el-input v-model="catalogAggregation.publishTime"></el-input>
+                                <el-input v-model.trim="catalogAggregation.publishTime"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="发布人" prop="publisher">
-                                <el-input v-model="catalogAggregation.publisher"></el-input>
+                                <el-input v-model.trim="catalogAggregation.publisher"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="catalogAggregation.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="catalogAggregation.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

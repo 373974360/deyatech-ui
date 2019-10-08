@@ -6,7 +6,7 @@
                     <el-form-item>
                         <el-cascader
                             placeholder="请选择分类"
-                            v-model="stationGroupClassificationIds"
+                            v-model.trim="stationGroupClassificationIds"
                             :options="stationGroupClassificationCascader"
                             :props="{ expandTrigger: 'hover' }"
                             clearable

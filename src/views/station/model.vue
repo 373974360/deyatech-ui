@@ -4,10 +4,10 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入内容模型或英文名称" v-model="listQuery.name" style="width: 200px"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入内容模型或英文名称" v-model.trim="listQuery.name" style="width: 200px"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-select v-model="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize">
+                        <el-select v-model.trim="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize">
                             <el-option
                                 v-for="m in metadataCollectionList"
                                 :key="m.id"
@@ -78,19 +78,19 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="内容模型" prop="name" label-width="110px">
-                                <el-input v-model="model.name"></el-input>
+                                <el-input v-model.trim="model.name"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="englishName" label-width="110px">
-                                <el-input v-model="model.englishName"></el-input>
+                                <el-input v-model.trim="model.englishName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="关联元数据集" prop="metaDataCollectionId" label-width="110px">
-                                <el-select v-model="model.metaDataCollectionId" placeholder="请选择元数据集">
+                                <el-select v-model.trim="model.metaDataCollectionId" placeholder="请选择元数据集">
                                     <el-option
                                         v-for="m in metadataCollectionList"
                                         :key="m.id"
@@ -104,14 +104,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="描述" prop="description" label-width="110px">
-                                <el-input type="textarea" v-model="model.description" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="model.description" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark" label-width="110px">
-                                <el-input type="textarea" v-model="model.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="model.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -167,7 +167,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="站点" prop="siteId">
-                                    <el-select v-model="modelTemplate.siteId" placeholder="请选择站点" @change="getInfoBySiteId"
+                                    <el-select v-model.trim="modelTemplate.siteId" placeholder="请选择站点" @change="getInfoBySiteId"
                                                :disabled="modelTemplateSaveOrUpdateDialogTitle == 'update'" style="width: 100%">
                                         <el-option
                                             v-for="s in stationGroup"
@@ -188,7 +188,7 @@
                                         clearable
                                         ref="templatePath"
                                         :options="templateTreeData"
-                                        v-model="selectTemplatePath"
+                                        v-model.trim="selectTemplatePath"
                                         :props="cascaderProps"
                                         @change="handleChange">
                                     </el-cascader>
@@ -199,7 +199,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="栏目">
-                                    <el-input placeholder="输入关键字进行过滤" v-model="filterText"></el-input>
+                                    <el-input placeholder="输入关键字进行过滤" v-model.trim="filterText"></el-input>
                                     <div class="content-template-catalog">
                                         <el-tree ref="catalogTree" :data="catalogList" :props="defaultTreeProps" node-key="id" highlight-current
                                                  :default-expand-all="true" :expand-on-click-node="false" :filter-node-method="filterNode">
@@ -207,7 +207,7 @@
                                                 <span>{{ node.label }}</span>
                                                 <el-cascader
                                                     :options="templateTreeData"
-                                                    v-model="catalogTemplate[data.id].templatePath"
+                                                    v-model.trim="catalogTemplate[data.id].templatePath"
                                                     :props="cascaderProps"
                                                     @change="handleCatalogTemplateChange(node, data)"
                                                     clearable

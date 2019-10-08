@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -74,26 +74,26 @@
                     <el-row :gutter="20" :span="24">
                         <!--<el-col :span="12">
                             <el-form-item label="" prop="actModelId">
-                                <el-input v-model="processModel.actModelId"></el-input>
+                                <el-input v-model.trim="processModel.actModelId"></el-input>
                             </el-form-item>
                         </el-col>-->
                         <el-col :span="12">
                             <el-form-item label="模型名称" prop="name">
-                                <el-input v-model="processModel.name"></el-input>
+                                <el-input v-model.trim="processModel.name" maxlength="200"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <!--<el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="" prop="processDefinitionId">
-                                <el-input v-model="processModel.processDefinitionId"></el-input>
+                                <el-input v-model.trim="processModel.processDefinitionId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="processModel.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="processModel.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

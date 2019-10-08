@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -62,38 +62,38 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="栏目id" prop="cmsCatalogId">
-                                <el-input v-model="modelTemplate.cmsCatalogId"></el-input>
+                                <el-input v-model.trim="modelTemplate.cmsCatalogId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="站点id" prop="siteId">
-                                <el-input v-model="modelTemplate.siteId"></el-input>
+                                <el-input v-model.trim="modelTemplate.siteId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="模版路径" prop="templatePath">
-                                <el-input v-model="modelTemplate.templatePath"></el-input>
+                                <el-input v-model.trim="modelTemplate.templatePath"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="内容模型id" prop="contentModelId">
-                                <el-input v-model="modelTemplate.contentModelId"></el-input>
+                                <el-input v-model.trim="modelTemplate.contentModelId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="默认标记" prop="defaultFlag">
-                                <el-input v-model="modelTemplate.defaultFlag"></el-input>
+                                <el-input v-model.trim="modelTemplate.defaultFlag"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model="modelTemplate.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="modelTemplate.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>

@@ -5,7 +5,7 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || stationCount > 0">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || classificationAndStationCount > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -37,7 +37,7 @@
                                @click.stop.safe="btnCreate(scope.row)"></el-button>
                     <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                    <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                    <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle :disabled="(scope.row.stationCount + scope.row.classificationCount) > 0"
                                @click.stop.safe="btnDelete(scope.row)"></el-button>
                 </template>
             </el-table-column>
@@ -169,6 +169,7 @@
                 submitLoading: false,
                 selectedRows: [],
                 stationCount: 0,
+                classificationAndStationCount: 0,
                 stationGroupClassificationRules: {
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '分类名称'},
@@ -252,8 +253,10 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
                 this.stationCount = 0;
+                this.classificationAndStationCount = 0;
                 for(let r of rows) {
                     this.stationCount += r.stationCount;
+                    this.classificationAndStationCount += r.stationCount + r.classificationCount;
                 }
             },
             btnCreate(row){
@@ -295,6 +298,7 @@
                 this.dialogVisible = true;
             },
             btnDelete(row){
+                alert(1);
                 let ids = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {

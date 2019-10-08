@@ -20,7 +20,7 @@
                     <el-row>
                         <el-form-item label="时间范围" prop="timeFrame">
                             <el-date-picker
-                                v-model="timeFrame"
+                                v-model.trim="timeFrame"
                                 type="daterange"
                                 align="right"
                                 unlink-panels
