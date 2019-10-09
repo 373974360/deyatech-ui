@@ -811,7 +811,7 @@
                 if (this.template.thumbnailUrl) {
                     this.thumbnailList.push({
                         id: this.template.thumbnail,
-                        url: this.$store.state.common.showPicImgUrl + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+                        url: "/manage/station/material/showPicImg?filePath=" + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
                     })
                 }
                 // 必须这么设置
