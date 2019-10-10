@@ -71,3 +71,11 @@ export function existsEname(query) {
         params: query
     })
 }
+
+export function hasTemplate(query) {
+    return request({
+        url: '/manage/station/catalog/hasTemplate',
+        method: 'get',
+        params: query
+    })
+}

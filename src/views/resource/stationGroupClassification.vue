@@ -200,6 +200,8 @@
                 get() {
                     if (this.stationGroupClassification.treePosition) {
                         return this.stationGroupClassification.treePosition.substr(1).split('&');
+                    } else {
+                        return [];
                     }
                 },
                 set(v) {

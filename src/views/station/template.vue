@@ -628,7 +628,6 @@
             // 弹窗元数据相关部分 TODO
             contentItemArray: {
                 handler(val) {
-                    // console.log(JSON.stringify(val))
                     for (let item in val) {
                         this.template.content[item] = val[item].join()
                     }
@@ -650,7 +649,6 @@
                         trigger: 'blur'
                     })
                 }
-                // console.log(`rules[${item.fieldName}]`, rules)
                 return rules
             }
         },
@@ -679,7 +677,6 @@
             this.changeHeight()
         },
         created(){
-            console.log("siteId: " + this.$store.state.common.siteId);
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
@@ -704,6 +701,7 @@
                 this.listLoading = true;
                 getCatalogTree(this.listQuery).then(response => {
                     this.catalogList = response.data;
+                    console.dir(this.catalogList);
                     this.setDefaultCurrentNode()
                     this.listLoading = false;
                 })
@@ -717,7 +715,6 @@
                 }
             },
             handleNoteClick(data) {
-                // console.log("catalog: " + JSON.stringify(data))
                 // 获取内容列表
                 // 设置内容工作流id
                 this.workflowKey = data.workflowKey;
@@ -838,7 +835,6 @@
                             contentId: row.content ? row.content.id_ : undefined,
                             contentModelId: row.contentModelId
                         });
-                        // console.log("ids: " + JSON.stringify(ids))
                         this.doDelete(ids);
                     })
                 } else {
@@ -851,7 +847,6 @@
                                 contentModelId: deleteRow.contentModelId
                             });
                         }
-                        // console.log("ids: " + JSON.stringify(ids))
                         this.doDelete(ids);
                     })
                 }
@@ -918,7 +913,6 @@
                             // 内容
                             this.template.resourceContent = this.$refs['resourceContent'].getUeContent()
 
-                            console.log("template: " + JSON.stringify(this.template))
                             this.submitLoading = true;
                             createOrUpdateTemplate(this.template).then(() => {
                                 this.resetTemplateDialogAndList();
@@ -1068,7 +1062,6 @@
             getContentForm() {
                 for (let model of this.modelList) {
                     if (this.template.contentModelId == model.id) {
-                        // console.log(JSON.stringify(model))
                         // 设置内容模型名称
                         this.template.contentModelName = model.name;
                         // 设置元数据id
@@ -1094,7 +1087,6 @@
             },
             // 设置元数据值及字典选项
             setMetadataAndDictionary() {
-                // console.log('content', this.template.content)
                 for (let item of this.metadataCollection.metadataList) {
                     // 初始化，必须!
                     if (item.controlType === 'checkboxElement') {
@@ -1185,7 +1177,6 @@
             },
             // 选择菜单触发
             handleCommand(command) {
-                console.log(command)
                 // 生成勾选的内容页
                 if (command == 'handleCheckedStaticContent') {
                     this.handleCheckedStaticContent();
@@ -1410,7 +1401,6 @@
                 }
             },
             handlePreview(file) {
-                console.log(file)
                 // 下载文件
                 // window.open(this.$store.state.common.downloadUrl + file.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/'));
                 window.location.href = this.$store.state.common.downloadUrl + file.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
@@ -1423,7 +1413,6 @@
                 }
             },
             pickUploader(key) {
-                // console.log('file-key: ', key)
                 this.currentUploaderKey = key
             },
             // 动态添加关键字 start

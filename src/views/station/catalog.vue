@@ -15,9 +15,9 @@
 
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || templateCount > 0">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || templateCount > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -30,19 +30,20 @@
         <el-table :data="catalogList" v-loading.body="listLoading" stripe border highlight-current-row
                   @selection-change="handleSelectionChange" v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
-            <!--<el-table-column align="center" label="站点id" prop="siteId"/>
-            <el-table-column align="center" label="父节点id" prop="parentId"/>-->
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
-                                  parentKey="parentId" prop="name" label="栏目名称" width="200" align="center">
+                                  parentKey="parentId" prop="name" label="栏目名称" align="left">
                 <template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                 </template>
             </el-table-tree-column>
             <el-table-column align="center" label="栏目别名" prop="aliasName"/>
-            <el-table-column align="center" label="排序" prop="sortNo"/>
+            <el-table-column align="center" label="URL" prop="linkUrl"/>
+            <el-table-column align="center" label="排序" prop="sortNo" width="80"/>
+            <!--<el-table-column align="center" label="站点id" prop="siteId"/>
+            <el-table-column align="center" label="父节点id" prop="parentId"/>-->
             <!--            <el-table-column align="center" label="英文名称" prop="ename"/>-->
             <!--            <el-table-column align="center" label="是否显示" prop="showable"/>-->
-            <el-table-column align="center" label="URL" prop="linkUrl"/>
+
             <!--            <el-table-column align="center" label="工作流ID" prop="workflowId"/>-->
             <!--            <el-table-column align="center" label="首页模板" prop="indexTemplate"/>-->
             <!--            <el-table-column align="center" label="列表页模板" prop="listTemplate"/>-->
@@ -68,14 +69,15 @@
                                 </el-tag>
                             </template>
                         </el-table-column>-->
+
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                 <template slot-scope="scope">
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
-                               @click.stop.safe="btnCreate(scope.row)"></el-button>
+                               @click.stop.safe="btnCreate(scope.row)" :disabled="scope.row.templateCount > 0"></el-button>
                     <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                @click.stop.safe="btnUpdate(scope.row)"></el-button>
                     <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                               @click.stop.safe="btnDelete(scope.row)"></el-button>
+                               @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.templateCount > 0"></el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -94,7 +96,7 @@
                 <div v-if="stepsActive == 0">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item :label="$t('table.parent')" prop="parent">
+                            <el-form-item label="上级栏目" prop="parentId">
                                 <el-cascader :options="catalogCascader" v-model.trim="catalogTreePosition"
                                              show-all-levels expand-trigger="click" clearable
                                              change-on-select style="width: 100%"></el-cascader>
@@ -411,7 +413,8 @@
         delCatalogs,
         existsName,
         existsAliasName,
-        existsEname
+        existsEname,
+        hasTemplate
     } from '@/api/station/catalog';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
@@ -427,6 +430,19 @@
     export default {
         name: 'catalog',
         data() {
+            const checkParentId = (rule, value, callback) => {
+                if (this.catalog.id && this.catalog.id === value) {
+                    callback(new Error('不能添加自己'));
+                    return;
+                }
+                hasTemplate({id:value}).then(response => {
+                    if (response.data) {
+                        callback(new Error('当前栏目下已存在内容，不能添加栏目'))
+                    } else {
+                        callback()
+                    }
+                })
+            };
             const validateName = (rule, value, callback) => {
                 const query = {
                     id: this.catalog.id,
@@ -450,7 +466,7 @@
                         callback(new Error('检查名称重复失败'))
                     }
                 })
-            }
+            };
             const validateAliasName = (rule, value, callback) => {
                 const query = {
                     id: this.catalog.id,
@@ -469,7 +485,7 @@
                         callback(new Error('检查别名重复失败'))
                     }
                 })
-            }
+            };
             const validateEname = (rule, value, callback) => {
                 if (!isEnglish(value)) {
                     callback(new Error('只能输入英文字母'));
@@ -492,7 +508,7 @@
                         callback(new Error('检查英文名称重复失败'))
                     }
                 })
-            }
+            };
             const validateListTemplate = (rule, value, callback) => {
                 this.catalog.listTemplate = '/';
                 if (this.selectListTemplate) {
@@ -504,7 +520,7 @@
                 } else {
                     callback()
                 }
-            }
+            };
             const validateContentModelId = (rule, value, callback) => {
                 if (this.selectContentModelIds.length == 0) {
                     callback(new Error('请选择内容模板'))
@@ -517,7 +533,7 @@
                         callback()
                     }
                 }
-            }
+            };
             const validateUrl = (rule, value, callback) => {
                 if (this.catalog.flagExternal) {
                     if (!value) {
@@ -530,7 +546,7 @@
                         }
                     }
                 }
-            }
+            };
             const validateCmsCatalogId = (rule, value, callback) => {
                 if (this.selectCatalogIds.length == 0) {
                     callback(new Error('请选择栏目'))
@@ -543,7 +559,7 @@
                         callback()
                     }
                 }
-            }
+            };
             const validatePublishTime = (rule, value, callback) => {
                 if (this.selectPublishTime.length == 0) {
                     callback(new Error('请选择发布时间段'))
@@ -551,7 +567,7 @@
                     this.catalogAggregation.publishTime = this.selectPublishTime.join();
                     callback()
                 }
-            }
+            };
             return {
                 listQuery: {
                     page: this.$store.state.common.page,
@@ -611,7 +627,7 @@
                         {required: true, message: this.$t("table.pleaseInput") + '站点id'}
                     ],
                     parentId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '父节点id'}
+                        {validator: checkParentId, trigger: 'change'}
                     ],
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '栏目名称'},
@@ -769,6 +785,7 @@
                 inputVisible: false,
                 inputValue: '',
                 selectPublishTime: [],
+                templateCount: 0
             }
         },
         created() {
@@ -787,6 +804,8 @@
                 get() {
                     if (this.catalog.treePosition) {
                         return this.catalog.treePosition.substr(1).split('&');
+                    } else {
+                        return [];
                     }
                 },
                 set(v) {
@@ -850,6 +869,10 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.templateCount = 0;
+                for (let r of rows) {
+                    this.templateCount += r.templateCount;
+                }
             },
             /*            loadEnum(name) {
                             return getStore({name: 'enums'})[name]
@@ -918,6 +941,9 @@
                 } else {
                     this.catalog = deepClone(this.selectedRows[0]);
                 }
+                if (this.catalog.contentModelId) {
+                    this.selectContentModelIds = this.catalog.contentModelId.split(',');
+                }
                 this.isWorkflowEnable(this.catalog.workflowEnable);
                 // 聚合栏目
                 if (this.catalog.flagAggregation) {
@@ -926,7 +952,6 @@
                     this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
                     this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
                 }
-                // console.log('catalogAggregation: '+ JSON.stringify(this.catalog.catalogAggregation))
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -989,13 +1014,14 @@
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
-                    console.log(_this.catalog);
                     _this.submitLoading = true;
-                    createOrUpdateCatalog(_this.catalog).then(() => {
+                    createOrUpdateCatalog(_this.catalog).then((response) => {
                         _this.lastExpanded = _this.catalog.treePosition;
                         _this.resetCatalogDialogAndList();
                         _this.$message.success(_this.$t("table.createSuccess"));
-                    })
+                    }).catch(() => {
+                        _this.submitLoading = false;
+                    });;
                 });
             },
             doUpdate(){
@@ -1031,11 +1057,9 @@
                             type: 'warning'
                         }).then(() => {
                             resolve();
-                            console.log('覆盖子栏目')
                             _this.catalog.coverage = true;
                         }).catch(() => {
                             resolve();
-                            console.log('不覆盖子栏目')
                             _this.catalog.coverage = false;
                         });
                     });
@@ -1048,13 +1072,14 @@
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
-                    console.log(_this.catalog);
                     _this.submitLoading = true;
                     createOrUpdateCatalog(_this.catalog).then(() => {
                         _this.lastExpanded = _this.catalog.treePosition;
                         _this.resetCatalogDialogAndList();
                         _this.$message.success(_this.$t("table.updateSuccess"));
-                    })
+                    }).catch(() => {
+                        _this.submitLoading = false;
+                    });
                 });
             },
             doDelete(ids){
@@ -1063,7 +1088,9 @@
                     this.selectedRows = [];
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                });
             },
             resetCatalog(){
                 this.catalog = {
@@ -1141,7 +1168,6 @@
                 this.dynamicTags = [];
             },
             handleChange(value) {
-                console.log(value);
             },
             isWorkflowEnable (value) {
                 if (value == 1) {
@@ -1174,7 +1200,6 @@
             getAllModel() {
                 getAllModel().then(response => {
                     this.modelList = response.data;
-                    // console.log(this.modelList)
                     for (let model of this.modelList) {
                         this.selectContentModelIds.push(model.id);
                     }
