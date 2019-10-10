@@ -84,11 +84,17 @@
                             <el-form-item label="评价等级" prop="level">
                                 <el-rate
                                     style="margin-top: 10px"
+                                    :disabled="dialogTitle == 'update'"
                                     v-model="config.level"
                                     :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
                                     show-text
                                     :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
                                 </el-rate>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="组织机构代码" prop="organizationalCode">
+                                <el-input v-model="config.organizationalCode"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>

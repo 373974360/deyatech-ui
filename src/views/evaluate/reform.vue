@@ -113,7 +113,6 @@
                         </el-rate>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="评价人姓名" prop="userName"/>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
 
 <!--                <el-table-column type="selection" width="50" align="center"/>
@@ -164,10 +163,53 @@
             </el-pagination>
 
 
-            <el-dialog title="整改" :visible.sync="dialogVisible"
+            <el-dialog title="评价整改" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialog">
+                <!--<table class="mailTable">
+                    <tr>
+                        <td class="column">整体满意度</td>
+                        <td>
+                            <el-rate
+                                disabled
+                                v-model="detail.levelCode | levelParseInt"
+                                :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                                show-text
+                                :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
+                            </el-rate>
+                        </td>
+                        <td class="column">事项名称</td>
+                        <td>{{detail.itemName}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">受理部门</td>
+                        <td>{{detail.proDepartment}}</td>
+                        <td class="column">经办人</td>
+                        <td>{{detail.proManager}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">评价人姓名</td>
+                        <td>{{detail.userName}}</td>
+                        <td class="column">评价时间</td>
+                        <td>{{detail.submitTime}}</td>
+                    </tr>
+                    <tr v-if="detail.content">
+                        <td class="column">评价详情</td>
+                        <td class="reform" colspan="3">
+                            <ul>
+                                <li v-for="c in detail.content.split('&')">
+                                    {{c}}
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr v-if="detail.words">
+                        <td class="column">文字评价</td>
+                        <td class="reform" colspan="3">{{detail.words}}</td>
+                    </tr>
+                </table>-->
+
                 <el-form ref="detailDialogForm" class="deyatech-form" :model="detail" label-position="right"
-                         label-width="100px" :rules="detailRules">
+                         label-width="100px" :rules="detailRules" style="margin-top: 20px">
 
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
@@ -195,8 +237,38 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
+                            <el-form-item label="经办人">
+                                <el-input disabled v-model="detail.proManager"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
                             <el-form-item label="评价人姓名">
                                 <el-input disabled v-model="detail.userName"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="评价时间">
+                                <el-input disabled v-model="detail.submitTime"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="评价详情">
+                                <ul>
+                                    <li v-for="c in detail.content.split('&')">
+                                        {{c}}
+                                    </li>
+                                </ul>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="文字评价">
+                                <el-input disabled type="textarea" v-model="detail.words" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -289,6 +361,7 @@
                     publicFlag: undefined,
                     reformContent: undefined,
                     reformDate: undefined,
+                    content: ''
                 },
                 detailRules: {
                     organizationalCode: [
@@ -520,6 +593,7 @@
                     publicFlag: undefined,
                     reformContent: undefined,
                     reformDate: undefined,
+                    content: ''
                 }
             },
             resetDetailDialogAndList(){
@@ -566,4 +640,33 @@
     }
 </script>
 
+<style>
+    .mailTable, .mailTable tr, .mailTable tr td {
+        border:1px solid #E6EAEE;
+    }
+    .mailTable {
+        font-size: 14px;
+        color: #71787E;
+    }
+    .mailTable tr td {
+        border:1px solid #E6EAEE;
+        width: 225px;
+        height: 40px;
+        line-height: 40px;
+        box-sizing: border-box;
+        padding: 0 10px;
+    }
+    .mailTable tr td.column {
+        width: 175px;
+        background-color: #EFF3F6;
+        color: #393C3E;
+    }
+    .mailTable tr td.reform {
+        height: auto;
+        line-height: 30px;
+    }
+    ul {
+        padding-inline-start: 20px;
+    }
+</style>
 

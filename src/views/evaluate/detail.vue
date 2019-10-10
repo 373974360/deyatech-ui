@@ -217,12 +217,26 @@
                         <td>{{detail.itemName}}</td>
                     </tr>
                     <tr>
+                        <td class="column">办件编号</td>
+                        <td>{{detail.processNumber}}</td>
                         <td class="column">受理部门</td>
                         <td>{{detail.proDepartment}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">经办人</td>
+                        <td>{{detail.proManager}}</td>
                         <td class="column">审核状态</td>
                         <td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
                     </tr>
                     <tr>
+                        <td class="column">是否匿名</td>
+                        <td>{{detail.anonymityFlag | enums('EvaluationAnonymityEnum')}}</td>
+                        <td class="column">是否公开</td>
+                        <td>{{detail.publicFlag | enums('EvaluationPublicEnum')}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">评价渠道</td>
+                        <td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
                         <td class="column">整体满意度</td>
                         <td>
                             <el-rate
@@ -233,8 +247,6 @@
                                 :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
                             </el-rate>
                         </td>
-                        <td class="column">评价渠道</td>
-                        <td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
                     </tr>
                     <tr>
                         <td class="column">评价人姓名</td>
@@ -242,11 +254,19 @@
                         <td class="column">评价时间</td>
                         <td>{{detail.submitTime}}</td>
                     </tr>
-                    <tr>
-                        <td class="column">是否匿名</td>
-                        <td>{{detail.anonymityFlag | enums('EvaluationAnonymityEnum')}}</td>
-                        <td class="column">是否公开</td>
-                        <td>{{detail.publicFlag | enums('EvaluationPublicEnum')}}</td>
+                    <tr v-if="detail.content">
+                        <td class="column">评价详情</td>
+                        <td class="reform" colspan="3">
+                            <ul>
+                                <li v-for="c in detail.content.split('&')">
+                                    {{c}}
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr v-if="detail.words">
+                        <td class="column">文字评价</td>
+                        <td class="reform" colspan="3">{{detail.words}}</td>
                     </tr>
                     <tr v-if="detail.reformContent">
                         <td class="column">整改回复内容</td>
@@ -756,5 +776,8 @@
     .mailTable tr td.reform {
         height: auto;
         line-height: 30px;
+    }
+    ul {
+        padding-inline-start: 20px;
     }
 </style>

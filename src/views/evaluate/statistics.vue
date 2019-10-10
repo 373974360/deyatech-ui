@@ -96,7 +96,7 @@
             ])
         },
         created() {
-
+            this.getToday();
             this.doPlot();
         },
         methods: {
@@ -118,10 +118,14 @@
             },
 
             doPlot() {
-                if (!!this.listQuery.proDepartment && this.listQuery.evaluationTimeStart && this.listQuery.evaluationTimeEnd) {
+                if (!this.listQuery.evaluationTimeStart && !this.listQuery.evaluationTimeEnd) {
+                    this.$message.error('请选择评价时间');
+                    return;
+                }
+                if (!!this.listQuery.proDepartment) {
                     this.listQuery.statisticsType = "1";
                 }
-                if (!this.listQuery.proDepartment && this.listQuery.evaluationTimeStart && this.listQuery.evaluationTimeEnd) {
+                if (!this.listQuery.proDepartment) {
                     this.listQuery.statisticsType = "2";
                 }
                 getStatistics(this.listQuery).then(response => {
@@ -141,12 +145,12 @@
                             if (this.listQuery.statisticsType == "2") {
                                 this.xAxisNames.push(detail.evaluationTime);
                             }
-                            this.veryDissatisfiedTotals.push(detail.veryDissatisfiedTotal);
-                            this.dissatisfiedTotals.push(detail.dissatisfiedTotal);
-                            this.basicSatisfiedTotals.push(detail.basicSatisfiedTotal);
-                            this.satisfiedTotals.push(detail.satisfiedTotal);
-                            this.verySatisfiedTotals.push(detail.verySatisfiedTotal);
-                            this.satisfactionRates.push(detail.satisfactionRate);
+                            this.veryDissatisfiedTotals.push(detail.veryDissatisfiedTotal ? detail.veryDissatisfiedTotal : 0);
+                            this.dissatisfiedTotals.push(detail.dissatisfiedTotal ? detail.dissatisfiedTotal : 0);
+                            this.basicSatisfiedTotals.push(detail.basicSatisfiedTotal ? detail.basicSatisfiedTotal : 0);
+                            this.satisfiedTotals.push(detail.satisfiedTotal ? detail.satisfiedTotal : 0);
+                            this.verySatisfiedTotals.push(detail.verySatisfiedTotal ? detail.verySatisfiedTotal : 0);
+                            this.satisfactionRates.push(detail.satisfactionRate ? detail.satisfactionRate : 0);
                         }
                         const e = echarts.init(document.getElementById('evaluationStatistics'));
                         e.setOption({
@@ -286,7 +290,34 @@
             },
             formatJson(filterVal, jsonData) {
                 return jsonData.map(v => filterVal.map(j => v[j]))
-            }
+            },
+            getToday() {
+                // yyyy-MM-dd HH:mm:ss
+                let endTime = new Date();
+                let YYYY = endTime.getFullYear();
+                let m = endTime.getMonth() + 1;
+                let MM = m < 10 ? ('0' + m) : m;
+                let d = endTime.getDate();
+                let DD = d < 10 ? ('0' + d) : d;
+                // const end = new Date(YYYY, MM, DD, 23, 59, 59);
+                const end = YYYY + '-' + MM + '-' + DD + ' ' + '23:59:59';
+
+                let startTime = new Date();
+                startTime.setTime(endTime.getTime() - 3600 * 1000 * 24 * 30);
+
+                YYYY = startTime.getFullYear();
+                m = startTime.getMonth() + 1;
+                MM = m < 10 ? ('0' + m) : m;
+                d = startTime.getDate();
+                DD = d < 10 ? ('0' + d) : d;
+                // const start = new Date(YYYY, MM, DD, 0, 0, 0);
+                const start = YYYY + '-' + MM + '-' + DD + ' ' + '00:00:00';
+
+                this.submitTimeRange.push(start);
+                this.submitTimeRange.push(end);
+
+                this.submitTimeRangeChange(this.submitTimeRange);
+            },
         }
     }
 </script>
