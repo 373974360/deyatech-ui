@@ -98,7 +98,7 @@
                         <div style="border-bottom: 1px solid #dcdfe6; margin-bottom: 30px"></div>
 
                         <el-row :gutter="20" :span="24">
-                            <el-col :span="11">
+                            <el-col :span="12">
                                 <el-form-item
                                     :label="'测评指标编码'"
                                     :key="content.id"
@@ -112,7 +112,7 @@
 
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="11">
+<!--                            <el-col :span="11">
                                 <el-form-item
                                     :label="'组织机构代码'"
                                     :key="content.id"
@@ -123,8 +123,8 @@
                                     ]">
                                     <el-input v-model="content.organizationalCode"></el-input>
                                 </el-form-item>
-                            </el-col>
-                            <el-col :span="2">
+                            </el-col>-->
+                            <el-col :span="12">
                                 <el-button v-if="!callThirdPartyInterface || (callThirdPartyInterface && !content.id && index > 0)"
                                            :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                            @click.prevent="removeContent(content)"></el-button>
