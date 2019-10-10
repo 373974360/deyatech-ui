@@ -113,7 +113,14 @@
                                 </el-form-item>
                             </el-col>
                             <el-col :span="11">
-                                <el-form-item label="组织机构代码" prop="organizationalCode">
+                                <el-form-item
+                                    :label="'组织机构代码'"
+                                    :key="content.id"
+                                    :prop="'contentList.' + index + '.organizationalCode'"
+                                    :rules="[
+                                        {required: true, message: '请输入组织机构代码'},
+                                        {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'}
+                                    ]">
                                     <el-input v-model="content.organizationalCode"></el-input>
                                 </el-form-item>
                             </el-col>
