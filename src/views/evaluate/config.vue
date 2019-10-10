@@ -26,7 +26,7 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete && !callThirdPartyInterface" type="danger" :size="btnSize" @click="btnDeleteByLevel" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDeleteByLevel" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -63,7 +63,7 @@
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete && !callThirdPartyInterface" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDeleteByLevel(scope.row)"></el-button>
                     </template>
                 </el-table-column>
@@ -92,6 +92,11 @@
                                 </el-rate>
                             </el-form-item>
                         </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="组织机构代码" prop="organizationalCode">
+                                <el-input v-model="config.organizationalCode"></el-input>
+                            </el-form-item>
+                        </el-col>
                     </el-row>
 
                     <div v-if="showFlag" v-for="(content, index) in config.contentList">
@@ -109,24 +114,10 @@
                                     ]"
                                 >
                                     <el-input v-model="content.contentCode"></el-input>
-
                                 </el-form-item>
                             </el-col>
-<!--                            <el-col :span="11">
-                                <el-form-item
-                                    :label="'组织机构代码'"
-                                    :key="content.id"
-                                    :prop="'contentList.' + index + '.organizationalCode'"
-                                    :rules="[
-                                        {required: true, message: '请输入组织机构代码'},
-                                        {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'}
-                                    ]">
-                                    <el-input v-model="content.organizationalCode"></el-input>
-                                </el-form-item>
-                            </el-col>-->
                             <el-col :span="12">
-                                <el-button v-if="!callThirdPartyInterface || (callThirdPartyInterface && !content.id && index > 0)"
-                                           :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                <el-button :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                            @click.prevent="removeContent(content)"></el-button>
                             </el-col>
                         </el-row>
@@ -245,6 +236,7 @@
                 levelParseInt: {},
                 showFlag: true,
                 callThirdPartyInterface: this.$store.state.common.callThirdPartyInterface,
+                removeContentList: [],
             }
         },
         computed: {
@@ -297,13 +289,6 @@
             },
             btnCreate(){
                 this.resetConfig();
-                if (this.callThirdPartyInterface) {
-                    this.config.contentList.push({
-                        id: '',
-                        contentCode: '',
-                        content: ''
-                    });
-                }
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
@@ -315,7 +300,7 @@
                     this.config = deepClone(this.selectedRows[0]);
                 }
                 this.config.level = parseInt(this.config.level)
-                if (this.config.contentList.length == 1) {
+                if (this.config.contentList.length == 1 && !this.config.contentList[0].contentCode) {
                     this.showFlag = false;
                 }
                 this.dialogTitle = 'update';
@@ -360,6 +345,12 @@
                 this.$refs['configDialogForm'].validate(valid => {
                     if(valid) {
 
+                        console.log('removeContentList' + JSON.stringify(this.removeContentList));
+                        // 调用第三方接口时删除
+                        if (this.callThirdPartyInterface) {
+                            this.config.contentList.push.apply(this.config.contentList, this.removeContentList);
+                        }
+                        console.log('config.contentList' + JSON.stringify(this.config.contentList));
                         // 测评指标信息
                         const contentInfo = JSON.stringify(this.config.contentList);
                         this.$set(this.config, 'contentInfo', contentInfo);
@@ -403,6 +394,7 @@
                 this.resetConfig();
                 this.$refs['configDialogForm'].resetFields();
                 this.showFlag = true;
+                this.removeContentList = [];
             },
             addContent() {
                 if (!this.showFlag) {
@@ -417,24 +409,17 @@
             },
             removeContent(content) {
 
-                // 修改时删除
-/*                if (content.id) {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        let ids = []
-                        ids.push(content.id);
-                        this.doDelete(ids);
+                // 调用第三方接口时删除
+                if (this.callThirdPartyInterface && content.id) {
+                    // 删除
+                    content.enable = 2;
+                    this.removeContentList.push(content);
+                }
+                var index = this.config.contentList.indexOf(content)
+                if (index !== -1) {
+                    this.config.contentList.splice(index, 1)
+                }
 
-                        var index = this.config.contentList.indexOf(content)
-                        if (index !== -1) {
-                            this.config.contentList.splice(index, 1)
-                        }
-                    })
-                } else {*/
-                    var index = this.config.contentList.indexOf(content)
-                    if (index !== -1) {
-                        this.config.contentList.splice(index, 1)
-                    }
-                // }
             },
             btnDeleteByLevel(row){
                 let levels = [];

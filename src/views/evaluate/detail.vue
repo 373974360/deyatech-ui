@@ -23,7 +23,7 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item>
+<!--                    <el-form-item>
                         <el-select :size="searchSize" v-model="listQuery.proDepartment" clearable :placeholder="$t('table.pleaseSelect') + '受理部门'">
                             <el-option
                                 v-for="item in departmentList"
@@ -32,7 +32,7 @@
                                 :value="item.code">
                             </el-option>
                         </el-select>
-                    </el-form-item>
+                    </el-form-item>-->
                     <el-form-item>
                         <el-select :size="searchSize" v-model="listQuery.subMatter" clearable :placeholder="$t('table.pleaseSelect') + '事项主题'">
                             <el-option
@@ -49,7 +49,7 @@
                     <el-form-item>
                         <el-input clearable :size="searchSize" :placeholder="$t('table.pleaseInput') + '事项名称'" v-model="listQuery.itemName" style="width: 187px"></el-input>
                     </el-form-item>
-                    <el-form-item>
+<!--                    <el-form-item>
                         <el-select :size="searchSize" v-model="listQuery.anonymityFlag" clearable :placeholder="$t('table.pleaseSelect') + '是否匿名'">
                             <el-option
                                 v-for="item in loadEnum('EvaluationAnonymityEnum')"
@@ -68,7 +68,7 @@
                                 :value="item.code">
                             </el-option>
                         </el-select>
-                    </el-form-item>
+                    </el-form-item>-->
                     <el-form-item>
                         <el-input clearable :size="searchSize" :placeholder="$t('table.pleaseInput') + '用户姓名'" v-model="listQuery.userName" style="width: 187px"></el-input>
                     </el-form-item>
