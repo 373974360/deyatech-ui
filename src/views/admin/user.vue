@@ -51,7 +51,7 @@
                 <el-table-column align="center" label="手机号码" prop="phone"/>
                 <el-table-column align="center" label="头像" prop="avatar">
                     <template slot-scope="scope">
-                        <img v-if="scope.row.avatar" :src="scope.row.avatar"
+                        <img v-if="scope.row.avatar" :src="$store.state.common.showPicImgUrl + scope.row.avatar"
                              width="30" height="30px">
                     </template>
                 </el-table-column>
@@ -64,8 +64,7 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
-                                 width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
                                    icon="el-icon-edit" :size="btnSize" circle
@@ -73,6 +72,8 @@
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                    icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="iconviewgallery"
+                                   :size="btnSize" circle @click.stop.safe="btnCatalog(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -91,8 +92,7 @@
                         <el-col :span="12">
                             <el-form-item label="部门" prop="departmentId">
                                 <el-cascader ref="mycascader" :options="departmentCascader" v-model="departmentTreePosition"
-                                             :show-all-levels="false" expand-trigger="hover" clearable
-                                             change-on-select></el-cascader>
+                                             change-on-select show-all-levels expand-trigger="click" clearable style="width: 100%;"></el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -170,6 +170,21 @@
                     <el-button :size="btnSize" @click="closeUserDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
+            <el-dialog title="关联栏目" :visible.sync="dialogCatalogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
+                <el-form style="width: 80%; margin-left:10%;">
+                    <el-tree ref="catalogTree" :data="catalogTree" show-checkbox
+                             node-key="id"
+                             :default-expand-all="true"
+                             :expand-on-click-node="false"
+                             @check="catalogTreeChecked" :check-strictly="true"></el-tree>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveCatalogUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -186,7 +201,8 @@
     } from '@/api/admin/user';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {isvalidatemobile, validatename, isStartOrEndWithWhiteSpace} from '@/util/validate';
-
+    import {getCatalogTree} from '@/api/station/catalog';
+    import {setUserCatalogs} from '@/api/station/catalogUser'
     export default {
         name: 'user',
         data() {
@@ -251,6 +267,7 @@
                 user: {
                     id: undefined,
                     departmentId: undefined,
+                    departmentTreePosition: undefined,
                     name: undefined,
                     gender: undefined,
                     phone: undefined,
@@ -309,7 +326,10 @@
                 submitLoading: false,
                 uploadAction: this.$store.state.common.uploadUrl,
                 acceptTypes: this.$store.state.common.imageAccepts,
-                departmentCascader: []
+                departmentCascader: [],
+                catalogTree: [],
+                dialogCatalogVisible: false,
+                currentRow: undefined
             }
         },
         computed: {
@@ -326,6 +346,8 @@
                 get() {
                     if (this.user.departmentTreePosition) {
                         return this.user.departmentTreePosition.substr(1).split('&')
+                    } else {
+                        return [];
                     }
                 },
                 set(v) {
@@ -342,13 +364,15 @@
                 return {
                     create: this.permission.user_create,
                     update: this.permission.user_update,
-                    delete: this.permission.user_delete
+                    delete: this.permission.user_delete,
+                    catalog: this.permission.user_catalog
                 };
             }
         },
         created() {
             this.reloadList();
             this.getDepartmentCascader();
+            this.getCatalogTree();
         },
         methods: {
             btnSearch() {
@@ -505,12 +529,46 @@
                 this.reloadList();
             },
             closeUserDialog() {
-                let obj = {};
-                obj.stopPropagation = () =>{};
-                this.$refs.mycascader.clearValue(obj);
                 this.dialogVisible = false;
                 this.resetUser();
                 this.$refs['userDialogForm'].resetFields();
+            },
+            // 用户栏目
+            getCatalogTree(){
+                getCatalogTree().then(response => {
+                    this.catalogTree = response.data;
+                })
+            },
+            btnCatalog(row) {
+                this.currentRow = row;
+                this.dialogCatalogVisible = true;
+            },
+            closeCatalogDialog() {
+                this.currentRow = undefined;
+                this.dialogCatalogVisible = false;
+            },
+            catalogTreeChecked(node, tree) {
+                let checkedKeys = tree.checkedKeys
+                if (checkedKeys.includes(node.id)) {
+                    checkedKeys.push.apply(checkedKeys, getParentKeys(node, this.menuTree))
+                    checkedKeys.push.apply(checkedKeys, getChildrenKeys(node))
+                } else {
+                    for (let key of getChildrenKeys(node)) {
+                        if (checkedKeys.includes(key)) {
+                            checkedKeys.splice(checkedKeys.indexOf(key), 1)
+                        }
+                    }
+                }
+                this.$refs['catalogTree'].setCheckedKeys(checkedKeys)
+            },
+            doSaveCatalogUser() {
+                let checkedKeys = this.$refs['catalogTree'].getCheckedKeys(false);
+                setUserCatalogs(this.currentRow.id, checkedKeys).then(() => {
+                    this.closeRoleMenuDialog();
+                    this.$message.success(this.$t("table.updateSuccess"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
             }
         }
     }
