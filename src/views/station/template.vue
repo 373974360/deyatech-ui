@@ -16,7 +16,7 @@
                 <div class="deyatech-menu_left">
                     <!--                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>-->
 
-                    <el-dropdown v-if="btnEnable.create" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
+                    <el-dropdown v-if="btnEnable.create && isAddTemplate" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
                         <el-button type="primary" :size="btnSize">
                             {{$t('table.create')}}<i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
@@ -430,7 +430,8 @@
         getCatalogTree
     } from '@/api/station/catalog';
     import {
-        getAllModelBySiteId
+        getAllModelBySiteId,
+        getModelByCatalogId
     } from '@/api/station/model';
     import {validateURL} from '@/util/validate';
     import {findMetadataCollectionAllData} from '@/api/metadata/collection';
@@ -622,6 +623,7 @@
                 dialogVisiblePicture: undefined,
                 stepsActive: 0,
                 resourceCategoryList: [],
+                isAddTemplate: false
             }
         },
         watch: {
@@ -701,7 +703,6 @@
                 this.listLoading = true;
                 getCatalogTree(this.listQuery).then(response => {
                     this.catalogList = response.data;
-                    console.dir(this.catalogList);
                     this.setDefaultCurrentNode()
                     this.listLoading = false;
                 })
@@ -721,10 +722,25 @@
                 this.listQuery.cmsCatalogId = data.id;
                 // 获取template
                 this.reloadList();
+                let children = data.children;
+                if (!children) {
+                    this.isAddTemplate = true;
+                    this.getModelByCatalogId(data.id);
+                } else {
+                    this.isAddTemplate = false;
+                }
+
             },
             getAllModelBySiteId() {
                 this.listLoading = true;
                 getAllModelBySiteId(this.listQuery).then(response => {
+                    this.modelList = response.data;
+                    this.listLoading = false;
+                })
+            },
+            getModelByCatalogId(catalogId) {
+                this.listLoading = true;
+                getModelByCatalogId({catalogId:catalogId}).then(response => {
                     this.modelList = response.data;
                     this.listLoading = false;
                 })

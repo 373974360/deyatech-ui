@@ -71,3 +71,10 @@ export function getAllModelBySiteId(query) {
     });
 }
 
+export function getModelByCatalogId(query) {
+    return request({
+        url: '/manage/station/model/getModelByCatalogId',
+        method: 'get',
+        params: query
+    });
+}
