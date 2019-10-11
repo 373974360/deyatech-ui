@@ -37,6 +37,7 @@
             <el-table :data="userList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
+                <el-table-column align="center" label="ID" prop="id"/>
                 <el-table-column align="center" label="部门" prop="departmentName"/>
                 <el-table-column align="center" label="姓名" prop="name">
                     <template slot-scope="scope">
@@ -64,7 +65,7 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
                                    icon="el-icon-edit" :size="btnSize" circle
@@ -74,6 +75,8 @@
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                         <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="iconviewgallery"
                                    :size="btnSize" circle @click.stop.safe="btnCatalog(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.content" title="栏目内容权限" type="primary" icon="iconviewlist"
+                                   :size="btnSize" circle @click.stop.safe="btnContent(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -185,6 +188,22 @@
                     <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
+
+            <el-dialog title="栏目内容权限" :visible.sync="dialogContentVisible" :close-on-click-modal="closeOnClickModal" @close="closeContentDialog">
+                <el-form style="width: 80%; margin-left:10%;">
+                    <el-radio v-model="templateAuthority"
+                              v-for="item in enums['TemplateAuthority']"
+                              :label="item.code"
+                              border>{{item.value}}</el-radio>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveContentUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeContentDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="clearAuthority">清除</el-button>
+                </div>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -202,7 +221,9 @@
     import {getDepartmentCascader} from '@/api/admin/department';
     import {isvalidatemobile, validatename, isStartOrEndWithWhiteSpace} from '@/util/validate';
     import {getCatalogTree} from '@/api/station/catalog';
-    import {setUserCatalogs} from '@/api/station/catalogUser'
+    import {getAllUserCatalogs, setUserCatalogs} from '@/api/station/catalogUser'
+    import {getUserAuthority, setUserAuthority} from '@/api/station/templateUserAuthority'
+
     export default {
         name: 'user',
         data() {
@@ -329,7 +350,9 @@
                 departmentCascader: [],
                 catalogTree: [],
                 dialogCatalogVisible: false,
-                currentRow: undefined
+                currentRow: undefined,
+                dialogContentVisible: false,
+                templateAuthority: undefined
             }
         },
         computed: {
@@ -365,7 +388,8 @@
                     create: this.permission.user_create,
                     update: this.permission.user_update,
                     delete: this.permission.user_delete,
-                    catalog: this.permission.user_catalog
+                    catalog: this.permission.user_catalog,
+                    content: this.permission.user_content
                 };
             }
         },
@@ -541,11 +565,20 @@
             },
             btnCatalog(row) {
                 this.currentRow = row;
+                getAllUserCatalogs({userId: row.id}).then((response)=>{
+                    let list = response.data;
+                    for (let uc of list) {
+                        this.$refs['catalogTree'].setChecked(uc.catalogId, true, false);
+                    }
+                }).catch(()=>{
+
+                });
                 this.dialogCatalogVisible = true;
             },
             closeCatalogDialog() {
                 this.currentRow = undefined;
                 this.dialogCatalogVisible = false;
+                this.$refs['catalogTree'].setCheckedKeys([])
             },
             catalogTreeChecked(node, tree) {
                 let checkedKeys = tree.checkedKeys
@@ -564,11 +597,39 @@
             doSaveCatalogUser() {
                 let checkedKeys = this.$refs['catalogTree'].getCheckedKeys(false);
                 setUserCatalogs(this.currentRow.id, checkedKeys).then(() => {
-                    this.closeRoleMenuDialog();
-                    this.$message.success(this.$t("table.updateSuccess"));
+                    this.closeCatalogDialog();
+                    this.$message.success(this.$t("table.associateSuccess"));
                 }).catch(() => {
                     this.submitLoading = false;
                 })
+            },
+            // 栏目内容权限
+            btnContent(row) {
+                this.currentRow = row;
+                getUserAuthority({userId: row.id}).then((response)=>{
+                    this.templateAuthority = response.data;
+                }).catch((err)=>{
+                    this.$message.error(err);
+                });
+                this.dialogContentVisible = true;
+            },
+            closeContentDialog() {
+                this.currentRow = undefined;
+                this.dialogContentVisible = false;
+                this.templateAuthority = undefined;
+            },
+            clearAuthority(){
+                this.templateAuthority = undefined;
+            },
+            doSaveContentUser() {
+                setUserAuthority({userId: this.currentRow.id, authority: this.templateAuthority}).then((response)=>{
+                    if (response.data) {
+                        this.closeContentDialog();
+                        this.$message.success("设置成功")
+                    } else {
+                        this.$message.error("设置失败")
+                    }
+                });
             }
         }
     }

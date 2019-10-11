@@ -40,9 +40,17 @@ export function getCatalogUserList(query) {
     });
 }
 
+export function getAllUserCatalogs(query) {
+    return request({
+        url: '/manage/station/catalogUser/listByCatalogUser',
+        method: 'get',
+        params: query
+    })
+}
+
 export function setUserCatalogs(userId, catalogIds) {
     return request({
-        url: '/manage/admin/roleMenu/setRoleMenus',
+        url: '/manage/station/catalogUser/setUserCatalogs',
         method: 'post',
         data: {userId, catalogIds}
     })
