@@ -427,7 +427,7 @@
         getMaterial
     } from "../../api/station/material";
     import {
-        getCatalogTree
+        getUserCatalogTree
     } from '@/api/station/catalog';
     import {
         getAllModelBySiteId,
@@ -701,7 +701,7 @@
             },
             getCatalogTree(){
                 this.listLoading = true;
-                getCatalogTree(this.listQuery).then(response => {
+                getUserCatalogTree(this.listQuery).then(response => {
                     this.catalogList = response.data;
                     this.setDefaultCurrentNode()
                     this.listLoading = false;

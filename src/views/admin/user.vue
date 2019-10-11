@@ -176,7 +176,14 @@
 
             <el-dialog title="关联栏目" :visible.sync="dialogCatalogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
                 <el-form style="width: 80%; margin-left:10%;">
-                    <el-tree ref="catalogTree" :data="catalogTree" show-checkbox
+                    <el-cascader ref="topSiteCascader" placeholder="请选择站点"
+                                 :options="stationGroupList"
+                                 v-model="stationGroupTreePosition"
+                                 @change="stationGroupChange" size="small" style="width: 100%">
+                    </el-cascader>
+                    <el-tree ref="catalogTree"
+                             :data="catalogTree"
+                             show-checkbox
                              node-key="id"
                              :default-expand-all="true"
                              :expand-on-click-node="false"
@@ -197,10 +204,10 @@
                               border>{{item.value}}</el-radio>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doSaveContentUser"
-                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeContentDialog">{{$t('table.cancel')}}</el-button>
                     <el-button :size="btnSize" @click="clearAuthority">清除</el-button>
+                    <el-button type="primary" :size="btnSize" @click="doSaveContentUser"
+                    :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeContentDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
 
@@ -223,6 +230,8 @@
     import {getCatalogTree} from '@/api/station/catalog';
     import {getAllUserCatalogs, setUserCatalogs} from '@/api/station/catalogUser'
     import {getUserAuthority, setUserAuthority} from '@/api/station/templateUserAuthority'
+    import {getNodeData, getParentKeys, getChildrenKeys} from "@/util/treeUtils";
+    import {getClassificationStationCascader} from '@/api/resource/stationGroup';
 
     export default {
         name: 'user',
@@ -352,7 +361,11 @@
                 dialogCatalogVisible: false,
                 currentRow: undefined,
                 dialogContentVisible: false,
-                templateAuthority: undefined
+                templateAuthority: undefined,
+                stationGroupList: undefined,
+                stationGroupTreePosition: undefined,
+                siteId: undefined,
+                userCatalogList: [],
             }
         },
         computed: {
@@ -394,9 +407,11 @@
             }
         },
         created() {
+            this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
             this.getDepartmentCascader();
             this.getCatalogTree();
+            this.getAllStationGroup();
         },
         methods: {
             btnSearch() {
@@ -558,41 +573,80 @@
                 this.$refs['userDialogForm'].resetFields();
             },
             // 用户栏目
-            getCatalogTree(){
-                getCatalogTree().then(response => {
+            getCatalogTree(checked){
+                getCatalogTree({siteId: this.siteId}).then(response => {
                     this.catalogTree = response.data;
+                    if (checked) {
+                        this.checkUserCatalog()
+                    }
                 })
             },
             btnCatalog(row) {
                 this.currentRow = row;
                 getAllUserCatalogs({userId: row.id}).then((response)=>{
-                    let list = response.data;
-                    for (let uc of list) {
+                    this.userCatalogList = response.data;
+                    this.checkUserCatalog();
+                }).catch(()=>{});
+                this.dialogCatalogVisible = true;
+            },
+            checkUserCatalog() {
+                this.$nextTick(()=>{
+                    for (let uc of this.userCatalogList) {
                         this.$refs['catalogTree'].setChecked(uc.catalogId, true, false);
                     }
-                }).catch(()=>{
-
                 });
-                this.dialogCatalogVisible = true;
             },
             closeCatalogDialog() {
                 this.currentRow = undefined;
+                this.userCatalogList = [];
                 this.dialogCatalogVisible = false;
                 this.$refs['catalogTree'].setCheckedKeys([])
             },
             catalogTreeChecked(node, tree) {
-                let checkedKeys = tree.checkedKeys
+                let checkedKeys = tree.checkedKeys;
+                // 选中时
                 if (checkedKeys.includes(node.id)) {
-                    checkedKeys.push.apply(checkedKeys, getParentKeys(node, this.menuTree))
+                    // 选中父结点
+                    checkedKeys.push.apply(checkedKeys, getParentKeys(node, this.catalogTree));
+                    // 选中子节点
                     checkedKeys.push.apply(checkedKeys, getChildrenKeys(node))
+
+                    // 取消时
                 } else {
+                    // 取消子节点
                     for (let key of getChildrenKeys(node)) {
                         if (checkedKeys.includes(key)) {
-                            checkedKeys.splice(checkedKeys.indexOf(key), 1)
+                            // 删除选中
+                            checkedKeys.splice(checkedKeys.indexOf(key), 1);
                         }
+                    }
+                    // 取消父结点(没有子节点选中时)
+                    if (node.parentId !== '0') {
+                        let parent = getNodeData(this.catalogTree, 'id', node.parentId);
+                        checkedKeys = this.dealParentNode(parent, checkedKeys);
                     }
                 }
                 this.$refs['catalogTree'].setCheckedKeys(checkedKeys)
+            },
+            dealParentNode(node, checkedKeys) {
+                if (checkedKeys.includes(node.id)) {
+                    let childrenKeys = getChildrenKeys(node);
+                    let isChecked = false;
+                    for (let key of childrenKeys) {
+                        if (checkedKeys.includes(key)) {
+                            isChecked = true;
+                            break;
+                        }
+                    }
+                    if (!isChecked) {
+                        checkedKeys.splice(checkedKeys.indexOf(node.id), 1);
+                        if (node.parentId !== '0') {
+                            let parent = getNodeData(this.catalogTree, 'id', node.parentId);
+                            checkedKeys = this.dealParentNode(parent, checkedKeys);
+                        }
+                    }
+                }
+                return checkedKeys;
             },
             doSaveCatalogUser() {
                 let checkedKeys = this.$refs['catalogTree'].getCheckedKeys(false);
@@ -630,6 +684,27 @@
                         this.$message.error("设置失败")
                     }
                 });
+            },
+            getAllStationGroup(){
+                this.stationGroupList = [];
+                getClassificationStationCascader().then(response => {
+                    this.stationGroupList = response.data;
+                    if(this.stationGroupList.length > 0){
+                        let v = [];
+                        this.stationGroupTreePosition = v;
+                        if (v.length > 0) {
+                            this.$store.state.common.siteId = v[v.length - 1];
+                            this.$store.state.common.siteName = this.currentLabels(v);
+                            this.reloadMainView();
+                        }
+                    }
+                })
+            },
+            stationGroupChange(v) {
+                if (v.length > 0) {
+                    this.siteId = v[v.length - 1];
+                    this.getCatalogTree('check');
+                }
             }
         }
     }

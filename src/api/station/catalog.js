@@ -39,7 +39,13 @@ export function getCatalogTree(query) {
         params: query
     });
 }
-
+export function getUserCatalogTree(query) {
+    return request({
+        url: '/manage/station/catalog/getUserCatalogTree',
+        method: 'get',
+        params: query
+    });
+}
 export function getCatalogCascader(query) {
     return request({
         url: '/manage/station/catalog/getCascader',
