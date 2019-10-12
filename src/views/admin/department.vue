@@ -25,16 +25,14 @@
                   @selection-change="handleSelectionChange" v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
-                                  parentKey="parentId" prop="name" label="部门名称" width="200">
+                                  parentKey="parentId" prop="name" label="部门名称" >
                 <template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                 </template>
             </el-table-tree-column>
-            <el-table-column align="center" label="部门名称简称" prop="shortName"/>
-            <el-table-column align="center" label="部门编码" prop="code"/>
-            <!--<el-table-column align="center" label="上级部门编号" prop="parentId"/>-->
-            <!--<el-table-column align="center" label="树结构中的索引位置" prop="treePosition"/>-->
-            <el-table-column align="center" label="排序号" prop="sortNo"/>
+            <el-table-column align="center" label="部门简称" prop="shortName"/>
+            <el-table-column align="center" label="社会信用代码" prop="code"/>
+            <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
             <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                 <template slot-scope="scope">
                     <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -61,39 +59,34 @@
         <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                    :close-on-click-modal="closeOnClickModal" @close="closeDepartmentDialog">
             <el-form ref="departmentDialogForm" class="deyatech-form" :model="department" label-position="right"
-                     label-width="80px" :rules="departmentRules">
+                     label-width="106px" :rules="departmentRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item :label="$t('table.parent')">
                             <el-cascader :options="departmentCascader" v-model="departmentTreePosition"
-                                         :show-all-levels="false" expand-trigger="hover" clearable
-                                         change-on-select></el-cascader>
+                                         expand-trigger="hover" clearable
+                                         change-on-select style="width: 100%"></el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item :label="$t('table.searchName')" prop="name">
-                            <el-input v-model.trim="department.name"/>
+                        <el-form-item label="部门名称" prop="name">
+                            <el-input v-model.trim="department.name" maxlength="50"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
-                        <el-form-item label="部门编码" prop="code">
-                            <el-input v-model.trim="department.code"></el-input>
+                        <el-form-item label="社会信用代码" prop="code">
+                            <el-input v-model.trim="department.code" maxlength="18"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="部门简称" prop="shortName">
-                            <el-input v-model.trim="department.shortName"></el-input>
+                            <el-input v-model.trim="department.shortName" maxlength="50"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
-                    <!--<el-col :span="12">-->
-                        <!--<el-form-item label="树结构中的索引位置" prop="treePosition">-->
-                            <!--<el-input v-model="department.treePosition"></el-input>-->
-                        <!--</el-form-item>-->
-                    <!--</el-col>-->
                     <el-col :span="12">
                         <el-form-item label="排序号" prop="sortNo">
                             <el-input-number v-model="department.sortNo" :min="1" :max="9999"></el-input-number>
@@ -103,7 +96,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item :label="$t('table.remark')" prop="remark">
-                            <el-input type="textarea" v-model.trim="department.remark" :rows="3"/>
+                            <el-input type="textarea" v-model.trim="department.remark" :rows="3" maxlength="500"/>
                         </el-form-item>
                     </el-col>
                 </el-row>

@@ -474,7 +474,11 @@
                 } else {
                     this.user = deepClone(this.selectedRows[0]);
                 }
-                this.user.departmentTreePosition += '&' + this.user.departmentId
+                if (this.user.departmentTreePosition) {
+                    this.user.departmentTreePosition += '&' + this.user.departmentId;
+                } else {
+                    this.user.departmentTreePosition = '&' + this.user.departmentId;
+                }
                 this.user.password = undefined;
                 this.userRules.password[0].required = false;
                 this.userRules.passwordConfirm[0].required = false;
