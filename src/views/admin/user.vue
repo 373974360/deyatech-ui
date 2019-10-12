@@ -175,12 +175,22 @@
             </el-dialog>
 
             <el-dialog title="关联栏目" :visible.sync="dialogCatalogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
-                <el-form style="width: 80%; margin-left:10%;">
-                    <el-cascader ref="topSiteCascader" placeholder="请选择站点"
-                                 :options="stationGroupList"
-                                 v-model="stationGroupTreePosition"
-                                 @change="stationGroupChange" size="small" style="width: 100%">
-                    </el-cascader>
+                <el-form style="width: 80%; margin-left:10%;" :inline="true">
+                    <el-form-item>
+                        <el-cascader ref="topSiteCascader" placeholder="请选择站点"
+                                     :options="stationGroupList"
+                                     v-model="stationGroupTreePosition"
+                                     :show-all-levels="false"
+                                     clearable :size="searchSize"
+                                     @change="stationGroupChange">
+                        </el-cascader>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnCatalogSearch">{{$t('table.search')}}</el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetCatalogSearch">{{$t('table.clear')}}</el-button>
+                    </el-form-item>
+                </el-form>
+                <el-form style="width: 80%; margin-left:10%;" v-loading="treeLoading">
                     <el-tree ref="catalogTree"
                              :data="catalogTree"
                              show-checkbox
@@ -190,8 +200,7 @@
                              @check="catalogTreeChecked" :check-strictly="true"></el-tree>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doSaveCatalogUser"
-                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button type="primary" :size="btnSize" @click="doSaveCatalogUser" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
@@ -199,14 +208,14 @@
             <el-dialog title="栏目内容权限" :visible.sync="dialogContentVisible" :close-on-click-modal="closeOnClickModal" @close="closeContentDialog">
                 <el-form style="width: 80%; margin-left:10%;">
                     <el-radio v-model="templateAuthority"
-                              v-for="item in enums['TemplateAuthority']"
+                              v-for="item in enums['TemplateAuthorityEnum']"
                               :label="item.code"
+                              :key="item.code"
                               border>{{item.value}}</el-radio>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                     <el-button :size="btnSize" @click="clearAuthority">清除</el-button>
-                    <el-button type="primary" :size="btnSize" @click="doSaveContentUser"
-                    :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button type="primary" :size="btnSize" @click="doSaveContentUser" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closeContentDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
@@ -366,6 +375,7 @@
                 stationGroupTreePosition: undefined,
                 siteId: undefined,
                 userCatalogList: [],
+                treeLoading: false
             }
         },
         computed: {
@@ -410,7 +420,6 @@
             this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
             this.getDepartmentCascader();
-            this.getCatalogTree();
             this.getAllStationGroup();
         },
         methods: {
@@ -572,27 +581,41 @@
                 this.resetUser();
                 this.$refs['userDialogForm'].resetFields();
             },
+
             // 用户栏目
-            getCatalogTree(checked){
+            getCatalogTree(){
+                this.treeLoading = true;
+                // 站点的全部栏目
                 getCatalogTree({siteId: this.siteId}).then(response => {
                     this.catalogTree = response.data;
-                    if (checked) {
-                        this.checkUserCatalog()
+                    if (this.catalogTree && this.catalogTree.length > 0) {
+                        // 用户已分配的栏目
+                        getAllUserCatalogs({userId: this.currentRow.id}).then((response)=>{
+                            this.userCatalogList = response.data;
+                            this.checkUserCatalog();
+                            this.treeLoading = false;
+                        }).catch(()=>{
+                            this.treeLoading = false;
+                        });
+                    } else {
+                        this.treeLoading = false;
                     }
-                })
+                }).catch(()=>{
+                    this.treeLoading = false;
+                });
             },
             btnCatalog(row) {
                 this.currentRow = row;
-                getAllUserCatalogs({userId: row.id}).then((response)=>{
-                    this.userCatalogList = response.data;
-                    this.checkUserCatalog();
-                }).catch(()=>{});
+                this.getCatalogTree();
                 this.dialogCatalogVisible = true;
             },
             checkUserCatalog() {
                 this.$nextTick(()=>{
-                    for (let uc of this.userCatalogList) {
-                        this.$refs['catalogTree'].setChecked(uc.catalogId, true, false);
+                    // 选中用户已分配的栏目
+                    if (this.userCatalogList && this.userCatalogList.length > 0) {
+                        for (let uc of this.userCatalogList) {
+                            this.$refs['catalogTree'].setChecked(uc.catalogId, true, false);
+                        }
                     }
                 });
             },
@@ -600,6 +623,9 @@
                 this.currentRow = undefined;
                 this.userCatalogList = [];
                 this.dialogCatalogVisible = false;
+                this.stationGroupTreePosition = [];
+                this.siteId = undefined;
+                this.submitLoading = false;
                 this.$refs['catalogTree'].setCheckedKeys([])
             },
             catalogTreeChecked(node, tree) {
@@ -649,6 +675,7 @@
                 return checkedKeys;
             },
             doSaveCatalogUser() {
+                this.submitLoading = true;
                 let checkedKeys = this.$refs['catalogTree'].getCheckedKeys(false);
                 setUserCatalogs(this.currentRow.id, checkedKeys).then(() => {
                     this.closeCatalogDialog();
@@ -657,33 +684,9 @@
                     this.submitLoading = false;
                 })
             },
-            // 栏目内容权限
-            btnContent(row) {
-                this.currentRow = row;
-                getUserAuthority({userId: row.id}).then((response)=>{
-                    this.templateAuthority = response.data;
-                }).catch((err)=>{
-                    this.$message.error(err);
-                });
-                this.dialogContentVisible = true;
-            },
-            closeContentDialog() {
-                this.currentRow = undefined;
-                this.dialogContentVisible = false;
-                this.templateAuthority = undefined;
-            },
-            clearAuthority(){
-                this.templateAuthority = undefined;
-            },
-            doSaveContentUser() {
-                setUserAuthority({userId: this.currentRow.id, authority: this.templateAuthority}).then((response)=>{
-                    if (response.data) {
-                        this.closeContentDialog();
-                        this.$message.success("设置成功")
-                    } else {
-                        this.$message.error("设置失败")
-                    }
-                });
+            resetCatalogSearch() {
+                this.stationGroupTreePosition = [];
+                this.siteId = undefined;
             },
             getAllStationGroup(){
                 this.stationGroupList = [];
@@ -701,10 +704,44 @@
                 })
             },
             stationGroupChange(v) {
+                this.siteId = undefined;
                 if (v.length > 0) {
                     this.siteId = v[v.length - 1];
-                    this.getCatalogTree('check');
                 }
+            },
+            btnCatalogSearch() {
+                this.getCatalogTree();
+            },
+
+            // 栏目内容权限
+            btnContent(row) {
+                this.currentRow = row;
+                getUserAuthority({userId: row.id}).then((response)=>{
+                    this.templateAuthority = response.data;
+                }).catch((err)=>{
+                    this.$message.error(err);
+                });
+                this.dialogContentVisible = true;
+            },
+            closeContentDialog() {
+                this.currentRow = undefined;
+                this.dialogContentVisible = false;
+                this.submitLoading = false;
+                this.templateAuthority = undefined;
+            },
+            clearAuthority(){
+                this.templateAuthority = undefined;
+            },
+            doSaveContentUser() {
+                this.submitLoading = true;
+                setUserAuthority({userId: this.currentRow.id, authority: this.templateAuthority}).then((response)=>{
+                    if (response.data) {
+                        this.closeContentDialog();
+                        this.$message.success("设置成功")
+                    } else {
+                        this.$message.error("设置失败")
+                    }
+                });
             }
         }
     }

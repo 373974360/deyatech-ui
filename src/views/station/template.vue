@@ -52,7 +52,7 @@
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-                    <!--                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>-->
+                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
             <div class="standard-text">
@@ -88,7 +88,7 @@
                     </el-table-column>
                     <!--template表数据-->
                     <el-table-column type="selection" width="50" align="center"/>
-                    <el-table-column align="center" label="内容模型" prop="contentModelName"/>
+                    <!--<el-table-column align="center" label="内容模型" prop="contentModelName"/>-->
                     <el-table-column align="center" label="标题" prop="title"/>
                     <el-table-column align="center" label="作者姓名" prop="author"/>
                     <el-table-column align="center" label="URL" prop="url">
