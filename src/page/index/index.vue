@@ -1,20 +1,20 @@
 <template>
     <div class="avue-contail"
          :class="{'avue--collapse':isCollapse}">
-        <div class="avue-header">
-            <!-- 顶部导航栏 -->
+        <!--<div class="avue-header">
+            &lt;!&ndash; 顶部导航栏 &ndash;&gt;
             <top/>
-        </div>
+        </div>-->
 
         <div class="avue-layout">
-            <div class="avue-left">
-                <!-- 左侧导航栏 -->
+            <!--<div class="avue-left">
+                &lt;!&ndash; 左侧导航栏 &ndash;&gt;
                 <sidebar/>
-            </div>
+            </div>-->
             <div class="avue-main">
                 <!-- 顶部标签卡 -->
-                <tags/>
-                <!-- 主体视图层 -->
+                <!--<tags/>-->
+                 <!-- 主体视图层 -->
                 <el-scrollbar style="height:100%">
                     <keep-alive>
                         <router-view class="avue-view"
@@ -108,3 +108,10 @@
         }
     };
 </script>
+<style>
+    .avue-main {
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+</style>
