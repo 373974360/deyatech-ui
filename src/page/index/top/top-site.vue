@@ -1,5 +1,5 @@
 <template>
-    <el-cascader ref="topSiteCascader" v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
+    <el-cascader ref="topSiteCascader" v-if="this.$store.state.common.selectSiteDisplay && this.stationGroupList.length > 1" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
                  :options="stationGroupList" v-model="stationGroupTreePosition" @change="siteChange" size="small">
     </el-cascader>
 </template>
@@ -8,13 +8,15 @@
     import {
         getClassificationStationCascader
     } from '@/api/resource/stationGroup';
+    import {mapState} from "vuex";
 
     export default {
         name: "topSite",
         data() {
             return {
                 stationGroupList: undefined,
-                stationGroupTreePosition: undefined
+                stationGroupTreePosition: undefined,
+                userInfo: this.$store.state.user.userInfo
             };
         },
         inject: ['reloadMainView'],
@@ -24,7 +26,7 @@
         methods: {
             getAllStationGroup(){
                 this.stationGroupList = [];
-                getClassificationStationCascader().then(response => {
+                getClassificationStationCascader({userId: this.userInfo.id}).then(response => {
                     this.stationGroupList = response.data;
                     if(this.stationGroupList.length > 0){
                         let v = [];

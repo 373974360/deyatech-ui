@@ -39,6 +39,14 @@ export function getCatalogTree(query) {
         params: query
     });
 }
+export function getCatalogTreeBySiteIds(siteIds) {
+    const data = {siteIds};
+    return request({
+        url: '/manage/station/catalog/getCatalogTreeBySiteIds',
+        method: 'post',
+        data
+    });
+}
 export function getUserCatalogTree(query) {
     return request({
         url: '/manage/station/catalog/getUserCatalogTree',

@@ -37,7 +37,7 @@
             <el-table :data="userList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="ID" prop="id"/>
+                <!--<el-table-column align="center" label="ID" prop="id"/>-->
                 <el-table-column align="center" label="部门" prop="departmentName"/>
                 <el-table-column align="center" label="姓名" prop="name">
                     <template slot-scope="scope">
@@ -65,18 +65,26 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="225">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
-                                   icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
-                                   icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="iconviewgallery"
-                                   :size="btnSize" circle @click.stop.safe="btnCatalog(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.content" title="栏目内容权限" type="primary" icon="iconviewlist"
-                                   :size="btnSize" circle @click.stop.safe="btnContent(scope.row)"></el-button>
+                        <div style="padding-top: 8px;">
+                            <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
+                                       icon="el-icon-edit" :size="btnSize" circle
+                                       @click.stop.safe="btnUpdate(scope.row)"></el-button>
+                            <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
+                                       icon="el-icon-delete" :size="btnSize" circle
+                                       @click.stop.safe="btnDelete(scope.row)"></el-button>
+                            <el-badge :hidden="scope.row.stationGroupNumber <= 0 || !btnEnable.station" :value="scope.row.stationGroupNumber" :max="99" style="margin-left:10px; margin-right:10px">
+                                <el-button v-show="btnEnable.station" title="关联站群" type="primary" icon="iconlogistic" :size="btnSize" circle
+                                           @click.stop="btnStationGroup(scope.row)"></el-button>
+                            </el-badge>
+                            <el-badge :hidden="scope.row.stationGroupNumber <= 0 || scope.row.catalogNumber <= 0 || !btnEnable.catalog" :value="scope.row.catalogNumber" :max="99" style="margin-right:10px">
+                                <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="iconviewgallery" :size="btnSize" circle
+                                           @click.stop.safe="btnCatalog(scope.row)" :disabled="scope.row.stationGroupNumber <= 0"></el-button>
+                            </el-badge>
+                            <el-button v-if="btnEnable.content" title="设置栏目内容权限" type="primary" icon="iconviewlist"
+                                       :size="btnSize" circle @click.stop.safe="btnContent(scope.row)"></el-button>
+                        </div>
                     </template>
                 </el-table-column>
             </el-table>
@@ -177,8 +185,8 @@
             <el-dialog title="关联栏目" :visible.sync="dialogCatalogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
                 <el-form style="width: 80%; margin-left:10%;" :inline="true">
                     <el-form-item>
-                        <el-cascader ref="topSiteCascader" placeholder="请选择站点"
-                                     :options="stationGroupList"
+                        <el-cascader placeholder="请选择站点"
+                                     :options="catalogUseStationGroupList"
                                      v-model="stationGroupTreePosition"
                                      :show-all-levels="false"
                                      clearable :size="searchSize"
@@ -205,7 +213,7 @@
                 </div>
             </el-dialog>
 
-            <el-dialog title="栏目内容权限" :visible.sync="dialogContentVisible" :close-on-click-modal="closeOnClickModal" @close="closeContentDialog">
+            <el-dialog title="设置栏目内容权限" :visible.sync="dialogContentVisible" :close-on-click-modal="closeOnClickModal" @close="closeContentDialog">
                 <el-form style="width: 80%; margin-left:10%;">
                     <el-radio v-model="templateAuthority"
                               v-for="item in enums['TemplateAuthorityEnum']"
@@ -220,6 +228,20 @@
                 </div>
             </el-dialog>
 
+            <el-dialog title="关联站群" :visible.sync="dialogStationVisible" :close-on-click-modal="closeOnClickModal" @close="closeStationDialog">
+                <el-form style="width: 80%; margin-left:10%;" v-loading="treeLoading">
+                    <el-tree ref="stationTree"
+                             :data="stationGroupList"
+                             show-checkbox
+                             node-key="value"
+                             :default-expand-all="true"
+                             :expand-on-click-node="false"></el-tree>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveStationUser" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeStationDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -236,11 +258,12 @@
     } from '@/api/admin/user';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {isvalidatemobile, validatename, isStartOrEndWithWhiteSpace} from '@/util/validate';
-    import {getCatalogTree} from '@/api/station/catalog';
+    import {getCatalogTreeBySiteIds} from '@/api/station/catalog';
     import {getAllUserCatalogs, setUserCatalogs} from '@/api/station/catalogUser'
     import {getUserAuthority, setUserAuthority} from '@/api/station/templateUserAuthority'
     import {getNodeData, getParentKeys, getChildrenKeys} from "@/util/treeUtils";
     import {getClassificationStationCascader} from '@/api/resource/stationGroup';
+    import {getAllStationGroupUser, setUserStationGroups} from "@/api/resource/stationGroupUser";
 
     export default {
         name: 'user',
@@ -372,10 +395,13 @@
                 dialogContentVisible: false,
                 templateAuthority: undefined,
                 stationGroupList: undefined,
-                stationGroupTreePosition: undefined,
+                catalogUseStationGroupList: [],
+                stationGroupTreePosition: [],
                 siteId: undefined,
                 userCatalogList: [],
-                treeLoading: false
+                treeLoading: false,
+                dialogStationVisible: false,
+                userStationGroupList: []
             }
         },
         computed: {
@@ -412,7 +438,8 @@
                     update: this.permission.user_update,
                     delete: this.permission.user_delete,
                     catalog: this.permission.user_catalog,
-                    content: this.permission.user_content
+                    content: this.permission.user_content,
+                    station: this.permission.user_station_group
                 };
             }
         },
@@ -587,10 +614,27 @@
             },
 
             // 用户栏目
+            btnCatalog(row) {
+                this.currentRow = row;
+                // 检索用户关联的站群
+                getClassificationStationCascader({userId: this.currentRow.id}).then(response => {
+                    this.catalogUseStationGroupList = response.data;
+                    this.getCatalogTree();
+                }).catch(err => {
+                    // this.$message.error(err);
+                });
+                this.dialogCatalogVisible = true;
+            },
             getCatalogTree(){
                 this.treeLoading = true;
-                // 站点的全部栏目
-                getCatalogTree({siteId: this.siteId}).then(response => {
+                let siteIds = [];
+                if (this.siteId) {
+                    siteIds.push(this.siteId);
+                } else {
+                    siteIds = this.getSiteIds();
+                }
+                // 用户关联的站群的全部栏目
+                getCatalogTreeBySiteIds(siteIds).then(response => {
                     this.catalogTree = response.data;
                     if (this.catalogTree && this.catalogTree.length > 0) {
                         // 用户已分配的栏目
@@ -608,10 +652,27 @@
                     this.treeLoading = false;
                 });
             },
-            btnCatalog(row) {
-                this.currentRow = row;
-                this.getCatalogTree();
-                this.dialogCatalogVisible = true;
+            getSiteIds() {
+                let siteIds = [];
+                if (this.catalogUseStationGroupList && this.catalogUseStationGroupList.length > 0) {
+                    for(let node of this.catalogUseStationGroupList) {
+                        siteIds.push.apply(siteIds, this.getLeaf(node));
+                    }
+                }
+                return siteIds;
+            },
+            getLeaf(node) {
+                let siteIds = [];
+                // 叶子
+                if (!node.children) {
+                    siteIds.push(node.value);
+                    return siteIds;
+                } else {
+                    for(let node of node.children) {
+                        siteIds.push.apply(siteIds, this.getLeaf(node));
+                    }
+                    return siteIds;
+                }
             },
             checkUserCatalog() {
                 this.$nextTick(()=>{
@@ -628,6 +689,7 @@
                 this.userCatalogList = [];
                 this.dialogCatalogVisible = false;
                 this.stationGroupTreePosition = [];
+                this.catalogUseStationGroupList = [];
                 this.siteId = undefined;
                 this.submitLoading = false;
                 this.$refs['catalogTree'].setCheckedKeys([])
@@ -683,6 +745,7 @@
                 let checkedKeys = this.$refs['catalogTree'].getCheckedKeys(false);
                 setUserCatalogs(this.currentRow.id, checkedKeys).then(() => {
                     this.closeCatalogDialog();
+                    this.reloadList();
                     this.$message.success(this.$t("table.associateSuccess"));
                 }).catch(() => {
                     this.submitLoading = false;
@@ -691,21 +754,6 @@
             resetCatalogSearch() {
                 this.stationGroupTreePosition = [];
                 this.siteId = undefined;
-            },
-            getAllStationGroup(){
-                this.stationGroupList = [];
-                getClassificationStationCascader().then(response => {
-                    this.stationGroupList = response.data;
-                    if(this.stationGroupList.length > 0){
-                        let v = [];
-                        this.stationGroupTreePosition = v;
-                        if (v.length > 0) {
-                            this.$store.state.common.siteId = v[v.length - 1];
-                            this.$store.state.common.siteName = this.currentLabels(v);
-                            this.reloadMainView();
-                        }
-                    }
-                })
             },
             stationGroupChange(v) {
                 this.siteId = undefined;
@@ -744,6 +792,56 @@
                         this.$message.success("设置成功")
                     } else {
                         this.$message.error("设置失败")
+                    }
+                });
+            },
+
+            // 用户站群
+            btnStationGroup(row) {
+                this.currentRow = row;
+                this.loadStationGroupUser(row.id);
+                this.dialogStationVisible = true;
+            },
+            closeStationDialog() {
+                this.currentRow = undefined;
+                this.submitLoading = false;
+                this.dialogStationVisible = false;
+            },
+            doSaveStationUser() {
+                this.submitLoading = true;
+                // 仅返回被选中的叶子节点的 keys
+                let checkedKeys = this.$refs['stationTree'].getCheckedKeys(true);
+                setUserStationGroups(this.currentRow.id, checkedKeys).then(() => {
+                    this.closeStationDialog();
+                    this.reloadList();
+                    this.$message.success(this.$t("table.associateSuccess"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
+            },
+            getAllStationGroup(){
+                this.stationGroupList = [];
+                getClassificationStationCascader().then(response => {
+                    this.stationGroupList = response.data;
+                })
+            },
+            loadStationGroupUser(userId) {
+                this.treeLoading = true;
+                getAllStationGroupUser({userId:userId}).then(response => {
+                    this.userStationGroupList = response.data;
+                    this.treeLoading = false;
+                    this.checkUserStationGroup();
+                }).catch(err => {
+                    this.treeLoading = false;
+                })
+            },
+            checkUserStationGroup() {
+                this.$nextTick(()=>{
+                    // 选中用户已分配的站群
+                    if (this.userStationGroupList && this.userStationGroupList.length > 0) {
+                        for (let sg of this.userStationGroupList) {
+                            this.$refs['stationTree'].setChecked(sg.stationGroupId, true, false);
+                        }
                     }
                 });
             }

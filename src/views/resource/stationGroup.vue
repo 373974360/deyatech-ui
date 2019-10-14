@@ -84,7 +84,7 @@
                                            @click.stop="btnSetting(scope.row)"></el-button>
                                 <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="iconcustoms-clearance" :size="btnSize" circle
                                            @click.stop="btnDomain(scope.row)"></el-button>
-                                <el-badge :hidden="scope.row.userNumber <= 0" :value="scope.row.userNumber" :max="99" style="margin-left:10px">
+                                <el-badge :hidden="scope.row.userNumber <= 0 || !btnEnable.user" :value="scope.row.userNumber" :max="99" style="margin-left:10px">
                                     <el-button v-show="btnEnable.user" title="用户" type="primary" icon="iconadd-account" :size="btnSize" circle
                                                @click.stop="btnUser(scope.row)"></el-button>
                                 </el-badge>

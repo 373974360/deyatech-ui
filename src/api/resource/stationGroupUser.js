@@ -46,6 +46,13 @@ export function getStationGroupUserList(query) {
         params: query
     });
 }
+export function getAllUserByStationGroupUserVo(query) {
+    return request({
+        url: '/manage/resource/stationGroupUser/pageAllUserByStationGroupUserVo',
+        method: 'get',
+        params: query
+    });
+}
 export function setStationGroupUsers(stationGroupId, userIds){
     return request({
         url: '/manage/resource/stationGroupUser/setStationGroupUsers',
@@ -53,10 +60,10 @@ export function setStationGroupUsers(stationGroupId, userIds){
         data: {stationGroupId, userIds}
     })
 }
-export function getAllUserByStationGroupUserVo(query) {
+export function setUserStationGroups(userId, stationGroupIds){
     return request({
-        url: '/manage/resource/stationGroupUser/pageAllUserByStationGroupUserVo',
-        method: 'get',
-        params: query
-    });
+        url: '/manage/resource/stationGroupUser/setUserStationGroups',
+        method: 'post',
+        data: {userId, stationGroupIds}
+    })
 }
