@@ -3,7 +3,7 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
+<!--                    <el-form-item>
                         <el-select :size="searchSize" v-model="listQuery.proDepartment" clearable :placeholder="$t('table.pleaseSelect') + '受理部门'">
                             <el-option
                                 v-for="item in departmentList"
@@ -12,7 +12,7 @@
                                 :value="item.code">
                             </el-option>
                         </el-select>
-                    </el-form-item>
+                    </el-form-item>-->
                     <el-form-item>
                         <el-date-picker
                             style="width: 384px"
