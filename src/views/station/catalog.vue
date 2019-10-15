@@ -435,13 +435,18 @@
                     callback(new Error('不能添加自己'));
                     return;
                 }
-                hasTemplate({id:value}).then(response => {
-                    if (response.data) {
-                        callback(new Error('当前栏目下已存在内容，不能添加栏目'))
-                    } else {
-                        callback()
-                    }
-                })
+                console.log('value = ' + value);
+                if ("0" !== value) {
+                    hasTemplate({id:value}).then(response => {
+                        if (response.data) {
+                            callback(new Error('当前栏目下已存在内容，不能添加栏目'))
+                        } else {
+                            callback()
+                        }
+                    })
+                } else {
+                    callback()
+                }
             };
             const validateName = (rule, value, callback) => {
                 const query = {

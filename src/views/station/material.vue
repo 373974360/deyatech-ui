@@ -30,9 +30,9 @@
                   @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center"/>
             <el-table-column prop="name" label="原文件名称" align="center">
-                <template slot-scope="scope">
+                <!--<template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
-                </template>
+                </template>-->
             </el-table-column>
             <el-table-column align="center" label="URL" prop="url"/>
             <el-table-column align="center" label="路径" prop="path"/>
@@ -138,12 +138,12 @@
             btnDelete(row){
                 let ids = [];
                 if (row.id) {
-                    this.$confirm(message + this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push(row.id);
                         this.doDelete(ids);
                     })
                 } else {
-                    this.$confirm(message + this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for(const deleteRow of this.selectedRows) {
                             ids.push(deleteRow.id);
                         }
