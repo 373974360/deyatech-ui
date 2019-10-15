@@ -267,7 +267,7 @@
                                         placeholder="请输入关键字"
                                         maxlength="20">
                                     </el-input>
-                                    <el-button :disabled="dynamicTags.length >= 10" class="button-new-tag" size="small" @click="showInput">+ 添加关键字(最多10个)</el-button>
+                                    <el-button :disabled="dynamicTags.length >= 10" class="button-new-tag" size="small" @click="showInput">添加关键字</el-button>
                                 </el-form-item>
                             </el-col>
                         </el-row>
