@@ -33,6 +33,7 @@
             this.ue.addListener('ready', () => {
                 this.ue.setContent(this.defaultMsg)
             })
+            this.ue.addListener('contentChange', this.contentChange);
         },
         watch: {
             defaultMsg: function() {
@@ -40,6 +41,9 @@
             }
         },
         methods: {
+            contentChange() {
+                this.$emit('editorContentChange', this.ue.getContent());
+            },
             getUeContent() {
                 return this.ue.getContent()
             },

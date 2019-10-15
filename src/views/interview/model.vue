@@ -259,14 +259,14 @@
                                             </div>
                                         </div>
 
-                                        <editor ref="appendEditor" id="appendEditor" :default-msg="liveMessage.message" :config="editorConfig"></editor>
+                                        <editor ref="appendEditor" id="appendEditor" :default-msg="defaultMsg" :config="editorConfig" @editorContentChange="contentChange"></editor>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                             <el-row :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="" prop="type">
-                                        <el-select v-model.trim="liveMessage.type" placeholder="请选择类型" :size="btnSize">
+                                        <el-select v-model.trim="liveMessage.type" placeholder="请选择类型" :size="btnSize" @change="typeChange">
                                             <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                         </el-select>
                                         <el-button type="primary" style="margin-left: 20px" @click="appendLiveMessage" :loading="submitLoading" :size="btnSize">发送</el-button>
@@ -317,7 +317,7 @@
                     <el-row :span="24">
                         <el-col :span="24">
                             <el-form-item label="" prop="message">
-                                <editor ref="modifyEditor" id="modifyEditor" :default-msg="liveModifyMessage.message" :config="editorConfig"></editor>
+                                <editor ref="modifyEditor" id="modifyEditor" :default-msg="liveModifyMessage.message" :config="editorConfig" @editorContentChange="modifyContentChange"></editor>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -623,6 +623,8 @@
                         {required: true, message: this.$t("table.pleaseSelect") + '访谈图片'}
                     ]
                 },
+                defaultMsg: undefined,
+                changeCount: 0,
                 liveMessageArray: [],
                 liveMessage: {
                     key: undefined,
@@ -920,6 +922,8 @@
                 }
                 this.waitingLiveMessage(this.model.id);
                 this.waitingLiveImage(this.model.id);
+                this.defaultMsg = undefined;
+                this.changeCount = 0;
                 this.liveDialogVisible = true;
                 this.reconnectionSockJS = true;
                 this.liveDialogLoading = true;
@@ -1050,7 +1054,19 @@
                     }
                 });
             },
+            typeChange: function() {
+                this.$refs.liveMessageDialogForm.validateField('type', errorMsg => {});
+            },
+            contentChange: function(v) {
+                this.liveMessage.message = v;
+                if (this.changeCount > 0) this.$refs['liveMessageDialogForm'].validateField('message', errorMsg => {});
+                if (!v) this.changeCount = 1;
+            },
             // 编辑消息
+            modifyContentChange: function(v) {
+                this.liveModifyMessage.message = v;
+                this.$refs['modifyLiveMessageDialogForm'].validateField('message', errorMsg => {});
+            },
             openModifyLiveMessage(key) {
                 this.resetModifyLiveMessage();
                 this.modifyLiveMessageDialogVisible = true;
