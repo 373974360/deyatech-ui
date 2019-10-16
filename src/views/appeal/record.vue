@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="标题/姓名/编码/身份证号" v-model.trim="listQuery.title"></el-input>
+                        <el-input :size="searchSize" placeholder="标题/姓名/编码/身份证号" v-model.trim="listQuery.title" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-select :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
@@ -116,7 +116,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="标题" prop="title">
-                                <el-input v-model.trim="record.title"></el-input>
+                                <el-input v-model.trim="record.title" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -148,31 +148,31 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="来信人姓名" prop="userName">
-                                <el-input v-model.trim="record.userName"></el-input>
+                                <el-input v-model.trim="record.userName" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="身份证号码" prop="cardId">
-                                <el-input v-model.trim="record.cardId"></el-input>
+                                <el-input v-model.trim="record.cardId" maxlength="18"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="手机号码" prop="phone">
-                                <el-input v-model.trim="record.phone"></el-input>
+                                <el-input v-model.trim="record.phone" maxlength="11"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="电子邮箱" prop="email">
-                                <el-input v-model.trim="record.email"></el-input>
+                                <el-input v-model.trim="record.email" maxlength="50"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="通讯地址" prop="address">
-                                <el-input v-model.trim="record.address"></el-input>
+                                <el-input v-model.trim="record.address" maxlength="200"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -190,8 +190,8 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="收件部门" prop="deptId">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="record.deptId"
-                                             expand-trigger="hover" ></el-cascader>
+                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="recordDepartment"
+                                             expand-trigger="hover" clearable @change="recordDepartmentChange" ></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -238,8 +238,8 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="回复部门" prop="replyDeptId">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="record.replyDeptId"
-                                             expand-trigger="hover" ></el-cascader>
+                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="recordReplyDepartment"
+                                             expand-trigger="hover" clearable @change="recordReplyDepartmentChange"></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -413,7 +413,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="标题" prop="title" :hidden="titleDisabled">
-                                        <el-input v-model.trim="process.title"></el-input>
+                                        <el-input v-model.trim="process.title" maxlength="100"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
@@ -512,6 +512,7 @@
         getProcessAllList,
         createOrUpdateProcess
     } from '@/api/appeal/process';
+    import {validateEmail, isMobile, cardid} from '@/util/validate';
 
     export default {
         name: 'record',
@@ -519,6 +520,37 @@
             editor
         },
         data() {
+            const validateCardId = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                let res = cardid(value);
+                if (res[0]) {
+                    callback()
+                } else {
+                    callback(new Error(res[1]))
+                }
+            };
+            const validateMobile = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (isMobile(value)) {
+                    callback()
+                } else {
+                    callback(new Error("手机号码不正确"))
+                }
+            };
+            const validateMail = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (validateEmail(value)) {
+                    callback()
+                } else {
+                    callback(new Error("电子邮箱不正确"))
+                }
+            };
             return {
                 recordList: undefined,
                 total: undefined,
@@ -533,6 +565,8 @@
                     isPublish: 0,
                     flag: 1
                 },
+                recordDepartment: [],
+                recordReplyDepartment: [],
                 record: {
                     id: undefined,
                     modelId: undefined,
@@ -555,7 +589,9 @@
                     replyTime: undefined,
                     replyDeptId: undefined,
                     createTime: undefined,
-                    flag: 0
+                    flag: 0,
+                    treePosition: undefined,
+                    replyTreePosition: undefined
                 },
                 recordRules: {
                     modelId: [
@@ -578,6 +614,15 @@
                     ],
                     createTime: [
                         {required: true, message: this.$t("table.pleaseInput") + '来信时间'}
+                    ],
+                    phone: [
+                        {validator: validateMobile, trigger: 'change'}
+                    ],
+                    cardId: [
+                        {validator: validateCardId, trigger: 'change'}
+                    ],
+                    email: [
+                        {validator: validateMail, trigger: 'change'}
                     ]
                 },
                 selectedRows: [],
@@ -838,6 +883,8 @@
                 } else {
                     this.record = deepClone(this.selectedRows[0]);
                 }
+                if (this.record.treePosition) this.recordDepartment = this.record.treePosition.substring(1).split('&');
+                if (this.record.replyTreePosition) this.recordReplyDepartment = this.record.replyTreePosition.substring(1).split('&');
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -857,19 +904,34 @@
                     })
                 }
             },
+            recordDepartmentChange(v) {
+                if (v && v.length > 0) {
+                    this.record.deptId = v[v.length-1];
+                } else {
+                    this.record.deptId = undefined;
+                }
+            },
+            recordReplyDepartmentChange(v) {
+                if (v && v.length > 0) {
+                    this.record.replyDeptId = v[v.length-1];
+                } else {
+                    this.record.replyDeptId = undefined;
+                }
+            },
             doCreate(){
                 this.record.content = this.$refs['content'].getUeContent();
                 this.record.replyContent = this.$refs['replyContent'].getUeContent();
                 this.$refs['recordDialogForm'].validate(valid => {
+                    console.dir(this.record);
                     if(valid) {
                         this.submitLoading = true;
-                        const deptId = this.record.deptId;
-                        this.record.deptId = deptId[deptId.length-1];
-                        const replyDeptId = this.record.replyDeptId;
-                        this.record.replyDeptId = replyDeptId[replyDeptId.length-1];
                         createOrUpdateRecord(this.record).then(() => {
                             this.resetRecordDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
+                        }, () => {
+                            this.submitLoading = false;
+                        }).catch(()=>{
+                            this.submitLoading = false;
                         })
                     } else {
                         return false;
@@ -907,6 +969,8 @@
                 })
             },
             resetRecord(){
+                this.recordDepartment = [];
+                this.recordReplyDepartment = [];
                 this.record = {
                     id: undefined,
                     modelId: undefined,
@@ -929,7 +993,9 @@
                     replyTime: undefined,
                     replyDeptId: undefined,
                     createTime: undefined,
-                    flag: 0
+                    flag: 0,
+                    treePosition: undefined,
+                    replyTreePosition: undefined
                 };
             },
             resetRecordDialogAndList(){

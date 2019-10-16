@@ -415,7 +415,7 @@
                             <el-row :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="模型" prop="modelId">
-                                        <el-input :value="model.name" readonly></el-input>
+                                        <el-input :value="model.name" readonly disabled></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>

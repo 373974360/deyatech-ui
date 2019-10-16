@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -89,7 +89,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="业务名称" prop="modelName">
-                                <el-input v-model.trim="model.modelName"></el-input>
+                                <el-input v-model.trim="model.modelName" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -134,22 +134,22 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="6">
                             <el-form-item label="办理时限" prop="limitDay">
-                                <el-input v-model.trim="model.limitDay"></el-input>
+                                <el-input v-model.trim="model.limitDay" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="提醒件" prop="reminderDay">
-                                <el-input v-model.trim="model.reminderDay"></el-input>
+                                <el-input v-model.trim="model.reminderDay" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="黄牌件" prop="yellowDay">
-                                <el-input v-model.trim="model.yellowDay"></el-input>
+                                <el-input v-model.trim="model.yellowDay" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="红牌件" prop="redDay">
-                                <el-input v-model.trim="model.redDay"></el-input>
+                                <el-input v-model.trim="model.redDay" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -178,12 +178,12 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="6">
                             <el-form-item label="业务码" prop="busCode">
-                                <el-input v-model.trim="model.busCode"></el-input>
+                                <el-input v-model.trim="model.busCode" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="间隔符" prop="spacera">
-                                <el-input v-model.trim="model.spacera"></el-input>
+                                <el-input v-model.trim="model.spacera" maxlength="5"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
@@ -200,7 +200,7 @@
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="间隔符" prop="spacerb">
-                                <el-input v-model.trim="model.spacerb"></el-input>
+                                <el-input v-model.trim="model.spacerb" maxlength="5"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -308,7 +308,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="model.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="model.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -339,6 +339,13 @@
     export default {
         name: 'model',
         data() {
+            const checkInteger = (rule, value, callback) => {
+                if (/^[-+]?\d+$/.test(value)) {
+                    callback();
+                } else {
+                    callback(new Error('请输入整数'));
+                }
+            };
             return {
                 modelList: undefined,
                 total: undefined,
@@ -379,16 +386,20 @@
                         {required: true, message: this.$t("table.pleaseInput") + '业务名称'}
                     ],
                     limitDay: [
-                        {required: true, message: this.$t("table.pleaseInput") + '办理时限'}
+                        {required: true, message: this.$t("table.pleaseInput") + '办理时限'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ],
                     reminderDay: [
-                        {required: true, message: this.$t("table.pleaseInput") + '提醒件'}
+                        {required: true, message: this.$t("table.pleaseInput") + '提醒件'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ],
                     yellowDay: [
-                        {required: true, message: this.$t("table.pleaseInput") + '黄牌件'}
+                        {required: true, message: this.$t("table.pleaseInput") + '黄牌件'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ],
                     redDay: [
-                        {required: true, message: this.$t("table.pleaseInput") + '红牌件'}
+                        {required: true, message: this.$t("table.pleaseInput") + '红牌件'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ],
                     competentDept: [
                         {required: true, message: this.$t("table.pleaseInput") + '主管部门引用部门ID'}

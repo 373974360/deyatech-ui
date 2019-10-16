@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -64,26 +64,26 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="指标名称" prop="name">
-                                <el-input v-model.trim="satisfaction.name"></el-input>
+                                <el-input v-model.trim="satisfaction.name" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="分值" prop="score">
-                                <el-input v-model.trim="satisfaction.score"></el-input>
+                                <el-input v-model.trim="satisfaction.score" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="排序" prop="sort">
-                                <el-input v-model.trim="satisfaction.sort"></el-input>
+                                <el-input v-model.trim="satisfaction.sort" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="satisfaction.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="satisfaction.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -111,6 +111,13 @@
     export default {
         name: 'satisfaction',
         data() {
+            const checkInteger = (rule, value, callback) => {
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入正整数'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 satisfactionList: undefined,
                 total: undefined,
@@ -131,10 +138,12 @@
                         {required: true, message: this.$t("table.pleaseInput") + '指标名称'}
                     ],
                     score: [
-                        {required: true, message: this.$t("table.pleaseInput") + '分值'}
+                        {required: true, message: this.$t("table.pleaseInput") + '分值'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ],
                     sort: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序'}
+                        {required: true, message: this.$t("table.pleaseInput") + '排序'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ]
                 },
                 selectedRows: [],
