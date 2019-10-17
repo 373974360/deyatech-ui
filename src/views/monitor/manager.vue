@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -61,19 +61,19 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="人员姓名" prop="userName">
-                                <el-input v-model.trim="manager.userName"></el-input>
+                                <el-input v-model.trim="manager.userName" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="手机号" prop="userPhone">
-                                <el-input v-model.trim="manager.userPhone"></el-input>
+                                <el-input v-model.trim="manager.userPhone" maxlength="11"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="manager.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="manager.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -132,10 +132,18 @@
         setUserSites,
         listBySiteManager
     } from '@/api/monitor/siteManager';
+    import {isMobile} from '@/util/validate';
 
     export default {
         name: 'manager',
         data() {
+            const checkUserPhone = (rule, value, callback) => {
+                if (isMobile(value)) {
+                    callback();
+                } else {
+                    callback(new Error('手机号不正确'));
+                }
+            };
             return {
                 managerList: undefined,
                 total: undefined,
@@ -155,7 +163,8 @@
                         {required: true, message: this.$t("table.pleaseInput") + '管理员姓名'}
                     ],
                     userPhone: [
-                        {required: true, message: this.$t("table.pleaseInput") + '管理员手机号'}
+                        {required: true, message: this.$t("table.pleaseInput") + '管理员手机号'},
+                        {validator: checkUserPhone, trigger: ['change','blur']}
                     ]
                 },
                 selectedRows: [],

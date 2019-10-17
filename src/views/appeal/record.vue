@@ -551,6 +551,21 @@
                     callback(new Error("电子邮箱不正确"))
                 }
             };
+            const validateReplyTime = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                // 来信时间
+                if (this.record.createTime) {
+                    if (this.record.createTime > value) {
+                        callback(new Error("回复时间必须在来信时间之后"));
+                    } else {
+                        callback()
+                    }
+                } else {
+                    callback(new Error("没有选择来信时间"));
+                }
+            };
             return {
                 recordList: undefined,
                 total: undefined,
@@ -623,6 +638,9 @@
                     ],
                     email: [
                         {validator: validateMail, trigger: 'change'}
+                    ],
+                    replyTime: [
+                        {validator: validateReplyTime, trigger: 'change'}
                     ]
                 },
                 selectedRows: [],
@@ -922,7 +940,6 @@
                 this.record.content = this.$refs['content'].getUeContent();
                 this.record.replyContent = this.$refs['replyContent'].getUeContent();
                 this.$refs['recordDialogForm'].validate(valid => {
-                    console.dir(this.record);
                     if(valid) {
                         this.submitLoading = true;
                         createOrUpdateRecord(this.record).then(() => {
