@@ -335,8 +335,8 @@
             </el-dialog>
 
 
-            <!--嘉宾管理 列表-->
-            <el-dialog :title="titleGuest" :visible.sync="guestDialogVisible" :fullscreen="false" :close-on-click-modal="closeOnClickModal" @close="guestCloseModelDialog">
+            <!--嘉宾管理 列表 titleGuest-->
+            <el-dialog title="嘉宾管理" :visible.sync="guestDialogVisible" :fullscreen="false" :close-on-click-modal="closeOnClickModal" @close="guestCloseModelDialog">
                 <div class="deyatech-header">
                     <el-form :inline="true" ref="guestSearchForm">
                         <el-form-item>
@@ -414,7 +414,7 @@
                         <el-col :span="12">
                             <el-row :span="24">
                                 <el-col :span="24">
-                                    <el-form-item label="模型" prop="modelId">
+                                    <el-form-item label="访谈名称" prop="modelId">
                                         <el-input :value="model.name" readonly disabled></el-input>
                                     </el-form-item>
                                 </el-col>
@@ -778,7 +778,6 @@
                 this.resetModel();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
-                this.model.categoryId = this.listQuery.categoryId;
             },
             btnUpdate(row){
                 this.resetModel();

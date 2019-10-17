@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -81,7 +81,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="任务名称" prop="groupName">
-                                <el-input v-model.trim="group.groupName"></el-input>
+                                <el-input v-model.trim="group.groupName" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -106,7 +106,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="间隔时间" prop="incrementSeconds">
-                                <el-input v-model.trim="group.incrementSeconds" :disabled="incrementSecondsDisabled"></el-input>
+                                <el-input v-model.trim="group.incrementSeconds" :disabled="incrementSecondsDisabled" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -141,7 +141,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="group.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="group.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -205,6 +205,13 @@
     export default {
         name: 'group',
         data() {
+            const checkIncrementSeconds = (rule, value, callback) => {
+                if (/[^\d]/.test(value)) {
+                    callback(new Error('请输入正整数'))
+                } else {
+                    callback();
+                }
+            };
             return {
                 calendarTypeDisabled: true,
                 incrementSecondsDisabled: false,
@@ -232,6 +239,9 @@
                 groupRules: {
                     groupName: [
                         {required: true, message: this.$t("table.pleaseInput") + '任务组名称'}
+                    ],
+                    incrementSeconds: [
+                        {validator: checkIncrementSeconds, trigger: ['change','blur']}
                     ]
                 },
                 selectedRows: [],
