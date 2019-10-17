@@ -146,6 +146,7 @@
                 });
             };
             const checkSortNo = (rule, value, callback) => {
+                //除了数字
                 if (/[^\d]/g.test(value)) {
                     callback(new Error('请输入正整数'));
                 } else {

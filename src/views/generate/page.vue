@@ -100,7 +100,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="更新频率" prop="pageInterval">
-                                <el-input v-model.trim.number="page.pageInterval" maxlength="4"></el-input>
+                                <el-input v-model.trim="page.pageInterval" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -162,6 +162,13 @@
     export default {
         name: 'page',
         data() {
+            const checkInterval = (rule, value, callback) => {
+                if (/[^\d]/.test(value)) {
+                    callback(new Error('请输入正整数'));
+                } else {
+                    callback();
+                }
+            }
             const validateTemplatePath = (rule, value, callback) => {
                 if (this.selectTemplatePath) {
                     this.page.templatePath = '/' + this.selectTemplatePath.join('/');
@@ -240,7 +247,7 @@
                     ],
                     pageInterval: [
                         { required: true, message: this.$t("table.pleaseInput") + '更新频率'},
-                        { type: 'number', message: '更新频率必须为数字值', trigger: 'blur'}
+                        {validator: checkInterval, trigger: ['change', 'blur']}
                     ],
                     remark: [
                         {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}

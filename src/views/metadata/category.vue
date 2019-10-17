@@ -58,7 +58,7 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item :label="$t('table.searchName')" prop="name">
-                            <el-input v-model.trim="metadataCategory.name"/>
+                            <el-input v-model.trim="metadataCategory.name" maxlength="30"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -73,7 +73,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item :label="$t('table.remark')">
-                            <el-input type="textarea" v-model.trim="metadataCategory.remark" :rows="3"/>
+                            <el-input type="textarea" v-model.trim="metadataCategory.remark" :rows="3" maxlength="500"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
