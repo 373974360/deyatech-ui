@@ -353,10 +353,12 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    name: undefined,
+                    siteId: this.$store.state.common.siteId
                 },
                 model: {
                     id: undefined,
+                    siteId: this.$store.state.common.siteId,
                     modelName: undefined,
                     participant: 2,
                     autoPublish: 2,
@@ -672,6 +674,7 @@
             resetModel(){
                 this.model = {
                     id: undefined,
+                    siteId: this.$store.state.common.siteId,
                     modelName: undefined,
                     participant: 2,
                     autoPublish: 2,
