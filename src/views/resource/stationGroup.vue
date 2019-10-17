@@ -23,7 +23,7 @@
                     <el-button v-show="btnEnable.update"  type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-show="btnEnable.delete"  type="danger"  :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || disableDelete">{{$t('table.delete')}}</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting" :disabled="selectedRows.length != 1">设置</el-button>
-                    <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting">全局设置</el-button>
+                    <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnGlobalSetting">全局设置</el-button>
                     <el-button v-show="btnEnable.domain"  type="primary" :size="btnSize" @click="btnDomain" :disabled="selectedRows.length != 1">域名</el-button>
                     <el-button v-show="btnEnable.user"    type="primary" :size="btnSize" @click="btnUser" :disabled="selectedRows.length != 1">用户</el-button>
                 </div>
@@ -414,7 +414,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="所属站群" prop="stationGroupId">
-                                <el-input :value="stationGroup.name" readonly></el-input>
+                                <el-input :value="stationGroup.name" :disabled="true"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -1162,22 +1162,25 @@
                 };
                 this.uploadFileTypeArray = [];
             },
+            btnGlobalSetting(){
+                this.titleSetting = "站群全局设置";
+                this.getSetting(undefined);
+            },
             btnSetting(row) {
                 let stationGroupId = undefined;
                 if (row.id) {
                     stationGroupId = row.id;
                     this.titleSetting = row.name;
                 } else {
-                    if (this.selectedRows.length == 1) {
-                        this.stationGroup = deepClone(this.selectedRows[0]);
-                        stationGroupId = this.stationGroup.id;
-                        this.titleSetting = this.stationGroup.name;
-                    } else {
-                        this.titleSetting = "站群全局设置";
-                    }
+                    this.stationGroup = deepClone(this.selectedRows[0]);
+                    stationGroupId = this.stationGroup.id;
+                    this.titleSetting = this.stationGroup.name;
                 }
                 this.resetSetting();
                 this.setting.stationGroupId = stationGroupId;
+                this.getSetting(stationGroupId)
+            },
+            getSetting(stationGroupId) {
                 this.loadSetting({stationGroupId: stationGroupId}).then(response=>{
                     if (response.status == 200 && response.data.id) {
                         this.setting = response.data;
@@ -1192,7 +1195,6 @@
                         if (typeof(this.setting.watermarkWord) === 'undefined') this.$set(this.setting, 'watermarkWord', undefined);
                         if (typeof(this.setting.watermarkPosition) === 'undefined') this.$set(this.setting, 'watermarkPosition', undefined);
                     }
-                    if (!this.setting.stationGroupName) this.setting.stationGroupName = row.name;
                     this.dialogSettingVisible = true;
                 }).catch(error=>{
                     this.$message.error(error);
@@ -1510,7 +1512,7 @@
                 this.dialogStationGroupUserVisible = true;
                 this.dialogFormLoading = true;
                 this.selectAllUserId = [];
-                this.loadStationGroupUser(row.id).then(res => {
+                this.loadStationGroupUser(this.stationGroup.id).then(res => {
                     if (res && res.length > 0) {
                         for (let stationGroupUser of res) {
                             this.selectAllUserId.push(stationGroupUser.userId)

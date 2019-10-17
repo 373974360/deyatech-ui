@@ -5,7 +5,7 @@
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')"
-                                  v-model.trim="listQuery.name"></el-input>
+                                  v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">
@@ -108,7 +108,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="姓名" prop="name">
-                                <el-input v-model.trim="user.name"></el-input>
+                                <el-input v-model.trim="user.name" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -122,7 +122,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="手机号码" prop="phone">
-                                <el-input v-model.trim="user.phone"></el-input>
+                                <el-input v-model.trim="user.phone" maxlength="11"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -145,23 +145,23 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="工号" prop="empNo">
-                                <el-input v-model.trim="user.empNo"></el-input>
+                                <el-input v-model.trim="user.empNo" maxlength="20"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="登录帐户" prop="account">
-                                <el-input v-model.trim="user.account"></el-input>
+                                <el-input v-model.trim="user.account" maxlength="50"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="密码" prop="password">
+                            <el-form-item label="密码" prop="password" maxlength="50">
                                 <el-input type="password" v-model.trim="user.password" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="确认密码" prop="passwordConfirm">
+                            <el-form-item label="确认密码" prop="passwordConfirm" maxlength="50">
                                 <el-input type="password" v-model.trim="user.passwordConfirm" placeholder="修改密码时填入新密码，否则无需输入"></el-input>
                             </el-form-item>
                         </el-col>
@@ -169,7 +169,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark">
-                                <el-input type="textarea" v-model.trim="user.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="user.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -849,6 +849,14 @@
     }
 </script>
 <style>
+    /*
+    input:-webkit-autofill {
+        box-shadow: 0 0 0px 1000px white inset !important;
+    }
+    input:-webkit-autofill:focus {
+        box-shadow: 0 0 0px 1000px white inset !important;
+    }*/
+
     .avatar-uploader .el-upload {
         border: 1px dashed #d9d9d9;
         border-radius: 6px;
