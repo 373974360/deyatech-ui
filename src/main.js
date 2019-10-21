@@ -17,7 +17,13 @@ import * as filters from './filters' // 全局filter
 import basicContainer from './components/basicContainer'
 import iconSelect from './components/iconSelect'
 import messageTemplate from './components/messageTemplate'
+import  VueQuillEditor from 'vue-quill-editor'
+// require styles 引入样式
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 
+Vue.use(VueQuillEditor)
 Vue.use(router)
 Vue.use(VueAxios, axios)
 Vue.use(Element, {
