@@ -1,18 +1,21 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto" v-if="this.$store.state.common.siteId">
-            <el-form ref="indexCodeDialogForm" :inline="true" class="deyatech-form" :model="reset" label-position="left" label-width="0" :rules="resetRules">
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="24">
+            <el-row :gutter="20" :span="24">
+                <el-col :span="24">
+                    <el-form ref="indexCodeDialogForm" :inline="true" class="deyatech-form" :model="reset" label-position="left" :rules="resetRules">
+                        <el-form-item label="开始日期" prop="start">
+                            <el-date-picker type="date" placeholder="请选择开始日期" v-model="reset.start" format="yyyy年MM月dd日" value-format="yyyy-MM-dd"></el-date-picker>
+                        </el-form-item>
+                        <el-form-item label="结束日期" prop="end">
+                            <el-date-picker type="date" placeholder="请选择结束日期" v-model="reset.end" format="yyyy年MM月dd日" value-format="yyyy-MM-dd"></el-date-picker>
+                        </el-form-item>
                         <el-form-item>
-                            <el-date-picker type="date" placeholder="选择开始日期" v-model="reset.start"></el-date-picker>
-                            <el-date-picker type="date" placeholder="选择结束日期" v-model="reset.end" style="margin-left: 10px;margin-right: 10px"></el-date-picker>
                             <el-button v-if="btnEnable.save" type="primary" @click="doSave" :loading="submitLoading">索引码重置</el-button>
                         </el-form-item>
-                    </el-col>
-                </el-row>
-            </el-form>
-
+                    </el-form>
+                </el-col>
+            </el-row>
         </div>
     </basic-container>
 </template>
@@ -21,18 +24,11 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
-    import {resetIndex} from '@/api/assembly/indexCode';
+    import {resetIndex} from '@/api/assembly/indexReset';
 
     export default {
         name: 'indexCode',
         data() {
-            const validateStart = (rule, value, callback) => {
-                callback();
-            };
-            const validateEnd = (rule, value, callback) => {
-                callback();
-            };
-
             return {
                 submitLoading: undefined,
                 reset: {
@@ -41,11 +37,14 @@
                     end: undefined
                 },
                 resetRules: {
+                    siteId: [
+                        {required: true, message: '请选择开始站点'}
+                    ],
                     start: [
-                        {validator: validateStart, trigger: 'change'}
+                        {required: true, message: '请选择开始日期'}
                     ],
                     end: [
-                        {validator: validateEnd, trigger: 'change'}
+                        {required: true, message: '请选择结束日期'}
                     ]
                 },
             }
@@ -73,12 +72,15 @@
         },
         methods: {
             doSave() {
+                if (!this.reset.siteId) {
+                    this.$message.error("请选择站点");
+                }
                 this.$refs['indexCodeDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
                         resetIndex(this.reset).then(() => {
                             this.submitLoading = false;
-                            this.$message.success("重置成功");
+                            this.$message.success("索引码重置成功");
                         }).catch((error)=>{
                             this.$message.error(error);
                         });

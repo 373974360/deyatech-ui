@@ -68,7 +68,7 @@
                             <el-form-item>
                                 <div class="infoContent" style="text-align: center;">
                                     <el-button v-if="btnEnable.save" type="primary" @click="doSave" :loading="submitLoading">保存</el-button>
-                                    <el-button v-if="btnEnable.save" @click="doReset" :loading="submitLoading">重置</el-button>
+                                    <el-button v-if="btnEnable.save" @click="doReset">重置</el-button>
                                 </div>
                             </el-form-item>
                         </div>
@@ -234,10 +234,13 @@
                 }
             },
             doSave() {
+                this.indexCode.siteId = this.$store.state.common.siteId;
+                if (!this.indexCode.siteId) {
+                    this.$message.error("请选择站点");
+                }
                 this.$refs['indexCodeDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        this.indexCode.siteId = this.$store.state.common.siteId;
                         createOrUpdateIndexCode(this.indexCode).then(() => {
                             this.reload();
                             this.submitLoading = false;
