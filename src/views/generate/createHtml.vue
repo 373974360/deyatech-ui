@@ -110,8 +110,6 @@
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
                 this.getCatalogTree();
-            }else{
-                this.$message.error('请选择站点！');
             }
         },
         methods: {

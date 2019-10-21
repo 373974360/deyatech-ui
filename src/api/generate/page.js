@@ -46,6 +46,13 @@ export function existsPagePath(query) {
         params: query
     })
 }
+export function existsTemplatePath(query) {
+    return request({
+        url: '/manage/generate/page/existsTemplatePath',
+        method: 'get',
+        params: query
+    })
+}
 export function replay(pageVo){
     const data = pageVo;
     return request({

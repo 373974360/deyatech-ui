@@ -173,8 +173,6 @@
                 this.listTemplateFiles();
                 this.getStationGit();
                 this.uploadDesabled = false;
-            }else{
-                this.$message.error('请选择站点！');
             }
         },
         methods: {

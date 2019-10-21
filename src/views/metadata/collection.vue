@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -68,24 +68,24 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="名称" prop="name">
-                                <el-input v-model.trim="metadataCollection.name" :disabled="dialogTitle === 'addVersion'"></el-input>
+                                <el-input v-model.trim="metadataCollection.name" :disabled="dialogTitle === 'addVersion'" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="enName">
-                                <el-input v-model.trim="metadataCollection.enName" :disabled="dialogTitle !== 'create'"></el-input>
+                                <el-input v-model.trim="metadataCollection.enName" :disabled="dialogTitle !== 'create'" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="元数据集前缀" prop="mdcPrefix">
-                                <el-input v-model.trim="metadataCollection.mdcPrefix" disabled></el-input>
+                                <el-input v-model.trim="metadataCollection.mdcPrefix" disabled maxlength="6"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="元数据前缀" prop="mdPrefix">
-                                <el-input v-model.trim="metadataCollection.mdPrefix" disabled></el-input>
+                                <el-input v-model.trim="metadataCollection.mdPrefix" disabled maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -96,14 +96,14 @@
                                     <el-option v-for="item in collectionVersionList" :key="item.id" :label="item.mdcVersion" :value="item.mdcVersion">
                                     </el-option>
                                 </el-select>
-                                <el-input v-else v-model.trim="metadataCollection.mdcVersion"></el-input>
+                                <el-input v-else v-model.trim="metadataCollection.mdcVersion" maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="metadataCollection.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="metadataCollection.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -118,8 +118,7 @@
                             <el-table-column label="字段名" prop="fieldName"/>
                             <el-table-column label="标签名称">
                                 <template slot-scope="scope">
-                                    <el-input v-model.trim="relationDataReal[scope.$index].label" placeholder="请输入">
-                                    </el-input>
+                                    <el-input v-model.trim="relationDataReal[scope.$index].label" placeholder="请输入" maxlength="100"></el-input>
                                 </template>
                             </el-table-column>
                             <el-table-column label="数据类型" prop="dataType" :formatter="filterDataType"/>
@@ -199,7 +198,7 @@
                                  :size="searchSize" placeholder="根据分类筛选">
                     </el-cascader>
                     <el-input v-model.trim="candidateQuery.name" class="dialog-search-item dialog-keywords"
-                              clearable :size="searchSize" placeholder="根据中文名称查询">
+                              clearable :size="searchSize" placeholder="根据中文名称查询" maxlength="100">
                     </el-input>
                     <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadCandidateList">{{$t('table.search')}}</el-button>
                 </div>

@@ -689,8 +689,6 @@
                 this.getSiteUploadPath();
                 // 获取资源分类
                 this.getResourceCategoryList();
-            }else{
-                this.$message.error('请选择站点！');
             }
         },
         methods: {

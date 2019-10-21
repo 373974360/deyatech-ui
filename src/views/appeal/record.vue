@@ -505,7 +505,7 @@
         createOrUpdateRecord,
         delRecords
     } from '@/api/appeal/record';
-    import {getModeAllList} from '@/api/appeal/model';
+    import {getModelByCompetentDeptId} from '@/api/appeal/model';
     import {getPurposeAllList} from '@/api/appeal/purpose';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {
@@ -777,7 +777,8 @@
                 titleDisabled: true,
                 contentDisabled: true,
                 processRulesType: [],
-                activeTabName: 'first'
+                activeTabName: 'first',
+                userInfo: this.$store.state.user.userInfo
             }
         },
         computed: {
@@ -844,7 +845,7 @@
             },
             getModelList(){
                 this.modelList = [];
-                getModeAllList().then(response => {
+                getModelByCompetentDeptId({departmentId: this.userInfo.departmentId}).then(response => {
                     this.modelList = response.data;
                 })
             },
@@ -873,6 +874,7 @@
                 }else{
                     this.listQuery.timeFrame = undefined;
                 }
+                this.listQuery.userDepartmentId = this.userInfo.departmentId;
                 getRecordList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.recordList = response.data.records;

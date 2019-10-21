@@ -47,4 +47,10 @@ export function getModeAllList(query) {
     });
 }
 
-
+export function getModelByCompetentDeptId(query) {
+    return request({
+        url: '/manage/appeal/model/listModelByCompetentDeptId',
+        method: 'get',
+        params: query
+    });
+}

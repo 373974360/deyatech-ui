@@ -83,8 +83,6 @@
             this.$store.state.common.selectSiteDisplay = true;
             if (this.$store.state.common.siteId != undefined) {
                 this.reloadList();
-            } else {
-                this.$message.error('请选择站点！');
             }
         },
         computed: {

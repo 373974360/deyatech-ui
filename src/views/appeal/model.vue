@@ -483,8 +483,6 @@
                 this.reloadList();
                 this.getDepartmentCascader();
                 this.listTemplateAllFiles();
-            }else{
-                this.$message.error('请选择站点！');
             }
         },
         methods: {

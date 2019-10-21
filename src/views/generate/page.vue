@@ -151,6 +151,7 @@
         createOrUpdatePage,
         delPages,
         existsPagePath,
+        existsTemplatePath,
         replay
     } from '@/api/generate/page';
     import {
@@ -176,7 +177,16 @@
                         callback(new Error('长度在 1 到 255 个字符'))
                         this.page.templatePath = undefined;
                     } else {
-                        callback()
+                        existsTemplatePath(this.page).then(response => {
+                            console.dir(response);
+                            if (response && response.data) {
+                                callback(new Error(this.$t("table.pleaseSelect") + '模板地址'))
+                            } else {
+                                callback()
+                            }
+                        }).catch((error)=>{
+                            callback(new Error(error))
+                        });
                     }
                 } else {
                     callback(new Error(this.$t("table.pleaseSelect") + '模板地址'))
@@ -199,13 +209,16 @@
                     return
                 }
                 this.page.siteId = this.listQuery.siteId;
+                this.page.ids = undefined;
                 existsPagePath(this.page).then(response => {
-                    if (response.status != 200) {
-                        callback(new Error(response.message))
+                    if (response && response.data) {
+                        callback(new Error(response.data))
                     } else {
                         callback()
                     }
-                })
+                }).catch((error)=>{
+                    callback(new Error(error))
+                });
             }
             return {
                 pageList: undefined,
@@ -297,8 +310,6 @@
             if(this.$store.state.common.siteId != undefined){
                 this.reloadList();
                 this.listTemplateAllFiles();
-            }else{
-                this.$message.error('请选择站点！');
             }
         },
         methods: {
@@ -405,7 +416,6 @@
                         this.page.siteId = this.listQuery.siteId;
                         let ids = [];
                         if(this.pageCatalogList != undefined){
-                            console.log(this.pageCatalogList);
                             for(const pageCatalog of this.pageCatalogList){
                                 ids.push(pageCatalog.join(","))
                             }
@@ -414,7 +424,9 @@
                         createOrUpdatePage(this.page).then(() => {
                             this.resetPageDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
-                        })
+                        }).catch(()=>{
+                            this.submitLoading = false;
+                        });
                     } else {
                         return false;
                     }
@@ -426,7 +438,6 @@
                         this.submitLoading = true;
                         let ids = [];
                         if(this.pageCatalogList != undefined){
-                            console.log(this.pageCatalogList);
                             for(const pageCatalog of this.pageCatalogList){
                                 ids.push(pageCatalog.join(","))
                             }
@@ -435,7 +446,9 @@
                         createOrUpdatePage(this.page).then(() => {
                             this.resetPageDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
-                        })
+                        }).catch(()=>{
+                            this.submitLoading = false;
+                        });
                     } else {
                         return false;
                     }
@@ -473,7 +486,6 @@
                 this.$refs['pageDialogForm'].resetFields();
             },
             handleChange(value) {
-                console.log(value);
             }
         }
     }

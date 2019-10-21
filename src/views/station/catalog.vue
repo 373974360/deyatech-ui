@@ -800,8 +800,6 @@
                 this.listTemplateAllFiles();
                 this.getAllModel();
                 this.getCatalogCascader();
-            }else{
-                this.$message.error('请选择站点！');
             }
         },
         computed: {
