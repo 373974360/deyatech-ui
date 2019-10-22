@@ -518,9 +518,9 @@
                 }
                 let res = cardid(value);
                 if (res[0]) {
-                    callback()
-                } else {
                     callback(new Error(res[1]))
+                } else {
+                    callback()
                 }
             };
             const validateMobile = (rule, value, callback) => {
