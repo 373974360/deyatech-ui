@@ -200,8 +200,6 @@
                             <el-form-item label="公开意愿" prop="isOpen">
                                 <el-switch
                                     v-model.trim="record.isOpen"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
@@ -210,8 +208,6 @@
                             <el-form-item label="是否发布" prop="isPublish">
                                 <el-switch
                                     v-model.trim="record.isPublish"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
@@ -450,8 +446,6 @@
                                     <el-form-item label="是否公开" prop="isOpen" :hidden="isOpenDisabled">
                                         <el-switch
                                             v-model.trim="process.isOpen"
-                                            active-text="是"
-                                            inactive-text="否"
                                             :active-value=1 :inactive-value=2>
                                         </el-switch>
                                     </el-form-item>
@@ -460,8 +454,6 @@
                                     <el-form-item label="是否发布" prop="isPublish" :hidden="isPublishDisabled">
                                         <el-switch
                                             v-model.trim="process.isPublish"
-                                            active-text="是"
-                                            inactive-text="否"
                                             :active-value=1 :inactive-value=2>
                                         </el-switch>
                                     </el-form-item>

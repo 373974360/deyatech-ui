@@ -78,3 +78,12 @@ export function getModelByCatalogId(query) {
         params: query
     });
 }
+
+export function countModelByCollectionIds(collectionIds) {
+    const data = {collectionIds};
+    return request({
+        url: '/manage/station/model/countModelByCollectionIds',
+        method: 'post',
+        data
+    })
+}

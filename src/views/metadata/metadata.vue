@@ -597,7 +597,7 @@
                 this.$nextTick(() => {
                     this.metadata.controlType = row.controlType;
                     this.$nextTick(() => {
-                        this.metadata.dataSource = row.dataSource;
+                        this.$set(this.metadata, 'dataSource', row.dataSource);
                         this.metadata.checkModel = row.checkModel;
                         this.metadata.dataLength = row.dataLength;
                     });

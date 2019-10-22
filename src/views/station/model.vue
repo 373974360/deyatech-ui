@@ -255,7 +255,7 @@
     } from '@/api/station/catalog';
     import {isChinese, isEnglishName} from '@/util/validate';
     import {listTemplateAllFiles} from '@/api/template/template';
-    import {findMetadataCollectionAllData} from '@/api/metadata/collection';
+    import {getAllMetadataCollection} from '@/api/metadata/collection';
 
     export default {
         name: 'model',
@@ -470,7 +470,7 @@
         methods: {
             // 获取元数据集
             getAllMetaDataCollection() {
-                findMetadataCollectionAllData().then(response => {
+                getAllMetadataCollection().then(response => {
                     if (response.status == 200 && response.data.length > 0) {
                         this.metadataCollectionList = response.data;
                     }

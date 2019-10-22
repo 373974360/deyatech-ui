@@ -166,9 +166,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否外链" prop="flagExternal">
-                                <el-switch v-model.trim="catalog.flagExternal" :active-value=1 :inactive-value=0 @change="isFlagExternal"
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.flagExternal" :active-value=1 :inactive-value=0 @change="isFlagExternal"></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -191,7 +189,17 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="首页模板" prop="indexTemplate">
-                                <el-input v-model.trim="catalog.indexTemplate"></el-input>
+                                <!--<el-input v-model.trim="catalog.indexTemplate"></el-input>-->
+                                <el-cascader
+                                    style="width: 100%"
+                                    placeholder="请选择模板地址"
+                                    clearable
+                                    expand-trigger="hover"
+                                    :options="templateTreeData"
+                                    v-model.trim="selectIndexTemplate"
+                                    :props="cascaderProps"
+                                    @change="handleChange">
+                                </el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -219,57 +227,43 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否自动发布" prop="autoRelease">
-                                <el-switch v-model.trim="catalog.autoRelease" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.autoRelease" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否允许评论" prop="allowComment">
-                                <el-switch v-model.trim="catalog.allowComment" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.allowComment" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否允许分享" prop="allowShare">
-                                <el-switch v-model.trim="catalog.allowShare" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.allowShare" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否生成栏目首页" prop="generateHome">
-                                <el-switch v-model.trim="catalog.generateHome" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.generateHome" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否在导航中显示" prop="navigationShowAble">
-                                <el-switch v-model.trim="catalog.navigationShowAble" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.navigationShowAble" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否在树中显示" prop="treeShowAble">
-                                <el-switch v-model.trim="catalog.treeShowAble" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.treeShowAble" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否归档" prop="placeOnFile">
-                                <el-switch v-model.trim="catalog.placeOnFile" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.placeOnFile" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -284,9 +278,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否启用工作流" prop="workflowEnable">
-                                <el-switch v-model.trim="catalog.workflowEnable" :active-value=1 :inactive-value=0 @change="isWorkflowEnable"
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.workflowEnable" :active-value=1 :inactive-value=0 @change="isWorkflowEnable"></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -309,9 +301,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否设置聚合规则" prop="flagAggregation">
-                                <el-switch v-model.trim="catalog.flagAggregation" :active-value=1 :inactive-value=0
-                                           active-text="是" inactive-text="否">
-                                </el-switch>
+                                <el-switch v-model.trim="catalog.flagAggregation" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -514,6 +504,18 @@
                     }
                 })
             };
+            const validateIndexTemplate = (rule, value, callback) => {
+                this.catalog.indexTemplate = '/';
+                if (this.selectIndexTemplate) {
+                    this.catalog.indexTemplate += this.selectIndexTemplate.join('/');
+                }
+                if (this.catalog.indexTemplate.length > 500) {
+                    callback(new Error('模板路径过长，最多 500 个字符'))
+                    this.catalog.indexTemplate = undefined;
+                } else {
+                    callback()
+                }
+            };
             const validateListTemplate = (rule, value, callback) => {
                 this.catalog.listTemplate = '/';
                 if (this.selectListTemplate) {
@@ -662,7 +664,8 @@
                     ],
                     indexTemplate: [
                         // {required: true, message: this.$t("table.pleaseInput") + '首页模板'}
-                        {max: 50, message: '模板路径过长，最多 50 个字符', trigger: 'blur'}
+                        // {max: 50, message: '模板路径过长，最多 50 个字符', trigger: 'blur'}
+                        {validator: validateIndexTemplate, trigger: 'change'}
                     ],
                     listTemplate: [
                         {validator: validateListTemplate, trigger: 'change'}
@@ -752,6 +755,7 @@
                     label: 'fileName',
                     children: 'children'
                 },
+                selectIndexTemplate: undefined,
                 selectListTemplate: undefined,
                 workflowList: [],
                 modelList: [],
@@ -932,7 +936,7 @@
                     // 一些字段不需要覆盖
                     this.catalogAggregation.id = undefined;
                 }
-
+                this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
@@ -955,6 +959,7 @@
                     this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
                     this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
                 }
+                this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -1156,6 +1161,7 @@
             closeCatalogDialog() {
                 this.selectedRows = [];
                 this.dialogVisible = false;
+                this.selectIndexTemplate = undefined;
                 this.selectListTemplate = undefined;
                 this.workflowList = [];
                 this.resetCatalog();

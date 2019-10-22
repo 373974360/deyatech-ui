@@ -50,7 +50,7 @@
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button title="设置主版本" type="primary" icon="iconwarehouse-delivery" :size="btnSize" circle @click="btnMainVersion(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.countModel > 0"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -269,6 +269,9 @@
     import {
         getAllDictionaryIndex
     } from "../../api/admin/dictionaryIndex";
+    import {
+        countModelByCollectionIds
+    } from "../../api/station/model"
 
     export default {
         name: 'metadataCollection',
@@ -354,7 +357,8 @@
                     tenantFlag: undefined,
                     mdcVersion: '1.0.0',
                     mainVersion: true,
-                    parentId: 0
+                    parentId: 0,
+                    countModel: undefined
                 },
                 metadataCollectionRules: {
                     name: [
@@ -451,6 +455,25 @@
                     this.listLoading = false;
                     this.metadataCollectionList = response.data.records;
                     this.total = response.data.total;
+                    if (this.metadataCollectionList) {
+                        let collectionIds = [];
+                        for (let m of this.metadataCollectionList) {
+                            collectionIds.push(m.id);
+                        }
+                        countModelByCollectionIds(collectionIds).then(res => {
+                            let count = res.data;
+                            if (count) {
+                                for (let m of this.metadataCollectionList) {
+                                    if (count[m.id]) {
+                                        this.$set(m, 'countModel', count[m.id]);
+                                    } else {
+                                        this.$set(m, 'countModel', 0);
+                                    }
+                                }
+                                console.dir(this.metadataCollectionList);
+                            }
+                        });
+                    }
                 })
             },
             getDataType () {

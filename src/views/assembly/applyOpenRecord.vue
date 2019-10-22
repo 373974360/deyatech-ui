@@ -258,8 +258,6 @@
                             <el-form-item label="是否申请减免费用" prop="isDerate">
                                 <el-switch
                                     v-model.trim="applyOpenRecord.isDerate"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
@@ -268,8 +266,6 @@
                             <el-form-item label="是否接受其他方式" prop="isOther">
                                 <el-switch
                                     v-model.trim="applyOpenRecord.isOther"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
@@ -278,8 +274,6 @@
                             <el-form-item label="是否发布" prop="isPublish">
                                 <el-switch
                                     v-model.trim="applyOpenRecord.isPublish"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
@@ -452,8 +446,6 @@
                                     <el-form-item label="是否发布" prop="isPublish" :hidden="isPublishDisabled">
                                         <el-switch
                                             v-model.trim="applyOpenRecord.isPublish"
-                                            active-text="是"
-                                            inactive-text="否"
                                             :active-value=1 :inactive-value=2>
                                         </el-switch>
                                     </el-form-item>

@@ -106,8 +106,6 @@
                             <el-form-item label="自动发布" prop="isAutoPublish">
                                 <el-switch
                                     v-model.trim="applyOpenModel.isAutoPublish"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>

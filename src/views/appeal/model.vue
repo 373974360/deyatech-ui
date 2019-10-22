@@ -106,8 +106,6 @@
                             <el-form-item label="自动发布" prop="autoPublish">
                                 <el-switch
                                     v-model.trim="model.autoPublish"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
@@ -123,10 +121,7 @@
                         <el-col :span="6">
                             <el-form-item label="部门间转办" prop="deptTransfer">
                                 <el-switch
-                                    v-model.trim="model.deptTransfer"
-                                    active-text="是"
-                                    inactive-text="否"
-                                    :active-value=1 :inactive-value=2>
+                                    v-model.trim="model.deptTransfer" :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
                         </el-col>
@@ -291,8 +286,6 @@
                             <el-form-item label="启用工作流" prop="workflowType">
                                 <el-switch
                                     v-model.trim="model.workflowType"
-                                    active-text="是"
-                                    inactive-text="否"
                                     :active-value=1 :inactive-value=2 @change="isWorkflowEnable">
                                 </el-switch>
                             </el-form-item>

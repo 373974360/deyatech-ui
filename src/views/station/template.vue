@@ -190,9 +190,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="是否外链" prop="flagExternal">
-                                    <el-switch v-model.trim="template.flagExternal" @change="isFlagExternal"
-                                               active-text="是" inactive-text="否">
-                                    </el-switch>
+                                    <el-switch v-model.trim="template.flagExternal" @change="isFlagExternal"></el-switch>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -325,7 +323,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="是否置顶" prop="flagTop">
-                                    <el-switch v-model.trim="template.flagTop" active-text="是" inactive-text="否">
+                                    <el-switch v-model.trim="template.flagTop">
                                     </el-switch>
                                 </el-form-item>
                             </el-col>

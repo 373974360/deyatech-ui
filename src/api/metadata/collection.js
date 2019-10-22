@@ -80,3 +80,11 @@ export function checkVersionExist(id, enName, version) {
         params: {id, enName, version}
     })
 }
+
+export function getAllMetadataCollection(query) {
+    return request({
+        url: '/manage/admin/metadataCollection/listByMetadataCollection',
+        method: 'get',
+        params: query
+    })
+}
