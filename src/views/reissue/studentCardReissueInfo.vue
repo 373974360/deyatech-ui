@@ -418,8 +418,18 @@
                 } else {
                     this.studentCardReissueInfo = deepClone(this.selectedRows[0]);
                 }
-                this.idCardFrontList.push(this.studentCardReissueInfo.idCardFront);
-                this.idCardReverseList.push(this.studentCardReissueInfo.idCardReverse);
+                if (this.studentCardReissueInfo.idCardFront) {
+                    this.idCardFrontList.push({
+                        id: this.studentCardReissueInfo.id,
+                        url: this.$store.state.common.showPicImgUrl + this.studentCardReissueInfo.idCardFront
+                    })
+                }
+                if (this.studentCardReissueInfo.idCardReverse) {
+                    this.idCardReverseList.push({
+                        id: this.studentCardReissueInfo.id,
+                        url: this.$store.state.common.showPicImgUrl + this.studentCardReissueInfo.idCardReverse
+                    })
+                }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -494,6 +504,8 @@
             },
             closeStudentCardReissueInfoDialog() {
                 this.dialogVisible = false;
+                this.idCardFrontList = [];
+                this.idCardReverseList = [];
                 this.resetStudentCardReissueInfo();
                 this.$refs['studentCardReissueInfoDialogForm'].resetFields();
             },
