@@ -84,11 +84,11 @@
                 </el-form>
             </div>
             <div class="deyatech-menu">
-                <div class="deyatech-menu_left">
+                <!--<div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
-                </div>
+                </div>-->
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
@@ -146,12 +146,12 @@
                 </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="120">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                        <!--<el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row)"></el-button>-->
                         <el-button v-if="!scope.row.reformContent && !scope.row.reformDate" title="整改" type="primary" :size="btnSize"
-                                   @click.stop.safe="btnReform(scope.row)">整改回复</el-button>
+                                   @click="btnReform(scope.row)">整改回复</el-button>
                         <el-tag v-else type="success">已整改回复</el-tag>
                     </template>
                 </el-table-column>
@@ -258,7 +258,7 @@
                         <el-col :span="24">
                             <el-form-item label="评价详情">
                                 <ul>
-                                    <li v-for="c in detail.content.split('&')">
+                                    <li v-for="c in detail.content.split('&')" :key="c">
                                         {{c}}
                                     </li>
                                 </ul>
@@ -610,7 +610,7 @@
                 return getStore({name: 'enums'})[name];
             },
             submitTimeRangeChange(submitTimeRange) {
-                if (!!submitTimeRange) {
+                if (submitTimeRange && submitTimeRange.length > 0) {
                     this.listQuery.evaluationTimeStart = submitTimeRange[0];
                     this.listQuery.evaluationTimeEnd = submitTimeRange[1];
                 } else {

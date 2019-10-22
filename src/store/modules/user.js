@@ -5,6 +5,7 @@ import {deepClone} from '@/util/util'
 import webiste from '@/config/website'
 import {loginByUsername, logout, refreshToken} from '@/api/common'
 import {getMenuTree} from '@/api/admin/menu'
+import {getUserInfo} from '@/api/evaluate/sso';
 
 
 function addPath(ele, first) {
@@ -31,7 +32,8 @@ const user = {
         userInfo: getStore({name: 'userInfo'}) || [],
         permission: getStore({name: 'permission'}) || {},
         menu: getStore({name: 'menu'}) || [],
-        token: getStore({name: 'token'}) || ''
+        token: getStore({name: 'token'}) || '',
+        userId: getStore({name: 'userId'}) || ''
     },
     actions: {
         //根据用户名登录
@@ -104,6 +106,18 @@ const user = {
                 removeToken()
                 resolve()
             })
+        },
+        GetUserInfo({commit, dispatch}) {
+            return new Promise((resolve, reject) => {
+                getUserInfo().then(res => {
+                    const data = res.data;
+                    commit('SET_USERIFNO', data);
+                    resolve();
+                }).catch(err => {
+                    removeToken();
+                    reject(err);
+                })
+            })
         }
     },
     mutations: {
@@ -114,7 +128,9 @@ const user = {
         },
         SET_USERIFNO: (state, userInfo) => {
             state.userInfo = userInfo;
-            setStore({name: 'userInfo', content: state.userInfo})
+            state.userId = userInfo.userId;
+            setStore({name: 'userInfo', content: state.userInfo});
+            setStore({name: 'userId', content: state.userId})
         },
         SET_MENU: (state, menu) => {
             state.menu = menu

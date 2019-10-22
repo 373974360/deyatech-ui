@@ -1,16 +1,6 @@
 import Layout from '@/page/index/'
 
-export default [{
-    path: '/login',
-    name: '登录页',
-    component: () =>
-        import( /* webpackChunkName: "page" */ '@/page/login/index'),
-    meta: {
-        keepAlive: true,
-        isTab: false,
-        isAuth: false
-    }
-},
+export default [
     {
         path: '/lock',
         name: '锁屏页',
@@ -59,7 +49,7 @@ export default [{
     {
         path: '/',
         name: '主页',
-        redirect: '/wel'
+        redirect: '/evaluate'
     },
     {
         path: '/myiframe',
@@ -79,3 +69,15 @@ export default [{
         redirect: '/404'
     }
 ]
+
+    /*{
+        path: '/login',
+        name: '登录页',
+        component: () =>
+            import( /!* webpackChunkName: "page" *!/ '@/page/login/index'),
+        meta: {
+            keepAlive: true,
+            isTab: false,
+            isAuth: false
+        }
+    },*/

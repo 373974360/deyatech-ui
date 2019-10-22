@@ -9,7 +9,7 @@ import {getToken} from '@/util/auth'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 NProgress.configure({showSpinner: false});
-const lockPage = store.getters.website.lockPage; //锁屏页
+// const lockPage = store.getters.website.lockPage; //锁屏页
 router.beforeEach((to, from, next) => {
     //缓冲设置
     if (to.meta.keepAlive === true && store.state.tags.tagList.some(ele => {
@@ -24,20 +24,33 @@ router.beforeEach((to, from, next) => {
             to.meta.$keepAlive = false;
         }
     }
+
+    if (store.getters.enums.length === 0) {
+        store.dispatch('SetEnums');
+    }
+    if (store.getters.dicts.length === 0) {
+        store.dispatch('SetDicts');
+    }
+
     const meta = to.meta || {};
     if (getToken()) {
-        if (store.getters.isLock && to.path != lockPage) { //如果系统激活锁屏，全部跳转到锁屏页
+        /*if (store.getters.isLock && to.path != lockPage) { //如果系统激活锁屏，全部跳转到锁屏页
             next({path: lockPage})
-        } else if (to.path === '/login') { //如果登录成功访问登录页跳转到主页
+        }*/
+        /*if (to.path === '/login') { //如果登录成功访问登录页跳转到主页
             next({path: '/'})
-        } else {
+        }*/
+        // {
             //如果用户信息为空则获取用户信息，获取用户信息失败，跳转到登录页
-            if (store.getters.token.length === 0) {
-                store.dispatch('FedLogOut').then(() => {
+            if (store.getters.userId.length === 0) {
+                /*store.dispatch('FedLogOut').then(() => {
                     next({path: '/login'})
+                })*/
+                store.dispatch('GetUserInfo').then(() => {
+                    next()
                 })
             } else {
-                const value = to.query.src || to.fullPath;
+                /*const value = to.query.src || to.fullPath;
                 const label = to.query.name || to.name;
                 const meta = to.meta || router.$avueRouter.meta || {};
                 const i18n = to.query.i18n;
@@ -57,25 +70,29 @@ router.beforeEach((to, from, next) => {
                         })(),
                         group: router.$avueRouter.group || []
                     });
-                }
+                }*/
                 next()
             }
-        }
+        // }
     } else {
         //判断是否需要认证，没有登录访问去登录页
         if (meta.isAuth === false) {
             next()
         } else {
-            next('/login')
+            // next('/login')
+            /*store.dispatch('GetUserInfo').then(() => {
+                next()
+            })*/
+            window.location.href = 'http://localhost:8765/manage/evaluate/sso/login'
         }
     }
 })
 
 router.afterEach(() => {
     NProgress.done();
-    let title = store.getters.tag.label;
-    let i18n = store.getters.tag.meta.i18n;
-    title = router.$avueRouter.generateTitle(title, i18n)
+    // let title = store.getters.tag.label;
+    // let i18n = store.getters.tag.meta.i18n;
+    // title = router.$avueRouter.generateTitle(title, i18n)
     //根据当前的标签也获取label的值动态设置浏览器标题
-    router.$avueRouter.setTitle(title);
+    // router.$avueRouter.setTitle(title);
 });

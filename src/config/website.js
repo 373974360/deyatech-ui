@@ -14,12 +14,9 @@ export default {
     isFirstPage: false,
     fistPage: {
         label: "首页",
-        value: "/wel/index",
+        value: "/evaluate/config",
         params: {},
         query: {},
-        meta: {
-            i18n: 'dashboard'
-        },
         group: [],
         close: false
     },
