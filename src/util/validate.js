@@ -216,28 +216,24 @@ export function validatename(name) {
  * 判断是否为整数
  */
 export function validatenum(num, type) {
-    let regName = /[^\d.]/g;
+    let regName = /^-?\d+$/; // 整数
     if (type == 1) {
         if (!regName.test(num)) return false;
     } else if (type == 2) {
-        regName = /[^\d]/g;
+        regName = /^(-?\d+)(\.\d+)?$/; // 小数
         if (!regName.test(num)) return false;
     }
     return true;
 }
 
 /**
- * 判断是否为小数
+ * 判断是否是版本号
+ * @param str
+ * @returns {boolean}
  */
-export function validatenumord(num, type) {
-    let regName = /[^\d.]/g;
-    if (type == 1) {
-        if (!regName.test(num)) return false;
-    } else if (type == 2) {
-        regName = /[^\d.]/g;
-        if (!regName.test(num)) return false;
-    }
-    return true;
+export function validateversion(str) {
+    const reg = /^(-?\d+)(\.\d+)+$/; // 多个小数点
+    return reg.test(str);
 }
 
 /**

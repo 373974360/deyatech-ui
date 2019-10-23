@@ -115,7 +115,7 @@
         },
         methods: {
             resetSearch() {
-                this.listQuery.size = undefined;
+                this.listQuery.key = undefined;
             },
             reloadList() {
                 this.listLoading = true;
