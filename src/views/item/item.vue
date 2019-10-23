@@ -1575,13 +1575,7 @@
             doUpdate() {
                 this.$refs['itemDialogForm'].validate(valid => {
                     if (valid) {
-                        this.submitLoading = true;var count = '';
-                        let number = 4 - this.item.limitNumber.toString().length;
-                        for (var i = 0; i < number; i++) {
-                            count = count + '0';
-                        }
-                        this.item.limitNumber = count + this.item.limitNumber.toString()
-                        console.log(this.item.limitNumber);
+                        this.submitLoading = true;
                         createOrUpdateItem(this.item).then(() => {
                             this.resetItemDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
