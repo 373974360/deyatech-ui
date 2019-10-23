@@ -27,7 +27,7 @@
             <el-table :data="settingList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="站群ID(为空则全站群共享)" prop="stationGroupId"/>
+                <el-table-column align="center" label="站点ID(为空则全站点共享)" prop="stationGroupId"/>
                 <el-table-column align="center" label="允许上传的附件类型" prop="uploadFileType"/>
                 <el-table-column align="center" label="允许上传文件大小M" prop="uploadFileSize"/>
                 <el-table-column align="center" label="是否生成缩略图" prop="thumbnailEnable"/>
@@ -71,7 +71,7 @@
                          label-width="80px" :rules="settingRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="站群ID(为空则全站群共享)" prop="stationGroupId">
+                            <el-form-item label="站点ID(为空则全站点共享)" prop="stationGroupId">
                                 <el-input v-model.trim="setting.stationGroupId"></el-input>
                             </el-form-item>
                         </el-col>
@@ -220,7 +220,7 @@
                 },
                 settingRules: {
                     stationGroupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '站群ID(为空则全站群共享)'}
+                        {required: true, message: this.$t("table.pleaseInput") + '站点ID(为空则全站点共享)'}
                     ],
                     uploadFileType: [
                         {required: true, message: this.$t("table.pleaseInput") + '允许上传的附件类型'}

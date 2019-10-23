@@ -75,7 +75,7 @@
                                        icon="el-icon-delete" :size="btnSize" circle
                                        @click.stop.safe="btnDelete(scope.row)"></el-button>
                             <el-badge :hidden="scope.row.stationGroupNumber <= 0 || !btnEnable.station" :value="scope.row.stationGroupNumber" :max="99" style="margin-left:10px; margin-right:10px">
-                                <el-button v-show="btnEnable.station" title="关联站群" type="primary" icon="iconlogistic" :size="btnSize" circle
+                                <el-button v-show="btnEnable.station" title="关联站点" type="primary" icon="iconlogistic" :size="btnSize" circle
                                            @click.stop="btnStationGroup(scope.row)"></el-button>
                             </el-badge>
                             <el-badge :hidden="scope.row.stationGroupNumber <= 0 || scope.row.catalogNumber <= 0 || !btnEnable.catalog" :value="scope.row.catalogNumber" :max="99" style="margin-right:10px">
@@ -228,7 +228,7 @@
                 </div>
             </el-dialog>
 
-            <el-dialog title="关联站群" :visible.sync="dialogStationVisible" :close-on-click-modal="closeOnClickModal" @close="closeStationDialog">
+            <el-dialog title="关联站点" :visible.sync="dialogStationVisible" :close-on-click-modal="closeOnClickModal" @close="closeStationDialog">
                 <el-form style="width: 80%; margin-left:10%;" v-loading="treeLoading">
                     <el-tree ref="stationTree"
                              :data="stationGroupList"
@@ -616,7 +616,7 @@
             // 用户栏目
             btnCatalog(row) {
                 this.currentRow = row;
-                // 检索用户关联的站群
+                // 检索用户关联的站点
                 getClassificationStationCascader({userId: this.currentRow.id}).then(response => {
                     this.catalogUseStationGroupList = response.data;
                     this.getCatalogTree();
@@ -633,7 +633,7 @@
                 } else {
                     siteIds = this.getSiteIds();
                 }
-                // 用户关联的站群的全部栏目
+                // 用户关联的站点的全部栏目
                 getCatalogTreeBySiteIds(siteIds).then(response => {
                     this.catalogTree = response.data;
                     if (this.catalogTree && this.catalogTree.length > 0) {
@@ -796,7 +796,7 @@
                 });
             },
 
-            // 用户站群
+            // 用户站点
             btnStationGroup(row) {
                 this.currentRow = row;
                 this.loadStationGroupUser(row.id);
@@ -837,7 +837,7 @@
             },
             checkUserStationGroup() {
                 this.$nextTick(()=>{
-                    // 选中用户已分配的站群
+                    // 选中用户已分配的站点
                     if (this.userStationGroupList && this.userStationGroupList.length > 0) {
                         for (let sg of this.userStationGroupList) {
                             this.$refs['stationTree'].setChecked(sg.stationGroupId, true, false);

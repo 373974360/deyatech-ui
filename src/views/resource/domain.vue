@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select v-model.trim="listQuery.stationGroupId" :size="searchSize" placeholder="请选择站群">
+                        <el-select v-model.trim="listQuery.stationGroupId" :size="searchSize" placeholder="请选择站点">
                             <el-option v-for = "o in stationGroups"
                                        :label="o.name"
                                        :value="o.id">
@@ -33,7 +33,7 @@
             <el-table :data="domainList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="所属站群" prop="stationGroupName"/>
+                <el-table-column align="center" label="所属站点" prop="stationGroupName"/>
                 <el-table-column align="left" label="域名" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
@@ -75,7 +75,7 @@
                          label-width="80px" :rules="domainRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="所属站群" prop="stationGroupId">
+                            <el-form-item label="所属站点" prop="stationGroupId">
                                 <el-select v-model.trim="domain.stationGroupId" style="width: 100%;">
                                     <el-option v-for = "o in stationGroups"
                                                :label="o.name"
@@ -232,7 +232,7 @@
                         {validator: checkSortNo, trigger: ['blur','change']}
                     ],
                     stationGroupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '所属站群'}
+                        {required: true, message: this.$t("table.pleaseInput") + '所属站点'}
                     ],
                     port: [
                         {required: true, message: this.$t("table.pleaseInput") + '端口'},

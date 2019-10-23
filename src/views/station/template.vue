@@ -76,7 +76,7 @@
                           @selection-change="handleSelectionChange">
 
                     <!--元数据相关 TODO-->
-                    <el-table-column type="expand">
+                    <!--<el-table-column type="expand">
                         <template slot-scope="scope">
                             <el-form label-position="right" inline v-if="scope.row.metadataCollectionVo" class="table-expand">
                                 <el-form-item v-for="item in scope.row.metadataCollectionVo.metadataList"
@@ -85,7 +85,7 @@
                                 </el-form-item>
                             </el-form>
                         </template>
-                    </el-table-column>
+                    </el-table-column>-->
                     <!--template表数据-->
                     <el-table-column type="selection" width="50" align="center"/>
                     <!--<el-table-column align="center" label="内容模型" prop="contentModelName"/>-->

@@ -27,7 +27,7 @@
             <el-table :data="stationGroupUserList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="站群id" prop="stationGroupId"/>
+                <el-table-column align="center" label="站点id" prop="stationGroupId"/>
                 <el-table-column align="center" label="用户id" prop="userId"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
@@ -58,7 +58,7 @@
                          label-width="80px" :rules="stationGroupUserRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="站群id" prop="stationGroupId">
+                            <el-form-item label="站点id" prop="stationGroupId">
                                 <el-input v-model.trim="stationGroupUser.stationGroupId"></el-input>
                             </el-form-item>
                         </el-col>
@@ -115,7 +115,7 @@
                 },
                 stationGroupUserRules: {
                     stationGroupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '站群id'}
+                        {required: true, message: this.$t("table.pleaseInput") + '站点id'}
                     ],
                     userId: [
                         {required: true, message: this.$t("table.pleaseInput") + '用户id'}

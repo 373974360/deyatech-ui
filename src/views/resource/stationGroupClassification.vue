@@ -115,7 +115,7 @@
                 }
                 hasStation({id:value}).then(response => {
                     if (response.data) {
-                        callback(new Error('当前分类下已存在站群，不能添加分类'))
+                        callback(new Error('当前分类下已存在站点，不能添加分类'))
                     } else {
                         callback()
                     }

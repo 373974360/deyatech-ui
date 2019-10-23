@@ -454,7 +454,7 @@
                 }
             },
             'metadata.controlType'(value) {
-                this.metadata.dataSource = undefined;
+                this.$set(this.metadata, 'dataSource', undefined);
                 this.metadata.checkModel = undefined;
                 this.metadata.dataLength = undefined;
                 for (let item of this.controlTypeOptions) {

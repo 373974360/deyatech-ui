@@ -58,7 +58,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column align="center" label="英文名称" prop="englishName"/>
-                        <el-table-column align="center" label="简称" prop="abbreviation"/>
+                        <!--<el-table-column align="center" label="简称" prop="abbreviation"/>-->
                         <el-table-column align="center" label="部门" prop="departmentName"/>
                         <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
                         <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
@@ -185,7 +185,7 @@
             </el-dialog>
 
 
-            <!--站群设置-->
+            <!--站点设置-->
             <el-dialog :title="titleSetting" :visible.sync="dialogSettingVisible" :close-on-click-modal="closeOnClickModal" @close="closeSettingDialog">
                 <el-form ref="settingDialogForm" class="deyatech-form" :model="setting" label-position="right" label-width="160px" :rules="settingRules">
                     <el-row :gutter="20" :span="24">
@@ -413,7 +413,7 @@
                 <el-form ref="domainDialogForm" class="deyatech-form" :model="domain" label-position="right" label-width="80px" :rules="domainRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="所属站群" prop="stationGroupId">
+                            <el-form-item label="所属站点" prop="stationGroupId">
                                 <el-input :value="stationGroup.name" :disabled="true"></el-input>
                             </el-form-item>
                         </el-col>
@@ -425,27 +425,20 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="英文名称" prop="englishName">
-                                <el-input v-model.trim="domain.englishName" maxlength="30"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
                             <el-form-item label="端口" prop="port">
                                 <el-input v-model.trim="domain.port" maxlength="5"></el-input>
                             </el-form-item>
                         </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="排序号" prop="sortNo">
                                 <el-input v-model.trim="domain.sortNo" maxlength="3"></el-input>
                             </el-form-item>
                         </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
+                        <el-col :span="12">
                             <el-form-item label="描述" prop="description">
-                                <el-input type="textarea" v-model.trim="domain.description" :rows="3" maxlength="400"></el-input>
+                                <el-input v-model.trim="domain.description" :rows="3" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -569,6 +562,10 @@
                 }).catch(() => {});
             };
             const checkAbbreviation = (rule, value, callback) => {
+                if (!value) {
+                    callback();
+                    return;
+                }
                 isAbbreviationExist({
                     id: this.stationGroup.id,
                     classificationId: this.stationGroup.stationGroupClassificationId,
@@ -581,6 +578,10 @@
                 }).catch(() => {});
             };
             const checkNumber = (rule, value, callback) => {
+                if (!value) {
+                    callback();
+                    return;
+                }
                 if (/[^\d]/g.test(value)) {
                     callback(new Error('请输入正整数'));
                 } else {
@@ -589,16 +590,20 @@
             };
             // 域名管理
             const checkDomainName = (rule, value, callback) => {
-                isDomainNameExist({
-                    id: this.domain.id,
-                    name: this.domain.name}).then(response => {
-                    if (response.status == 200 && response.data) {
-                        callback(new Error(response.message));
-                    } else {
-                        callback();
-                    }
-                }).catch(() => {});
-
+                // 匹配中文 \u4e00-\u9fa5
+                if (/^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$/.test(value)) {
+                    isDomainNameExist({
+                        id: this.domain.id,
+                        name: this.domain.name}).then(response => {
+                        if (response.status == 200 && response.data) {
+                            callback(new Error(response.message));
+                        } else {
+                            callback();
+                        }
+                    }).catch(() => {});
+                } else {
+                    callback(new Error("域名格式不正确"));
+                }
             };
             const checkDomainEnglishName = (rule, value, callback) => {
                 if (!isEnglish(value)) {
@@ -623,6 +628,10 @@
                 }
             };
             const checkSortNo = (rule, value, callback) => {
+                if (!value) {
+                    callback();
+                    return;
+                }
                 if (/[^\d]/g.test(value)) {
                     callback(new Error('请输入正整数'));
                 } else {
@@ -648,7 +657,7 @@
                     englishName: undefined,
                     abbreviation: undefined,
                     description: undefined,
-                    sortNo: undefined,
+                    sortNo: 1,
                     stationGroupClassificationId: undefined,
                     stationGroupClassificationTreePosition: undefined,
                     departmentId: undefined,
@@ -673,24 +682,10 @@
                         {validator: checkEnglishName, trigger: 'blur'}
                     ],
                     abbreviation: [
-                        {required: true, message: this.$t("table.pleaseInput") + '简称'},
                         {validator: checkAbbreviation, trigger: 'blur'}
                     ],
-                    description: [
-                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
-                    ],
                     sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'},
                         {validator: checkNumber, trigger: ['blur','change']}
-                    ],
-                    siteCode: [
-                        {required: true, message: this.$t("table.pleaseInput") + '标识码'}
-                    ],
-                    icpCode: [
-                        {required: true, message: this.$t("table.pleaseInput") + 'ICP备案'}
-                    ],
-                    policeCode: [
-                        {required: true, message: this.$t("table.pleaseInput") + '公安备案'}
                     ]
                 },
                 departmentCascader: [],
@@ -721,7 +716,7 @@
                 },
                 settingRules: {
                     stationGroupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '站群'}
+                        {required: true, message: this.$t("table.pleaseInput") + '站点'}
                     ],
                     uploadFileType: [
                         {required: true, message: this.$t("table.pleaseSelect") + '允许上传的附件类型'}
@@ -792,8 +787,9 @@
                 domain: {
                     id: undefined,
                     name: undefined,
+                    englishName: undefined,
                     description: undefined,
-                    sortNo: undefined,
+                    sortNo: 1,
                     stationGroupId: undefined,
                     port: 80
                 },
@@ -802,19 +798,11 @@
                         {required: true, message: this.$t("table.pleaseInput") + '域名名称'},
                         {validator: checkDomainName, trigger: 'blur'}
                     ],
-                    englishName: [
-                        {required: true, message: this.$t("table.pleaseInput") + '英文名称'},
-                        {validator: checkDomainEnglishName, trigger: 'blur'}
-                    ],
-                    description: [
-                        {required: true, message: this.$t("table.pleaseInput") + '描述'}
-                    ],
                     sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'},
                         {validator: checkSortNo, trigger: ['blur','change']}
                     ],
                     stationGroupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '所属站群'}
+                        {required: true, message: this.$t("table.pleaseInput") + '所属站点'}
                     ],
                     port: [
                         {required: true, message: this.$t("table.pleaseInput") + '端口'},
@@ -1069,6 +1057,9 @@
                 this.$refs['stationGroupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if (this.stationGroup.sortNo) {
+                            this.stationGroup.sortNo = 1;
+                        }
                         createOrUpdateStationGroup(this.stationGroup).then((response) => {
                             if (response.status == 200) {
                                 this.resetStationGroupDialogAndList();
@@ -1090,6 +1081,9 @@
                 this.$refs['stationGroupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if (this.stationGroup.sortNo) {
+                            this.stationGroup.sortNo = 1;
+                        }
                         createOrUpdateStationGroup(this.stationGroup).then(() => {
                             this.resetStationGroupDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -1120,7 +1114,7 @@
                 this.stationGroup.englishName = undefined;
                 this.stationGroup.abbreviation = undefined;
                 this.stationGroup.description = undefined;
-                this.stationGroup.sortNo = undefined;
+                this.stationGroup.sortNo = 1;
                 this.stationGroup.stationGroupClassificationId = undefined;
                 this.stationGroup.stationGroupClassificationTreePosition = undefined;
                 this.stationGroup.departmentId = undefined;
@@ -1163,7 +1157,7 @@
                 this.uploadFileTypeArray = [];
             },
             btnGlobalSetting(){
-                this.titleSetting = "站群全局设置";
+                this.titleSetting = "站点全局设置";
                 this.getSetting(undefined);
             },
             btnSetting(row) {
@@ -1336,6 +1330,7 @@
                 } else {
                     this.stationGroup = deepClone(this.selectedRows[0]);
                 }
+                console.dir(this.stationGroup);
                 this.domainReloadList();
                 this.titleDomain = this.stationGroup.name + ' - 域名管理';
                 this.dialogDomainVisible = true;
@@ -1389,6 +1384,9 @@
                 this.domainFormDialogTitle = 'create';
                 this.domainFormDialogVisible = true;
                 this.domain.stationGroupId = this.stationGroup.id;
+                this.$nextTick(()=>{
+                    this.$refs['domainDialogForm'].clearValidate();
+                });
             },
             btnDomainUpdate(row){
                 this.resetDomain();
@@ -1399,6 +1397,9 @@
                 }
                 this.domainFormDialogTitle = 'update';
                 this.domainFormDialogVisible = true;
+                this.$nextTick(()=>{
+                    this.$refs['domainDialogForm'].clearValidate();
+                });
             },
             btnDomainDelete(row){
                 let ids = [];
@@ -1439,6 +1440,10 @@
                 this.$refs['domainDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if (this.domain.sortNo) {
+                            this.domain.sortNo = 1;
+                        }
+                        this.domain.englishName = this.domain.name;
                         createOrUpdateDomain(this.domain).then(() => {
                             this.resetDomainDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
@@ -1452,6 +1457,10 @@
                 this.$refs['domainDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if (this.domain.sortNo) {
+                            this.domain.sortNo = 1;
+                        }
+                        this.domain.englishName = this.domain.name;
                         createOrUpdateDomain(this.domain).then(() => {
                             this.resetDomainDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -1481,7 +1490,7 @@
                     id: undefined,
                     name: undefined,
                     description: undefined,
-                    sortNo: undefined,
+                    sortNo: 1,
                     stationGroupId: undefined,
                     port: 80
                 }
