@@ -48,6 +48,7 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
+            <div class="my-tabls">
             <el-tabs v-model.trim="activeTabName" type="card" @tab-click="handleTabClick">
                 <el-tab-pane label="未处理" name="first"></el-tab-pane>
                 <el-tab-pane label="已受理" name="second"></el-tab-pane>
@@ -57,20 +58,21 @@
                 <el-tab-pane label="未发布" name="sixth"></el-tab-pane>
                 <el-tab-pane label="无效件" name="seventh"></el-tab-pane>
             </el-tabs>
+            </div>
             <el-table :data="recordList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange" style="border-top:none;">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="left" label="标题" prop="title" min-width="400">
+                <el-table-column align="left" label="标题" prop="title" >
                     <template slot-scope="scope">
                         <span class="link-type" style="cursor:pointer" @click='processAppeal(scope.row)'>{{scope.row.title}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="业务模型" prop="modelName" width="90"/>
-                <el-table-column align="center" label="诉求目的" prop="purposeName" width="90"/>
-                <el-table-column align="center" label="来信人IP" prop="ip" width="130"/>
-                <el-table-column align="center" label="收件部门" prop="deptName" width="150"/>
-                <el-table-column align="center" label="回复部门" prop="replyDeptName" width="150"/>
-                <el-table-column align="center" label="公开意愿" prop="isOpen" width="90">
+                <el-table-column align="center" label="业务模型" prop="modelName" />
+                <el-table-column align="center" label="诉求目的" prop="purposeName" />
+                <el-table-column align="center" label="来信人IP" prop="ip" />
+                <el-table-column align="center" label="收件部门" prop="deptName" />
+                <el-table-column align="center" label="回复部门" prop="replyDeptName" />
+                <el-table-column align="center" label="公开意愿" prop="isOpen" >
                     <template slot-scope="scope">
                         <span v-if="scope.row.isOpen == 1">
                             是
@@ -80,7 +82,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="发布状态" prop="isPublish" width="90">
+                <el-table-column align="center" label="发布状态" prop="isPublish" >
                     <template slot-scope="scope">
                         <span v-if="scope.row.isPublish == 1">
                             是
@@ -90,7 +92,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="来信时间" prop="createTime" width="200"/>
+                <el-table-column align="center" label="来信时间" prop="createTime" />
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" fixed="right" align="center" width="150">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
@@ -1202,6 +1204,15 @@
     }
 </script>
 <style>
+    .my-tabls>.el-tabs--card>.el-tabs__header .el-tabs__item.is-active {
+        background-color: #F0F0F0;
+        border-bottom: 1px solid #F0F0F0;
+    }
+    .el-tabs__nav-wrap {
+        overflow: hidden;
+        margin-bottom: 0px;
+        position: relative;
+    }
     .el-tabs__header{margin:0;}
     .appeal_table {
         width:100%;

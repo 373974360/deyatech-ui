@@ -74,9 +74,9 @@
                 </el-row>
                 <el-row>
                     <el-col :span="14">
-                        <div class="setting-container">
+                        <div class="setting-container" v-if="dialogTaskSettingVisible">
                             <div id="diagramHolder" class="diagramHolder" style="margin-left: auto; margin-right: auto">
-                                <div class="con-bank-20"></div>
+                                <!--<div class="con-bank-20"></div>-->
                             </div>
                         </div>
                     </el-col>
@@ -471,9 +471,12 @@
                 })
             },
             btnTaskSetting(row) {
+                ProcessDiagramGenerator.processDiagrams = {};
+                ProcessDiagramGenerator.diagramBreadCrumbs = null;
                 this.dialogTaskSettingVisible = true;
                 this.processDefinition = deepClone(row);
                 this.flush(row.actDefinitionId);
+                console.dir(ProcessDiagramGenerator.processDiagrams);
             },
             btnSelectUser() {
                 this.dialogUserVisible = true;
@@ -711,7 +714,6 @@
                                 for (let item of data) {
                                     this.candidateDepartmentTreePosition.push(item.treePosition + '&' + item.id);
                                 }
-                                console.log(this.candidateDepartmentTreePosition)
                             })
                         }
                     }
@@ -813,8 +815,8 @@
                 this.userTaskSettingVisible = false;
             },
             flush(definitionId) {
-                ProcessDiagramGenerator.drawDiagram(definitionId);
                 this.resetProcessTaskSetting();
+                ProcessDiagramGenerator.drawDiagram(definitionId);
             }
         }
     }
@@ -827,6 +829,7 @@
         padding: 8px 20px;
         font-size: 14px;
         border: 1px #eceef5 solid;
+        overflow: scroll;
     }
     .con-bank-20 {
         height: 20px;
