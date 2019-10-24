@@ -42,15 +42,15 @@
             <!--<el-table-column align="center" label="站点id" prop="siteId"/>
             <el-table-column align="center" label="父节点id" prop="parentId"/>-->
             <!--            <el-table-column align="center" label="英文名称" prop="ename"/>-->
-            <!--            <el-table-column align="center" label="是否显示" prop="showable"/>-->
+            <!--            <el-table-column align="center" label="显示" prop="showable"/>-->
 
             <!--            <el-table-column align="center" label="工作流ID" prop="workflowId"/>-->
             <!--            <el-table-column align="center" label="首页模板" prop="indexTemplate"/>-->
             <!--            <el-table-column align="center" label="列表页模板" prop="listTemplate"/>-->
             <!--            <el-table-column align="center" label="在树结构中位置" prop="treePosition"/>
                         <el-table-column align="center" label="状态" prop="status"/>
-                        <el-table-column align="center" label="是否允许评论" prop="allowComment"/>
-                        <el-table-column align="center" label="是否允许分享: 0.否 1.是" prop="allowShare"/>
+                        <el-table-column align="center" label="允许评论" prop="allowComment"/>
+                        <el-table-column align="center" label="允许分享: 0.否 1.是" prop="allowShare"/>
                         <el-table-column align="center" label="应用id" prop="applicationId"/>
                         <el-table-column align="center" label="属性id" prop="attributeId"/>
                         <el-table-column align="center" label="自动发布:0.否 1.是" prop="autoRelease"/>
@@ -60,7 +60,7 @@
                         <el-table-column align="center" label="在导航中显示: 0.否 1.是" prop="navigationShowAble"/>
                         <el-table-column align="center" label="参与人员:0.会员 1.所有人" prop="participant"/>
                         <el-table-column align="center" label="在树中显示: 0.否 1.是" prop="treeShowAble"/>
-                        <el-table-column align="center" label="是否启用工作流: 0.否 1.是" prop="workflowEnable"/>
+                        <el-table-column align="center" label="启用工作流: 0.否 1.是" prop="workflowEnable"/>
                         <el-table-column align="center" label="路径名，如果是多级栏目则用/分隔各级ename" prop="pathName"/>
                         <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
@@ -165,7 +165,7 @@
 
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="是否外链" prop="flagExternal">
+                            <el-form-item label="外链" prop="flagExternal">
                                 <el-switch v-model.trim="catalog.flagExternal" :active-value=1 :inactive-value=0 @change="isFlagExternal"></el-switch>
                             </el-form-item>
                         </el-col>
@@ -226,43 +226,43 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="是否自动发布" prop="autoRelease">
+                            <el-form-item label="自动发布" prop="autoRelease">
                                 <el-switch v-model.trim="catalog.autoRelease" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="是否允许评论" prop="allowComment">
+                            <el-form-item label="允许评论" prop="allowComment">
                                 <el-switch v-model.trim="catalog.allowComment" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="是否允许分享" prop="allowShare">
+                            <el-form-item label="允许分享" prop="allowShare">
                                 <el-switch v-model.trim="catalog.allowShare" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="是否生成栏目首页" prop="generateHome">
+                            <el-form-item label="生成栏目首页" prop="generateHome">
                                 <el-switch v-model.trim="catalog.generateHome" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="是否在导航中显示" prop="navigationShowAble">
+                            <el-form-item label="在导航中显示" prop="navigationShowAble">
                                 <el-switch v-model.trim="catalog.navigationShowAble" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="是否在树中显示" prop="treeShowAble">
+                            <el-form-item label="在树中显示" prop="treeShowAble">
                                 <el-switch v-model.trim="catalog.treeShowAble" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="是否归档" prop="placeOnFile">
+                            <el-form-item label="归档" prop="placeOnFile">
                                 <el-switch v-model.trim="catalog.placeOnFile" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
@@ -277,7 +277,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="是否启用工作流" prop="workflowEnable">
+                            <el-form-item label="启用工作流" prop="workflowEnable">
                                 <el-switch v-model.trim="catalog.workflowEnable" :active-value=1 :inactive-value=0 @change="isWorkflowEnable"></el-switch>
                             </el-form-item>
                         </el-col>
@@ -300,7 +300,7 @@
                                         </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="是否设置聚合规则" prop="flagAggregation">
+                            <el-form-item label="设置聚合规则" prop="flagAggregation">
                                 <el-switch v-model.trim="catalog.flagAggregation" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
