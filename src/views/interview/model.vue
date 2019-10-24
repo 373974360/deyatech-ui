@@ -412,13 +412,13 @@
                 <el-form ref="guestDialogForm" class="deyatech-form" :model="guest" label-position="right" label-width="80px" :rules="guestRules">
                     <el-row :span="24">
                         <el-col :span="12">
-                            <el-row :span="24">
+                            <!--<el-row :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="访谈名称" prop="modelId">
                                         <el-input :value="model.name" readonly disabled></el-input>
                                     </el-form-item>
                                 </el-col>
-                            </el-row>
+                            </el-row>-->
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="姓名" prop="name">
