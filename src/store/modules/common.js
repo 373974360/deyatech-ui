@@ -18,8 +18,7 @@ const common = {
             associateMenu: '关联权限',
             associateUser: '关联用户',
             associateItem: '关联事项',
-            associateMaterials: '关联材料',
-            review: '复核',
+            associateMaterials: '关联材料'
         },
         enums: getStore({name: 'enums'}) || [],
         dicts: getStore({name: 'dicts'}) || [],
