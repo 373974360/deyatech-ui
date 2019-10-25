@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入标题或作者" v-model.trim="listQuery.title"></el-input>
+                        <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="listQuery.title"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
@@ -14,8 +14,6 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <!--                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>-->
-
                     <el-dropdown v-if="btnEnable.create && isAddTemplate" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
                         <el-button type="primary" :size="btnSize">
                             {{$t('table.create')}}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -33,7 +31,9 @@
                     </el-dropdown>
 
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">彻底删除</el-button>
+                    <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" type="danger" :size="btnSize" @click="btnCancel" :disabled="selectedRows.length < 1">撤销</el-button>
+                    <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" type="warning" :size="btnSize" @click="btnRecycle" :disabled="selectedRows.length < 1">回收站</el-button>
 
                     <el-dropdown style="margin-left: 10px" placement="bottom" @command="handleCommand">
                         <el-button type="warning" :size="btnSize">
@@ -45,133 +45,97 @@
                             <el-dropdown-item command="handleSiteStaticContent">生成站点所有内容页</el-dropdown-item>
                             <el-dropdown-item command="handleCheckedReindex" divided>生成勾选的索引</el-dropdown-item>
                             <el-dropdown-item command="handleCatalogReindex">生成当前栏目索引</el-dropdown-item>
-                            <!--                            <el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>-->
+                            <!--<el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>-->
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
                 <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <div class="standard-text">
-                <!-- 栏目列表 -->
-                <div class="left-tree" ref="leftTree" v-loading.body="listLoading">
-                    <div class="left-tree-title">栏目列表</div>
-                    <el-tree
-                        ref="catalogTree"
-                        :data="catalogList"
-                        :props="defaultTreeProps"
-                        node-key="id"
-                        highlight-current
-                        :default-expand-all="true"
-                        :expand-on-click-node="false"
-                        @node-click="handleNoteClick">
-                    </el-tree>
-                </div>
-                <!-- 内容表格 -->
-                <el-table class="table-list" :data="templateList" v-loading.body="listLoading" stripe border highlight-current-row
-                          :height="treeHeight" ref="tableList"
-                          @selection-change="handleSelectionChange">
 
-                    <!--元数据相关 TODO-->
-                    <!--<el-table-column type="expand">
-                        <template slot-scope="scope">
-                            <el-form label-position="right" inline v-if="scope.row.metadataCollectionVo" class="table-expand">
-                                <el-form-item v-for="item in scope.row.metadataCollectionVo.metadataList"
-                                              v-if="item.tableHead" :key="item.id" :label="'[元数据名称]: ' + item.metadata.name">
-                                    <span>[元数据值]: {{scope.row.content[item.fieldName]}}</span>
-                                </el-form-item>
-                            </el-form>
-                        </template>
-                    </el-table-column>-->
-                    <!--template表数据-->
-                    <el-table-column type="selection" width="50" align="center"/>
-                    <!--<el-table-column align="center" label="内容模型" prop="contentModelName"/>-->
-                    <el-table-column align="center" label="标题" prop="title"/>
-                    <el-table-column align="center" label="作者姓名" prop="author"/>
-                    <el-table-column align="center" label="URL" prop="url">
-                        <!--<template slot-scope="scope">  TODO
-                            <a :href="scope.row.url" target="_blank">静态</a>
-                            <a :href="'/api/manage/cms/m/'+scope.row.siteId+'/' + scope.row.id" target="_blank">动态</a>
-                        </template>-->
-                    </el-table-column>
-                    <!--                    <el-table-column align="center" label="排序号" prop="sortNo"/>-->
-                    <!--                    <el-table-column align="center" label="是否置顶" prop="flagTop">-->
-                    <!--                        <template slot-scope="scope">-->
-                    <!--                            {{scope.row.flagTop ? '是' : '否'}}-->
-                    <!--                        </template>-->
-                    <!--                    </el-table-column>-->
-                    <!--                    <el-table-column align="center" label="站点id" prop="siteId"/>-->
-                    <!--                    <el-table-column align="center" label="模板路径" prop="templatePath"/>-->
-                    <!--                    <el-table-column align="center" label="栏目ID" prop="cmsCatalogId"/>-->
-                    <!--                    <el-table-column align="center" label="内容模型ID" prop="contentModelId"/>-->
-                    <!--                    <el-table-column align="center" label="内容唯一ID" prop="contentId"/>-->
-                    <!--                    <el-table-column align="center" label="状态" prop="status"/>-->
-                    <!--                    <el-table-column align="center" label="内容模型模板ID" prop="contentModelTemplateId"/>-->
-                    <!--                    <el-table-column align="center" label="编辑姓名" prop="editor"/>-->
-                    <!--                    <el-table-column align="center" label="来源" prop="source"/>-->
-                    <!--                    <el-table-column align="center" label="缩略图" prop="thumbnail"/>-->
-                    <!--                    <el-table-column align="center" label="是否允许搜索到" prop="flagSearch"/>-->
-                    <!--                    <el-table-column align="center" label="浏览次数" prop="views"/>-->
-                    <!--                    <el-table-column align="center" label="是否是外链" prop="flagExternal"/>-->
-                    <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
-                        <template slot-scope="scope">
-                            <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                                {{scope.row.enable | enums('EnableEnum')}}
-                            </el-tag>
-                        </template>
-                    </el-table-column>-->
-                    <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
-                        <template slot-scope="scope">
-                            <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                       @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                            <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                       @click.stop.safe="btnDelete(scope.row)"></el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </div>
-            <el-pagination class="deyatech-pagination pull-right" background
-                           :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
-                           @size-change="handleSizeChange" @current-change="handleCurrentChange">
-            </el-pagination>
+            <el-row :span="24">
+                <el-col :span="4">
+                    <div class="classificationTree">
+                        <el-tree
+                            ref="catalogTree"
+                            :data="catalogList"
+                            :props="defaultTreeProps"
+                            node-key="id"
+                            highlight-current
+                            :default-expand-all="true"
+                            :expand-on-click-node="false"
+                            @node-click="handleNoteClick">
+                        </el-tree>
+                    </div>
+                </el-col>
+                <el-col :span="20">
+                    <div class="my-tabls">
+                        <!--需要string类型的数据-->
+                        <el-tabs v-model.trim="listQuery.status" type="card" @tab-click="handleTabClick">
+                            <el-tab-pane v-for="item in enums['ContentStatusEnum']" :label="item.value" :key="item.code" :name="item.code.toString()"></el-tab-pane>
+                        </el-tabs>
+                    </div>
+                    <!-- 内容表格 -->
+                    <el-table :data="templateList" v-loading.body="listLoading" stripe border highlight-current-row
+                              @selection-change="handleSelectionChange" style="border-top:none;">
+                        <el-table-column type="selection" width="50" align="center"/>
+                        <el-table-column align="center" label="标题" prop="title"/>
+                        <el-table-column align="center" label="发布时间" prop="resourcePublicationDate" width="150"/>
+                        <el-table-column align="center" label="权重" prop="sortNo" width="130">
+                            <template slot-scope="scope">
+                                <el-input-number v-model.trim="scope.row.sortNo" controls-position="right" :precision="0" :step="1" :min="1" :max="9999" size="small" style="width:100px;" @change="sortNoChange(scope.row)"></el-input-number>
+                            </template>
+                        </el-table-column>
+                        <el-table-column align="center" label="置顶" prop="flagTop" width="50">
+                            <template slot-scope="scope">
+                                <el-checkbox v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
+                            </template>
+                        </el-table-column>
+                        <el-table-column align="center" label="录入人" prop="inputUserName" width="80"/>
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                            <template slot-scope="scope">
+                                <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" title="彻底删除" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" title="撤销" type="danger" icon="iconskip" :size="btnSize" circle @click.stop.safe="btnCancel(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" title="回收站" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnRecycle(scope.row)"></el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination class="deyatech-pagination pull-right" background
+                                   :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                   :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
+                                   @size-change="handleSizeChange" @current-change="handleCurrentChange">
+                    </el-pagination>
+                </el-col>
+            </el-row>
 
             <!--弹窗-->
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeTemplateDialog">
+
+                <el-steps :active="stepsActive" finish-status="success" simple style="margin-top: -25px; margin-bottom: 20px">
+                    <el-step title="基本属性设置" ></el-step>
+                    <el-step title="核心属性设置" v-if="stepsActive != 0"></el-step>
+                    <el-step title="元数据属性设置" v-if="stepsActive == 2"></el-step>
+                </el-steps>
+
                 <el-form ref="templateDialogForm" class="deyatech-form" :model="template" label-position="right"
                          label-width="80px" :rules="templateRules">
-
-                    <h2>内容模型：{{template.contentModelName}}</h2>
-
-                    <el-steps :active="stepsActive" finish-status="success" simple style="margin-bottom: 30px">
-                        <el-step title="基本属性设置" ></el-step>
-                        <el-step title="核心属性设置" v-if="stepsActive != 0"></el-step>
-                        <el-step title="元数据属性设置" v-if="stepsActive == 2"></el-step>
-                    </el-steps>
 
                     <!--基本属性设置-->
                     <div v-show="stepsActive == 0">
                         <el-row :gutter="20" :span="24">
-                            <!--<el-col :span="12" v-if="dialogTitle == 'update'">
-                                <el-form-item label="内容模型" prop="contentModelId">
-                                    <el-select v-model.trim="template.contentModelId" placeholder="请选择内容模型"
-                                               @change="handleModelChange" :disabled="dialogTitle == 'update'">
-                                        <el-option
-                                            v-for="m in modelList"
-                                            :key="m.id"
-                                            :label="m.name"
-                                            :value="m.id">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                            </el-col>-->
-                            <el-col :span="12">
+                            <el-col :span="24">
                                 <el-form-item label="标题" prop="title">
                                     <el-input v-model.trim="template.title"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="来源" prop="source">
+                                    <el-input v-model.trim="template.source"></el-input>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="12">
@@ -181,38 +145,15 @@
                             </el-col>
                         </el-row>
                         <el-row :gutter="20" :span="24">
-                            <el-col :span="24">
-                                <el-form-item label="来源" prop="source">
-                                    <el-input v-model.trim="template.source"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" :span="24">
-                            <el-col :span="12">
-                                <el-form-item label="是否外链" prop="flagExternal">
-                                    <el-switch v-model.trim="template.flagExternal" @change="isFlagExternal"></el-switch>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                    </div>
 
-                    <!--外链属性设置-->
-                    <div v-if="template.flagExternal">
-                        <el-row :gutter="20" :span="24">
-                            <el-col :span="24">
-                                <el-form-item label="URL" prop="url">
-                                    <el-input v-model.trim="template.url"></el-input>
+                            <el-col :span="12">
+                                <el-form-item label="权重" prop="sortNo">
+                                    <el-input v-model.trim="template.sortNo" maxlength="4"></el-input>
                                 </el-form-item>
                             </el-col>
-                        </el-row>
-                    </div>
-
-                    <!--核心属性设置-->
-                    <div v-show="stepsActive == 1">
-                        <el-row :gutter="20" :span="24">
                             <el-col :span="12">
-                                <el-form-item label="资源分类" prop="resourceCategory"> <!--TODO-->
-                                    <el-select v-model.trim="template.resourceCategory" placeholder="请选择资源分类">
+                                <el-form-item label="资源分类" prop="resourceCategory">
+                                    <el-select v-model.trim="template.resourceCategory" placeholder="请选择资源分类" style="width: 100%;">
                                         <el-option
                                             v-for="item in resourceCategoryList"
                                             :key="item.id"
@@ -222,26 +163,42 @@
                                     </el-select>
                                 </el-form-item>
                             </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="摘要" prop="resourceSummary">
+                                    <el-input type="textarea" v-model.trim="template.resourceSummary" :rows="3" style="height: 176px;"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="缩略图" prop="thumbnail">
+                                    <el-upload class="avatar-uploader"
+                                               :class="{hide: template.thumbnailUrl}"
+                                               :action="uploadUrlCms"
+                                               :data="{'path': siteUploadPath, 'siteId': template.siteId}"
+                                               :accept="$store.state.common.imageAccepts"
+                                               :file-list="thumbnailList"
+                                               list-type="picture-card"
+                                               :on-success="handleAvatarSuccess"
+                                               :on-error="handleAvatarError"
+                                               :before-upload="beforeAvatarUpload"
+                                               :on-preview="handlePictureCardPreview"
+                                               :on-remove="handleAvatarRemove">
+                                        <i class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>
+                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
+                                        <img width="100%" :src="dialogImageUrl" alt="">
+                                    </el-dialog>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+
                             <!--<el-col :span="12">
                                 <el-form-item label="编辑姓名" prop="editor">
                                     <el-input v-model.trim="template.editor"></el-input>
                                 </el-form-item>
                             </el-col>-->
-                        </el-row>
-                        <el-row :gutter="20" :span="24">
-                            <el-col :span="24">
-                                <el-form-item label="摘要" prop="resourceSummary">
-                                    <el-input type="textarea" v-model.trim="template.resourceSummary" :rows="3"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" :span="24">
-                            <el-col :span="24">
-                                <el-form-item label="内容" prop="resourceContent">
-                                    <editor ref="resourceContent" :id="'editor'"
-                                            :default-msg="template.resourceContent" :config="editorConfig"></editor>
-                                </el-form-item>
-                            </el-col>
                         </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
@@ -269,49 +226,6 @@
                                 </el-form-item>
                             </el-col>
                         </el-row>
-                        <el-row :gutter="20" :span="24">
-                            <el-col :span="24">
-                                <el-form-item label="排序号" prop="sortNo">
-                                    <el-input-number v-model.trim="template.sortNo" :min=1 :max=65535></el-input-number>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" :span="24">
-                            <el-col :span="12">
-                                <el-form-item label="缩略图" prop="thumbnail">
-                                    <!--<el-upload class="avatar-uploader"
-                                               :action="uploadUrlCms"
-                                               :data="{'path': siteUploadPath}"
-                                               :accept="$store.state.common.imageAccepts"
-                                               :show-file-list="false"
-                                               :on-success="handleAvatarSuccess"
-                                               :on-error="handleAvatarError"
-                                               :before-upload="beforeAvatarUpload">
-                                        <img v-if="template.thumbnailUrl" :src="showPicImgUrl"
-                                             class="avatar">
-                                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                                    </el-upload>-->
-
-                                    <el-upload class="avatar-uploader"
-                                               :class="{hide: template.thumbnailUrl}"
-                                               :action="uploadUrlCms"
-                                               :data="{'path': siteUploadPath, 'siteId': template.siteId}"
-                                               :accept="$store.state.common.imageAccepts"
-                                               :file-list="thumbnailList"
-                                               list-type="picture-card"
-                                               :on-success="handleAvatarSuccess"
-                                               :on-error="handleAvatarError"
-                                               :before-upload="beforeAvatarUpload"
-                                               :on-preview="handlePictureCardPreview"
-                                               :on-remove="handleAvatarRemove">
-                                        <i class="el-icon-plus avatar-uploader-icon"></i>
-                                    </el-upload>
-                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
-                                        <img width="100%" :src="dialogImageUrl" alt="">
-                                    </el-dialog>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
                         <!--<el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="搜索可见" prop="flagSearch">
@@ -320,15 +234,45 @@
                                 </el-form-item>
                             </el-col>
                         </el-row>-->
+
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
-                                <el-form-item label="是否置顶" prop="flagTop">
+                                <el-form-item label="外链" prop="flagExternal">
+                                    <el-switch v-model.trim="template.flagExternal" @change="isFlagExternal"></el-switch>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="置顶" prop="flagTop">
                                     <el-switch v-model.trim="template.flagTop">
                                     </el-switch>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                     </div>
+
+                    <!--外链属性设置-->
+                    <div v-if="template.flagExternal">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="URL" prop="url">
+                                    <el-input v-model.trim="template.url"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+
+                    <!--核心属性设置-->
+                    <div v-show="stepsActive == 1">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item prop="resourceContent" label-width="0">
+                                    <editor ref="resourceContent" :id="'editor'" :default-msg="template.resourceContent" :config="editorConfig"></editor>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+
 
                     <!--元数据属性设置-->
                     <div v-show="stepsActive == 2 && metadataCollection.metadataList.length > 0">
@@ -388,7 +332,7 @@
                                        :before-remove="pickUploader(item.fieldName)">
                                 <el-button size="small" type="primary" @click="pickUploader(item.fieldName)">点击上传</el-button>
                             </el-upload>
-                            <!--                        </template>-->
+
                         </el-form-item>
                     </div>
                 </el-form>
@@ -396,11 +340,17 @@
                     <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
                     <el-button v-if="(!template.flagExternal && stepsActive == 0) || (stepsActive == 1 && metadataCollection.metadataList.length > 0)"
                                type="primary" :size="btnSize" @click="nextStep" :loading="submitLoading">下一步</el-button>
+
                     <el-button v-if="dialogTitle=='create' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
-                               type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                               type="primary" :size="btnSize" @click="doCreate(false)" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='create' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               :size="btnSize" @click="doCreate(true)" :loading="submitLoading">草稿</el-button>
+
                     <el-button v-if="dialogTitle=='update' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
-                               type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <!--                    <el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>-->
+                               type="primary" :size="btnSize" @click="doUpdate(false)" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='update' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               :size="btnSize" @click="doUpdate(true)" :loading="submitLoading">草稿</el-button>
+                    <!--<el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>-->
                 </span>
             </el-dialog>
         </div>
@@ -412,10 +362,15 @@
     import editor from '@/components/editor/index.vue'
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
+    import {getStore} from '@/util/store'
     import {
         getTemplateList,
         createOrUpdateTemplate,
         delTemplates,
+        recycleByIds, // 回收站
+        cancelByIds,  // 撤销
+        updateSortNoById,
+        updateFlagTopById,
         checkTitleExist,
         genStaticPage,
         reindex
@@ -473,7 +428,22 @@
                     }
                 }
             }
+            const checkSortNo = (rule, value, callback) => {
+                //除了数字
+                if (/[^\d]/g.test(value)) {
+                    callback(new Error('请输入正整数'));
+                } else {
+                    callback();
+                }
+            };
             return {
+                ContentStatusEnum:{
+                    PUBLISH: undefined, // 已发布
+                    VERIFY: undefined,  // 审核中
+                    CANCEL: undefined,  // 撤销
+                    DRAFT: undefined,   // 草稿
+                    RECYCLE: undefined  // 回收站
+                },
                 treeHeight: 0,
                 templateList: undefined,
                 total: undefined,
@@ -484,6 +454,7 @@
                     title: undefined,
                     siteId: this.$store.state.common.siteId,
                     cmsCatalogId: undefined,
+                    status: undefined // 已发布
                 },
                 template: {
                     id: undefined,
@@ -572,7 +543,8 @@
                         // {required: true, message: this.$t("table.pleaseInput") + '是否允许搜索到'}
                     ],
                     sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'}
+                        {required: true, message: this.$t("table.pleaseInput") + '权重'},
+                        {validator: checkSortNo, trigger: ['blur','change']}
                     ],
                     flagTop: [
                         // {required: true, message: this.$t("table.pleaseInput") + '是否置顶'}
@@ -674,9 +646,25 @@
             }*/
         },
         updated() {
-            this.changeHeight()
+
         },
         created(){
+            const array = getStore({name: 'enums'})['ContentStatusEnum'];
+            for (let cs of array) {
+                if (cs.var === 'PUBLISH') { // 已发布
+                    this.ContentStatusEnum.PUBLISH = cs.code.toString();
+                    this.listQuery.status = cs.code.toString();
+                } else if (cs.var === 'VERIFY') { // 审核中
+                    this.ContentStatusEnum.VERIFY = cs.code.toString();
+                } else if (cs.var === 'CANCEL') { // 撤销
+                    this.ContentStatusEnum.CANCEL = cs.code.toString();
+                } else if (cs.var === 'DRAFT') { // 草稿
+                    this.ContentStatusEnum.DRAFT = cs.code.toString();
+                } else if (cs.var === 'RECYCLE') { // 回收站
+                    this.ContentStatusEnum.RECYCLE = cs.code.toString();
+                }
+            }
+
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
@@ -690,14 +678,9 @@
             }
         },
         methods: {
-            changeHeight() {
-                let windowHeight = window.innerHeight;
-                this.$refs['leftTree'].style.height = windowHeight - 400 + 'px';
-                this.treeHeight = this.$refs['leftTree'].style.height
-            },
             getCatalogTree(){
                 this.listLoading = true;
-                getUserCatalogTree(this.listQuery).then(response => {
+                getUserCatalogTree({siteId: this.$store.state.common.siteId}).then(response => {
                     this.catalogList = response.data;
                     this.setDefaultCurrentNode()
                     this.listLoading = false;
@@ -726,6 +709,10 @@
                     this.isAddTemplate = false;
                 }
 
+            },
+            handleTabClick() {
+                // 获取template
+                this.reloadList();
             },
             getAllModelBySiteId() {
                 this.listLoading = true;
@@ -790,6 +777,29 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
             },
+            sortNoChange(row) {
+                if (row) {
+                    updateSortNoById({sortNo: row.sortNo, id: row.id}).then(response=>{
+                        if (response.status == 200 && response.data) {
+                            this.$message.success("权重修改成功")
+                        } else {
+                            this.$message.error("权重修改失败")
+                        }
+                    });
+                }
+
+            },
+            flagTopChange(row) {
+                if (row) {
+                    updateFlagTopById({flagTop: row.flagTop, id: row.id}).then(response=>{
+                        if (response.status == 200 && response.data) {
+                            this.$message.success("置顶修改成功")
+                        } else {
+                            this.$message.error("置顶修改失败")
+                        }
+                    });
+                }
+            },
             btnCreate(command){
                 if (command) {
                     let catalogNode = this.$refs.catalogTree.getCurrentNode()
@@ -837,6 +847,50 @@
                 this.dialogVisible = true;
                 this.getContentForm();
             },
+            btnCancel(row){
+                this.$confirm('此操作将撤销已发布信息, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
+                    let ids = [];
+                    if (row.id) {
+                        ids.push(row.id);
+                    } else {
+                        for(const deleteRow of this.selectedRows) {
+                            ids.push(deleteRow.id);
+                        }
+                    }
+                    cancelByIds(ids).then((response)=>{
+                        if (response.status == 200 && response.data) {
+                            this.reloadList();
+                            this.$message.success("撤销成功");
+                        } else {
+                            this.listLoading = false;
+                            this.$message.error(response.message)
+                        }
+                    });
+                });
+            },
+            // 回收站
+            btnRecycle(row){
+                this.$confirm('此操作将该信息放入回收站, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
+                    let ids = [];
+                    if (row.id) {
+                        ids.push(row.id);
+                    } else {
+                        for(const deleteRow of this.selectedRows) {
+                            ids.push(deleteRow.id);
+                        }
+                    }
+                    recycleByIds(ids).then((response)=>{
+                        if (response.status == 200 && response.data) {
+                            this.reloadList();
+                            this.$message.success("删除成功");
+                        } else {
+                            this.listLoading = false;
+                            this.$message.error(response.message)
+                        }
+                    });
+                });
+            },
+            // 彻底删除
             btnDelete(row){
                 let ids = [];
                 if (row.id) {
@@ -863,7 +917,7 @@
                     })
                 }
             },
-            doCreate(){
+            doCreate(draftFlag){
                 // 外链
                 if (this.template.flagExternal) {
                     var _this = this;
@@ -884,6 +938,7 @@
                     });
                     Promise.all([title, author, source, flagExternal, url]).then(function(){
                         _this.submitLoading = true;
+                        if (draftFlag) _this.template.draftFlag = draftFlag;
                         createOrUpdateTemplate(_this.template).then(() => {
                             _this.resetTemplateDialogAndList();
                             _this.$message.success(_this.$t("table.createSuccess"));
@@ -926,17 +981,19 @@
                             this.template.resourceContent = this.$refs['resourceContent'].getUeContent()
 
                             this.submitLoading = true;
+                            if (draftFlag) this.template.draftFlag = draftFlag;
                             createOrUpdateTemplate(this.template).then(() => {
                                 this.resetTemplateDialogAndList();
                                 this.$message.success(this.$t("table.createSuccess"));
                             })
+
                         } else {
                             return false;
                         }
                     });
                 }
             },
-            doUpdate(){
+            doUpdate(draftFlag){
                 // 外链
                 if (this.template.flagExternal) {
                     var _this = this;
@@ -957,6 +1014,7 @@
                     });
                     Promise.all([title, author, source, flagExternal, url]).then(function(){
                         _this.submitLoading = true;
+                        if (draftFlag) _this.template.draftFlag = draftFlag;
                         createOrUpdateTemplate(_this.template).then(() => {
                             _this.resetTemplateDialogAndList();
                             _this.$message.success(_this.$t("table.updateSuccess"));
@@ -990,6 +1048,7 @@
                             this.template.resourceContent = this.$refs['resourceContent'].getUeContent()
 
                             this.submitLoading = true;
+                            if (draftFlag) this.template.draftFlag = draftFlag;
                             createOrUpdateTemplate(this.template).then(() => {
                                 this.resetTemplateDialogAndList();
                                 this.$message.success(this.$t("table.updateSuccess"));
@@ -1495,6 +1554,19 @@
     }
 </script>
 <style>
+    .classificationTree {
+        border:1px solid #eceef5;
+        overflow-x: scroll;
+        margin-right:10px;
+        padding: 10px;
+        height: 100%;
+    }
+    .el-textarea__inner {
+        height: 100%;
+    }
+    .el-dialog__body {
+        padding-bottom: 0;
+    }
     /*标准管理树*/
     .standard-text{
         display: flex;
@@ -1563,14 +1635,6 @@
     }
     /deep/ .el-tree-node > .el-tree-node__children {
         overflow: visible !important;
-    }
-    .left-tree-title {
-        color: #909399;
-        font-weight: bold;
-        font-size: 14px;
-        text-align: center;
-        border-bottom: 1px solid #EBEEF5;
-        padding: 14px 0px;
     }
 
     /*表格*/
@@ -1646,6 +1710,19 @@
         width: 320px;
         margin-right: 10px;
         vertical-align: bottom;
+    }
+    .my-tabls>.el-tabs--card>.el-tabs__header .el-tabs__item.is-active {
+        background-color: #F0F0F0;
+        border-bottom: 1px solid #F0F0F0;
+    }
+    .el-tabs__nav-wrap {
+        overflow: hidden;
+        margin-bottom: 0px;
+        position: relative;
+    }
+    .el-tabs__header{margin:0;}
+    .appeal_table {
+        width:100%;
     }
 </style>
 

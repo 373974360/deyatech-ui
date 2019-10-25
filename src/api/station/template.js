@@ -72,4 +72,33 @@ export function updateContentStatus(id){
         data
     })
 }
-
+export function recycleByIds(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/station/template/recycleByIds',
+        method: 'post',
+        data
+    })
+}
+export function cancelByIds(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/station/template/cancelByIds',
+        method: 'post',
+        data
+    })
+}
+export function updateSortNoById(query) {
+    return request({
+        url: '/manage/station/template/updateSortNoById',
+        method: 'get',
+        params: query
+    });
+}
+export function updateFlagTopById(query) {
+    return request({
+        url: '/manage/station/template/updateFlagTopById',
+        method: 'get',
+        params: query
+    });
+}
