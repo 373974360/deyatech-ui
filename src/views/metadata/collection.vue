@@ -121,7 +121,7 @@
                                     <el-input v-model.trim="relationDataReal[scope.$index].label" placeholder="请输入" maxlength="100"></el-input>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="数据类型" prop="dataType" :formatter="filterDataType"/>
+                            <!--<el-table-column label="数据类型" prop="dataType" :formatter="filterDataType"/>
                             <el-table-column label="控件类型">
                                 <template slot-scope="scope">
                                     <el-select v-model.trim="relationDataReal[scope.$index].controlType" placeholder="请选择" @change="handleControlTypeChange(scope.$index)">
@@ -142,7 +142,7 @@
                                         </el-option>
                                     </el-select>
                                 </template>
-                            </el-table-column>
+                            </el-table-column>-->
                             <el-table-column label="校验方式">
                                 <template slot-scope="scope">
                                     <el-select v-model.trim="relationDataReal[scope.$index].checkModel" placeholder="请选择">

@@ -743,7 +743,7 @@
             doSaveCatalogUser() {
                 this.submitLoading = true;
                 let checkedKeys = this.$refs['catalogTree'].getCheckedKeys(false);
-                setUserCatalogs(this.currentRow.id, checkedKeys).then(() => {
+                setUserCatalogs(this.currentRow.id, checkedKeys, this.siteId).then(() => {
                     this.closeCatalogDialog();
                     this.reloadList();
                     this.$message.success(this.$t("table.associateSuccess"));
@@ -760,6 +760,7 @@
                 if (v.length > 0) {
                     this.siteId = v[v.length - 1];
                 }
+                this.btnCatalogSearch();
             },
             btnCatalogSearch() {
                 this.getCatalogTree();

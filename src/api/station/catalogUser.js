@@ -48,10 +48,10 @@ export function getAllUserCatalogs(query) {
     })
 }
 
-export function setUserCatalogs(userId, catalogIds) {
+export function setUserCatalogs(userId, catalogIds, siteId) {
     return request({
         url: '/manage/station/catalogUser/setUserCatalogs',
         method: 'post',
-        data: {userId, catalogIds}
+        data: {userId, catalogIds, siteId}
     })
 }

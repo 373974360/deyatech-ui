@@ -1,18 +1,6 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <!--            <div class="deyatech-header">
-                            <el-form :inline="true" ref="searchForm">
-                                <el-form-item>
-                                    <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
-                                </el-form-item>
-                                <el-form-item>
-                                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </div>-->
-
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || templateCount > 0">{{$t('table.create')}}</el-button>
@@ -20,8 +8,6 @@
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || templateCount > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
@@ -39,37 +25,6 @@
             <el-table-column align="center" label="栏目别名" prop="aliasName"/>
             <el-table-column align="center" label="URL" prop="linkUrl"/>
             <el-table-column align="center" label="排序" prop="sortNo" width="80"/>
-            <!--<el-table-column align="center" label="站点id" prop="siteId"/>
-            <el-table-column align="center" label="父节点id" prop="parentId"/>-->
-            <!--            <el-table-column align="center" label="英文名称" prop="ename"/>-->
-            <!--            <el-table-column align="center" label="显示" prop="showable"/>-->
-
-            <!--            <el-table-column align="center" label="工作流ID" prop="workflowId"/>-->
-            <!--            <el-table-column align="center" label="首页模板" prop="indexTemplate"/>-->
-            <!--            <el-table-column align="center" label="列表页模板" prop="listTemplate"/>-->
-            <!--            <el-table-column align="center" label="在树结构中位置" prop="treePosition"/>
-                        <el-table-column align="center" label="状态" prop="status"/>
-                        <el-table-column align="center" label="允许评论" prop="allowComment"/>
-                        <el-table-column align="center" label="允许分享: 0.否 1.是" prop="allowShare"/>
-                        <el-table-column align="center" label="应用id" prop="applicationId"/>
-                        <el-table-column align="center" label="属性id" prop="attributeId"/>
-                        <el-table-column align="center" label="自动发布:0.否 1.是" prop="autoRelease"/>
-                        <el-table-column align="center" label="内容对象id" prop="contectObjectId"/>
-                        <el-table-column align="center" label="显示条数" prop="displayNumber"/>
-                        <el-table-column align="center" label="生成栏目首页:0.否 1.是" prop="generateHome"/>
-                        <el-table-column align="center" label="在导航中显示: 0.否 1.是" prop="navigationShowAble"/>
-                        <el-table-column align="center" label="参与人员:0.会员 1.所有人" prop="participant"/>
-                        <el-table-column align="center" label="在树中显示: 0.否 1.是" prop="treeShowAble"/>
-                        <el-table-column align="center" label="启用工作流: 0.否 1.是" prop="workflowEnable"/>
-                        <el-table-column align="center" label="路径名，如果是多级栏目则用/分隔各级ename" prop="pathName"/>
-                        <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
-                            <template slot-scope="scope">
-                                <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                                    {{scope.row.enable | enums('EnableEnum')}}
-                                </el-tag>
-                            </template>
-                        </el-table-column>-->
-
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                 <template slot-scope="scope">
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
@@ -93,13 +48,14 @@
                 </el-steps>
 
                 <!--基本属性设置-->
-                <div v-if="stepsActive == 0">
+                <div v-show="stepsActive == 0">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
+                        <el-col :span="24">
                             <el-form-item label="上级栏目" prop="parentId">
-                                <el-cascader :options="catalogCascader" v-model.trim="catalogTreePosition"
-                                             show-all-levels expand-trigger="click" clearable
-                                             change-on-select style="width: 100%"></el-cascader>
+                                <el-cascader :options="catalogCascader"
+                                             v-model.trim="catalogTreePosition"
+                                             :props="{ checkStrictly: true }"
+                                             clearable style="width: 100%" @change="parentIdChange"></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -137,27 +93,27 @@
                     </el-row>
 
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="字段名" prop="columnName">
+                        <!--<el-col :span="12">
+                            <el-form-item label="栏目名" prop="columnName">
                                 <el-input v-model.trim="catalog.columnName"></el-input>
                             </el-form-item>
-                        </el-col>
+                        </el-col>-->
                         <el-col :span="12">
-                            <el-form-item label="字段类型" prop="columnType">
+                            <el-form-item label="栏目类型" prop="columnType">
                                 <el-input v-model.trim="catalog.columnType"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="字段描述" prop="columnDescription">
+                            <el-form-item label="栏目描述" prop="columnDescription">
                                 <el-input type="textarea" v-model.trim="catalog.columnDescription" :rows="3"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="字段关键字" prop="columnKeywords">
+                            <el-form-item label="栏目关键字" prop="columnKeywords">
                                 <el-input v-model.trim="catalog.columnKeywords"></el-input>
                             </el-form-item>
                         </el-col>
@@ -185,11 +141,10 @@
                 </div>
 
                 <!--核心属性设置-->
-                <div v-if="stepsActive == 1">
+                <div v-show="stepsActive == 1">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="首页模板" prop="indexTemplate">
-                                <!--<el-input v-model.trim="catalog.indexTemplate"></el-input>-->
+                            <el-form-item label="频道页模板" prop="indexTemplate">
                                 <el-cascader
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
@@ -197,8 +152,7 @@
                                     expand-trigger="hover"
                                     :options="templateTreeData"
                                     v-model.trim="selectIndexTemplate"
-                                    :props="cascaderProps"
-                                    @change="handleChange">
+                                    :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
                         </el-col>
@@ -219,37 +173,6 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="列表页显示条数" prop="displayNumber">
-                                <el-input-number v-model.trim="catalog.displayNumber" :min=1 :max=100 style="width: 100%"></el-input-number>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="自动发布" prop="autoRelease">
-                                <el-switch v-model.trim="catalog.autoRelease" :active-value=1 :inactive-value=0></el-switch>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="允许评论" prop="allowComment">
-                                <el-switch v-model.trim="catalog.allowComment" :active-value=1 :inactive-value=0></el-switch>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="允许分享" prop="allowShare">
-                                <el-switch v-model.trim="catalog.allowShare" :active-value=1 :inactive-value=0></el-switch>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="生成栏目首页" prop="generateHome">
-                                <el-switch v-model.trim="catalog.generateHome" :active-value=1 :inactive-value=0></el-switch>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
                             <el-form-item label="在导航中显示" prop="navigationShowAble">
                                 <el-switch v-model.trim="catalog.navigationShowAble" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
@@ -261,6 +184,11 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="允许评论" prop="allowComment">
+                                <el-switch v-model.trim="catalog.allowComment" :active-value=1 :inactive-value=0></el-switch>
+                            </el-form-item>
+                        </el-col>
                         <el-col :span="12">
                             <el-form-item label="归档" prop="placeOnFile">
                                 <el-switch v-model.trim="catalog.placeOnFile" :active-value=1 :inactive-value=0></el-switch>
@@ -291,13 +219,6 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <!--                    <el-row :gutter="20" :span="24">
-                                            <el-col :span="24">
-                                                <el-form-item :label="$t('table.remark')" prop="remark" label-width="140px">
-                                                    <el-input type="textarea" v-model.trim="catalog.remark" :rows="3"/>
-                                                </el-form-item>
-                                            </el-col>
-                                        </el-row>-->
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="设置聚合规则" prop="flagAggregation">
@@ -329,14 +250,15 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="发布人" prop="publisher">
-                            <el-input v-model.trim="catalogAggregation.publisher"></el-input>
+                            <el-input v-model.trim="catalogAggregation.publisherName" readonly @focus="btnSelectPublisher"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row :gutter="20" :span="24">
-                    <el-col :span="24">
+                    <el-col :span="12">
                         <el-form-item label="发布机构" prop="publishOrganization">
-                            <el-input v-model.trim="catalogAggregation.publishOrganization"></el-input>
+                            <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="publishOrganizationArray"
+                                         expand-trigger="hover" clearable @change="publishOrganizationChange" ></el-cascader>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -381,6 +303,7 @@
                     </el-col>
                 </el-row>
             </el-form>
+
             <span slot="footer" class="dialog-footer">
                 <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
                 <el-button v-if="(!catalog.flagExternal && stepsActive == 0) || (stepsActive == 1 && catalog.flagAggregation)"
@@ -389,9 +312,45 @@
                            type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                 <el-button v-if="dialogTitle=='update' && (catalog.flagExternal || stepsActive == 2  || (stepsActive == 1 && !catalog.flagAggregation))"
                            type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                <!--                <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>-->
+                <!--<el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>-->
             </span>
         </el-dialog>
+
+        <!--选择发布人-->
+        <el-dialog title="选择发布人" :visible.sync="dialogPublisherVisible"
+                   :close-on-click-modal="closeOnClickModal" @close="closePublisherDialog">
+            <div v-loading="dialogFormLoading">
+                <div class="dialog-search">
+                    <el-cascader v-model.trim="publisherDepartment"
+                                 :options="departmentCascader" @change="handleDepartmentChange"
+                                 class="dialog-search-item dialog-keywords"
+                                 :show-all-levels="false" expand-trigger="hover" clearable change-on-select
+                                 :size="searchSize" placeholder="根据部门筛选"></el-cascader>
+                    <el-input v-model.trim="userListQuery.name" class="dialog-search-item dialog-keywords"
+                              clearable :size="searchSize" placeholder="根据姓名或帐户查询" maxlength="50"></el-input>
+                    <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
+                </div>
+                <div>
+                    <el-table ref="publisherTable" :data="userList" border v-loading.body="publisherListLoading"
+                               @select-all="selectAllPublisher" @select="handleSelectionChangePublisher">
+                        <el-table-column type="selection" width="50" align="center"></el-table-column>
+                        <el-table-column prop="departmentName" label="部门"></el-table-column>
+                        <el-table-column prop="name" label="姓名"></el-table-column>
+                        <el-table-column prop="account" label="登录帐户"></el-table-column>
+                    </el-table>
+                    <el-pagination class="deyatech-pagination pull-right" background
+                                   :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                   :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotal"
+                                   @size-change="handleSizeChangePublisher" @current-change="handleCurrentChangePublisher">
+                    </el-pagination>
+                </div>
+            </div>
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" :size="btnSize" @click="doSavePublisher" :disabled="!this.currentUser">选择</el-button>
+                <el-button :size="btnSize" @click="closePublisherDialog">{{$t('table.cancel')}}</el-button>
+            </div>
+        </el-dialog>
+
     </basic-container>
 </template>
 
@@ -416,6 +375,8 @@
         getAllModel
     } from '@/api/station/model';
     import {validateURL,isEnglish} from '@/util/validate';
+    import {getDepartmentCascader} from '@/api/admin/department';
+    import {getUserList} from '@/api/admin/user';
 
     export default {
         name: 'catalog',
@@ -425,9 +386,8 @@
                     callback(new Error('不能添加自己'));
                     return;
                 }
-                console.log('value = ' + value);
                 if ("0" !== value) {
-                    hasTemplate({id:value}).then(response => {
+                    hasTemplate({id: value}).then(response => {
                         if (response.data) {
                             callback(new Error('当前栏目下已存在内容，不能添加栏目'))
                         } else {
@@ -442,7 +402,7 @@
                 const query = {
                     id: this.catalog.id,
                     parentId: this.catalog.parentId ? this.catalog.parentId : '0',
-                    siteId : this.listQuery.siteId,
+                    siteId: this.listQuery.siteId,
                     name: value
                 }
                 existsName(query).then(response => {
@@ -466,7 +426,7 @@
                 const query = {
                     id: this.catalog.id,
                     parentId: this.catalog.parentId ? this.catalog.parentId : '0',
-                    siteId : this.listQuery.siteId,
+                    siteId: this.listQuery.siteId,
                     aliasName: value
                 }
                 existsAliasName(query).then(response => {
@@ -489,7 +449,7 @@
                 const query = {
                     id: this.catalog.id,
                     parentId: this.catalog.parentId ? this.catalog.parentId : '0',
-                    siteId : this.listQuery.siteId,
+                    siteId: this.listQuery.siteId,
                     ename: value
                 }
                 existsEname(query).then(response => {
@@ -576,6 +536,7 @@
                 }
             };
             return {
+                catalogTreePosition: undefined,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -627,7 +588,6 @@
                 catalogCascader: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false,
                 selectedRows: [],
                 catalogRules: {
                     siteId: [
@@ -768,21 +728,19 @@
                     keyword: undefined,
                     publishOrganization: undefined,
                     publishTime: undefined,
-                    publisher: undefined
+                    publisher: undefined,
+                    publisherName: undefined,
+                    publishOrganizationTreePosition: undefined
                 },
                 catalogAggregationRules: {
                     cmsCatalogId: [
                         {required: true, validator: validateCmsCatalogId, trigger: 'change'}
-                    ],
-                    keyword: [
-                        // {required: true, message: this.$t("table.pleaseInput") + '关键字'}
                     ],
                     publishOrganization: [
                         {required: true, message: this.$t("table.pleaseInput") + '发布机构'},
                         {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'},
                     ],
                     publishTime: [
-                        // {required: true, message: this.$t("table.pleaseSelect") + '发布时间段'}
                         {required: true, validator: validatePublishTime, trigger: 'blur'}
                     ],
                     publisher: [
@@ -790,41 +748,40 @@
                         {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
                     ]
                 },
+                submitLoading: false,
                 dynamicTags: [],
                 inputVisible: false,
                 inputValue: '',
                 selectPublishTime: [],
-                templateCount: 0
+                departmentCascader: [],
+                publishOrganizationArray: [],
+                templateCount: 0,
+                dialogPublisherVisible: false,
+                dialogFormLoading: false,
+                publisherListLoading: false,
+                publisherDepartment: [],
+                userList: [],
+                userListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    name: undefined,
+                    departmentId: undefined
+                },
+                currentUser: undefined,
+                userTotal: undefined
             }
         },
         created() {
             this.$store.state.common.selectSiteDisplay = true;
-            if(this.$store.state.common.siteId != undefined){
+            if (this.$store.state.common.siteId != undefined) {
                 this.reloadList();
                 this.listTemplateAllFiles();
                 this.getAllModel();
                 this.getCatalogCascader();
+                this.loadDepartmentCascader();
             }
         },
         computed: {
-            catalogTreePosition: {
-                get() {
-                    if (this.catalog.treePosition) {
-                        return this.catalog.treePosition.substr(1).split('&');
-                    } else {
-                        return [];
-                    }
-                },
-                set(v) {
-                    if (v && v.length > 0) {
-                        this.catalog.parentId = v[v.length - 1];
-                        this.catalog.treePosition = "&" + v.join('&') + "&" + this.catalog.parentId;
-                    } else {
-                        this.catalog.parentId = '0';
-                        this.catalog.treePosition = undefined;
-                    }
-                }
-            },
             ...mapGetters([
                 'permission',
                 'titleMap',
@@ -843,12 +800,10 @@
         },
         methods: {
             participantChange() {
-                this.$refs.catalogDialogForm.validateField('participant', errorMsg => {});
+                this.$refs.catalogDialogForm.validateField('participant', errorMsg => {
+                });
             },
-            /*            resetSearch(){
-                            this.listQuery.siteId = this.$store.state.common.siteId;
-                        },*/
-            reloadList(){
+            reloadList() {
                 if (!this.listQuery.siteId) {
                     this.$message.warning("请先选择站点");
                     return
@@ -866,48 +821,45 @@
                     this.listLoading = false;
                 })
             },
-            getCatalogCascader(){
+            getCatalogCascader() {
                 this.submitLoading = true;
-                const query = {siteId : this.listQuery.siteId};
+                const query = {siteId: this.listQuery.siteId};
                 getCatalogCascader(query).then(response => {
                     this.submitLoading = false;
                     this.catalogCascader = response.data;
                 })
             },
-            handleSelectionChange(rows){
+            handleSelectionChange(rows) {
                 this.selectedRows = rows;
                 this.templateCount = 0;
                 for (let r of rows) {
                     this.templateCount += r.templateCount;
                 }
             },
-            /*            loadEnum(name) {
-                            return getStore({name: 'enums'})[name]
-                        },*/
             // 获取模板
-            listTemplateAllFiles(){
+            listTemplateAllFiles() {
                 this.templateTreeData = [];
                 listTemplateAllFiles(this.listQuery.siteId).then(response => {
                     let result = JSON.parse(response.data)
                     this.templateTreeData = result.files
                 })
             },
-            btnCreate(row){
+            btnCreate(row) {
                 this.resetCatalog();
                 if (row.id) {
                     this.catalog = deepClone(row);
-                    if(row.treePosition){
+                    if (row.treePosition) {
                         this.catalog.treePosition = row.treePosition + "&" + row.id;
-                    }else{
+                    } else {
                         this.catalog.treePosition = "&" + row.id;
                     }
                     this.catalog.parentId = row.id;
                 } else {
                     if (this.selectedRows.length == 1) {
                         this.catalog = deepClone(this.selectedRows[0]);
-                        if(this.selectedRows[0].treePosition){
+                        if (this.selectedRows[0].treePosition) {
                             this.catalog.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
-                        }else{
+                        } else {
                             this.catalog.treePosition = "&" + this.selectedRows[0].id;
                         }
                         this.catalog.parentId = this.selectedRows[0].id;
@@ -915,6 +867,9 @@
                         this.catalog.parentId = '0';
                         this.catalog.treePosition = undefined;
                     }
+                }
+                if (this.catalog.treePosition) {
+                    this.catalogTreePosition = this.catalog.treePosition.substring(1).split('&');
                 }
                 // 一些字段不需要覆盖
                 this.catalog.id = undefined;
@@ -926,7 +881,6 @@
                 this.catalog.version = undefined;
                 this.catalog.aggregationId = undefined;
                 this.catalog.children = undefined;
-
                 // 聚合栏目
                 if (this.catalog.flagAggregation) {
                     this.catalogAggregation = this.catalog.catalogAggregation;
@@ -935,13 +889,23 @@
                     this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
                     // 一些字段不需要覆盖
                     this.catalogAggregation.id = undefined;
+
+                    let position = undefined;
+                    if (this.catalogAggregation.publishOrganizationTreePosition) {
+                        position = this.catalogAggregation.publishOrganizationTreePosition + '&' + this.catalogAggregation.publishOrganization;
+                    } else{
+                        position = '&' + this.catalogAggregation.publishOrganization;
+                    }
+                    if (position) {
+                        this.publishOrganizationArray = position.substring(1).split('&');
+                    }
                 }
                 this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
-            btnUpdate(row){
+            btnUpdate(row) {
                 this.resetCatalog();
                 if (row.id) {
                     this.catalog = deepClone(row);
@@ -951,6 +915,9 @@
                 if (this.catalog.contentModelId) {
                     this.selectContentModelIds = this.catalog.contentModelId.split(',');
                 }
+                if (this.catalog.treePosition) {
+                    this.catalogTreePosition = this.catalog.treePosition.substring(1).split('&');
+                }
                 this.isWorkflowEnable(this.catalog.workflowEnable);
                 // 聚合栏目
                 if (this.catalog.flagAggregation) {
@@ -958,13 +925,24 @@
                     this.selectCatalogIds = this.catalogAggregation.cmsCatalogId ? this.catalogAggregation.cmsCatalogId.split('&') : [];
                     this.selectPublishTime = this.catalogAggregation.publishTime ? this.catalogAggregation.publishTime.split(',') : [];
                     this.dynamicTags = this.catalogAggregation.keyword ? this.catalogAggregation.keyword.split(',') : [];
+
+                    let position = undefined;
+                    if (this.catalogAggregation.publishOrganizationTreePosition) {
+                        position = this.catalogAggregation.publishOrganizationTreePosition + '&' + this.catalogAggregation.publishOrganization;
+                    } else{
+                        position = '&' + this.catalogAggregation.publishOrganization;
+                    }
+                    if (position) {
+                        this.publishOrganizationArray = position.substring(1).split('&');
+                    }
                 }
+
                 this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
-            btnDelete(row){
+            btnDelete(row) {
                 let ids = [];
                 var message = '';
                 if (row.id) {
@@ -977,13 +955,13 @@
                         this.doDelete(ids);
                     })
                 } else {
-                    for(const deleteRow of this.selectedRows) {
+                    for (const deleteRow of this.selectedRows) {
                         if (deleteRow.children) {
                             message = '所选栏目包含子栏目，'
                         }
                     }
                     this.$confirm(message + this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        for(const deleteRow of this.selectedRows) {
+                        for (const deleteRow of this.selectedRows) {
                             this.lastExpanded = deleteRow.treePosition;
                             ids.push(deleteRow.id);
                         }
@@ -991,11 +969,11 @@
                     })
                 }
             },
-            doCreate(){
+            doCreate() {
                 var _this = this;
-                var validateForm1 = new Promise(function(resolve, reject) {
+                var validateForm1 = new Promise(function (resolve, reject) {
                     _this.$refs['catalogDialogForm'].validate(valid => {
-                        if(valid) {
+                        if (valid) {
                             resolve();
                         } else {
                             return false;
@@ -1004,9 +982,9 @@
                 });
                 var validateForm2 = true;
                 if (this.catalog.flagAggregation) {
-                    validateForm2 = new Promise(function(resolve, reject) {
+                    validateForm2 = new Promise(function (resolve, reject) {
                         _this.$refs['catalogAggregationDialogForm'].validate(valid => {
-                            if(valid) {
+                            if (valid) {
                                 resolve();
                             } else {
                                 return false;
@@ -1015,7 +993,7 @@
                     });
                 }
 
-                Promise.all([validateForm1, validateForm2]).then(function(){
+                Promise.all([validateForm1, validateForm2]).then(function () {
                     _this.catalog.siteId = _this.listQuery.siteId;
                     // 聚合栏目信息
                     if (_this.catalog.flagAggregation) {
@@ -1029,14 +1007,14 @@
                         _this.$message.success(_this.$t("table.createSuccess"));
                     }).catch(() => {
                         _this.submitLoading = false;
-                    });;
+                    });
                 });
             },
-            doUpdate(){
+            doUpdate() {
                 var _this = this;
-                var validateForm1 = new Promise(function(resolve, reject) {
+                var validateForm1 = new Promise(function (resolve, reject) {
                     _this.$refs['catalogDialogForm'].validate(valid => {
-                        if(valid) {
+                        if (valid) {
                             resolve();
                         } else {
                             return false;
@@ -1045,9 +1023,9 @@
                 });
                 var validateForm2 = true;
                 if (this.catalog.flagAggregation && !this.catalog.flagExternal) {
-                    validateForm2 = new Promise(function(resolve, reject) {
+                    validateForm2 = new Promise(function (resolve, reject) {
                         _this.$refs['catalogAggregationDialogForm'].validate(valid => {
-                            if(valid) {
+                            if (valid) {
                                 resolve();
                             } else {
                                 return false;
@@ -1058,7 +1036,7 @@
                 var confirm = true;
                 // 外链栏目、聚合栏目不覆盖子栏目
                 if (this.catalog.children) {
-                    confirm = new Promise(function(resolve, reject) {
+                    confirm = new Promise(function (resolve, reject) {
                         _this.$confirm('是否覆盖子栏目信息', _this.$t("table.tip"), {
                             confirmButtonText: '覆盖',
                             cancelButtonText: '不覆盖',
@@ -1073,7 +1051,7 @@
                     });
                 }
 
-                Promise.all([validateForm1, validateForm2, confirm]).then(function(){
+                Promise.all([validateForm1, validateForm2, confirm]).then(function () {
                     _this.catalog.children = undefined;
                     // 聚合栏目信息
                     if (_this.catalog.flagAggregation) {
@@ -1090,17 +1068,17 @@
                     });
                 });
             },
-            doDelete(ids){
+            doDelete(ids) {
                 this.listLoading = true;
                 delCatalogs(ids).then(() => {
                     this.selectedRows = [];
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
-                }).catch(()=>{
+                }).catch(() => {
                     this.listLoading = false;
                 });
             },
-            resetCatalog(){
+            resetCatalog() {
                 this.catalog = {
                     id: undefined,
                     siteId: undefined,
@@ -1142,7 +1120,7 @@
                     columnType: undefined,
                 }
             },
-            resetCatalogAggregation(){
+            resetCatalogAggregation() {
                 this.catalogAggregation = {
                     id: undefined,
                     cmsCatalogId: undefined,
@@ -1152,13 +1130,14 @@
                     publisher: undefined
                 }
             },
-            resetCatalogDialogAndList(){
+            resetCatalogDialogAndList() {
                 this.closeCatalogDialog();
                 this.submitLoading = false;
                 this.reloadList();
                 this.getCatalogCascader();
             },
             closeCatalogDialog() {
+                this.catalogTreePosition = [];
                 this.selectedRows = [];
                 this.dialogVisible = false;
                 this.selectIndexTemplate = undefined;
@@ -1170,7 +1149,7 @@
                 this.selectContentModelIds = [];
                 for (let model of this.modelList) {
                     this.selectContentModelIds.push(model.id);
-                };
+                }
                 this.stepsActive = 0;
                 this.selectCatalogIds = [];
                 this.selectPublishTime = [];
@@ -1178,7 +1157,7 @@
             },
             handleChange(value) {
             },
-            isWorkflowEnable (value) {
+            isWorkflowEnable(value) {
                 if (value == 1) {
                     if (this.workflowList.length == 0) {
                         this.getWorkflowList();
@@ -1216,12 +1195,12 @@
             },
             previousStep() {
                 this.$refs['catalogDialogForm'].clearValidate();
-                this.stepsActive --;
+                this.stepsActive--;
             },
             nextStep() {
                 this.$refs['catalogDialogForm'].validate(valid => {
-                    if(valid) {
-                        this.stepsActive ++;
+                    if (valid) {
+                        this.stepsActive++;
                     } else {
                         return false;
                     }
@@ -1255,7 +1234,98 @@
                 this.inputVisible = false;
                 this.inputValue = '';
             },
-            // 动态添加关键字 end
+            loadDepartmentCascader() {
+                getDepartmentCascader().then(response => {
+                    this.departmentCascader = response.data;
+                })
+            },
+            publishOrganizationChange(v) {
+                if (v && v.length > 0) {
+                    this.catalogAggregation.publishOrganization = v[v.length-1];
+                } else {
+                    this.catalogAggregation.publishOrganization = undefined;
+                }
+            },
+            // 选择发布人
+            btnSelectPublisher() {
+                this.currentUser = undefined;
+                this.dialogPublisherVisible = true;
+                this.userListQuery.page = 1;
+                this.loadUserList();
+            },
+            closePublisherDialog() {
+                this.dialogPublisherVisible = false;
+                this.currentUser = undefined;
+            },
+            handleDepartmentChange(v) {
+                if (v && v.length > 0) {
+                    this.userListQuery.departmentId = v[v.length - 1];
+                } else {
+                    this.userListQuery.departmentId = undefined;
+                }
+            },
+            loadUserList() {
+                this.userList = undefined;
+                this.publisherListLoading = true;
+                getUserList(this.userListQuery).then(response => {
+                    this.publisherListLoading = false;
+                    this.userList = response.data.records;
+                    this.userTotal = response.data.total;
+                    this.checkedCurrentUser();
+                }).catch(()=>{
+                    this.publisherListLoading = false;
+                    this.userTotal = 0;
+                });
+            },
+            checkedCurrentUser() {
+                this.$nextTick(()=>{
+                    if (this.userList) {
+                        for (let r of this.userList) {
+                            if (this.currentUser && this.currentUser.id === r.id) {
+                                this.$refs.publisherTable.toggleRowSelection(r, true);
+                            } else {
+                                this.$refs.publisherTable.toggleRowSelection(r, false);
+                            }
+                        }
+                    }
+                });
+            },
+            selectAllPublisher() {
+                this.checkedCurrentUser();
+            },
+            handleSelectionChangePublisher(selection) {
+                this.currentUser = undefined;
+                if (selection.length > 0) {
+                    this.currentUser = selection[selection.length - 1];
+                }
+                this.checkedCurrentUser();
+            },
+            reloadUserList() {
+                this.userListQuery.page = 1;
+                this.loadUserList();
+            },
+            handleSizeChangePublisher(val) {
+                this.userListQuery.size = val;
+                this.loadUserList();
+            },
+            handleCurrentChangePublisher(val) {
+                this.userListQuery.page = val;
+                this.loadUserList();
+            },
+            doSavePublisher() {
+                this.catalogAggregation.publisher = this.currentUser.id;
+                this.catalogAggregation.publisherName = this.currentUser.name;
+                this.closePublisherDialog();
+            },
+            parentIdChange(v) {
+                if (v && v.length > 0) {
+                    this.catalog.parentId = v[v.length - 1];
+                    this.catalog.treePosition = "&" + v.join('&') + "&" + this.catalog.parentId;
+                } else {
+                    this.catalog.parentId = '0';
+                    this.catalog.treePosition = undefined;
+                }
+            }
         }
     }
 </script>
