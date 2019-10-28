@@ -48,6 +48,8 @@ router.beforeEach((to, from, next) => {
                 })*/
                 store.dispatch('GetUserInfo').then(() => {
                     next()
+                }).catch(err => {
+                    window.location.href = 'http://localhost:8765/manage/evaluate/sso/redirect?url=' + to.path
                 })
             } else {
                 /*const value = to.query.src || to.fullPath;
@@ -83,7 +85,7 @@ router.beforeEach((to, from, next) => {
             /*store.dispatch('GetUserInfo').then(() => {
                 next()
             })*/
-            window.location.href = 'http://localhost:8765/manage/evaluate/sso/login'
+            window.location.href = 'http://localhost:8765/manage/evaluate/sso/redirect?url=' + to.path
         }
     }
 })
