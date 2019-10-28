@@ -40,4 +40,11 @@ export function getPriceInfoList(query) {
     });
 }
 
+export function getAllPriceInfo(query) {
+    return request({
+        url: '/manage/market/priceInfo/listByPriceInfo',
+        method: 'get',
+        params: query
+    });
+}
 

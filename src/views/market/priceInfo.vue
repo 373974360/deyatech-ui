@@ -4,11 +4,22 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        <el-date-picker
+                            :size="searchSize"
+                            v-model.trim="addTimeRange"
+                            type="daterange"
+                            range-separator="至"
+                            start-placeholder="添加开始日期"
+                            end-placeholder="添加结束日期"
+                            value-format="yyyy-MM-dd">
+                        </el-date-picker>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                        <el-button type="primary" :size="btnSize" @click="export2Excel">
+                            导出<i class="el-icon-download el-icon--right"></i>
+                        </el-button>
                     </el-form-item>
                 </el-form>
             </div>
@@ -17,10 +28,25 @@
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-upload
+                        style="display: inline; margin-left: 10px;"
+                        :limit="10"
+                        :beforeUpload="beforeUpload"
+                        :headers="initHeaders"
+                        action="/manage/market/priceInfo/importExcel"
+                        :data="{importType: importType}"
+                        :on-success="importSuccess"
+                        :on-error="importError">
+                        <el-button type="primary" :size="btnSize" @click="importExcel1">批发数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                        <el-button type="primary" :size="btnSize" @click="importExcel2">零售数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                        <el-button type="primary" :size="btnSize" @click="importExcel3">产地数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                        <el-button type="primary" :size="btnSize" @click="importExcel4">农资数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                    </el-upload>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
+                    <el-button type="primary" :size="btnSize" style="margin-right: 10px">数据样表下载<i class="el-icon-document el-icon--right"></i></el-button>
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
@@ -32,15 +58,15 @@
                 <el-table-column align="center" label="市场分类" prop="marketName"/>
                 <el-table-column align="center" label="价格" prop="price"/>
                 <el-table-column align="center" label="单位" prop="unit"/>
-                <el-table-column align="center" label="市场名称" prop="scName"/>
+                <el-table-column align="center" label="部门名称" prop="scName"/>
 <!--                <el-table-column align="center" label="批发/零售" prop="isSell"/>-->
 <!--                <el-table-column align="center" label="产地" prop="location"/>-->
 <!--                <el-table-column align="center" label="产品等级" prop="productLevel"/>-->
 <!--                <el-table-column align="center" label="上市量" prop="landings"/>-->
 <!--                <el-table-column align="center" label="交易量" prop="tradings"/>-->
 <!--                <el-table-column align="center" label="来源" prop="sourceFrom"/>-->
-                <el-table-column align="center" label="添加时间" prop="createTime"/>
-                <el-table-column align="center" label="添加用户" prop="createBy"/>
+                <el-table-column align="center" label="添加时间" prop="addTime"/>
+                <el-table-column align="center" label="添加用户" prop="addUser"/>
                 <el-table-column align="center" label="备注" prop="remark"/>
                 <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
@@ -121,8 +147,24 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
+                            <el-form-item label="售卖方式" prop="isSell">
+                                <el-radio-group v-model.trim="priceInfo.isSell"
+                                                :disabled="!priceInfo.marketName || priceInfo.marketName.indexOf('批发') == -1 && priceInfo.marketName.indexOf('零售') == -1">
+                                    <el-radio :label="0">批发</el-radio>
+                                    <el-radio :label="1">零售</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
                             <el-form-item label="产地" prop="location">
                                 <el-input v-model.trim="priceInfo.location"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="产品等级" prop="productLevel">
+                                <el-input v-model.trim="priceInfo.productLevel"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -139,12 +181,7 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="产品等级" prop="productLevel">
-                                <el-input v-model.trim="priceInfo.productLevel"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
+                        <el-col :span="24">
                             <el-form-item label="来源" prop="sourceFrom">
                                 <el-input v-model.trim="priceInfo.sourceFrom"></el-input>
                             </el-form-item>
@@ -175,11 +212,13 @@
     import {
         getPriceInfoList,
         createOrUpdatePriceInfo,
-        delPriceInfos
+        delPriceInfos,
+        getAllPriceInfo
     } from '@/api/market/priceInfo';
     import {getAllMarketType}from '@/api/market/marketType';
     import {getAllProductType} from '@/api/market/productType';
     import {getAllProduct} from '@/api/market/product';
+    import {getToken} from '@/util/auth'
 
     export default {
         name: 'priceInfo',
@@ -192,14 +231,23 @@
                     callback(new Error(this.$t("table.pleaseInput") + '正确价格，小数点后最多两位'));
                 }
             };
+            const validateIsSell = (rule, value, callback) => {
+                if ((this.priceInfo.marketName.indexOf("批发") != -1 || this.priceInfo.marketName.indexOf("零售") != -1) && !this.priceInfo.isSell) {
+                    callback(new Error(this.$t("table.pleaseSelect") + '售卖方式'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 priceInfoList: undefined,
                 total: undefined,
                 listLoading: true,
+                addTimeRange: undefined,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    addStartTime: undefined,
+                    addEndTime: undefined,
                 },
                 priceInfo: {
                     id: undefined,
@@ -208,11 +256,13 @@
                     productId: undefined,
                     price: undefined,
                     unit: undefined,
+                    isSell: undefined,
                     location: undefined,
+                    productLevel: undefined,
                     landings: undefined,
                     tradings: undefined,
-                    productLevel: undefined,
                     sourceFrom: undefined,
+                    marketName: undefined,
                 },
                 priceInfoRules: {
                     marketId: [
@@ -232,6 +282,9 @@
                     unit: [
                         {required: true, message: this.$t("table.pleaseInput") + '单位(例：元/公斤 元/升)'},
                         {min: 1, max: 200, message: '长度在 1 到 200 个字符', trigger: 'blur'},
+                    ],
+                    isSell: [
+                        {validator: validateIsSell, trigger: 'blur'}
                     ],
                     location: [
                         {min: 0, max: 1000, message: '长度在 0 到 1000 个字符', trigger: 'blur'},
@@ -262,6 +315,8 @@
                 allProduct: [],
                 productTypeForm: [],
                 productForm: [],
+                initHeaders: {"Deyatech-Token": getToken()},
+                importType: undefined,
             }
         },
         computed: {
@@ -289,7 +344,16 @@
         },
         methods: {
             resetSearch(){
-                this.listQuery.name = undefined;
+                this.addTimeRange = undefined;
+                this.listQuery.addStartTime = undefined;
+                this.listQuery.addEndTime = undefined;
+            },
+            searchReloadList() {
+                if (this.addTimeRange) {
+                    this.listQuery.addStartTime = this.addTimeRange[0];
+                    this.listQuery.addEndTime = this.addTimeRange[1];
+                }
+                this.handleCurrentChange(1);
             },
             reloadList(){
                 this.listLoading = true;
@@ -320,10 +384,15 @@
             btnUpdate(row){
                 this.resetPriceInfo();
                 if (row.id) {
+                    this.productTypeFormFilter(row.marketId);
+                    this.productFormFilter(row.typeId);
                     this.priceInfo = deepClone(row);
                 } else {
+                    this.productTypeFormFilter(this.selectedRows[0].marketId);
+                    this.productTypeFormFilter(this.selectedRows[0].typeId);
                     this.priceInfo = deepClone(this.selectedRows[0]);
                 }
+                this.priceInfo.price = this.priceInfo.price + '';
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -384,11 +453,13 @@
                     productId: undefined,
                     price: undefined,
                     unit: undefined,
+                    isSell: undefined,
                     location: undefined,
+                    productLevel: undefined,
                     landings: undefined,
                     tradings: undefined,
-                    productLevel: undefined,
                     sourceFrom: undefined,
+                    marketName: undefined,
                 }
             },
             resetPriceInfoDialogAndList(){
@@ -398,6 +469,8 @@
             },
             closePriceInfoDialog() {
                 this.dialogVisible = false;
+                this.productTypeForm = [];
+                this.productForm = [];
                 this.resetPriceInfo();
                 this.$refs['priceInfoDialogForm'].resetFields();
             },
@@ -426,6 +499,11 @@
                         this.productTypeForm.push(productType);
                     }
                 }
+                let marketType = {};
+                marketType = this.allMarketType.find((marketType)=>{
+                    return marketType.id === marketId;
+                });
+                this.priceInfo.marketName = marketType.marketName;
             },
             productFormFilter(typeId) {
                 this.priceInfo.productId = undefined;
@@ -436,6 +514,78 @@
                     }
                 }
             },
+            export2Excel() {
+                if (!this.addTimeRange) {
+                    this.$message.error('请选择时间');
+                    return;
+                }
+                this.listQuery.addStartTime = this.addTimeRange[0];
+                this.listQuery.addEndTime = this.addTimeRange[1];
+                getAllPriceInfo(this.listQuery).then(response => {
+                    if (response.data.length == 0) {
+                        this.$message.warning('数据为空');
+                        return;
+                    }
+                    require.ensure([], () => {
+                        const Export2excel = require('@/excel/Export2excel');
+                        //对应表格输出的title
+                        const tHeader = ['序号', '部门名称', '分类名称', '产品名称', '价格', '单位', "产地",
+                            '产品级别', '上市量', '交易量', '来源', '备注', '导入时间', '添加用户'];
+                        // 对应表格输出的数据
+                        const filterVal = ['rowNumber', 'scName', 'typeName', 'productName', 'price', 'unit', 'location',
+                            'productLevel', 'landings', 'tradings', 'sourceFrom', 'remark', 'addTime', 'addUser'];
+                        const excelData = this.formatJson(filterVal, response.data);
+                        //对应下载文件的名字
+                        Export2excel.export2Excel(tHeader, excelData, '价格信息excel' + new Date().toLocaleDateString().replace(/\//g,'-'));
+                    })
+                })
+            },
+            formatJson(filterVal, jsonData) {
+                return jsonData.map(v => filterVal.map(j => v[j]))
+            },
+            beforeUpload(file) {
+                const suffix = file.name.substring(file.name.lastIndexOf('.')+1);
+                const extension = suffix === 'xls';
+                const extension2 = suffix === 'xlsx';
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if(!extension && !extension2) {
+                    this.$message({
+                        message: '上传文件只能是 xls、xlsx格式!',
+                        type: 'warning'
+                    });
+                }
+                if(!isLt2M) {
+                    this.$message({
+                        message: '上传文件大小不能超过 2MB!',
+                        type: 'warning'
+                    });
+                }
+                const flag = (extension || extension2) && isLt2M;
+                if (flag) {
+                    this.listLoading = true;
+                }
+                return flag;
+            },
+            importSuccess(response) {
+                this.listLoading = false;
+                this.importType = undefined;
+                if(response.status == 200) {
+                    const map = response.data;
+                    this.$message.success("上传成功！上传成功 " + map.successCount + " 条，上传失败 " + map.failCount + "条！请稍后查询！");
+                    this.reloadList();
+                } else {
+                    this.$message.error(response.message);
+                }
+            },
+            importError() {
+                this.listLoading = false;
+                this.importType = undefined;
+                this.$message.error("上传失败！");
+            },
+            importExcel1() {this.importType = '1';},
+            importExcel2() {this.importType = '2';},
+            importExcel3() {this.importType = '3';},
+            importExcel4() {this.importType = '4';},
         }
     }
 </script>
