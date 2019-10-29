@@ -102,3 +102,19 @@ export function updateFlagTopById(query) {
         params: query
     });
 }
+export function keyword(submit) {
+    const data = submit;
+    return request({
+        url: '/manage/station/template/keyword',
+        method: 'post',
+        data
+    });
+}
+export function summary(submit) {
+    const data = submit;
+    return request({
+        url: '/manage/station/template/summary',
+        method: 'post',
+        data
+    });
+}

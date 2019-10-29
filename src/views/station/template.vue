@@ -33,7 +33,7 @@
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">彻底删除</el-button>
                     <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" type="danger" :size="btnSize" @click="btnCancel" :disabled="selectedRows.length < 1">撤销</el-button>
-                    <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" type="warning" :size="btnSize" @click="btnRecycle" :disabled="selectedRows.length < 1">回收站</el-button>
+                    <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" type="warning" :size="btnSize" @click="btnRecycle" :disabled="selectedRows.length < 1">删除</el-button>
 
                     <el-dropdown style="margin-left: 10px" placement="bottom" @command="handleCommand">
                         <el-button type="warning" :size="btnSize">
@@ -98,7 +98,7 @@
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" title="彻底删除" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnDelete(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" title="撤销" type="danger" icon="iconskip" :size="btnSize" circle @click.stop.safe="btnCancel(scope.row)"></el-button>
-                                <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" title="回收站" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnRecycle(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" title="删除" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnRecycle(scope.row)"></el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -165,40 +165,11 @@
                             </el-col>
                         </el-row>
                         <el-row :gutter="20" :span="24">
-                            <el-col :span="12">
+                            <el-col :span="24">
                                 <el-form-item label="摘要" prop="resourceSummary">
-                                    <el-input type="textarea" v-model.trim="template.resourceSummary" :rows="3" style="height: 176px;"></el-input>
+                                    <el-input type="textarea" v-model.trim="template.resourceSummary" :rows="3"></el-input>
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="缩略图" prop="thumbnail">
-                                    <el-upload class="avatar-uploader"
-                                               :class="{hide: template.thumbnailUrl}"
-                                               :action="uploadUrlCms"
-                                               :data="{'path': siteUploadPath, 'siteId': template.siteId}"
-                                               :accept="$store.state.common.imageAccepts"
-                                               :file-list="thumbnailList"
-                                               list-type="picture-card"
-                                               :on-success="handleAvatarSuccess"
-                                               :on-error="handleAvatarError"
-                                               :before-upload="beforeAvatarUpload"
-                                               :on-preview="handlePictureCardPreview"
-                                               :on-remove="handleAvatarRemove">
-                                        <i class="el-icon-plus avatar-uploader-icon"></i>
-                                    </el-upload>
-                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
-                                        <img width="100%" :src="dialogImageUrl" alt="">
-                                    </el-dialog>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" :span="24">
-
-                            <!--<el-col :span="12">
-                                <el-form-item label="编辑姓名" prop="editor">
-                                    <el-input v-model.trim="template.editor"></el-input>
-                                </el-form-item>
-                            </el-col>-->
                         </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
@@ -226,15 +197,29 @@
                                 </el-form-item>
                             </el-col>
                         </el-row>
-                        <!--<el-row :gutter="20" :span="24">
+                        <el-row :gutter="20" :span="24">
                             <el-col :span="12">
-                                <el-form-item label="搜索可见" prop="flagSearch">
-                                    <el-switch v-model.trim="template.flagSearch">
-                                    </el-switch>
+                                <el-form-item label="缩略图" prop="thumbnail">
+                                    <el-upload class="avatar-uploader"
+                                               :class="{hide: template.thumbnailUrl}"
+                                               :action="uploadUrlCms"
+                                               :data="{'path': siteUploadPath, 'siteId': template.siteId}"
+                                               :accept="$store.state.common.imageAccepts"
+                                               :file-list="thumbnailList"
+                                               list-type="picture-card"
+                                               :on-success="handleAvatarSuccess"
+                                               :on-error="handleAvatarError"
+                                               :before-upload="beforeAvatarUpload"
+                                               :on-preview="handlePictureCardPreview"
+                                               :on-remove="handleAvatarRemove">
+                                        <i class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>
+                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
+                                        <img width="100%" :src="dialogImageUrl" alt="">
+                                    </el-dialog>
                                 </el-form-item>
                             </el-col>
-                        </el-row>-->
-
+                        </el-row>
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="外链" prop="flagExternal">
@@ -267,7 +252,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item prop="resourceContent" label-width="0">
-                                    <editor ref="resourceContent" :id="'editor'" :default-msg="template.resourceContent" :config="editorConfig"></editor>
+                                    <editor ref="resourceContent" :id="'editor'" :default-msg="template.resourceContent" :config="editorConfig" @editorContentTxtChange="contentChange"></editor>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -367,13 +352,15 @@
         getTemplateList,
         createOrUpdateTemplate,
         delTemplates,
-        recycleByIds, // 回收站
+        recycleByIds, // 删除
         cancelByIds,  // 撤销
         updateSortNoById,
         updateFlagTopById,
         checkTitleExist,
         genStaticPage,
-        reindex
+        reindex,
+        keyword,
+        summary
     } from '@/api/station/template';
     import {
         getSiteUploadPath,
@@ -439,10 +426,11 @@
             return {
                 ContentStatusEnum:{
                     PUBLISH: undefined, // 已发布
-                    VERIFY: undefined,  // 审核中
+                    VERIFY: undefined,  // 待审
                     CANCEL: undefined,  // 撤销
+                    REJECT: undefined,  // 退稿
                     DRAFT: undefined,   // 草稿
-                    RECYCLE: undefined  // 回收站
+                    RECYCLE: undefined  // 删除
                 },
                 treeHeight: 0,
                 templateList: undefined,
@@ -654,13 +642,15 @@
                 if (cs.var === 'PUBLISH') { // 已发布
                     this.ContentStatusEnum.PUBLISH = cs.code.toString();
                     this.listQuery.status = cs.code.toString();
-                } else if (cs.var === 'VERIFY') { // 审核中
+                } else if (cs.var === 'VERIFY') { // 待审
                     this.ContentStatusEnum.VERIFY = cs.code.toString();
                 } else if (cs.var === 'CANCEL') { // 撤销
                     this.ContentStatusEnum.CANCEL = cs.code.toString();
+                } else if (cs.var === 'REJECT') { // 退稿
+                    this.ContentStatusEnum.REJECT = cs.code.toString();
                 } else if (cs.var === 'DRAFT') { // 草稿
                     this.ContentStatusEnum.DRAFT = cs.code.toString();
-                } else if (cs.var === 'RECYCLE') { // 回收站
+                } else if (cs.var === 'RECYCLE') { // 删除
                     this.ContentStatusEnum.RECYCLE = cs.code.toString();
                 }
             }
@@ -868,9 +858,9 @@
                     });
                 });
             },
-            // 回收站
+            // 删除
             btnRecycle(row){
-                this.$confirm('此操作将该信息放入回收站, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
+                this.$confirm('此操作将删除该信息, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
                     let ids = [];
                     if (row.id) {
                         ids.push(row.id);
@@ -1490,7 +1480,6 @@
             handleClose(tag) {
                 this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
             },
-
             showInput() {
                 this.inputVisible = true;
                 this.$nextTick(_ => {
@@ -1550,6 +1539,22 @@
                     });
                 }
             },
+            contentChange(v) {
+                if (this.template.title && v) {
+                    keyword({title: this.template.title, content: v}).then(response=>{
+                        if (response && response.status == 200) {
+                            this.dynamicTags = response.data;
+                        }
+                    });
+                    summary({title: this.template.title, content: v, maxSummaryLen: 100}).then(response=>{
+                        if (response && response.status == 200) {
+                            this.template.resourceSummary = response.data;
+                        }
+                    });
+                }
+
+
+            }
         }
     }
 </script>

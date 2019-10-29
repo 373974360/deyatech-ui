@@ -35,14 +35,16 @@
             })
             this.ue.addListener('contentChange', this.contentChange);
         },
-        watch: {
-            defaultMsg: function() {
-                this.ue.setContent(this.defaultMsg)
-            }
-        },
+        // watch: {
+        //     defaultMsg: function() {
+        //         this.ue.setContent(this.defaultMsg)
+        //     }
+        // },
         methods: {
             contentChange() {
+                console.log('富文本内容变更');
                 this.$emit('editorContentChange', this.ue.getContent());
+                this.$emit('editorContentTxtChange', this.ue.getContentTxt());
             },
             getUeContent() {
                 return this.ue.getContent()

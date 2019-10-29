@@ -1023,11 +1023,14 @@
                 }
                 this.liveImageStomp = stompClient;
             },
-            // 保存消息
-            sendOperateLiveMessage(data) {
+            // 保存消息 append modify delete
+            sendOperateLiveMessage(data, flag) {
                 operateLiveMessage(data).then((response) => {
                     if (response.status == 200 && response.data) {
                         this.resetLiveMessage();
+                        if (flag === 'append') {
+                            this.$refs['appendEditor'].setUeContent('');
+                        }
                     } else {
                         this.$message.error("发送失败");
                     }
@@ -1047,7 +1050,7 @@
                         data.type = this.liveMessage.type;
                         data.message = this.liveMessage.message;
                         data.modelId = this.model.id;
-                        this.sendOperateLiveMessage(data);
+                        this.sendOperateLiveMessage(data, 'append');
                     } else {
                         return false;
                     }
@@ -1088,7 +1091,7 @@
                         data.type = this.liveModifyMessage.type;
                         data.message = this.liveModifyMessage.message;
                         data.modelId = this.model.id;
-                        this.sendOperateLiveMessage(data);
+                        this.sendOperateLiveMessage(data, 'modify');
                         this.modifyLiveMessageCloseModelDialog();
                     } else {
                         return false;
@@ -1108,7 +1111,7 @@
                 data.type = undefined;
                 data.message = undefined;
                 data.modelId = this.model.id;
-                this.sendOperateLiveMessage(data);
+                this.sendOperateLiveMessage(data, 'delete');
             },
             // 图片保存
             sendOperateLiveImage(data) {
