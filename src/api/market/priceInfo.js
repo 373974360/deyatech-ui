@@ -48,3 +48,10 @@ export function getAllPriceInfo(query) {
     });
 }
 
+export function validatePrice(query) {
+    return request({
+        url: '/manage/market/priceInfo/validatePrice',
+        method: 'get',
+        params: query
+    });
+}

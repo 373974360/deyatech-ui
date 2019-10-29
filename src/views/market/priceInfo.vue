@@ -213,7 +213,8 @@
         getPriceInfoList,
         createOrUpdatePriceInfo,
         delPriceInfos,
-        getAllPriceInfo
+        getAllPriceInfo,
+        validatePrice
     } from '@/api/market/priceInfo';
     import {getAllMarketType}from '@/api/market/marketType';
     import {getAllProductType} from '@/api/market/productType';
@@ -412,14 +413,31 @@
                     })
                 }
             },
+            validatePrice() {
+                return new Promise((resolve, reject) => {
+                    validatePrice(this.priceInfo).then(response => {
+                        if (!response.data) {
+                            resolve(response);
+                        } else {
+                            this.$message.error("保存或者更新失败，价格涨幅波动过大");
+                        }
+                    }).catch(error => {
+                        reject(error);
+                    });
+                });
+            },
             doCreate(){
                 this.$refs['priceInfoDialogForm'].validate(valid => {
                     if(valid) {
-                        this.submitLoading = true;
-                        createOrUpdatePriceInfo(this.priceInfo).then(() => {
-                            this.resetPriceInfoDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
-                        })
+                        // 校验价格
+                        var _this = this;
+                        this.validatePrice().then(function () {
+                            _this.submitLoading = true;
+                            createOrUpdatePriceInfo(_this.priceInfo).then(() => {
+                                _this.resetPriceInfoDialogAndList();
+                                _this.$message.success(_this.$t("table.createSuccess"));
+                            })
+                        });
                     } else {
                         return false;
                     }
