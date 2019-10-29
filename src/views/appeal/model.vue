@@ -149,8 +149,6 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="主管部门" prop="competentDept">
                                 <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="model.competentDept"

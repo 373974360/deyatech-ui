@@ -83,9 +83,9 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeApplyOpenModelDialog" width="60%">
+                       :close-on-click-modal="closeOnClickModal" @close="closeApplyOpenModelDialog" width="80%">
                 <el-form ref="applyOpenModelDialogForm" class="deyatech-form" :model="applyOpenModel" label-position="right"
-                         label-width="80px" :rules="applyOpenModelRules">
+                         label-width="100px" :rules="applyOpenModelRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="业务名称" prop="modelName">
@@ -94,7 +94,7 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="8">
+                        <el-col :span="6">
                             <el-form-item label="参与方式" prop="mustMember">
                                 <el-radio-group v-model="applyOpenModel.mustMember">
                                     <el-radio :label="1">不限</el-radio>
@@ -102,7 +102,15 @@
                                 </el-radio-group>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="8">
+                        <el-col :span="6">
+                            <el-form-item label="提醒方式" prop="remindType">
+                                <el-radio-group v-model="applyOpenModel.remindType">
+                                    <el-radio :label="1">Email</el-radio>
+                                    <el-radio :label="2">短信</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
                             <el-form-item label="自动发布" prop="isAutoPublish">
                                 <el-switch
                                     v-model.trim="applyOpenModel.isAutoPublish"
@@ -110,12 +118,11 @@
                                 </el-switch>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="提醒方式" prop="remindType">
-                                <el-radio-group v-model="applyOpenModel.remindType">
-                                    <el-radio :label="1">Email</el-radio>
-                                    <el-radio :label="2">手机短信</el-radio>
-                                </el-radio-group>
+                        <el-col :span="6">
+                            <el-form-item label="部门间转办" prop="deptTransfer">
+                                <el-switch
+                                    v-model.trim="applyOpenModel.deptTransfer" :active-value=1 :inactive-value=2>
+                                </el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -166,6 +173,26 @@
                         <el-col :span="12">
                             <el-form-item label="办理时限" prop="timeLimit">
                                 <el-input v-model.trim="applyOpenModel.timeLimit"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="主管部门" prop="competentDept">
+                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenModel.competentDept"
+                                             expand-trigger="hover" ></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="参与部门" prop="partDept">
+                                <el-cascader
+                                    style="width: 100%"
+                                    placeholder="请选择绑定栏目"
+                                    :options="departmentCascader"
+                                    v-model.trim="applyOpenModel.partDept"
+                                    :props="props"
+                                    collapse-tags
+                                    clearable></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -261,6 +288,23 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="启用工作流" prop="workflowType">
+                                <el-switch
+                                    v-model.trim="applyOpenModel.workflowType"
+                                    :active-value=1 :inactive-value=2 @change="isWorkflowEnable">
+                                </el-switch>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="选择工作流" prop="workflowId" v-if="applyOpenModel.workflowType == 1">
+                                <el-select v-model.trim="applyOpenModel.workflowId" placeholder="请选择工作流" style="width:100%">
+                                    <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
                                 <el-input type="textarea" v-model.trim="applyOpenModel.remark" :rows="3"/>
@@ -287,6 +331,8 @@
         createOrUpdateApplyOpenModel,
         delApplyOpenModels
     } from '@/api/assembly/applyOpenModel';
+    import {getDepartmentCascader} from '@/api/admin/department';
+    import {getProcessDefinitionList} from '@/api/workflow/definition';
 
     export default {
         name: 'applyOpenModel',
@@ -320,6 +366,11 @@
                     templatePrint: undefined,
                     templateQuery: undefined,
                     siteId: this.$store.state.common.siteId,
+                    deptTransfer: 2,
+                    competentDept: undefined,
+                    partDept: undefined,
+                    workflowType: undefined,
+                    workflowId: undefined,
                     remark: undefined
                 },
                 applyOpenModelRules: {
@@ -332,6 +383,12 @@
                     timeLimit: [
                         {required: true, message: this.$t("table.pleaseInput") + '办理时限'}
                     ],
+                    competentDept: [
+                        {required: true, message: this.$t("table.pleaseInput") + '主管部门引用部门ID'}
+                    ],
+                    partDept: [
+                        {required: true, message: this.$t("table.pleaseInput") + '参与部门部门ID数组'}
+                    ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
@@ -367,7 +424,10 @@
                     value: 'fileName',
                     label: 'fileName',
                     children: 'children'
-                }
+                },
+                props: { multiple: true},
+                departmentCascader: [],
+                workflowList: []
             }
         },
         computed: {
@@ -390,10 +450,45 @@
         created(){
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
+                this.getDepartmentCascader();
                 this.reloadList();
             }
         },
         methods: {
+            isWorkflowEnable (value) {
+                if (value == 1) {
+                    if (this.workflowList.length == 0) {
+                        this.getWorkflowList();
+                    }
+                } else {
+                    if (this.model.workflowId) {
+                        this.model.workflowId = undefined;
+                    }
+                    this.workflowList = [];
+                }
+            },
+            // 获取工作流
+            getWorkflowList() {
+                this.workflowList = []
+                const query = {
+                    page: 1,
+                    size: 99999999
+                }
+                getProcessDefinitionList(query).then(response => {
+                    if (response.status == 200) {
+                        this.workflowList = response.data.records;
+                    } else {
+                        this.$message.error('工作流数据获取失败')
+                    }
+                })
+            },
+            getDepartmentCascader() {
+                this.submitLoading = true;
+                getDepartmentCascader().then(response => {
+                    this.submitLoading = false;
+                    this.departmentCascader = response.data;
+                })
+            },
             resetSearch(){
                 this.listQuery.name = undefined;
             },
@@ -432,6 +527,12 @@
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
+                this.applyOpenModel.competentDept = this.applyOpenModel.competentDept.split(",");
+                let ids = [];
+                for(const id of this.applyOpenModel.partDept.split("&")){
+                    ids.push(id.split(","));
+                }
+                this.applyOpenModel.partDept = ids;
             },
             btnDelete(row){
                 let ids = [];
@@ -453,6 +554,12 @@
                 this.$refs['applyOpenModelDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        this.applyOpenModel.competentDept = this.applyOpenModel.competentDept.join(",");
+                        let ids = [];
+                        for(const id of this.applyOpenModel.partDept){
+                            ids.push(id.join(","));
+                        }
+                        this.applyOpenModel.partDept = ids.join("&");
                         createOrUpdateApplyOpenModel(this.applyOpenModel).then(() => {
                             this.resetApplyOpenModelDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
@@ -466,6 +573,12 @@
                 this.$refs['applyOpenModelDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        this.applyOpenModel.competentDept = this.applyOpenModel.competentDept.join(",");
+                        let ids = [];
+                        for(const id of this.applyOpenModel.partDept){
+                            ids.push(id.join(","));
+                        }
+                        this.applyOpenModel.partDept = ids.join("&");
                         createOrUpdateApplyOpenModel(this.applyOpenModel).then(() => {
                             this.resetApplyOpenModelDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -502,6 +615,11 @@
                     templatePrint: undefined,
                     templateQuery: undefined,
                     siteId: this.$store.state.common.siteId,
+                    deptTransfer: 2,
+                    competentDept: undefined,
+                    partDept: undefined,
+                    workflowType: undefined,
+                    workflowId: undefined,
                     remark: undefined
                 }
             },
