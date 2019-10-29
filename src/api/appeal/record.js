@@ -39,5 +39,12 @@ export function getRecordList(query) {
         params: query
     });
 }
+export function getCompetentDept(query) {
+    return request({
+        url: '/manage/appeal/record/getCompetentDept',
+        method: 'get',
+        params: query
+    });
+}
 
 

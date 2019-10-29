@@ -906,10 +906,8 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = false;
-            if (this.$store.state.common.siteId) {
-                this.getStationGroupClassificationCascader(null);
-                this.getDepartmentCascader();
-            }
+            this.getStationGroupClassificationCascader(null);
+            this.getDepartmentCascader();
         },
         methods: {
             getDepartmentCascader() {
