@@ -78,12 +78,12 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="内容模型" prop="name" label-width="110px">
-                                <el-input v-model.trim="model.name"></el-input>
+                                <el-input v-model.trim="model.name" maxlength="200"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="englishName" label-width="110px">
-                                <el-input v-model.trim="model.englishName"></el-input>
+                                <el-input v-model.trim="model.englishName" maxlength="200"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -104,14 +104,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="描述" prop="description" label-width="110px">
-                                <el-input type="textarea" v-model.trim="model.description" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="model.description" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark" label-width="110px">
-                                <el-input type="textarea" v-model.trim="model.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="model.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -354,13 +354,8 @@
                     name: undefined
                 },
                 modelRules: {
-                    description: [
-                        {required: true, message: this.$t("table.pleaseInput") + '描述'},
-                        {min: 1, max: 1000, message: '长度在 1 到 1000 个字符', trigger: 'blur'},
-                    ],
                     englishName: [
                         {required: true, message: this.$t("table.pleaseInput") + '英文名称'},
-                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
                         {validator: validateEnglishName, trigger: 'blur'}
                     ],
                     metaDataCollectionId: [
@@ -368,7 +363,6 @@
                     ],
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '内容对象名称'},
-                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
                         {validator: validateName, trigger: 'blur'}
                     ],
                     remark: [

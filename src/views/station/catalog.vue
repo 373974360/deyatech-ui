@@ -23,7 +23,17 @@
                 </template>
             </el-table-tree-column>
             <el-table-column align="center" label="栏目别名" prop="aliasName"/>
-            <el-table-column align="center" label="URL" prop="linkUrl"/>
+            <el-table-column align="center" label="英文名称" prop="ename"/>
+            <el-table-column align="center" label="隐藏" prop="flagTop" width="50">
+                <template slot-scope="scope">
+                    <el-checkbox v-model="scope.row.allowHidden" :true-label="1" :false-label="0" @change="allowHiddenChange(scope.row)"/>
+                </template>
+            </el-table-column>
+            <el-table-column align="center" label="归档" prop="flagTop" width="50">
+                <template slot-scope="scope">
+                    <el-checkbox v-model="scope.row.placeOnFile" :true-label="1" :false-label="0" @change="placeOnFileChange(scope.row)"/>
+                </template>
+            </el-table-column>
             <el-table-column align="center" label="排序" prop="sortNo" width="80"/>
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                 <template slot-scope="scope">
@@ -40,7 +50,7 @@
         <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                    :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
             <el-form ref="catalogDialogForm" class="deyatech-form" :model="catalog" label-position="right"
-                     label-width="140px" :rules="catalogRules">
+                     label-width="100px" :rules="catalogRules">
                 <el-steps :active="stepsActive" finish-status="success" simple style="margin-bottom: 30px">
                     <el-step title="基本属性设置" ></el-step>
                     <el-step title="核心属性设置" v-if="stepsActive != 0"></el-step>
@@ -60,7 +70,7 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
+                        <el-col :span="24">
                             <el-form-item label="内容模型" prop="contentModelId">
                                 <el-select v-model.trim="selectContentModelIds" placeholder="请选择内容模型"
                                            multiple style="width: 100%">
@@ -73,7 +83,10 @@
                                 </el-select>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
                             <el-form-item label="栏目名称" prop="name">
                                 <el-input v-model.trim="catalog.name"/>
                             </el-form-item>
@@ -133,7 +146,7 @@
                 <div v-if="catalog.flagExternal">
                     <el-row :gutter="20" :span="24" v-if="">
                         <el-col :span="24">
-                            <el-form-item label="外部链接地址" prop="linkUrl">
+                            <el-form-item label="外链地址" prop="linkUrl">
                                 <el-input v-model.trim="catalog.linkUrl"></el-input>
                             </el-form-item>
                         </el-col>
@@ -141,7 +154,7 @@
                 </div>
 
                 <!--核心属性设置-->
-                <div v-show="stepsActive == 1">
+                <div v-if="stepsActive == 1">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="频道页模板" prop="indexTemplate">
@@ -173,25 +186,37 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="在导航中显示" prop="navigationShowAble">
+                            <el-form-item label="导航中显示" prop="navigationShowAble">
                                 <el-switch v-model.trim="catalog.navigationShowAble" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="在树中显示" prop="treeShowAble">
+                            <el-form-item label="树中显示" prop="treeShowAble">
                                 <el-switch v-model.trim="catalog.treeShowAble" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="允许评论" prop="allowComment">
+                            <el-form-item label="评论" prop="allowComment">
                                 <el-switch v-model.trim="catalog.allowComment" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="归档" prop="placeOnFile">
                                 <el-switch v-model.trim="catalog.placeOnFile" :active-value=1 :inactive-value=0></el-switch>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="隐藏" prop="allowHidden">
+                                <el-switch v-model.trim="catalog.allowHidden" :active-value=1 :inactive-value=0></el-switch>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="共享" prop="allowShare">
+                                <el-switch v-model.trim="catalog.allowShare" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -221,7 +246,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="设置聚合规则" prop="flagAggregation">
+                            <el-form-item label="聚合规则" prop="flagAggregation">
                                 <el-switch v-model.trim="catalog.flagAggregation" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
@@ -231,7 +256,7 @@
 
             <!--聚合属性设置-->
             <el-form ref="catalogAggregationDialogForm" class="deyatech-form" :model="catalogAggregation" label-position="right"
-                     v-if="stepsActive == 2" label-width="140px" :rules="catalogAggregationRules">
+                     v-if="stepsActive == 2" label-width="100px" :rules="catalogAggregationRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="栏目" prop="cmsCatalogId">
@@ -363,7 +388,9 @@
         existsName,
         existsAliasName,
         existsEname,
-        hasTemplate
+        hasTemplate,
+        updateAllowHiddenById,
+        updatePlaceOnFileById
     } from '@/api/station/catalog';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
@@ -562,14 +589,14 @@
                     status: undefined,
                     allowComment: 0,
                     allowShare: 0,
+                    allowHidden: 0,
                     applicationId: undefined,
                     attributeId: undefined,
                     autoRelease: 0,
                     contectObjectId: undefined,
-                    displayNumber: 1,
                     generateHome: 0,
                     navigationShowAble: 0,
-                    participant: undefined,
+                    participant: 2,
                     treeShowAble: 0,
                     workflowEnable: 0,
                     pathName: undefined,
@@ -616,15 +643,13 @@
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
                         {validator: validateUrl, trigger: 'blur'}
                     ],
-                    showable: [
+                  /*  showable: [
                         {required: true, message: this.$t("table.pleaseInput") + '是否显示'}
-                    ],
+                    ],*/
                     workflowKey: [
                         {required: true, message: this.$t("table.pleaseSelect") + '工作流'}
                     ],
                     indexTemplate: [
-                        // {required: true, message: this.$t("table.pleaseInput") + '首页模板'}
-                        // {max: 50, message: '模板路径过长，最多 50 个字符', trigger: 'blur'}
                         {validator: validateIndexTemplate, trigger: 'change'}
                     ],
                     listTemplate: [
@@ -643,7 +668,10 @@
                         {required: true, message: this.$t("table.pleaseSelect") + '是否允许评论'}
                     ],
                     allowShare: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '是否允许分享'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否共享'}
+                    ],
+                    allowHidden: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否隐藏'}
                     ],
                     applicationId: [
                         {required: true, message: this.$t("table.pleaseInput") + '应用id'}
@@ -651,17 +679,8 @@
                     attributeId: [
                         {required: true, message: this.$t("table.pleaseInput") + '属性id'}
                     ],
-                    autoRelease: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '是否自动发布'}
-                    ],
                     contectObjectId: [
                         {required: true, message: this.$t("table.pleaseInput") + '内容对象id'}
-                    ],
-                    displayNumber: [
-                        {required: true, message: this.$t("table.pleaseInput") + '显示条数'}
-                    ],
-                    generateHome: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '是否生成栏目首页'}
                     ],
                     navigationShowAble: [
                         {required: true, message: this.$t("table.pleaseSelect") + '是否在导航中显示'}
@@ -692,9 +711,6 @@
                     ],
                     flagAggregation: [
                         {required: true, message: this.$t("table.pleaseSelect") + '是否设置聚合规则'}
-                    ],
-                    columnName: [
-                        {max: 50, message: '长度最多 50 个字符', trigger: 'blur'}
                     ],
                     columnDescription: [
                         {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
@@ -1101,10 +1117,9 @@
                     attributeId: undefined,
                     autoRelease: 0,
                     contectObjectId: undefined,
-                    displayNumber: 1,
                     generateHome: 0,
                     navigationShowAble: 0,
-                    participant: undefined,
+                    participant: 2,
                     treeShowAble: 0,
                     workflowEnable: 0,
                     pathName: undefined,
@@ -1325,7 +1340,29 @@
                     this.catalog.parentId = '0';
                     this.catalog.treePosition = undefined;
                 }
-            }
+            },
+            allowHiddenChange(row) {
+                if (row) {
+                    updateAllowHiddenById({allowHidden: row.allowHidden, id: row.id}).then(response=>{
+                        if (response.status == 200 && response.data) {
+                            this.$message.success("隐藏修改成功")
+                        } else {
+                            this.$message.error("隐藏修改失败")
+                        }
+                    });
+                }
+            },
+            placeOnFileChange(row) {
+                if (row) {
+                    updatePlaceOnFileById({placeOnFile: row.placeOnFile, id: row.id}).then(response=>{
+                        if (response.status == 200 && response.data) {
+                            this.$message.success("归档修改成功")
+                        } else {
+                            this.$message.error("归档修改失败")
+                        }
+                    });
+                }
+            },
         }
     }
 </script>

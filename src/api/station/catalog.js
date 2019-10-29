@@ -93,3 +93,17 @@ export function hasTemplate(query) {
         params: query
     })
 }
+export function updateAllowHiddenById(query) {
+    return request({
+        url: '/manage/station/catalog/updateAllowHiddenById',
+        method: 'get',
+        params: query
+    });
+}
+export function updatePlaceOnFileById(query) {
+    return request({
+        url: '/manage/station/catalog/updatePlaceOnFileById',
+        method: 'get',
+        params: query
+    });
+}
