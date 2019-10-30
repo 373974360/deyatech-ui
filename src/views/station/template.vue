@@ -80,7 +80,24 @@
                     <el-table :data="templateList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange" style="border-top:none;">
                         <el-table-column type="selection" width="50" align="center"/>
-                        <el-table-column align="center" label="标题" prop="title"/>
+
+                        <el-table-column align="center"
+                                         v-for="item in headData"
+                                         :label="item.label"
+                                         :prop="item.prop">
+                            <template slot-scope="scope">
+                                <span v-if="item.prop == 'title'" class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.title}}</span>
+                                <el-input-number v-else-if="item.prop == 'sortNo'" v-model.trim="scope.row.sortNo" controls-position="right" :precision="0" :step="1" :min="1" :max="9999" size="small" style="width:100px;" @change="sortNoChange(scope.row)"></el-input-number>
+                                <el-checkbox v-else-if="item.prop == 'flagTop'" v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
+                                <span v-else>{{scope.row[item.prop]}}</span>
+                            </template>
+                        </el-table-column>
+
+                        <!--<el-table-column label="标题">
+                            <template slot-scope="scope">
+                                <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.title}}</span>
+                            </template>
+                        </el-table-column>
                         <el-table-column align="center" label="发布时间" prop="resourcePublicationDate" width="150"/>
                         <el-table-column align="center" label="权重" prop="sortNo" width="130">
                             <template slot-scope="scope">
@@ -92,7 +109,8 @@
                                 <el-checkbox v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="录入人" prop="inputUserName" width="80"/>
+                        <el-table-column align="center" label="录入人" prop="inputUserName" width="80"/>-->
+
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
@@ -376,6 +394,7 @@
     import {validateURL} from '@/util/validate';
     import {findMetadataCollectionAllData} from '@/api/metadata/collection';
     import {getDictionaryList} from '@/api/admin/dictionary';
+    import {getTableHeadContentData} from '@/api/assembly/customizationFunction'
 
     export default {
         name: 'template',
@@ -424,6 +443,7 @@
                 }
             };
             return {
+                headData: [],
                 ContentStatusEnum:{
                     PUBLISH: undefined, // 已发布
                     VERIFY: undefined,  // 待审
@@ -637,6 +657,7 @@
 
         },
         created(){
+            this.loadHeadData();
             const array = getStore({name: 'enums'})['ContentStatusEnum'];
             for (let cs of array) {
                 if (cs.var === 'PUBLISH') { // 已发布
@@ -668,6 +689,12 @@
             }
         },
         methods: {
+            loadHeadData() {
+                getTableHeadContentData().then(response=>{
+                    this.headData = response.data;
+                    console.dir(this.headData);
+                });
+            },
             getCatalogTree(){
                 this.listLoading = true;
                 getUserCatalogTree({siteId: this.$store.state.common.siteId}).then(response => {

@@ -16,7 +16,39 @@
         <el-table :data="catalogList" v-loading.body="listLoading" stripe border highlight-current-row
                   @selection-change="handleSelectionChange" v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
+
+
+            <el-table-column align="center"
+                             v-for="item in frontTreeHeadData"
+                             :label="item.label"
+                             :prop="item.prop">
+                <template slot-scope="scope">
+                    <el-checkbox v-if="item.prop == 'allowHidden'" v-model="scope.row.allowHidden" :true-label="1" :false-label="0" @change="allowHiddenChange(scope.row)"/>
+                    <el-checkbox v-else-if="item.prop == 'placeOnFile'" v-model="scope.row.placeOnFile" :true-label="1" :false-label="0" @change="placeOnFileChange(scope.row)"/>
+                    <span v-else>{{scope.row[item.prop]}}</span>
+                </template>
+            </el-table-column>
+
             <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
+                                  parentKey="parentId" prop="name" label="栏目名称" align="left">
+                <template slot-scope="scope">
+                    <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
+                </template>
+            </el-table-tree-column>
+
+            <el-table-column align="center"
+                             v-for="item in afterTreeHeadData"
+                             :label="item.label"
+                             :prop="item.prop">
+                <template slot-scope="scope">
+                    <el-checkbox v-if="item.prop == 'allowHidden'" v-model="scope.row.allowHidden" :true-label="1" :false-label="0" @change="allowHiddenChange(scope.row)"/>
+                    <el-checkbox v-else-if="item.prop == 'placeOnFile'" v-model="scope.row.placeOnFile" :true-label="1" :false-label="0" @change="placeOnFileChange(scope.row)"/>
+                    <span v-else>{{scope.row[item.prop]}}</span>
+                </template>
+            </el-table-column>
+
+
+            <!--<el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
                                   parentKey="parentId" prop="name" label="栏目名称" align="left">
                 <template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
@@ -24,17 +56,19 @@
             </el-table-tree-column>
             <el-table-column align="center" label="栏目别名" prop="aliasName"/>
             <el-table-column align="center" label="英文名称" prop="ename"/>
-            <el-table-column align="center" label="隐藏" prop="flagTop" width="50">
+            <el-table-column align="center" label="隐藏" prop="allowHidden" width="50">
                 <template slot-scope="scope">
                     <el-checkbox v-model="scope.row.allowHidden" :true-label="1" :false-label="0" @change="allowHiddenChange(scope.row)"/>
                 </template>
             </el-table-column>
-            <el-table-column align="center" label="归档" prop="flagTop" width="50">
+            <el-table-column align="center" label="归档" prop="placeOnFile" width="50">
                 <template slot-scope="scope">
                     <el-checkbox v-model="scope.row.placeOnFile" :true-label="1" :false-label="0" @change="placeOnFileChange(scope.row)"/>
                 </template>
             </el-table-column>
-            <el-table-column align="center" label="排序" prop="sortNo" width="80"/>
+            <el-table-column align="center" label="排序" prop="sortNo" width="80"/>-->
+
+
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                 <template slot-scope="scope">
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
@@ -404,6 +438,7 @@
     import {validateURL,isEnglish} from '@/util/validate';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {getUserList} from '@/api/admin/user';
+    import {getTableHeadCatalogData} from '@/api/assembly/customizationFunction'
 
     export default {
         name: 'catalog',
@@ -563,6 +598,9 @@
                 }
             };
             return {
+                headData: [],
+                frontTreeHeadData: [],
+                afterTreeHeadData: [],
                 catalogTreePosition: undefined,
                 listQuery: {
                     page: this.$store.state.common.page,
@@ -788,6 +826,7 @@
             }
         },
         created() {
+            this.loadHeadData();
             this.$store.state.common.selectSiteDisplay = true;
             if (this.$store.state.common.siteId != undefined) {
                 this.reloadList();
@@ -815,6 +854,25 @@
             }
         },
         methods: {
+            loadHeadData() {
+                getTableHeadCatalogData().then(response=>{
+                    this.headData = response.data;
+                    let flag = 0;
+                    if (this.headData) {
+                        for (let item of this.headData) {
+                            if (item.prop === 'name') {
+                                flag = 1;
+                                continue;
+                            }
+                            if (flag == 0) {
+                                this.frontTreeHeadData.push(item);
+                            } else if (flag == 1) {
+                                this.afterTreeHeadData.push(item)
+                            }
+                        }
+                    }
+                });
+            },
             participantChange() {
                 this.$refs.catalogDialogForm.validateField('participant', errorMsg => {
                 });
