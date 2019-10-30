@@ -638,7 +638,7 @@
             listTemplateAllFiles(siteId){
                 return new Promise((resolve, reject) => {
                     this.templateTreeData = [];
-                    listTemplateAllFiles(siteId).then(response => {
+                    listTemplateAllFiles(siteId,"details").then(response => {
                         if (response.status == 200) {
                             let result = JSON.parse(response.data);
                             this.templateTreeData = result.files;

@@ -506,7 +506,7 @@
             },
             listTemplateAllFiles(){
                 this.templateTreeData = [];
-                listTemplateAllFiles(this.$store.state.common.siteId).then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId,"appeal").then(response => {
                     let result = JSON.parse(response.data)
                     this.templateTreeData = result.files
                 })

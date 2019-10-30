@@ -197,7 +197,7 @@
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
-                                    :options="templateTreeData"
+                                    :options="templateIndexTreeData"
                                     v-model.trim="selectIndexTemplate"
                                     :props="cascaderProps">
                                 </el-cascader>
@@ -210,10 +210,9 @@
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
-                                    :options="templateTreeData"
+                                    :options="templateListTreeData"
                                     v-model.trim="selectListTemplate"
-                                    :props="cascaderProps"
-                                    @change="handleChange">
+                                    :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
                         </el-col>
@@ -763,7 +762,8 @@
                 },
                 lastExpanded: undefined,
                 tableReset: true,
-                templateTreeData: [],
+                templateIndexTreeData: [],
+                templateListTreeData: [],
                 cascaderProps: {
                     value: 'fileName',
                     label: 'fileName',
@@ -830,10 +830,11 @@
             this.$store.state.common.selectSiteDisplay = true;
             if (this.$store.state.common.siteId != undefined) {
                 this.reloadList();
-                this.listTemplateAllFiles();
                 this.getAllModel();
                 this.getCatalogCascader();
                 this.loadDepartmentCascader();
+                this.listTemplateAllFiles();
+                this.indexTemplateAllFiles();
             }
         },
         computed: {
@@ -912,10 +913,17 @@
             },
             // 获取模板
             listTemplateAllFiles() {
-                this.templateTreeData = [];
-                listTemplateAllFiles(this.listQuery.siteId).then(response => {
+                this.templateListTreeData = [];
+                listTemplateAllFiles(this.listQuery.siteId,"list").then(response => {
                     let result = JSON.parse(response.data)
-                    this.templateTreeData = result.files
+                    this.templateListTreeData = result.files
+                })
+            },
+            indexTemplateAllFiles() {
+                this.templateIndexTreeData = [];
+                listTemplateAllFiles(this.listQuery.siteId,"index").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.templateIndexTreeData = result.files
                 })
             },
             btnCreate(row) {
@@ -1227,8 +1235,6 @@
                 this.selectCatalogIds = [];
                 this.selectPublishTime = [];
                 this.dynamicTags = [];
-            },
-            handleChange(value) {
             },
             isWorkflowEnable(value) {
                 if (value == 1) {

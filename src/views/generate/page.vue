@@ -349,7 +349,7 @@
             },
             listTemplateAllFiles(){
                 this.templateTreeData = [];
-                listTemplateAllFiles(this.listQuery.siteId).then(response => {
+                listTemplateAllFiles(this.listQuery.siteId,"index").then(response => {
                     let result = JSON.parse(response.data)
                     this.templateTreeData = result.files
                 })

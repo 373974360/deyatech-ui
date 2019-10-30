@@ -279,7 +279,7 @@
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
-                                    expand-trigger="hover"
+                                    expand-trigger="hover"templateTreeData
                                     :options="templateTreeData"
                                     v-model.trim="applyOpenModel.templatePrint"
                                     :props="cascaderProps">
@@ -332,6 +332,7 @@
         delApplyOpenModels
     } from '@/api/assembly/applyOpenModel';
     import {getDepartmentCascader} from '@/api/admin/department';
+    import {listTemplateAllFiles} from '@/api/template/template';
     import {getProcessDefinitionList} from '@/api/workflow/definition';
 
     export default {
@@ -427,6 +428,7 @@
                 },
                 props: { multiple: true},
                 departmentCascader: [],
+                templateTreeData: [],
                 workflowList: []
             }
         },
@@ -452,9 +454,17 @@
             if(this.$store.state.common.siteId != undefined){
                 this.getDepartmentCascader();
                 this.reloadList();
+                this.listTemplateAllFiles();
             }
         },
         methods: {
+            listTemplateAllFiles(){
+                this.templateTreeData = [];
+                listTemplateAllFiles(this.$store.state.common.siteId,"ysqgk").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.templateTreeData = result.files
+                })
+            },
             isWorkflowEnable (value) {
                 if (value == 1) {
                     if (this.workflowList.length == 0) {
