@@ -74,9 +74,9 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="上级菜单">
-                            <el-cascader :options="menuCascader" v-model.trim="menuTreePosition"
-                                         show-all-levels expand-trigger="click" clearable
-                                         change-on-select></el-cascader>
+                            <el-cascader :options="menuCascader"
+                                         v-model.trim="menuTreePosition"
+                                         :props="{ checkStrictly: true }" clearable style="width: 100%;"></el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -203,13 +203,13 @@
             menuTreePosition: {
                 get() {
                     if (this.menu.treePosition) {
-                        return this.menu.treePosition.split('&');
+                        return this.menu.treePosition.substr(1).split('&');
                     }
                 },
                 set(v) {
                     if (v.length > 0) {
                         this.menu.parentId = v[v.length - 1];
-                        this.menu.treePosition = v.join('&') + "&" + this.menu.parentId;
+                        this.menu.treePosition = '&' + v.join('&');
                     } else {
                         this.menu.parentId = 0;
                         this.menu.treePosition = '&';
