@@ -74,9 +74,10 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="上级菜单">
-                            <el-cascader :options="menuCascader" v-model.trim="menuTreePosition"
-                                         show-all-levels expand-trigger="click" clearable
-                                         change-on-select></el-cascader>
+                            <el-cascader :options="menuCascader"
+                                         v-model.trim="menuTreePosition"
+                                         @change="menuTreePositionChange"
+                                         :props="{ checkStrictly: true }" clearable style="width: 100%"></el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -156,6 +157,7 @@
         name: 'menu',
         data() {
             return {
+                menuTreePosition: [],
                 menuList: undefined,
                 listLoading: true,
                 menu: {
@@ -200,22 +202,6 @@
             this.reloadList();
         },
         computed: {
-            menuTreePosition: {
-                get() {
-                    if (this.menu.treePosition) {
-                        return this.menu.treePosition.split('&');
-                    }
-                },
-                set(v) {
-                    if (v.length > 0) {
-                        this.menu.parentId = v[v.length - 1];
-                        this.menu.treePosition = v.join('&') + "&" + this.menu.parentId;
-                    } else {
-                        this.menu.parentId = 0;
-                        this.menu.treePosition = '&';
-                    }
-                }
-            },
             ...mapGetters([
                 'permission',
                 'titleMap',
@@ -233,6 +219,15 @@
             }
         },
         methods: {
+            menuTreePositionChange(v) {
+                if (v && v.length > 0) {
+                    this.menu.parentId = v[v.length - 1];
+                    this.menu.treePosition = "&" + v.join('&');
+                } else {
+                    this.menu.parentId = 0;
+                    this.menu.treePosition = '&';
+                }
+            },
             reloadList() {
                 this.listLoading = true;
                 getMenuTree().then(response => {
@@ -276,6 +271,7 @@
                         this.menu.parentId = this.selectedRows[0].id;
                     }
                 }
+                this.menuTreePosition = this.menu.treePosition.substring(1).split('&');
                 this.menu.children = undefined;
                 this.getMenuCascader(null);
                 this.dialogTitle = 'create';
@@ -291,6 +287,7 @@
                 } else {
                     this.menu = deepClone(this.selectedRows[0]);
                 }
+                this.menuTreePosition = this.menu.treePosition.substring(1).split('&');
                 this.menu.children = undefined;
                 this.getMenuCascader(this.menu.id);
                 this.dialogTitle = 'update';
@@ -369,6 +366,7 @@
                 this.reloadList();
             },
             closeMenuDialog() {
+                this.menuTreePosition = [];
                 this.dialogVisible = false;
                 this.resetMenu();
                 this.$refs['menuDialogForm'].resetFields();
