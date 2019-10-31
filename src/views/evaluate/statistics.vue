@@ -37,6 +37,10 @@
             <div class="splitBar"></div>
             <div class="row">
                 <div class="filter-container"></div>
+                <div class="className">
+                    <div class="class-item" id="countByLevel"></div>
+                    <div class="class-item" id="countByChannel"></div>
+                </div>
                 <div class="className" id="evaluationStatistics"></div>
             </div>
         </div>
@@ -56,6 +60,7 @@
     require('echarts/lib/component/dataZoom');
     import {mapGetters} from 'vuex';
     import { getStatistics } from '@/api/evaluate/detail';
+    import { queryEvaluateCountByLevel, queryEvaluateCountByChannel } from "../../api/evaluate/count";
 
     export default {
         name: 'evaluationStatistics',
@@ -85,6 +90,16 @@
                 },
                 departmentList: [], //TODO  阿里提供接口查询
                 submitTimeRange: [],
+                countByLevelList: [],
+                channelList: [],
+                countByChannelList: [],
+                channelMap: {
+                    1: 'PC端',
+                    2: '移动端',
+                    3: '二维码',
+                    4: '政务大厅平板电脑',
+                    5: '政务大厅其他终端'
+                }
             }
         },
         computed: {
@@ -98,6 +113,14 @@
         created() {
             this.getToday();
             this.doPlot();
+        },
+        mounted() {
+            this.queryCountByLevel().then(() => {
+                this.initCountByLevel();
+            });
+            this.queryCountByChannel().then(() => {
+                this.initCountByChannel();
+            });
         },
         methods: {
             resetSearch() {
@@ -116,7 +139,98 @@
                     this.listQuery.evaluationTimeEnd = undefined;
                 }
             },
-
+            queryCountByLevel() {
+                return new Promise((resolve, reject) => {
+                    queryEvaluateCountByLevel().then(res => {
+                        let countByLevelMap = res.data;
+                        this.countByLevelList.push({name: '非常不满意', value: countByLevelMap['1'] ? countByLevelMap['1'].count : 0});
+                        this.countByLevelList.push({name: '不满意', value: countByLevelMap['2'] ? countByLevelMap['2'].count : 0});
+                        this.countByLevelList.push({name: '基本满意', value: countByLevelMap['3'] ? countByLevelMap['3'].count : 0});
+                        this.countByLevelList.push({name: '满意', value: countByLevelMap['4'] ? countByLevelMap['4'].count : 0});
+                        this.countByLevelList.push({name: '非常满意', value: countByLevelMap['5'] ? countByLevelMap['5'].count : 0});
+                        resolve();
+                    })
+                });
+            },
+            queryCountByChannel() {
+                return new Promise((resolve, reject) => {
+                    queryEvaluateCountByChannel().then(res => {
+                        for (let countByChannel of res.data) {
+                            this.channelList.push(this.channelMap[countByChannel.channel]);
+                            this.countByChannelList.push({name: this.channelMap[countByChannel.channel], value: countByChannel.count});
+                        }
+                        resolve();
+                    })
+                });
+            },
+            initCountByLevel() {
+                const countByLevelEl = echarts.init(document.getElementById('countByLevel'));
+                countByLevelEl.setOption({
+                    title : {
+                        text: '好差评总体情况',
+                        x:'center'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        data: ['非常不满意','不满意','基本满意','满意','非常满意']
+                    },
+                    series : [
+                        {
+                            name: '评价详情',
+                            type: 'pie',
+                            radius : '50%',
+                            center: ['50%', '50%'],
+                            data: this.countByLevelList,
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                });
+            },
+            initCountByChannel() {
+                const countByChannelEl = echarts.init(document.getElementById('countByChannel'));
+                countByChannelEl.setOption({
+                    title : {
+                        text: '按来源渠道统计评价数据',
+                        x:'center'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        data: this.channelList
+                    },
+                    series : [
+                        {
+                            name: '评价详情',
+                            type: 'pie',
+                            radius : '50%',
+                            center: ['50%', '50%'],
+                            data: this.countByChannelList,
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                });
+            },
             doPlot() {
                 if (!this.listQuery.evaluationTimeStart && !this.listQuery.evaluationTimeEnd) {
                     this.$message.error('请选择评价时间');
@@ -330,6 +444,11 @@
     .className {
         width: 100%;
         height: 540px
+    }
+    .class-item {
+        width: 50%;
+        height: 540px;
+        float: left;
     }
 
     .filter-item {

@@ -257,7 +257,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="评价详情">
-                                <ul>
+                                <ul v-if="detail.content">
                                     <li v-for="c in detail.content.split('&')" :key="c">
                                         {{c}}
                                     </li>

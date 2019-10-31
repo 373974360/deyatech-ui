@@ -45,6 +45,16 @@ export default [
                     isAuth: true
                 },
                 component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/statistics')
+            },
+            {
+                path: 'statistics2',
+                name: ' 按部门统计评价数据',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/statistics2')
             }
         ]
     }
