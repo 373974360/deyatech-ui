@@ -54,8 +54,7 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
-                                 width="200">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="300">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
                                    icon="el-icon-edit" :size="btnSize" circle
@@ -64,6 +63,8 @@
                                    :size="btnSize" circle @click.stop.safe="btnRoleUser(scope.row)"></el-button>
                         <el-button v-if="btnEnable.role_menus" title="关联菜单" type="primary" icon="iconcaidan1"
                                    :size="btnSize" circle @click.stop.safe="btnRoleMenu(scope.row)"></el-button>
+                        <el-button v-show="btnEnable.station" title="关联站点" type="primary" icon="iconlogistic"
+                                   :size="btnSize" circle @click.stop="btnStationGroup(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                    icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -161,6 +162,22 @@
                     <el-button :size="btnSize" @click="closeRoleMenuDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
+
+            <el-dialog title="关联站点" :visible.sync="dialogStationVisible" :close-on-click-modal="closeOnClickModal" @close="closeStationDialog">
+                <el-form style="width: 80%; margin-left:10%;" v-loading="treeLoading">
+                    <el-tree ref="stationTree"
+                             :data="stationGroupList"
+                             show-checkbox
+                             node-key="value"
+                             :default-expand-all="true"
+                             :expand-on-click-node="false"></el-tree>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveRoleStations" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeStationDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -181,6 +198,9 @@
     import {getMenuTree} from "@/api/admin/menu";
     import {getAllRoleMenu, setRoleMenus} from "@/api/admin/roleMenu";
     import {isStartOrEndWithWhiteSpace} from '@/util/validate';
+    import {getClassificationStationCascader} from '@/api/resource/stationGroup';
+    import {getAllRoleStationGroup, setRoleStationGroups} from "@/api/resource/stationGroupRole";
+
     export default {
         name: 'role',
         data() {
@@ -255,7 +275,11 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 dialogFormLoading: false,
-                showRelatedFlag: false
+                showRelatedFlag: false,
+                dialogStationVisible: false,
+                treeLoading: false,
+                stationGroupList: [],
+                roleStationGroupList: []
             }
         },
         computed: {
@@ -273,7 +297,8 @@
                     update: this.permission.role_update,
                     delete: this.permission.role_delete,
                     role_users: this.permission.role_users,
-                    role_menus: this.permission.role_menus
+                    role_menus: this.permission.role_menus,
+                    station: this.permission.role_station_group
                 };
             }
         },
@@ -281,6 +306,7 @@
             this.reloadList();
             this.loadDepartment();
             this.loadMenuTree();
+            this.getAllStationGroup();
         },
         methods: {
             btnSearch() {
@@ -577,6 +603,59 @@
                     }
                 }
                 this.$refs['roleMenuTree'].setCheckedKeys(checkedKeys)
+            },
+
+            // 关联站点
+            btnStationGroup(row) {
+                this.currentRow = row;
+                this.dialogStationVisible = true;
+                // 加载角色已关联站点
+                this.loadRoleStationGroup(row.id);
+            },
+            closeStationDialog() {
+                this.currentRow = undefined;
+                this.submitLoading = false;
+                this.dialogStationVisible = false;
+            },
+            doSaveRoleStations() {
+                this.submitLoading = true;
+                // 仅返回被选中的叶子节点的 keys
+                let checkedKeys = this.$refs['stationTree'].getCheckedKeys(true);
+                setRoleStationGroups(this.currentRow.id, checkedKeys).then(() => {
+                    this.closeStationDialog();
+                    this.reloadList();
+                    this.$message.success(this.$t("table.associateSuccess"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
+            },
+            getAllStationGroup() {
+                this.stationGroupList = [];
+                // 所有的站点
+                getClassificationStationCascader().then(response => {
+                    this.stationGroupList = response.data;
+                })
+            },
+            loadRoleStationGroup(roleId) {
+                this.treeLoading = true;
+                // 角色已关联站点
+                getAllRoleStationGroup({roleId: roleId}).then(response => {
+                    this.roleStationGroupList = response.data;
+                    this.treeLoading = false;
+                    this.checkRoleStationGroup();
+                }).catch(() => {
+                    this.treeLoading = false;
+                })
+            },
+            checkRoleStationGroup() {
+                this.$nextTick(()=>{
+                    // 选中角色已关联站点
+                    if (this.roleStationGroupList && this.roleStationGroupList.length > 0) {
+                        for (let sg of this.roleStationGroupList) {
+                            this.$refs['stationTree'].setChecked(sg.stationGroupId, true, false);
+                        }
+                    }
+                });
             }
         }
     }
