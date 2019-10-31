@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select v-model.trim="listQuery.categoryId" :size="searchSize" placeholder="请选择分类">
+                        <el-select filterable v-model.trim="listQuery.categoryId" :size="searchSize" placeholder="请选择分类">
                             <el-option v-for="o in categorys"
                                        :key="o.id"
                                        :label="o.name"
@@ -82,7 +82,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="分类" prop="categoryId">
-                                <el-select v-model.trim="model.categoryId" placeholder="请选择分类" style="width: 100%;">
+                                <el-select filterable v-model.trim="model.categoryId" placeholder="请选择分类" style="width: 100%;">
                                     <el-option v-for="o in categorys"
                                                :key="o.id"
                                                :label="o.name"
@@ -112,7 +112,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="访谈状态" prop="status">
-                                <el-select v-model.trim="model.status" placeholder="请选择访谈状态">
+                                <el-select filterable v-model.trim="model.status" placeholder="请选择访谈状态">
                                     <el-option v-for="o in enums['InterviewModelStatusEnum']"
                                                :key="o.code"
                                                :label="o.value"
@@ -266,7 +266,7 @@
                             <el-row :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="" prop="type">
-                                        <el-select v-model.trim="liveMessage.type" placeholder="请选择类型" :size="btnSize" @change="typeChange">
+                                        <el-select filterable v-model.trim="liveMessage.type" placeholder="请选择类型" :size="btnSize" @change="typeChange">
                                             <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                         </el-select>
                                         <el-button type="primary" style="margin-left: 20px" @click="appendLiveMessage" :loading="submitLoading" :size="btnSize">发送</el-button>
@@ -324,7 +324,7 @@
                     <el-row :span="24">
                         <el-col :span="24">
                             <el-form-item label="" prop="type">
-                                <el-select v-model.trim="liveModifyMessage.type" placeholder="请选择类型" :size="btnSize">
+                                <el-select filterable v-model.trim="liveModifyMessage.type" placeholder="请选择类型" :size="btnSize">
                                     <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                 </el-select>
                                 <el-button type="primary" style="margin-left: 20px" @click="modifyLiveMessage" :loading="submitLoading" :size="btnSize">修改</el-button>
@@ -343,7 +343,7 @@
                             <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="guestListQuery.name"></el-input>
                         </el-form-item>
                         <el-form-item>
-                            <el-select :size="searchSize" v-model.trim="guestListQuery.type" placeholder="请选择类型">
+                            <el-select filterable :size="searchSize" v-model.trim="guestListQuery.type" placeholder="请选择类型">
                                 <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                             </el-select>
                         </el-form-item>
@@ -429,7 +429,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="类型" prop="type">
-                                        <el-select v-model.trim="guest.type" placeholder="请选择类型" style="width: 100%;">
+                                        <el-select filterable v-model.trim="guest.type" placeholder="请选择类型" style="width: 100%;">
                                             <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
                                         </el-select>
                                     </el-form-item>
@@ -445,9 +445,9 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="部门" prop="departmentName">
-                                        <el-cascader ref="mycascader" :options="departmentCascader" v-model.trim="departmentValue"
+                                        <el-cascader filterable ref="mycascader" :options="departmentCascader" v-model.trim="departmentValue"
                                                      :props="{ checkStrictly: true }"
-                                                     filterable :debounce="500" style="width: 100%"
+                                                     :debounce="500" style="width: 100%"
                                                      :before-filter="beforeFilterDepartment"
                                                      @blur="blurDepartment"
                                                      @focus="focusDepartment"

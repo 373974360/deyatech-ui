@@ -171,7 +171,7 @@
                             </el-col>
                             <el-col :span="12">
                                 <el-form-item label="资源分类" prop="resourceCategory">
-                                    <el-select v-model.trim="template.resourceCategory" placeholder="请选择资源分类" style="width: 100%;">
+                                    <el-select filterable v-model.trim="template.resourceCategory" placeholder="请选择资源分类" style="width: 100%;">
                                         <el-option
                                             v-for="item in resourceCategoryList"
                                             :key="item.id"
@@ -290,7 +290,7 @@
                             <el-input v-if="item.controlType === 'inputElement'"
                                       v-model.trim="template.content[item.fieldName]"></el-input>
                             <!-- 选择器 -->
-                            <el-select v-if="item.controlType === 'selectElement'&& contentItemOptions[item.id]" v-model.trim="template.content[item.fieldName]" placeholder="请选择">
+                            <el-select filterable v-if="item.controlType === 'selectElement'&& contentItemOptions[item.id]" v-model.trim="template.content[item.fieldName]" placeholder="请选择">
                                 <el-option v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.codeText"
                                            :value="opt.id"></el-option>
                             </el-select>

@@ -134,7 +134,7 @@
                         </el-col>
                         <el-col :span="8">
                             <el-form-item label="日期码" prop="codeRule">
-                                <el-select style="width: 100%;" v-model.trim="applyOpenModel.codeRule" placeholder="请选择">
+                                <el-select filterable style="width: 100%;" v-model.trim="applyOpenModel.codeRule" placeholder="请选择">
                                     <el-option
                                         v-for="item in dayCodeOptions"
                                         :key="item.value"
@@ -146,7 +146,7 @@
                         </el-col>
                         <el-col :span="8">
                             <el-form-item label="随机码" prop="codeNum">
-                                <el-select style="width: 100%;" v-model.trim="applyOpenModel.codeNum" placeholder="请选择">
+                                <el-select filterable style="width: 100%;" v-model.trim="applyOpenModel.codeNum" placeholder="请选择">
                                     <el-option
                                         v-for="item in codeLengthOptions"
                                         :key="item.value"
@@ -160,7 +160,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="查询码" prop="queryNum">
-                                <el-select style="width: 100%;" v-model.trim="applyOpenModel.queryNum" placeholder="请选择">
+                                <el-select filterable style="width: 100%;" v-model.trim="applyOpenModel.queryNum" placeholder="请选择">
                                     <el-option
                                         v-for="item in codeLengthOptions"
                                         :key="item.value"
@@ -179,13 +179,13 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="主管部门" prop="competentDept">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenModel.competentDept"
+                                <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenModel.competentDept"
                                              expand-trigger="hover" ></el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="参与部门" prop="partDept">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择绑定栏目"
                                     :options="departmentCascader"
@@ -206,7 +206,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="表单模板" prop="templateForm">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -219,7 +219,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="列表模板" prop="templateList">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -234,7 +234,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="详情模板" prop="templateContent">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -247,7 +247,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="查询模板" prop="templateQuery">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -262,7 +262,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="回执模板" prop="templateOver">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -275,7 +275,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="打印模板" prop="templatePrint">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -298,7 +298,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="选择工作流" prop="workflowId" v-if="applyOpenModel.workflowType == 1">
-                                <el-select v-model.trim="applyOpenModel.workflowId" placeholder="请选择工作流" style="width:100%">
+                                <el-select filterable v-model.trim="applyOpenModel.workflowId" placeholder="请选择工作流" style="width:100%">
                                     <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                                 </el-select>
                             </el-form-item>

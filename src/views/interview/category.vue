@@ -77,7 +77,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="列表页模板" prop="listPageTemplate">
-                                <el-cascader
+                                <el-cascader filterable
                                     v-model="selectedListTemplate"
                                     :props="templateProps"
                                     :options="listTemplates"
@@ -87,7 +87,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="详情页模板" prop="detailPageTemplate">
-                                <el-cascader
+                                <el-cascader filterable
                                     v-model="selectedDetailTemplate"
                                     :props="templateProps"
                                     :options="detailTemplates"

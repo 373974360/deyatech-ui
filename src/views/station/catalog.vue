@@ -96,7 +96,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="上级栏目" prop="parentId">
-                                <el-cascader :options="catalogCascader"
+                                <el-cascader filterable :options="catalogCascader"
                                              v-model.trim="catalogTreePosition"
                                              :props="{ checkStrictly: true }"
                                              clearable style="width: 100%" @change="parentIdChange"></el-cascader>
@@ -106,7 +106,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="内容模型" prop="contentModelId">
-                                <el-select v-model.trim="selectContentModelIds" placeholder="请选择内容模型"
+                                <el-select filterable v-model.trim="selectContentModelIds" placeholder="请选择内容模型"
                                            multiple style="width: 100%">
                                     <el-option
                                         v-for="m in modelList"
@@ -192,7 +192,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="频道页模板" prop="indexTemplate">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -205,7 +205,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="列表页模板" prop="listTemplate">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -271,7 +271,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="工作流" prop="workflowKey" v-if="catalog.workflowEnable == 1">
-                                <el-select v-model.trim="catalog.workflowKey" placeholder="请选择工作流">
+                                <el-select filterable v-model.trim="catalog.workflowKey" placeholder="请选择工作流">
                                     <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -293,7 +293,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="栏目" prop="cmsCatalogId">
-                            <el-cascader
+                            <el-cascader filterable
                                 style="width: 100%"
                                 placeholder="请选择栏目"
                                 clearable
@@ -315,7 +315,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="发布机构" prop="publishOrganization">
-                            <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="publishOrganizationArray"
+                            <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="publishOrganizationArray"
                                          expand-trigger="hover" clearable @change="publishOrganizationChange" ></el-cascader>
                         </el-form-item>
                     </el-col>
@@ -379,7 +379,7 @@
                    :close-on-click-modal="closeOnClickModal" @close="closePublisherDialog">
             <div v-loading="dialogFormLoading">
                 <div class="dialog-search">
-                    <el-cascader v-model.trim="publisherDepartment"
+                    <el-cascader filterable v-model.trim="publisherDepartment"
                                  :options="departmentCascader" @change="handleDepartmentChange"
                                  class="dialog-search-item dialog-keywords"
                                  :show-all-levels="false" expand-trigger="hover" clearable change-on-select

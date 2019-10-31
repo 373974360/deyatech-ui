@@ -74,7 +74,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="上级菜单">
-                            <el-cascader :options="menuCascader"
+                            <el-cascader filterable :options="menuCascader"
                                          v-model.trim="menuTreePosition"
                                          :props="{ checkStrictly: true }" clearable style="width: 100%;"></el-cascader>
                         </el-form-item>

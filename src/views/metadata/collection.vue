@@ -92,7 +92,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="版本" prop="mdcVersion">
-                                <el-select v-if="dialogTitle === 'update'" v-model.trim="metadataCollection.mdcVersion" @change="handleMdcVersionChange">
+                                <el-select filterable v-if="dialogTitle === 'update'" v-model.trim="metadataCollection.mdcVersion" @change="handleMdcVersionChange">
                                     <el-option v-for="item in collectionVersionList" :key="item.id" :label="item.mdcVersion" :value="item.mdcVersion">
                                     </el-option>
                                 </el-select>
@@ -124,7 +124,7 @@
                             <!--<el-table-column label="数据类型" prop="dataType" :formatter="filterDataType"/>
                             <el-table-column label="控件类型">
                                 <template slot-scope="scope">
-                                    <el-select v-model.trim="relationDataReal[scope.$index].controlType" placeholder="请选择" @change="handleControlTypeChange(scope.$index)">
+                                    <el-select filterable v-model.trim="relationDataReal[scope.$index].controlType" placeholder="请选择" @change="handleControlTypeChange(scope.$index)">
                                         <el-option v-for="item in scope.row.controlTypeOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
@@ -132,11 +132,11 @@
                             </el-table-column>
                             <el-table-column label="数据来源">
                                 <template slot-scope="scope">
-                                    <el-select v-model.trim="relationDataReal[scope.$index].dataSource" placeholder="请选择">
+                                    <el-select filterable v-model.trim="relationDataReal[scope.$index].dataSource" placeholder="请选择">
                                         <el-option v-for="item in relationDataReal[scope.$index].dataSourceOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
-                                    <el-select v-model.trim="relationDataReal[scope.$index].dictionaryId" placeholder="请选择"
+                                    <el-select filterable v-model.trim="relationDataReal[scope.$index].dictionaryId" placeholder="请选择"
                                                v-if="relationDataReal[scope.$index].dataSource === 'dataItem'">
                                         <el-option v-for="item in dictOptions" :key="item.id" :label="item.name" :value="item.key">
                                         </el-option>
@@ -145,7 +145,7 @@
                             </el-table-column>-->
                             <el-table-column label="校验方式">
                                 <template slot-scope="scope">
-                                    <el-select v-model.trim="relationDataReal[scope.$index].checkModel" placeholder="请选择">
+                                    <el-select filterable v-model.trim="relationDataReal[scope.$index].checkModel" placeholder="请选择">
                                         <el-option v-for="item in relationDataReal[scope.$index].checkModelOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
@@ -192,7 +192,7 @@
             <el-dialog title="选择关联元数据" :visible.sync="dialogRelationVisible" :before-close="resetDialogRelation"
                        :close-on-click-modal="closeOnClickModal" @open="initCandidateTable" width="80%">
                 <div class="dialog-search">
-                    <el-cascader :options="categoryCascader" @change="handleCategoryChange"
+                    <el-cascader filterable :options="categoryCascader" @change="handleCategoryChange"
                                  class="dialog-search-item dialog-keywords"
                                  :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                  :size="searchSize" placeholder="根据分类筛选">

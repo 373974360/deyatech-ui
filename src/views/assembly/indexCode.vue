@@ -11,7 +11,7 @@
                             <el-input value="各部门社会信用码" readonly style="border: none;" class="infoContent infoReadonly"></el-input>
                         </el-form-item>
                         <el-form-item prop="codeDelimiter">
-                            <el-select v-model="indexCode.codeDelimiter" placeholder="请选择分隔符" class="delimiter">
+                            <el-select filterable v-model="indexCode.codeDelimiter" placeholder="请选择分隔符" class="delimiter">
                                 <el-option v-for="item in delimiters" :key="item.value" :value="item.value" :label="item.label"></el-option>
                             </el-select>
                         </el-form-item>
@@ -26,7 +26,7 @@
                             <el-input v-model.trim="indexCode.value" class="infoContent" maxlength="20" placeholder="请输入固定值"></el-input>
                         </el-form-item>
                         <el-form-item prop="valueDelimiter">
-                            <el-select v-model="indexCode.valueDelimiter" placeholder="请选择分隔符" class="delimiter">
+                            <el-select filterable v-model="indexCode.valueDelimiter" placeholder="请选择分隔符" class="delimiter">
                                 <el-option v-for="item in delimiters" :key="item.value" :value="item.value" :label="item.label"></el-option>
                             </el-select>
                         </el-form-item>
@@ -38,12 +38,12 @@
                             <el-checkbox v-model="indexCode.formatChecked" :true-label="1" :false-label="0" class="infoCheckbox">信息编制日期</el-checkbox>
                         </el-form-item>
                         <el-form-item prop="format">
-                            <el-select v-model="indexCode.format" placeholder="请选择格式" class="infoContent">
+                            <el-select filterable v-model="indexCode.format" placeholder="请选择格式" class="infoContent">
                                 <el-option v-for="item in formats" :key="item.value" :value="item.value" :label="item.label"></el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item prop="formatDelimiter">
-                            <el-select v-model="indexCode.formatDelimiter" placeholder="请选择分隔符" class="delimiter">
+                            <el-select filterable v-model="indexCode.formatDelimiter" placeholder="请选择分隔符" class="delimiter">
                                 <el-option v-for="item in delimiters" :key="item.value" :value="item.value" :label="item.label"></el-option>
                             </el-select>
                         </el-form-item>
@@ -55,7 +55,7 @@
                             <el-checkbox checked disabled class="infoCheckbox">信息流水号</el-checkbox>
                         </el-form-item>
                         <el-form-item prop="number">
-                            <el-select v-model.trim="indexCode.number" placeholder="请选择位数" class="infoContent">
+                            <el-select filterable v-model.trim="indexCode.number" placeholder="请选择位数" class="infoContent">
                                 <el-option v-for="item in numbers" :key="item.value" :value="item.value" :label="item.label"></el-option>
                             </el-select>
                         </el-form-item>

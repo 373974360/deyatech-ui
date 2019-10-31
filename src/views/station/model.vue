@@ -7,7 +7,7 @@
                         <el-input :size="searchSize" placeholder="请输入内容模型或英文名称" v-model.trim="listQuery.name" style="width: 200px"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-select v-model.trim="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize">
+                        <el-select filterable v-model.trim="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize">
                             <el-option
                                 v-for="m in metadataCollectionList"
                                 :key="m.id"
@@ -90,7 +90,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="关联元数据集" prop="metaDataCollectionId" label-width="110px">
-                                <el-select v-model.trim="model.metaDataCollectionId" placeholder="请选择元数据集">
+                                <el-select filterable v-model.trim="model.metaDataCollectionId" placeholder="请选择元数据集">
                                     <el-option
                                         v-for="m in metadataCollectionList"
                                         :key="m.id"
@@ -167,7 +167,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="站点" prop="siteId">
-                                    <el-select v-model.trim="modelTemplate.siteId" placeholder="请选择站点" @change="getInfoBySiteId"
+                                    <el-select filterable v-model.trim="modelTemplate.siteId" placeholder="请选择站点" @change="getInfoBySiteId"
                                                :disabled="modelTemplateSaveOrUpdateDialogTitle == 'update'" style="width: 100%">
                                         <el-option
                                             v-for="s in stationGroup"
@@ -182,7 +182,7 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="12">
                                 <el-form-item label="默认模版" prop="templatePath" v-if="modelTemplateSaveOrUpdateDialogVisible">
-                                    <el-cascader
+                                    <el-cascader filterable
                                         style="width: 100%"
                                         placeholder="请选择模板地址"
                                         clearable
@@ -205,7 +205,7 @@
                                                  :default-expand-all="true" :expand-on-click-node="false" :filter-node-method="filterNode">
                                             <div class="custom-tree-node" slot-scope="{ node, data }">
                                                 <span>{{ node.label }}</span>
-                                                <el-cascader
+                                                <el-cascader filterable
                                                     :options="templateTreeData"
                                                     v-model.trim="catalogTemplate[data.id].templatePath"
                                                     :props="cascaderProps"

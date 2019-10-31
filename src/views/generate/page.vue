@@ -84,7 +84,7 @@
                         <el-col :span="12">
                             <el-form-item label="模板地址" prop="templatePath">
 <!--                                <el-input v-model.trim="page.templatePath"></el-input>-->
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择模板地址"
                                     clearable
@@ -105,7 +105,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="栏目绑定">
-                                <el-cascader
+                                <el-cascader filterable
                                     style="width: 100%"
                                     placeholder="请选择绑定栏目"
                                     :options="catalogList"

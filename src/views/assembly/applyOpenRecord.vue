@@ -7,7 +7,7 @@
                         <el-input :size="searchSize" placeholder="申请编码" v-model.trim="listQuery.ysqCode"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-select :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
+                        <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
                             <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
                         </el-select>
                     </el-form-item>
@@ -110,7 +110,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="业务模型" prop="modelId">
-                                <el-select v-model.trim="applyOpenRecord.modelId" clearable placeholder="业务模型" style="width: 100%;">
+                                <el-select filterable v-model.trim="applyOpenRecord.modelId" clearable placeholder="业务模型" style="width: 100%;">
                                     <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -211,7 +211,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="申请部门" prop="doDept">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenRecord.doDept"
+                                <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenRecord.doDept"
                                              expand-trigger="hover" clearable @change="appealOpenDepartmentChange" ></el-cascader>
                             </el-form-item>
                         </el-col>
@@ -294,7 +294,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="回复部门" prop="doDept">
-                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenRecord.replyDeptId"
+                                <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenRecord.replyDeptId"
                                              expand-trigger="hover" clearable @change="appealOpenReplyDepartmentChange" ></el-cascader>
                             </el-form-item>
                         </el-col>

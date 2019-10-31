@@ -63,7 +63,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item :label="$t('table.parent')">
-                            <el-cascader :options="departmentCascader" v-model="departmentTreePosition"
+                            <el-cascader filterable :options="departmentCascader" v-model="departmentTreePosition"
                                          expand-trigger="hover" clearable
                                          change-on-select style="width: 100%"></el-cascader>
                         </el-form-item>

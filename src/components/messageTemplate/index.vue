@@ -1,5 +1,5 @@
 <template>
-    <el-select :value="selectedValue" v-on:change="selectChange" placeholder="请选择">
+    <el-select filterable :value="selectedValue" v-on:change="selectChange" placeholder="请选择">
         <el-option
             v-for="item in messageTemplates"
             :key="item.template_id"

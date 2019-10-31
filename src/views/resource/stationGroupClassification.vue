@@ -50,7 +50,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="24">
                         <el-form-item label="上级分类" prop="parentId">
-                            <el-cascader :options="stationGroupClassificationCascader" v-model.trim="stationGroupClassificationTreePosition"
+                            <el-cascader filterable :options="stationGroupClassificationCascader" v-model.trim="stationGroupClassificationTreePosition"
                                          change-on-select show-all-levels expand-trigger="click" clearable style="width: 100%;" ></el-cascader>
                         </el-form-item>
                     </el-col>

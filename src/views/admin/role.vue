@@ -89,7 +89,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="角色类型" prop="type">
-                                <el-select v-model.trim="role.type">
+                                <el-select filterable v-model.trim="role.type">
                                     <el-option v-for="item in enums['RoleTypeEnum']" :key="item.code" :label="item.value"
                                                :value="item.code"></el-option>
                                 </el-select>
@@ -116,7 +116,7 @@
                        :close-on-click-modal="closeOnClickModal" @close="closeRoleUserDialog">
                 <div v-loading="dialogFormLoading">
                     <div class="dialog-search">
-                        <el-cascader :options="departmentCascader" @change="handleDepartmentChange"
+                        <el-cascader filterable :options="departmentCascader" @change="handleDepartmentChange"
                                      class="dialog-search-item dialog-keywords"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                      :size="searchSize" placeholder="根据部门筛选"></el-cascader>

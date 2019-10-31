@@ -102,7 +102,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="部门" prop="departmentId">
-                                <el-cascader ref="mycascader" :options="departmentCascader" v-model="departmentTreePosition"
+                                <el-cascader filterable ref="mycascader" :options="departmentCascader" v-model="departmentTreePosition"
                                              change-on-select show-all-levels expand-trigger="click" clearable style="width: 100%;"></el-cascader>
                             </el-form-item>
                         </el-col>
@@ -185,7 +185,7 @@
             <el-dialog title="关联栏目" :visible.sync="dialogCatalogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
                 <el-form style="width: 80%; margin-left:10%;" :inline="true">
                     <el-form-item>
-                        <el-cascader placeholder="请选择站点"
+                        <el-cascader filterable placeholder="请选择站点"
                                      :options="catalogUseStationGroupList"
                                      v-model="stationGroupTreePosition"
                                      :show-all-levels="false"

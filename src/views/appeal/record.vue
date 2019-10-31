@@ -22,12 +22,12 @@
                                 <el-input :size="searchSize" placeholder="标题/姓名/编码/身份证号" v-model.trim="listQuery.title" maxlength="100"></el-input>
                             </el-form-item>
                             <el-form-item>
-                                <el-select :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:100px;">
+                                <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:100px;">
                                     <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
                                 </el-select>
                             </el-form-item>
                             <el-form-item>
-                                <el-select :size="searchSize" v-model.trim="listQuery.purId" clearable placeholder="诉求目的" style="width:100px;">
+                                <el-select filterable :size="searchSize" v-model.trim="listQuery.purId" clearable placeholder="诉求目的" style="width:100px;">
                                     <el-option v-for="item in purposeList" :label="item.purposeName" :value="item.id"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -137,14 +137,14 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="业务模型" prop="modelId">
-                                        <el-select v-model.trim="record.modelId" placeholder="请选择业务模型" style="width:100%" @change="modelChange">
+                                        <el-select filterable v-model.trim="record.modelId" placeholder="请选择业务模型" style="width:100%" @change="modelChange">
                                             <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
                                         </el-select>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="诉求目的" prop="purId">
-                                        <el-select v-model.trim="record.purId" placeholder="请选择业务模型" style="width:100%">
+                                        <el-select filterable v-model.trim="record.purId" placeholder="请选择业务模型" style="width:100%">
                                             <el-option v-for="item in purposeList" :label="item.purposeName" :value="item.id"></el-option>
                                         </el-select>
                                     </el-form-item>
@@ -184,7 +184,7 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="收件部门" prop="deptId">
-                                        <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="recordDepartment"
+                                        <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="recordDepartment"
                                                      expand-trigger="hover" clearable @change="recordDepartmentChange" ></el-cascader>
                                     </el-form-item>
                                 </el-col>
@@ -394,7 +394,7 @@
                                     <el-row :gutter="20" :span="24">
                                         <el-col :span="12">
                                             <el-form-item label="移交部门" prop="toDeptId" :hidden="toDeptIdDisabled">
-                                                <el-cascader style="width: 100%" :options="departmentCascader" v-model.trim="process.toDeptId"
+                                                <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="process.toDeptId"
                                                              expand-trigger="hover" ></el-cascader>
                                             </el-form-item>
                                         </el-col>

@@ -1,5 +1,5 @@
 <template>
-    <el-cascader ref="topSiteCascader" v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
+    <el-cascader filterable ref="topSiteCascader" v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
                  :options="stationGroupList" v-model="stationGroupTreePosition" @change="siteChange" size="small">
     </el-cascader><!--&& this.stationGroupList.length > 1-->
 </template>

@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-cascader :options="departmentCascader"
+                        <el-cascader filterable :options="departmentCascader"
                                      v-model.trim="listQueryDepartmentTreePosition"
                                      placeholder="请选择部门" :size="btnSize" style="width:300px"></el-cascader>
                     </el-form-item>
@@ -108,14 +108,14 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="分类" prop="stationGroupClassificationId">
-                                <el-cascader :options="stationGroupClassificationCascader"
+                                <el-cascader filterable :options="stationGroupClassificationCascader"
                                              v-model.trim="stationGroupClassificationTreePosition"
                                              placeholder="请选择分类" style="width: 100%;" ></el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="部门" prop="departmentId">
-                                <el-cascader :options="departmentCascader"
+                                <el-cascader filterable :options="departmentCascader"
                                              v-model.trim="formDepartmentTreePosition"
                                              placeholder="请选择部门" style="width: 100%;"></el-cascader>
                             </el-form-item>
@@ -191,7 +191,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="允许上传的附件类型" prop="uploadFileType">
-                                <el-select v-model.trim="uploadFileTypeArray" @change="uploadFileTypeChange" clearable multiple style="width: 100%">
+                                <el-select filterable v-model.trim="uploadFileTypeArray" @change="uploadFileTypeChange" clearable multiple style="width: 100%">
                                     <el-option v-for="item in enums['UploadFileTypeEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -208,7 +208,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="是否生成缩略图" prop="thumbnailEnable">
-                                <el-select v-model.trim="setting.thumbnailEnable" style="width: 100%" @change="thumbnailEnableChange">
+                                <el-select filterable v-model.trim="setting.thumbnailEnable" style="width: 100%" @change="thumbnailEnableChange">
                                     <el-option v-for="item in enums['YesNoEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -232,7 +232,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="是否生成水印" prop="watermarkEnable">
-                                <el-select v-model.trim="setting.watermarkEnable" style="width:100%" @change="watermarkEnableChange">
+                                <el-select filterable v-model.trim="setting.watermarkEnable" style="width:100%" @change="watermarkEnableChange">
                                     <el-option v-for="item in enums['YesNoEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -242,7 +242,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="水印类型" prop="watermarkType" ref="watermarkTypeField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkType">
-                                <el-select v-model.trim="setting.watermarkType" style="width:100%" @change="watermarkTypeChange">
+                                <el-select filterable v-model.trim="setting.watermarkType" style="width:100%" @change="watermarkTypeChange">
                                     <el-option v-for="item in enums['WaterMarkTypeEnum']"
                                                :key="item.code"
                                                :label="item.value"
@@ -463,7 +463,7 @@
                        :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
                 <div v-loading="dialogFormLoading">
                     <div class="dialog-search">
-                        <el-cascader v-model.trim="userDepartmentTreePosition"
+                        <el-cascader filterable v-model.trim="userDepartmentTreePosition"
                                      :options="departmentCascader" @change="handleDepartmentChange"
                                      class="dialog-search-item dialog-keywords"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select

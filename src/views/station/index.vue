@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-cascader
+                        <el-cascader filterable
                             placeholder="请选择分类"
                             v-model.trim="stationGroupClassificationIds"
                             :options="stationGroupClassificationCascader"

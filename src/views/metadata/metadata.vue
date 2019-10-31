@@ -119,7 +119,7 @@
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="数据类型" prop="dataType">
-                                <el-select v-model.trim="metadata.dataType" placeholder="请选择" style="width: 100%">
+                                <el-select filterable v-model.trim="metadata.dataType" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in dataTypeOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -127,7 +127,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="控件类型" prop="controlType">
-                                <el-select v-model.trim="metadata.controlType" placeholder="请选择" style="width: 100%">
+                                <el-select filterable v-model.trim="metadata.controlType" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in controlTypeOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -137,7 +137,7 @@
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="校验方式" prop="checkModel">
-                                <el-select v-model.trim="metadata.checkModel" placeholder="请选择" style="width: 100%">
+                                <el-select filterable v-model.trim="metadata.checkModel" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in checkModelOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -152,7 +152,7 @@
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
                             <el-form-item label="数据来源" prop="dataSource">
-                                <el-select v-model.trim="metadata.dataSource" placeholder="请选择" style="width: 100%">
+                                <el-select filterable v-model.trim="metadata.dataSource" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in dataSourceOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
                                 </el-select>
@@ -160,7 +160,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="数据字典" prop="dictionaryId" v-if="metadata.dataSource === 'dataItem'">
-                                <el-select v-model.trim="metadata.dictionaryId" placeholder="请选择" style="width: 100%">
+                                <el-select filterable v-model.trim="metadata.dictionaryId" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item of dictOptions" :key="item.id" :label="item.name" :value="item.key">
                                     </el-option>
                                 </el-select>

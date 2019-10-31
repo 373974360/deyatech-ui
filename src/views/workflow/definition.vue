@@ -100,7 +100,7 @@
                                 <div class="con-bank-20"></div>
                                 <div>
                                     <div v-show="processTaskSetting.candidateType === 1">
-                                        <!--<el-select v-model.trim="selectedUser" remote :remote-method="getUserOptions"
+                                        <!--<el-select filterable v-model.trim="selectedUser" remote :remote-method="getUserOptions"
                                                    filterable placeholder="请输入姓名或帐号查询" style="width: 60%">
                                             <el-option v-for="item in userOptions" :key="item.id" :label="item.name" :value="item.id">
                                             </el-option>
@@ -121,12 +121,12 @@
                                             </el-table-column>
                                         </el-table>
                                     </div>
-                                    <el-select v-show="processTaskSetting.candidateType === 2" v-model.trim="candidateGroupList" multiple
-                                               filterable placeholder="请选择" style="width: 75%">
+                                    <el-select filterable v-show="processTaskSetting.candidateType === 2" v-model.trim="candidateGroupList" multiple
+                                               placeholder="请选择" style="width: 75%">
                                         <el-option v-for="item in groupOptions" :key="item.id" :label="item.name" :value="item.id">
                                         </el-option>
                                     </el-select>
-                                    <el-cascader v-show="processTaskSetting.candidateType === 3" v-model.trim="selectedDepartment"
+                                    <el-cascader filterable v-show="processTaskSetting.candidateType === 3" v-model.trim="selectedDepartment"
                                                  :options="departmentCascader" style="width: 75%"
                                                  show-all-levels expand-trigger="hover"
                                                  filterable clearable change-on-select
@@ -153,7 +153,7 @@
                        :close-on-click-modal="closeOnClickModal" @close="closeUserDialog" @open="initUserTable">
                 <div v-loading="dialogFormLoading">
                     <div class="dialog-search">
-                        <el-cascader :options="departmentCascader" @change="handleDepartmentChange"
+                        <el-cascader filterable :options="departmentCascader" @change="handleDepartmentChange"
                                      class="dialog-search-item dialog-keywords"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                      :size="searchSize" placeholder="根据部门筛选">

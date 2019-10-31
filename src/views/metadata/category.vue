@@ -51,7 +51,7 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item :label="$t('table.parent')" prop="parentId">
-                            <el-cascader :options="metadataCategoryCascader" v-model.trim="metadataCategoryTreePosition"
+                            <el-cascader filterable :options="metadataCategoryCascader" v-model.trim="metadataCategoryTreePosition"
                                          show-all-levels expand-trigger="click" clearable
                                          change-on-select style="width: 100%;"></el-cascader>
                         </el-form-item>
