@@ -59,7 +59,7 @@
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeCategoryDialog">
                 <el-form ref="categoryDialogForm" class="deyatech-form" :model="category" label-position="right"
-                         label-width="80px" :rules="categoryRules">
+                         label-width="100px" :rules="categoryRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="站点" prop="siteId">
@@ -71,6 +71,28 @@
                         <el-col :span="24">
                             <el-form-item label="分类名称" prop="name">
                                 <el-input v-model.trim="category.name" maxlength="50" placeholder="请输入分类名称"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="列表页模板" prop="listPageTemplate">
+                                <el-cascader
+                                    v-model="selectedListTemplate"
+                                    :props="templateProps"
+                                    :options="listTemplates"
+                                    @change="selectedListTemplateChange"
+                                    placeholder="请选择列表页模板" style="width: 100%"></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="详情页模板" prop="detailPageTemplate">
+                                <el-cascader
+                                    v-model="selectedDetailTemplate"
+                                    :props="templateProps"
+                                    :options="detailTemplates"
+                                    @change="selectedDetailTemplateChange"
+                                    placeholder="请选详情页模板" style="width: 100%"></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -101,6 +123,7 @@
         createOrUpdateCategory,
         delCategorys
     } from '@/api/interview/category';
+    import {listTemplateAllFiles} from '@/api/template/template';
 
     export default {
         name: 'category',
@@ -118,7 +141,9 @@
                 category: {
                     id: undefined,
                     name: undefined,
-                    siteId: undefined
+                    siteId: undefined,
+                    listPageTemplate: undefined,
+                    detailPageTemplate: undefined
                 },
                 categoryRules: {
                     name: [
@@ -126,12 +151,27 @@
                     ],
                     siteId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '站点'}
+                    ],
+                    listPageTemplate: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '列表页模板'}
+                    ],
+                    detailPageTemplate: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '详情页模板'}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                listTemplates: [],
+                detailTemplates: [],
+                selectedListTemplate: [],
+                selectedDetailTemplate: [],
+                templateProps: {
+                    value: 'fileName',
+                    label: 'fileName',
+                    children: 'children'
+                }
             }
         },
         computed: {
@@ -153,9 +193,38 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = true;
-            this.reloadList();
+            if (this.$store.state.common.siteId) {
+                this.loadTemplates();
+                this.reloadList();
+            }
         },
         methods: {
+            selectedListTemplateChange(v) {
+                if (v && v.length > 0) {
+                    this.$set(this.category, 'listPageTemplate', '/' + v.join('/'));
+                } else {
+                    this.$set(this.category, 'listPageTemplate', undefined);
+                }
+            },
+            selectedDetailTemplateChange(v) {
+                if (v && v.length > 0) {
+                    this.$set(this.category, 'detailPageTemplate', '/' + v.join('/'));
+                } else {
+                    this.$set(this.category, 'detailPageTemplate', undefined);
+                }
+            },
+            loadTemplates() {
+                this.listTemplates = [];
+                listTemplateAllFiles(this.$store.state.common.siteId, "list").then(response => {
+                    let result = JSON.parse(response.data);
+                    this.listTemplates = result.files;
+                });
+                this.detailTemplates = [];
+                listTemplateAllFiles(this.$store.state.common.siteId, "detail").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.detailTemplates = result.files
+                })
+            },
             resetSearch(){
                 this.listQuery.siteId = undefined;
                 this.listQuery.name = undefined;
@@ -201,6 +270,8 @@
                 } else {
                     this.category = deepClone(this.selectedRows[0]);
                 }
+                this.selectedListTemplate = this.category.listPageTemplate.substring(1).split('/');
+                this.selectedDetailTemplate = this.category.detailPageTemplate.substring(1).split('/');
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -257,7 +328,9 @@
                 this.category = {
                     id: undefined,
                     name: undefined,
-                    siteId: undefined
+                    siteId: undefined,
+                    listPageTemplate: undefined,
+                    detailPageTemplate: undefined
                 }
             },
             resetCategoryDialogAndList(){
@@ -266,6 +339,8 @@
                 this.reloadList();
             },
             closeCategoryDialog() {
+                this.selectedListTemplate = [];
+                this.selectedDetailTemplate = [];
                 this.dialogVisible = false;
                 this.resetCategory();
                 this.$refs['categoryDialogForm'].resetFields();
