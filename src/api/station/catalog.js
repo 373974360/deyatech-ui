@@ -107,3 +107,10 @@ export function updatePlaceOnFileById(query) {
         params: query
     });
 }
+export function getNextSortNo() {
+    return request({
+        url: '/manage/station/catalog/getNextSortNo',
+        method: 'get',
+        params: {}
+    });
+}

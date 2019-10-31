@@ -116,11 +116,13 @@
         getDepartmentTree,
         getDepartmentCascader,
         createOrUpdateDepartment,
+        getNextSortNo,
         delDepartments
     } from '@/api/admin/department';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
     import {isStartOrEndWithWhiteSpace} from '@/util/validate';
+
     export default {
         name: 'department',
         data() {
@@ -141,7 +143,7 @@
                     code: undefined,
                     parentId: undefined,
                     treePosition: undefined,
-                    sortNo: 1
+                    sortNo: undefined
                 },
                 departmentCascader: [],
                 dialogVisible: false,
@@ -261,6 +263,11 @@
                         this.department.parentId = 0
                     }
                 }
+                getNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.department.sortNo = response.data;
+                    });
+                });
                 this.getDepartmentCascader(null);
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
@@ -341,7 +348,7 @@
                     code: undefined,
                     parentId: undefined,
                     treePosition: undefined,
-                    sortNo: 1
+                    sortNo: undefined
                 }
             },
             resetDepartmentDialogAndList() {

@@ -147,7 +147,7 @@
 </template>
 
 <script>
-    import {createOrUpdateMenu, delMenus, getMenuCascader, getMenuTree} from '@/api/admin/menu';
+    import {createOrUpdateMenu, delMenus, getMenuCascader, getMenuTree, getNextSortNo} from '@/api/admin/menu';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
     import {isStartOrEndWithWhiteSpace} from '@/util/validate';
@@ -276,6 +276,11 @@
                         this.menu.parentId = this.selectedRows[0].id;
                     }
                 }
+                getNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.menu.sortNo = response.data;
+                    });
+                });
                 this.menu.children = undefined;
                 this.getMenuCascader(null);
                 this.dialogTitle = 'create';

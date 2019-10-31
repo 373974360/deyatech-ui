@@ -93,6 +93,7 @@
         getMetadataCategoryCascader,
         createOrUpdateMetadataCategory,
         delMetadataCategorys,
+        getNextSortNo,
         checkMetadataExist
     } from '../../api/metadata/category';
     import {deepClone, setExpanded} from '@/util/util';
@@ -250,6 +251,11 @@
                         this.metadataCategory.parentId = this.selectedRows[0].id;
                     }
                 }
+                getNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.metadataCategory.sortNo = response.data;
+                    });
+                });
                 this.metadataCategory.children = undefined;
                 this.getMetadataCategoryCascader(null);
                 this.dialogTitle = 'create';

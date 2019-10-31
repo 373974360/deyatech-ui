@@ -39,5 +39,11 @@ export function getSatisfactionList(query) {
         params: query
     });
 }
-
+export function getNextSortNo() {
+    return request({
+        url: '/manage/appeal/satisfaction/getNextSortNo',
+        method: 'get',
+        params: {}
+    });
+}
 

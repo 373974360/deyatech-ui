@@ -80,3 +80,11 @@ export function hasStation(query) {
         params: query
     });
 }
+
+export function getNextSortNo() {
+    return request({
+        url: '/manage/resource/stationGroupClassification/getNextSortNo',
+        method: 'get',
+        params: {}
+    });
+}

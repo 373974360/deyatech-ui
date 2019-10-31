@@ -103,6 +103,7 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
+        getNextSortNo,
         getSatisfactionList,
         createOrUpdateSatisfaction,
         delSatisfactions
@@ -200,6 +201,11 @@
             },
             btnCreate(){
                 this.resetSatisfaction();
+                getNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.satisfaction.sort = response.data;
+                    });
+                });
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },

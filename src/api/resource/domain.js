@@ -82,3 +82,10 @@ export function getNginxPort(query) {
     });
 }
 
+export function getDomainNextSortNo() {
+    return request({
+        url: '/manage/resource/domain/getNextSortNo',
+        method: 'get',
+        params: {}
+    });
+}

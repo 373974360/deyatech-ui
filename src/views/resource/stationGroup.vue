@@ -505,6 +505,7 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
+        getNextSortNo,
         getStationGroupList,
         createOrUpdateStationGroup,
         delStationGroups,
@@ -520,6 +521,7 @@
         createOrUpdateSetting
     } from '@/api/resource/setting';
     import {
+        getDomainNextSortNo,
         getDomainList,
         createOrUpdateDomain,
         delDomains,
@@ -657,7 +659,7 @@
                     englishName: undefined,
                     abbreviation: undefined,
                     description: undefined,
-                    sortNo: 1,
+                    sortNo: undefined,
                     stationGroupClassificationId: undefined,
                     stationGroupClassificationTreePosition: undefined,
                     departmentId: undefined,
@@ -789,7 +791,7 @@
                     name: undefined,
                     englishName: undefined,
                     description: undefined,
-                    sortNo: 1,
+                    sortNo: undefined,
                     stationGroupId: undefined,
                     port: 80
                 },
@@ -1012,6 +1014,11 @@
                 this.dialogVisible = true;
                 this.stationGroup.stationGroupClassificationId = this.listQuery.stationGroupClassificationId;
                 this.stationGroup.stationGroupClassificationTreePosition = this.listQuery.stationGroupClassificationTreePosition;
+                getNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.stationGroup.sortNo = response.data;
+                    });
+                });
             },
             btnUpdate(row){
                 this.resetStationGroup();
@@ -1055,7 +1062,7 @@
                 this.$refs['stationGroupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if (this.stationGroup.sortNo) {
+                        if (!this.stationGroup.sortNo) {
                             this.stationGroup.sortNo = 1;
                         }
                         createOrUpdateStationGroup(this.stationGroup).then((response) => {
@@ -1079,7 +1086,7 @@
                 this.$refs['stationGroupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if (this.stationGroup.sortNo) {
+                        if (!this.stationGroup.sortNo) {
                             this.stationGroup.sortNo = 1;
                         }
                         createOrUpdateStationGroup(this.stationGroup).then(() => {
@@ -1112,7 +1119,7 @@
                 this.stationGroup.englishName = undefined;
                 this.stationGroup.abbreviation = undefined;
                 this.stationGroup.description = undefined;
-                this.stationGroup.sortNo = 1;
+                this.stationGroup.sortNo = undefined;
                 this.stationGroup.stationGroupClassificationId = undefined;
                 this.stationGroup.stationGroupClassificationTreePosition = undefined;
                 this.stationGroup.departmentId = undefined;
@@ -1382,6 +1389,11 @@
                 this.domainFormDialogTitle = 'create';
                 this.domainFormDialogVisible = true;
                 this.domain.stationGroupId = this.stationGroup.id;
+                getDomainNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.domain.sortNo = response.data;
+                    });
+                });
                 this.$nextTick(()=>{
                     this.$refs['domainDialogForm'].clearValidate();
                 });
@@ -1438,7 +1450,7 @@
                 this.$refs['domainDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if (this.domain.sortNo) {
+                        if (!this.domain.sortNo) {
                             this.domain.sortNo = 1;
                         }
                         this.domain.englishName = this.domain.name;
@@ -1455,7 +1467,7 @@
                 this.$refs['domainDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if (this.domain.sortNo) {
+                        if (!this.domain.sortNo) {
                             this.domain.sortNo = 1;
                         }
                         this.domain.englishName = this.domain.name;
@@ -1488,7 +1500,7 @@
                     id: undefined,
                     name: undefined,
                     description: undefined,
-                    sortNo: 1,
+                    sortNo: undefined,
                     stationGroupId: undefined,
                     port: 80
                 }

@@ -17,7 +17,6 @@
                   @selection-change="handleSelectionChange" v-if="tableReset">
             <el-table-column type="selection" width="50" align="center"/>
 
-
             <el-table-column align="center"
                              v-for="item in frontTreeHeadData"
                              :label="item.label"
@@ -46,27 +45,6 @@
                     <span v-else>{{scope.row[item.prop]}}</span>
                 </template>
             </el-table-column>
-
-
-            <!--<el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
-                                  parentKey="parentId" prop="name" label="栏目名称" align="left">
-                <template slot-scope="scope">
-                    <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
-                </template>
-            </el-table-tree-column>
-            <el-table-column align="center" label="栏目别名" prop="aliasName"/>
-            <el-table-column align="center" label="英文名称" prop="ename"/>
-            <el-table-column align="center" label="隐藏" prop="allowHidden" width="50">
-                <template slot-scope="scope">
-                    <el-checkbox v-model="scope.row.allowHidden" :true-label="1" :false-label="0" @change="allowHiddenChange(scope.row)"/>
-                </template>
-            </el-table-column>
-            <el-table-column align="center" label="归档" prop="placeOnFile" width="50">
-                <template slot-scope="scope">
-                    <el-checkbox v-model="scope.row.placeOnFile" :true-label="1" :false-label="0" @change="placeOnFileChange(scope.row)"/>
-                </template>
-            </el-table-column>
-            <el-table-column align="center" label="排序" prop="sortNo" width="80"/>-->
 
 
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
@@ -140,14 +118,14 @@
                     </el-row>
 
                     <el-row :gutter="20" :span="24">
-                        <!--<el-col :span="12">
-                            <el-form-item label="栏目名" prop="columnName">
-                                <el-input v-model.trim="catalog.columnName"></el-input>
-                            </el-form-item>
-                        </el-col>-->
                         <el-col :span="12">
                             <el-form-item label="栏目类型" prop="columnType">
                                 <el-input v-model.trim="catalog.columnType"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="栏目排序" prop="sortNo">
+                                <el-input v-model.trim="catalog.sortNo"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -301,8 +279,7 @@
                                 expand-trigger="hover"
                                 :options="catalogCascader"
                                 v-model.trim="selectCatalogIds"
-                                :props="{ multiple: true, checkStrictly: true }"
-                                @change="handleChange">
+                                :props="{ multiple: true, checkStrictly: true }">
                             </el-cascader>
                         </el-form-item>
                     </el-col>
@@ -414,6 +391,7 @@
 
 <script>
     import {
+        getNextSortNo,
         getCatalogTree,
         getCatalogCascader,
         createOrUpdateCatalog,
@@ -680,9 +658,6 @@
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
                         {validator: validateUrl, trigger: 'blur'}
                     ],
-                  /*  showable: [
-                        {required: true, message: this.$t("table.pleaseInput") + '是否显示'}
-                    ],*/
                     workflowKey: [
                         {required: true, message: this.$t("table.pleaseSelect") + '工作流'}
                     ],
@@ -691,9 +666,6 @@
                     ],
                     listTemplate: [
                         {validator: validateListTemplate, trigger: 'change'}
-                    ],
-                    sortNo: [
-                        {required: true, message: this.$t("table.pleaseInput") + '排序号'}
                     ],
                     treePosition: [
                         {required: true, message: this.$t("table.pleaseInput") + '在树结构中位置'}
@@ -982,6 +954,11 @@
                         this.publishOrganizationArray = position.substring(1).split('&');
                     }
                 }
+                getNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.catalog.sortNo = response.data;
+                    });
+                });
                 this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';

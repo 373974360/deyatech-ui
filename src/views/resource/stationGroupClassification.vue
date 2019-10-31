@@ -100,6 +100,7 @@
         isNameExist,
         isEnglishNameExist,
         hasStationOrClassification,
+        getNextSortNo,
         hasStation} from '@/api/resource/stationGroupClassification';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
@@ -283,7 +284,11 @@
                         this.stationGroupClassification.parentId = 0
                     }
                 }
-                // this.stationGroupClassification.children = undefined;
+                getNextSortNo().then(response=> {
+                    this.$nextTick(()=>{
+                        this.stationGroupClassification.sortNo = response.data;
+                    });
+                });
                 this.getStationGroupClassificationCascader(null);
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
