@@ -40,11 +40,11 @@ export function getMarketTypeList(query) {
     });
 }
 
-export function isExistMarketName(marketName) {
+export function isExistMarketName(query) {
     return request({
         url: '/manage/market/marketType/isExistMarketName',
         method: 'get',
-        params: {marketName}
+        params: query
     })
 }
 export function getAllMarketType(query) {

@@ -1,17 +1,17 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
+            <!--<div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.pleaseInput') + '分类名称'" v-model.trim="listQuery.marketName"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
-            </div>
+            </div>-->
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
@@ -24,12 +24,15 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="marketTypeList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table :data="informationCategoryList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="分类名称" prop="marketName"/>
-                <el-table-column align="center" label="添加时间" prop="createTime"/>
-                <el-table-column align="center" label="备注" prop="remark"/>
+                <el-table-column align="center" label="中文名称" prop="name">
+                    <template slot-scope="scope">
+                        <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="英文名称" prop="enName"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -54,20 +57,25 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeMarketTypeDialog">
-                <el-form ref="marketTypeDialogForm" class="deyatech-form" :model="marketType" label-position="right"
-                         label-width="80px" :rules="marketTypeRules">
+                       :close-on-click-modal="closeOnClickModal" @close="closeInformationCategoryDialog">
+                <el-form ref="informationCategoryDialogForm" class="deyatech-form" :model="informationCategory" label-position="right"
+                         label-width="80px" :rules="informationCategoryRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="分类名称" prop="marketName">
-                                <el-input v-model.trim="marketType.marketName"></el-input>
+                            <el-form-item label="中文名称" prop="name">
+                                <el-input v-model.trim="informationCategory.name"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="英文名称" prop="enName">
+                                <el-input v-model.trim="informationCategory.enName"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark">
-                                <el-input type="textarea" v-model.trim="marketType.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="informationCategory.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -75,7 +83,7 @@
                 <span slot="footer" class="dialog-footer">
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeMarketTypeDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeInformationCategoryDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -84,54 +92,76 @@
 
 
 <script>
+    import pinyin from 'pinyin';
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getMarketTypeList,
-        createOrUpdateMarketType,
-        delMarketTypes,
-        isExistMarketName
-    } from '@/api/market/marketType';
+        getInformationCategoryList,
+        createOrUpdateInformationCategory,
+        delInformationCategorys,
+        isExistName,
+    } from '@/api/market/informationCategory';
+    import {isChinese, isEnglishName} from '@/util/validate';
 
     export default {
-        name: 'marketType',
+        name: 'informationCategory',
         data() {
-            const validateMarketName = (rule, value, callback) => {
-                const query = {
-                    id: this.marketType.id,
-                    marketName : value
-                }
-                isExistMarketName(query).then(response => {
-                    if (response.status == 200) {
-                        if (response.data) {
-                            callback(new Error("分类名称已存在"));
-                        } else {
-                            callback()
-                        }
-                    } else {
-                        callback(new Error('检查分类名称重复失败'))
+            const validateName = (rule, value, callback) => {
+                if (!isChinese(value)) {
+                    callback(new Error('只能输入中文'))
+                } else {
+                    const query = {
+                        id: this.informationCategory.id,
+                        name : value
                     }
-                })
+                    isExistName(query).then(response => {
+                        if (response.status == 200) {
+                            if (response.data) {
+                                callback(new Error("中文名称已存在"));
+                            } else {
+                                this.informationCategory.enName = pinyin(value, {
+                                    style: pinyin.STYLE_FIRST_LETTER
+                                }).join('')
+                                callback()
+                            }
+                        } else {
+                            callback(new Error('检查名称重复失败'))
+                        }
+                    })
+                }
+            };
+            const validateEnName = (rule, value, callback) => {
+                if (!isEnglishName(value)) {
+                    callback(new Error('只能是小写字母开头、数字和下划线组成'))
+                } else {
+                    callback()
+                }
             };
             return {
-                marketTypeList: undefined,
+                informationCategoryList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    marketName: undefined
+                    name: undefined
                 },
-                marketType: {
+                informationCategory: {
                     id: undefined,
-                    marketName: undefined,
+                    name: undefined,
+                    enName: undefined,
                     remark: undefined,
                 },
-                marketTypeRules: {
-                    marketName: [
-                        {required: true, message: this.$t("table.pleaseInput") + '分类名称'},
-                        {min: 1, max: 2000, message: '长度在 1 到 2000 个字符', trigger: 'blur'},
-                        {validator: validateMarketName, trigger: 'blur'}
+                informationCategoryRules: {
+                    name: [
+                        {required: true, message: this.$t("table.pleaseInput") + '中文名称'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                        {validator: validateName, trigger: 'blur'}
+                    ],
+                    enName: [
+                        {required: true, message: this.$t("table.pleaseInput") + '英文名称'},
+                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                        {validator: validateEnName, trigger: 'blur'}
                     ],
                     remark: [
                         {max: 500, message: '长度在 0 到 500 个字符', trigger: 'blur'}
@@ -154,9 +184,9 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.marketType_create,
-                    update: this.permission.marketType_update,
-                    delete: this.permission.marketType_delete
+                    create: this.permission.informationCategory_create,
+                    update: this.permission.informationCategory_update,
+                    delete: this.permission.informationCategory_delete
                 };
             }
         },
@@ -165,18 +195,15 @@
         },
         methods: {
             resetSearch(){
-                this.listQuery.marketName = undefined;
-            },
-            searchReloadList() {
-                this.handleCurrentChange(1);
+                this.listQuery.name = undefined;
             },
             reloadList(){
                 this.listLoading = true;
-                this.marketTypeList = undefined;
+                this.informationCategoryList = undefined;
                 this.total = undefined;
-                getMarketTypeList(this.listQuery).then(response => {
+                getInformationCategoryList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.marketTypeList = response.data.records;
+                    this.informationCategoryList = response.data.records;
                     this.total = response.data.total;
                 })
             },
@@ -192,16 +219,16 @@
                 this.selectedRows = rows;
             },
             btnCreate(){
-                this.resetMarketType();
+                this.resetInformationCategory();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
             btnUpdate(row){
-                this.resetMarketType();
+                this.resetInformationCategory();
                 if (row.id) {
-                    this.marketType = deepClone(row);
+                    this.informationCategory = deepClone(row);
                 } else {
-                    this.marketType = deepClone(this.selectedRows[0]);
+                    this.informationCategory = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -223,11 +250,11 @@
                 }
             },
             doCreate(){
-                this.$refs['marketTypeDialogForm'].validate(valid => {
+                this.$refs['informationCategoryDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateMarketType(this.marketType).then(() => {
-                            this.resetMarketTypeDialogAndList();
+                        createOrUpdateInformationCategory(this.informationCategory).then(() => {
+                            this.resetInformationCategoryDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -236,11 +263,11 @@
                 });
             },
             doUpdate(){
-                this.$refs['marketTypeDialogForm'].validate(valid => {
+                this.$refs['informationCategoryDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateMarketType(this.marketType).then(() => {
-                            this.resetMarketTypeDialogAndList();
+                        createOrUpdateInformationCategory(this.informationCategory).then(() => {
+                            this.resetInformationCategoryDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -250,31 +277,29 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delMarketTypes(ids).then(() => {
+                delInformationCategorys(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetMarketType(){
-                this.marketType = {
+            resetInformationCategory(){
+                this.informationCategory = {
                     id: undefined,
-                    marketName: undefined,
-                    comments: undefined,
-                    addTime: undefined,
-                    status: undefined
+                    name: undefined,
+                    enName: undefined,
+                    remark: undefined,
                 }
             },
-            resetMarketTypeDialogAndList(){
-                this.closeMarketTypeDialog();
+            resetInformationCategoryDialogAndList(){
+                this.closeInformationCategoryDialog();
                 this.submitLoading = false;
                 this.reloadList();
             },
-            closeMarketTypeDialog() {
+            closeInformationCategoryDialog() {
                 this.dialogVisible = false;
-                this.resetMarketType();
-                this.$refs['marketTypeDialogForm'].resetFields();
-            },
-
+                this.resetInformationCategory();
+                this.$refs['informationCategoryDialogForm'].resetFields();
+            }
         }
     }
 </script>
