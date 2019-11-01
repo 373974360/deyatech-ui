@@ -9,8 +9,8 @@
                             v-model.trim="addTimeRange"
                             type="daterange"
                             range-separator="至"
-                            start-placeholder="添加开始日期"
-                            end-placeholder="添加结束日期"
+                            start-placeholder="添加开始时间"
+                            end-placeholder="添加结束时间"
                             value-format="yyyy-MM-dd">
                         </el-date-picker>
                     </el-form-item>
@@ -233,7 +233,8 @@
                 }
             };
             const validateIsSell = (rule, value, callback) => {
-                if ((this.priceInfo.marketName.indexOf("批发") != -1 || this.priceInfo.marketName.indexOf("零售") != -1) && !this.priceInfo.isSell) {
+                if (this.priceInfo.marketName && (this.priceInfo.marketName.indexOf("批发") != -1 || this.priceInfo.marketName.indexOf("零售") != -1)
+                        && value != 0 && value != 1) {
                     callback(new Error(this.$t("table.pleaseSelect") + '售卖方式'));
                 } else {
                     callback();

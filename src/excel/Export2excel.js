@@ -139,3 +139,269 @@ export function export2Excel(th, jsonData, defaultTitle) {
   var title = defaultTitle || '列表'
   saveAs(new Blob([s2ab(wbout)], {type: "application/octet-stream"}), title + ".xlsx")
 }
+
+
+/****************************************修改源码，添加方法start****************************************/
+export function exportDailyPriceSurveyData2Excel(jsonData, defaultTitle) {
+
+    /* original data */
+    var ws = sheet_from_array_of_arrays(jsonData);
+
+    // 合并单元格
+    mergeDailyCell(ws);
+
+    /* add worksheet to workbook */
+    writeExcel(ws, defaultTitle);
+}
+
+export function mergeDailyCell(ws) {
+    // 合并单元格 - 表头
+    ws["!merges"] = [
+        {
+            s: {    // s为开始
+                c: 0,   // col
+                r: 0    // row
+            },
+            e: {    // e为结束
+                c: 6,
+                r: 0
+            }
+        },
+        {
+            s: {
+                c: 0,
+                r: 1
+            },
+            e: {
+                c: 6,
+                r: 1
+            }
+        },
+        {
+            s: {
+                c: 0,
+                r: 2
+            },
+            e: {
+                c: 0,
+                r: 3
+            }
+        },
+        {
+            s: {
+                c: 1,
+                r: 2
+            },
+            e: {
+                c: 1,
+                r: 3
+            }
+        },
+        {
+            s: {
+                c: 2,
+                r: 2
+            },
+            e: {
+                c: 3,
+                r: 2
+            }
+        },
+        {
+            s: {
+                c: 4,
+                r: 2
+            },
+            e: {
+                c: 5,
+                r: 2
+            }
+        },
+        {
+            s: {
+                c: 6,
+                r: 2
+            },
+            e: {
+                c: 6,
+                r: 3
+            }
+        }
+    ]
+
+    mergeDataCell(ws, 5);
+}
+
+/**
+ * 合并单元格 - 数据
+ * @param ws excel对象
+ * @param rowNumber 数据取值开始行数
+ */
+export function mergeDataCell(ws, rowStart) {
+    let mergeObj = {};
+    Object.keys(ws).forEach(key => {
+        // 第rowNumber行取数据
+        if (key.indexOf('A') != -1 && key.slice(1) >= rowStart) {
+            if(mergeObj.hasOwnProperty(ws[key].v)){
+                mergeObj[ws[key].v] += 1;
+                ws[key].v = '';
+            }else{
+                Vue.set(mergeObj, ws[key].v, 0);
+            }
+        }
+    })
+    Object.keys(ws).forEach(key => {
+        if (key.indexOf('A') != -1 && key.slice(1) >= rowStart) {
+            if (mergeObj.hasOwnProperty(ws[key].v) && mergeObj[ws[key].v]) {
+                let merge = {
+                    s: {
+                        c: 0,
+                        r: key.slice(1) - 1
+                    },
+                    e: {
+                        c: 0,
+                        r: key.slice(1) - 1 + mergeObj[ws[key].v]
+                    }
+                }
+                ws["!merges"].push(merge);
+            }
+        }
+    })
+}
+
+/**
+ * 输出Excel
+ * @param ws excel对象
+ * @param defaultTitle 输出Excel名称
+ */
+export function writeExcel(ws, defaultTitle) {
+    var wb = new Workbook();
+    var ws_name = "SheetJS";
+    wb.SheetNames.push(ws_name);
+    wb.Sheets[ws_name] = ws;
+    var wbout = XLSX.write(wb, {bookType: 'xlsx', bookSST: false, type: 'binary'});
+    var title = defaultTitle || '列表'
+    saveAs(new Blob([s2ab(wbout)], {type: "application/octet-stream"}), title + ".xlsx")
+}
+
+export function exportTenDayPriceSurveyData2Excel(jsonData, defaultTitle) {
+
+    /* original data */
+    var ws = sheet_from_array_of_arrays(jsonData);
+
+    // 合并单元格
+    mergeTenDayCell(ws);
+
+    /* add worksheet to workbook */
+    writeExcel(ws, defaultTitle);
+}
+
+export function mergeTenDayCell(ws) {
+    // 合并单元格 - 表头
+    ws["!merges"] = [
+        {
+            s: {    // s为开始
+                c: 0,   // col
+                r: 0    // row
+            },
+            e: {    // e为结束
+                c: 11,
+                r: 0
+            }
+        },
+        {
+            s: {
+                c: 0,
+                r: 1
+            },
+            e: {
+                c: 11,
+                r: 1
+            }
+        },
+        {
+            s: {
+                c: 0,
+                r: 2
+            },
+            e: {
+                c: 0,
+                r: 3
+            }
+        },
+        {
+            s: {
+                c: 1,
+                r: 2
+            },
+            e: {
+                c: 1,
+                r: 3
+            }
+        },
+        {
+            s: {
+                c: 2,
+                r: 2
+            },
+            e: {
+                c: 6,
+                r: 2
+            }
+        },
+        {
+            s: {
+                c: 7,
+                r: 2
+            },
+            e: {
+                c: 11,
+                r: 2
+            }
+        }
+    ]
+
+    mergeDataCell(ws, 5);
+}
+
+
+export function exportWeeklyPriceSurveyData2Excel(jsonData, defaultTitle) {
+
+    /* original data */
+    var ws = sheet_from_array_of_arrays(jsonData);
+
+    // 合并单元格
+    mergeWeeklyCell(ws);
+
+    /* add worksheet to workbook */
+    writeExcel(ws, defaultTitle);
+}
+
+export function mergeWeeklyCell(ws) {
+    // 合并单元格 - 表头
+    ws["!merges"] = [
+        {
+            s: {    // s为开始
+                c: 0,   // col
+                r: 0    // row
+            },
+            e: {    // e为结束
+                c: 5,
+                r: 0
+            }
+        },
+        {
+            s: {
+                c: 0,
+                r: 1
+            },
+            e: {
+                c: 5,
+                r: 1
+            }
+        }
+    ]
+
+    mergeDataCell(ws, 4);
+}
+/****************************************修改源码，添加方法start****************************************/

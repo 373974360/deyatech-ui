@@ -41,3 +41,25 @@ export function getDaycollectList(query) {
 }
 
 
+export function getDailyPriceSurveyData(query) {
+    return request({
+        url: '/manage/market/daycollect/getDailyPriceSurveyData',
+        method: 'get',
+        params: query
+    });
+}
+export function getTenDayPriceSurveyData(query) {
+    return request({
+        url: '/manage/market/daycollect/getTenDayPriceSurveyData',
+        method: 'get',
+        params: query
+    });
+}
+export function getWeeklyPriceSurveyData(query) {
+    return request({
+        url: '/manage/market/daycollect/getWeeklyPriceSurveyData',
+        method: 'get',
+        params: query
+    });
+}
+
