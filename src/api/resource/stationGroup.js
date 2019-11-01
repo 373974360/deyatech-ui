@@ -99,3 +99,11 @@ export function getNextSortNo() {
         params: {}
     });
 }
+
+export function getLoginUserStationCascader() {
+    return request({
+        url: '/manage/resource/stationGroup/getLoginUserStationCascader',
+        method: 'get',
+        params: {}
+    });
+}

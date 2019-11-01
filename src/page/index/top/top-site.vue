@@ -6,7 +6,7 @@
 
 <script>
     import {
-        getClassificationStationCascader
+        getLoginUserStationCascader
     } from '@/api/resource/stationGroup';
     import {mapState} from "vuex";
 
@@ -15,8 +15,7 @@
         data() {
             return {
                 stationGroupList: undefined,
-                stationGroupTreePosition: undefined,
-                userInfo: this.$store.state.user.userInfo
+                stationGroupTreePosition: undefined
             };
         },
         inject: ['reloadMainView'],
@@ -26,7 +25,7 @@
         methods: {
             getAllStationGroup(){
                 this.stationGroupList = [];
-                getClassificationStationCascader({userId: this.userInfo.id}).then(response => {
+                getLoginUserStationCascader().then(response => {
                     this.stationGroupList = response.data;
                     if(this.stationGroupList.length > 0){
                         let v = [];
