@@ -41,9 +41,9 @@ export function getInformationList(query) {
 }
 
 
-export function doRelease(data) {
+export function doExamine(data) {
     return request({
-        url: '/manage/market/information/doRelease',
+        url: '/manage/market/information/doExamine',
         method: 'post',
         data
     })

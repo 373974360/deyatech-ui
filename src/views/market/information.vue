@@ -62,8 +62,8 @@
                 </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
-                        <el-button v-if="!scope.row.status" title="发布" type="success" icon="el-icon-check" :size="btnSize" circle
-                                   @click.stop.safe="doRelease(scope.row)"></el-button>
+                        <el-button title="审核" type="success" icon="el-icon-check" :size="btnSize" circle
+                                   @click.stop.safe="btnExamine(scope.row)"></el-button>
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
@@ -134,6 +134,66 @@
                     <el-button :size="btnSize" @click="closeInformationDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
+
+            <el-dialog title="审核" :visible.sync="dialogExamineVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeExamineDialog">
+
+                <table class="mailTable">
+                    <tr>
+                        <td class="column">分类</td>
+                        <td>{{information.categoryName}}</td>
+                        <td class="column">标题</td>
+                        <td>{{information.title}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">作者</td>
+                        <td>{{information.author}}</td>
+                        <td class="column">来源</td>
+                        <td>{{information.source}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">内容</td>
+                        <td class="reform" colspan="3">{{information.content}}</td>
+                    </tr>
+                    <tr v-if="information.status != 0">
+                        <td class="column">审核状态</td>
+                        <td colspan="3">{{information.status | releaseStatusFilter}}</td>
+                    </tr>
+                    <tr v-if="information.status != 0 && information.explain">
+                        <td class="column">退稿说明</td>
+                        <td class="reform" colspan="3">{{information.explain}}</td>
+                    </tr>
+                </table>
+                <el-form ref="examineDialogForm" class="deyatech-form" :model="examine" label-position="right"
+                         label-width="80px" :rules="examineRules" style="margin-top: 30px" v-if="information.status == 0">
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="审核" prop="status">
+                                <el-select v-model.trim="examine.status" style="width: 100%">
+                                    <el-option
+                                        v-for="item in examineStatusArr"
+                                        :key="item.code"
+                                        :label="item.label"
+                                        :value="item.code">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24" v-if="examine.status == -1">
+                        <el-col :span="24">
+                            <el-form-item label="说明" prop="explain">
+                                <el-input type="textarea" v-model.trim="examine.explain" :rows="5"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doExamine" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeExamineDialog">{{$t('table.cancel')}}</el-button>
+                </span>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -146,7 +206,7 @@
         getInformationList,
         createOrUpdateInformation,
         delInformations,
-        doRelease
+        doExamine
     } from '@/api/market/information';
     import {getAllCategory} from '@/api/market/informationCategory';
 
@@ -172,6 +232,7 @@
                     author: undefined,
                     source: undefined,
                     status: undefined,
+                    explain: undefined,
                     releaseTime: undefined,
                     clicks: undefined
                 },
@@ -204,15 +265,38 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 allCategory: [],
+                dialogExamineVisible: false,
+                examineStatusArr: [
+                    {code: 1, label: '发布'},
+                    {code: -1, label: '退稿'}
+                ],
+                examine: {
+                    status: undefined,
+                    explain: undefined
+                },
+                examineRules: {
+                    status: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '信息状态'}
+                    ],
+                    explain: [
+                        {required: true, message: this.$t("table.pleaseInput") + '退稿说明'},
+                        {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'},
+                    ]
+                }
             }
         },
         filters: {
             releaseStatusFilter: function (status) {
-                const releaseStatusMap = {
-                    0: '未发布',
-                    1: '已发布'
-                };
-                return releaseStatusMap[status]
+                var value = '';
+                if (status == 0) {
+                    value = '待审核';
+                } else if (status == 1) {
+                    value = '已发布';
+                } else {
+                    value = '已退稿';
+                }
+
+                return value
             }
         },
         computed: {
@@ -339,6 +423,7 @@
                     author: undefined,
                     source: undefined,
                     status: undefined,
+                    explain: undefined,
                     releaseTime: undefined,
                     clicks: undefined
                 }
@@ -358,20 +443,75 @@
                     this.allCategory = response.data;
                 })
             },
-            doRelease(row) {
-                if (row.status) {
-                    this.$message.error('该信息已发布');
-                    return;
+            btnExamine(row) {
+                this.resetInformation();
+                this.information = deepClone(row);
+                this.dialogExamineVisible = true;
+            },
+            closeExamineDialog() {
+                if (this.information.status == 0) {
+                    this.examine = {
+                        status: undefined,
+                        explain: undefined
+                    };
+                    this.$refs['examineDialogForm'].resetFields();
                 }
-                this.$confirm('此操作将发布内容信息, 是否继续？', this.$t("table.tip"), {type: 'success'}).then(() => {
-                    doRelease({id: row.id}).then(() => {
-                        this.reloadList();
-                        this.$message.success('发布成功');
-                    })
-                })
-            }
+                this.dialogExamineVisible = false;
+                this.resetInformation();
+            },
+            doExamine(){
+                this.$refs['examineDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        const query = {
+                            id: this.information.id,
+                            status: this.examine.status,
+                            explain: this.examine.explain,
+                        }
+                        doExamine(query).then(() => {
+                            this.resetExamineDialogAndList();
+                            this.$message.success('审核成功');
+                        })
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            resetExamineDialogAndList(){
+                this.closeExamineDialog();
+                this.submitLoading = false;
+                this.reloadList();
+            },
         }
     }
 </script>
 
-
+<style>
+    .mailTable, .mailTable tr, .mailTable tr td {
+        border:1px solid #E6EAEE;
+    }
+    .mailTable {
+        font-size: 14px;
+        color: #71787E;
+    }
+    .mailTable tr td {
+        border:1px solid #E6EAEE;
+        width: 225px;
+        height: 40px;
+        line-height: 40px;
+        box-sizing: border-box;
+        padding: 0 10px;
+    }
+    .mailTable tr td.column {
+        width: 175px;
+        background-color: #EFF3F6;
+        color: #393C3E;
+    }
+    .mailTable tr td.reform {
+        height: auto;
+        line-height: 30px;
+    }
+    ul {
+        padding-inline-start: 20px;
+    }
+</style>
