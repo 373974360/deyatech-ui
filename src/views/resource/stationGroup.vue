@@ -25,7 +25,6 @@
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting" :disabled="selectedRows.length != 1">设置</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnGlobalSetting">全局设置</el-button>
                     <el-button v-show="btnEnable.domain"  type="primary" :size="btnSize" @click="btnDomain" :disabled="selectedRows.length != 1">域名</el-button>
-                    <el-button v-show="btnEnable.user"    type="primary" :size="btnSize" @click="btnUser" :disabled="selectedRows.length != 1">用户</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -84,10 +83,6 @@
                                            @click.stop="btnSetting(scope.row)"></el-button>
                                 <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="iconcustoms-clearance" :size="btnSize" circle
                                            @click.stop="btnDomain(scope.row)"></el-button>
-                                <el-badge :hidden="scope.row.userNumber <= 0 || !btnEnable.user" :value="scope.row.userNumber" :max="99" style="margin-left:10px">
-                                    <el-button v-show="btnEnable.user" title="用户" type="primary" icon="iconadd-account" :size="btnSize" circle
-                                               @click.stop="btnUser(scope.row)"></el-button>
-                                </el-badge>
                                 </div>
                             </template>
                         </el-table-column>
@@ -530,7 +525,6 @@
         runOrStopDomainById
     } from '@/api/resource/domain';
     import {getDepartmentCascader} from '@/api/admin/department';
-    import {getAllStationGroupUser, getAllUserByStationGroupUserVo, setStationGroupUsers} from "@/api/resource/stationGroupUser";
 
     export default {
         name: 'stationGroup',
@@ -813,24 +807,7 @@
                 },
                 domainSelectedRows: [],
                 domainFormDialogVisible: false,
-                domainFormDialogTitle: undefined,
-
-                // 关联用户
-                dialogStationGroupUserVisible: false,
-                dialogFormLoading: false,
-                userListQuery: {
-                    page: this.$store.state.common.page,
-                    size: this.$store.state.common.size,
-                    departmentId: undefined,
-                    name: undefined,
-                    stationGroupId: undefined
-                },
-                showRelatedFlag: false,
-                userTotal: 0,
-                userList: [],
-                selectAllUserId: [],
-                selectedRowsUser: [],
-                userDepartmentTreePosition: undefined
+                domainFormDialogTitle: undefined
             }
         },
         computed: {
@@ -1514,142 +1491,6 @@
                 this.domainFormDialogVisible = false;
                 this.resetDomain();
                 this.$refs['domainDialogForm'].resetFields();
-            },
-
-            // 关联用户
-            btnUser(row) {
-                this.resetStationGroup();
-                this.userListQuery.stationGroupId = undefined;
-                this.userListQuery.name = undefined;
-                this.userListQuery.departmentId = undefined;
-                this.userDepartmentTreePosition = [];
-                if (row.id) {
-                    this.stationGroup = deepClone(row);
-                } else {
-                    this.stationGroup = deepClone(this.selectedRows[0]);
-                }
-                this.dialogStationGroupUserVisible = true;
-                this.dialogFormLoading = true;
-                this.selectAllUserId = [];
-                this.loadStationGroupUser(this.stationGroup.id).then(res => {
-                    if (res && res.length > 0) {
-                        for (let stationGroupUser of res) {
-                            this.selectAllUserId.push(stationGroupUser.userId)
-                        }
-                        this.showRelatedFlag = true;
-                        this.handleShowRelated(true);
-                    } else {
-                        this.showRelatedFlag = false;
-                        this.handleShowRelated(false);
-                    }
-                })
-            },
-            loadStationGroupUser(stationGroupId) {
-                let query = {stationGroupId}
-                return new Promise((resolve, reject) => {
-                    getAllStationGroupUser(query).then(response => {
-                        resolve(response.data)
-                    }).catch(err => {
-                        reject(err)
-                    })
-                });
-            },
-            handleShowRelated(checked) {
-                if (checked) {
-                    this.userListQuery.stationGroupId = this.stationGroup.id;
-                } else {
-                    this.userListQuery.stationGroupId = undefined;
-                }
-                this.reloadUserList();
-            },
-            closeStationGroupUserDialog() {
-                this.dialogStationGroupUserVisible = false;
-                this.submitLoading = false;
-            },
-            handleDepartmentChange(val) {
-                if (val.length > 0) {
-                    this.userListQuery.departmentId = val[val.length - 1]
-                } else {
-                    this.userListQuery.departmentId = undefined
-                }
-            },
-            reloadUserList() {
-                this.handleCurrentChangeStationGroupUser(1)
-            },
-            selectRowUser(selection, row) {
-                let i = this.selectAllUserId.indexOf(row.userId)
-                if (i < 0) {
-                    this.selectAllUserId.push(row.userId)
-                } else {
-                    this.selectAllUserId.splice(i, 1)
-                }
-            },
-            selectAllUser(selection) {
-                if (selection.length > 0) {
-                    for (let user of this.userList) {
-                        if (this.selectAllUserId.indexOf(user.userId) < 0) {
-                            this.selectAllUserId.push(user.userId)
-                        }
-                    }
-                } else {
-                    for (let user of this.userList) {
-                        let i = this.selectAllUserId.indexOf(user.userId)
-                        if (i >= 0) {
-                            this.selectAllUserId.splice(i, 1)
-                        }
-                    }
-                }
-            },
-            handleSelectionChangeStationGroupUser(rows) {
-                this.selectedRowsUser = rows;
-            },
-            handleSizeChangeStationGroupUser(val) {
-                this.userListQuery.size = val;
-                this.loadUserList().then(() => {
-                    this.checkRelatedUserRows();
-                });
-            },
-            handleCurrentChangeStationGroupUser(val) {
-                this.userListQuery.page = val;
-                this.loadUserList().then(() => {
-                    this.checkRelatedUserRows();
-                });
-            },
-            loadUserList() {
-                return new Promise((resolve, reject) => {
-                    this.dialogFormLoading = true;
-                    getAllUserByStationGroupUserVo(this.userListQuery).then(response => {
-                        this.dialogFormLoading = false;
-                        this.userList = response.data.records;
-                        this.userTotal = response.data.total;
-                        resolve();
-                    }).catch(err => {
-                        this.dialogFormLoading = false;
-                        this.userTotal = 0;
-                        reject(err);
-                    })
-                });
-            },
-            checkRelatedUserRows() {
-                this.$nextTick(() => {
-                    if (this.selectAllUserId && this.selectAllUserId.length > 0) {
-                        for (let row of this.userList) {
-                            if (this.selectAllUserId.includes(row.userId)) {
-                                this.$refs['stationGroupUserTable'].toggleRowSelection(row, true)
-                            }
-                        }
-                    }
-                });
-            },
-            doSaveStationGroupUser() {
-                this.submitLoading = true;
-                setStationGroupUsers(this.stationGroup.id, this.selectAllUserId).then(() => {
-                    this.closeStationGroupUserDialog();
-                    this.reloadList();
-                    this.$message.success(this.$t("table.updateSuccess"));
-                }).catch(() => {
-                    this.submitLoading = false;
-                })
             }
         }
     }

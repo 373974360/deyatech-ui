@@ -63,14 +63,14 @@
 
                             <el-badge :hidden="scope.row.roleMenusCount <= 0 || !btnEnable.role_users" :value="scope.row.roleMenusCount"
                                       :max="99" style="margin-right:20px">
-                                <el-button v-if="btnEnable.role_users" title="关联用户" type="primary" icon="iconadd-account"
-                                           :size="btnSize" circle @click.stop.safe="btnRoleUser(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.role_menus" title="关联菜单" type="primary" icon="iconcaidan1"
+                                           :size="btnSize" circle @click.stop.safe="btnRoleMenu(scope.row)"></el-button>
                             </el-badge>
 
                             <el-badge :hidden="scope.row.roleUsersCount <= 0 || !btnEnable.role_menus" :value="scope.row.roleUsersCount"
                                       :max="99" style="margin-right:20px">
-                                <el-button v-if="btnEnable.role_menus" title="关联菜单" type="primary" icon="iconcaidan1"
-                                           :size="btnSize" circle @click.stop.safe="btnRoleMenu(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.role_users" title="关联用户" type="primary" icon="iconadd-account"
+                                           :size="btnSize" circle @click.stop.safe="btnRoleUser(scope.row)"></el-button>
                             </el-badge>
 
                             <el-badge :hidden="scope.row.stationCount <= 0 || !btnEnable.station" :value="scope.row.stationCount"
@@ -81,7 +81,7 @@
 
                             <el-badge :hidden="scope.row.catalogCount <= 0 || !btnEnable.catalog" :value="scope.row.catalogCount"
                                       :max="99" style="margin-right:20px">
-                                <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="iconviewgallery"
+                                <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="iconviewgallery" :disabled="scope.row.stationCount <= 0"
                                            :size="btnSize" circle @click.stop.safe="btnCatalog(scope.row)"></el-button>
                             </el-badge>
 
@@ -140,6 +140,7 @@
                 </span>
             </el-dialog>
 
+            <!--关联用户-->
             <el-dialog :title="titleMap['associateUser']" :visible.sync="dialogRoleUserVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeRoleUserDialog">
                 <div v-loading="dialogFormLoading">
@@ -177,6 +178,7 @@
                 </div>
             </el-dialog>
 
+            <!--关联菜单-->
             <el-dialog :title="titleMap['associateMenu']" :visible.sync="dialogRoleMenuVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeRoleMenuDialog">
                 <el-form style="width: 80%; margin-left:10%;" v-loading="dialogFormLoading">
@@ -211,8 +213,8 @@
                 <el-form style="width: 80%; margin-left:10%;" :inline="true">
                     <el-form-item>
                         <el-cascader filterable placeholder="请选择站点"
-                                     :options="loginUseStationGroupList"
-                                     v-model="stationGroupTreePosition"
+                                     :options="roleStationCascader"
+                                     v-model="selectedRoleStationCascaderArray"
                                      :show-all-levels="false"
                                      clearable :size="searchSize"
                                      @change="stationGroupChange">
@@ -274,7 +276,7 @@
     import {getMenuTree} from "@/api/admin/menu";
     import {getAllRoleMenu, setRoleMenus} from "@/api/admin/roleMenu";
     import {isStartOrEndWithWhiteSpace} from '@/util/validate';
-    import {getLoginUserStationCascader, getClassificationStationCascader} from '@/api/resource/stationGroup';
+    import {getRoleStationCascader, getAllStationCascader} from '@/api/resource/stationGroup';
     import {getAllRoleStationGroup, setRoleStationGroups} from "@/api/resource/stationGroupRole";
     import {getCatalogTreeBySiteIds} from '@/api/station/catalog';
     import {getAllRoleCatalogs, setRoleCatalogs} from '@/api/station/catalogRole'
@@ -360,8 +362,8 @@
                 stationGroupList: [], // 所有的站点
                 roleStationGroupList: [], // 角色已关联站点
                 dialogCatalogVisible: false, // 关联栏目
-                loginUseStationGroupList: [], // 登陆用户关联角色的已关联站点
-                stationGroupTreePosition: [],
+                roleStationCascader: [], // 登陆用户关联角色的已关联站点
+                selectedRoleStationCascaderArray: [],
                 roleCatalogList: [],
                 catalogTree: [],
                 siteId: undefined,
@@ -656,6 +658,7 @@
                 this.submitLoading = true;
                 setRoleUsers(this.currentRow.id, this.selectAllUserId).then(() => {
                     this.closeRoleUserDialog();
+                    this.reloadList();
                     this.$message.success(this.$t("table.updateSuccess"));
                 }).catch(() => {
                     this.submitLoading = false;
@@ -667,6 +670,7 @@
                 setRoleMenus(this.currentRow.id, checkedKeys).then(() => {
                     this.closeRoleMenuDialog();
                     this.$message.success(this.$t("table.updateSuccess"));
+                    this.reloadList();
                 }).catch(() => {
                     this.submitLoading = false;
                 })
@@ -741,7 +745,7 @@
             getAllStationGroup() {
                 this.stationGroupList = [];
                 // 所有的站点
-                getClassificationStationCascader().then(response => {
+                getAllStationCascader().then(response => {
                     this.stationGroupList = response.data;
                 })
             },
@@ -772,8 +776,8 @@
             btnCatalog(row) {
                 this.currentRow = row;
                 // 检索登陆角色关联的站点
-                getLoginUserStationCascader().then(response => {
-                    this.loginUseStationGroupList = response.data;
+                getRoleStationCascader({roleId: row.id}).then(response => {
+                    this.roleStationCascader = response.data;
                     this.getCatalogTree();
                 }).catch(err => {
                 });
@@ -808,8 +812,8 @@
             },
             getSiteIds() {
                 let siteIds = [];
-                if (this.loginUseStationGroupList && this.loginUseStationGroupList.length > 0) {
-                    for(let node of this.loginUseStationGroupList) {
+                if (this.roleStationCascader && this.roleStationCascader.length > 0) {
+                    for(let node of this.roleStationCascader) {
                         siteIds.push.apply(siteIds, this.getLeaf(node));
                     }
                 }
@@ -841,8 +845,8 @@
             closeCatalogDialog() {
                 this.currentRow = undefined;
                 this.roleCatalogList = [];
-                this.stationGroupTreePosition = [];
-                this.loginUseStationGroupList = [];
+                this.selectedRoleStationCascaderArray = [];
+                this.roleStationCascader = [];
                 this.siteId = undefined;
                 this.submitLoading = false;
                 this.$refs['catalogTree'].setCheckedKeys([])
@@ -906,7 +910,7 @@
                 })
             },
             resetCatalogSearch() {
-                this.stationGroupTreePosition = [];
+                this.selectedRoleStationCascaderArray = [];
                 this.siteId = undefined;
             },
             stationGroupChange(v) {
@@ -945,6 +949,7 @@
                 setRoleAuthority({roleId: this.currentRow.id, authority: this.templateAuthority}).then((response)=>{
                     if (response.data) {
                         this.closeContentDialog();
+                        this.reloadList();
                         this.$message.success("设置成功")
                     } else {
                         this.$message.error("设置失败")

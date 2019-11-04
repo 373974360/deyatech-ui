@@ -65,7 +65,7 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="225">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                     <template slot-scope="scope">
                         <div style="padding-top: 8px;">
                             <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
@@ -74,16 +74,6 @@
                             <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                        icon="el-icon-delete" :size="btnSize" circle
                                        @click.stop.safe="btnDelete(scope.row)"></el-button>
-                            <el-badge :hidden="scope.row.stationGroupNumber <= 0 || !btnEnable.station" :value="scope.row.stationGroupNumber" :max="99" style="margin-left:10px; margin-right:10px">
-                                <el-button v-show="btnEnable.station" title="关联站点" type="primary" icon="iconlogistic" :size="btnSize" circle
-                                           @click.stop="btnStationGroup(scope.row)"></el-button>
-                            </el-badge>
-                            <el-badge :hidden="scope.row.stationGroupNumber <= 0 || scope.row.catalogNumber <= 0 || !btnEnable.catalog" :value="scope.row.catalogNumber" :max="99" style="margin-right:10px">
-                                <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="iconviewgallery" :size="btnSize" circle
-                                           @click.stop.safe="btnCatalog(scope.row)" :disabled="scope.row.stationGroupNumber <= 0"></el-button>
-                            </el-badge>
-                            <el-button v-if="btnEnable.content" title="设置栏目内容权限" type="primary" icon="iconviewlist"
-                                       :size="btnSize" circle @click.stop.safe="btnContent(scope.row)"></el-button>
                         </div>
                     </template>
                 </el-table-column>
@@ -182,66 +172,6 @@
                 </span>
             </el-dialog>
 
-            <el-dialog title="关联栏目" :visible.sync="dialogCatalogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
-                <el-form style="width: 80%; margin-left:10%;" :inline="true">
-                    <el-form-item>
-                        <el-cascader filterable placeholder="请选择站点"
-                                     :options="catalogUseStationGroupList"
-                                     v-model="stationGroupTreePosition"
-                                     :show-all-levels="false"
-                                     clearable :size="searchSize"
-                                     @change="stationGroupChange">
-                        </el-cascader>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnCatalogSearch">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetCatalogSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-                <el-form style="width: 80%; margin-left:10%;" v-loading="treeLoading">
-                    <el-tree ref="catalogTree"
-                             :data="catalogTree"
-                             show-checkbox
-                             node-key="id"
-                             :default-expand-all="true"
-                             :expand-on-click-node="false"
-                             @check="catalogTreeChecked" :check-strictly="true"></el-tree>
-                </el-form>
-                <div slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doSaveCatalogUser" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>
-                </div>
-            </el-dialog>
-
-            <el-dialog title="设置栏目内容权限" :visible.sync="dialogContentVisible" :close-on-click-modal="closeOnClickModal" @close="closeContentDialog">
-                <el-form style="width: 80%; margin-left:10%;">
-                    <el-radio v-model="templateAuthority"
-                              v-for="item in enums['TemplateAuthorityEnum']"
-                              :label="item.code"
-                              :key="item.code"
-                              border>{{item.value}}</el-radio>
-                </el-form>
-                <div slot="footer" class="dialog-footer">
-                    <el-button :size="btnSize" @click="clearAuthority">清除</el-button>
-                    <el-button type="primary" :size="btnSize" @click="doSaveContentUser" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeContentDialog">{{$t('table.cancel')}}</el-button>
-                </div>
-            </el-dialog>
-
-            <el-dialog title="关联站点" :visible.sync="dialogStationVisible" :close-on-click-modal="closeOnClickModal" @close="closeStationDialog">
-                <el-form style="width: 80%; margin-left:10%;" v-loading="treeLoading">
-                    <el-tree ref="stationTree"
-                             :data="stationGroupList"
-                             show-checkbox
-                             node-key="value"
-                             :default-expand-all="true"
-                             :expand-on-click-node="false"></el-tree>
-                </el-form>
-                <div slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doSaveStationUser" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeStationDialog">{{$t('table.cancel')}}</el-button>
-                </div>
-            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -258,12 +188,6 @@
     } from '@/api/admin/user';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {isvalidatemobile, validatename, isStartOrEndWithWhiteSpace} from '@/util/validate';
-    import {getCatalogTreeBySiteIds} from '@/api/station/catalog';
-    import {getAllUserCatalogs, setUserCatalogs} from '@/api/station/catalogUser'
-    import {getUserAuthority, setUserAuthority} from '@/api/station/templateUserAuthority'
-    import {getNodeData, getParentKeys, getChildrenKeys} from "@/util/treeUtils";
-    import {getClassificationStationCascader} from '@/api/resource/stationGroup';
-    import {getAllStationGroupUser, setUserStationGroups} from "@/api/resource/stationGroupUser";
 
     export default {
         name: 'user',
@@ -389,19 +313,6 @@
                 uploadAction: this.$store.state.common.uploadUrl,
                 acceptTypes: this.$store.state.common.imageAccepts,
                 departmentCascader: [],
-                catalogTree: [],
-                dialogCatalogVisible: false,
-                currentRow: undefined,
-                dialogContentVisible: false,
-                templateAuthority: undefined,
-                stationGroupList: undefined,
-                catalogUseStationGroupList: [],
-                stationGroupTreePosition: [],
-                siteId: undefined,
-                userCatalogList: [],
-                treeLoading: false,
-                dialogStationVisible: false,
-                userStationGroupList: []
             }
         },
         computed: {
@@ -436,10 +347,7 @@
                 return {
                     create: this.permission.user_create,
                     update: this.permission.user_update,
-                    delete: this.permission.user_delete,
-                    catalog: this.permission.user_catalog,
-                    content: this.permission.user_content,
-                    station: this.permission.user_station_group
+                    delete: this.permission.user_delete
                 };
             }
         },
@@ -613,239 +521,7 @@
                 this.$refs['userDialogForm'].resetFields();
             },
 
-            // 用户栏目
-            btnCatalog(row) {
-                this.currentRow = row;
-                // 检索用户关联的站点
-                getClassificationStationCascader({userId: this.currentRow.id}).then(response => {
-                    this.catalogUseStationGroupList = response.data;
-                    this.getCatalogTree();
-                }).catch(err => {
-                    // this.$message.error(err);
-                });
-                this.dialogCatalogVisible = true;
-            },
-            getCatalogTree(){
-                this.treeLoading = true;
-                let siteIds = [];
-                if (this.siteId) {
-                    siteIds.push(this.siteId);
-                } else {
-                    siteIds = this.getSiteIds();
-                }
-                // 用户关联的站点的全部栏目
-                getCatalogTreeBySiteIds(siteIds).then(response => {
-                    this.catalogTree = response.data;
-                    if (this.catalogTree && this.catalogTree.length > 0) {
-                        // 用户已分配的栏目
-                        getAllUserCatalogs({userId: this.currentRow.id}).then((response)=>{
-                            this.userCatalogList = response.data;
-                            this.checkUserCatalog();
-                            this.treeLoading = false;
-                        }).catch(()=>{
-                            this.treeLoading = false;
-                        });
-                    } else {
-                        this.treeLoading = false;
-                    }
-                }).catch(()=>{
-                    this.treeLoading = false;
-                });
-            },
-            getSiteIds() {
-                let siteIds = [];
-                if (this.catalogUseStationGroupList && this.catalogUseStationGroupList.length > 0) {
-                    for(let node of this.catalogUseStationGroupList) {
-                        siteIds.push.apply(siteIds, this.getLeaf(node));
-                    }
-                }
-                return siteIds;
-            },
-            getLeaf(node) {
-                let siteIds = [];
-                // 叶子
-                if (!node.children) {
-                    siteIds.push(node.value);
-                    return siteIds;
-                } else {
-                    for(let node of node.children) {
-                        siteIds.push.apply(siteIds, this.getLeaf(node));
-                    }
-                    return siteIds;
-                }
-            },
-            checkUserCatalog() {
-                this.$nextTick(()=>{
-                    // 选中用户已分配的栏目
-                    if (this.userCatalogList && this.userCatalogList.length > 0) {
-                        for (let uc of this.userCatalogList) {
-                            this.$refs['catalogTree'].setChecked(uc.catalogId, true, false);
-                        }
-                    }
-                });
-            },
-            closeCatalogDialog() {
-                this.currentRow = undefined;
-                this.userCatalogList = [];
-                this.dialogCatalogVisible = false;
-                this.stationGroupTreePosition = [];
-                this.catalogUseStationGroupList = [];
-                this.siteId = undefined;
-                this.submitLoading = false;
-                this.$refs['catalogTree'].setCheckedKeys([])
-            },
-            catalogTreeChecked(node, tree) {
-                let checkedKeys = tree.checkedKeys;
-                // 选中时
-                if (checkedKeys.includes(node.id)) {
-                    // 选中父结点
-                    checkedKeys.push.apply(checkedKeys, getParentKeys(node, this.catalogTree));
-                    // 选中子节点
-                    checkedKeys.push.apply(checkedKeys, getChildrenKeys(node))
 
-                    // 取消时
-                } else {
-                    // 取消子节点
-                    for (let key of getChildrenKeys(node)) {
-                        if (checkedKeys.includes(key)) {
-                            // 删除选中
-                            checkedKeys.splice(checkedKeys.indexOf(key), 1);
-                        }
-                    }
-                    // 取消父结点(没有子节点选中时)
-                    if (node.parentId !== '0') {
-                        let parent = getNodeData(this.catalogTree, 'id', node.parentId);
-                        checkedKeys = this.dealParentNode(parent, checkedKeys);
-                    }
-                }
-                this.$refs['catalogTree'].setCheckedKeys(checkedKeys)
-            },
-            dealParentNode(node, checkedKeys) {
-                if (checkedKeys.includes(node.id)) {
-                    let childrenKeys = getChildrenKeys(node);
-                    let isChecked = false;
-                    for (let key of childrenKeys) {
-                        if (checkedKeys.includes(key)) {
-                            isChecked = true;
-                            break;
-                        }
-                    }
-                    if (!isChecked) {
-                        checkedKeys.splice(checkedKeys.indexOf(node.id), 1);
-                        if (node.parentId !== '0') {
-                            let parent = getNodeData(this.catalogTree, 'id', node.parentId);
-                            checkedKeys = this.dealParentNode(parent, checkedKeys);
-                        }
-                    }
-                }
-                return checkedKeys;
-            },
-            doSaveCatalogUser() {
-                this.submitLoading = true;
-                let checkedKeys = this.$refs['catalogTree'].getCheckedKeys(false);
-                setUserCatalogs(this.currentRow.id, checkedKeys, this.siteId).then(() => {
-                    this.closeCatalogDialog();
-                    this.reloadList();
-                    this.$message.success(this.$t("table.associateSuccess"));
-                }).catch(() => {
-                    this.submitLoading = false;
-                })
-            },
-            resetCatalogSearch() {
-                this.stationGroupTreePosition = [];
-                this.siteId = undefined;
-            },
-            stationGroupChange(v) {
-                this.siteId = undefined;
-                if (v.length > 0) {
-                    this.siteId = v[v.length - 1];
-                }
-                this.btnCatalogSearch();
-            },
-            btnCatalogSearch() {
-                this.getCatalogTree();
-            },
-
-            // 栏目内容权限
-            btnContent(row) {
-                this.currentRow = row;
-                getUserAuthority({userId: row.id}).then((response)=>{
-                    this.templateAuthority = response.data;
-                }).catch((err)=>{
-                    this.$message.error(err);
-                });
-                this.dialogContentVisible = true;
-            },
-            closeContentDialog() {
-                this.currentRow = undefined;
-                this.dialogContentVisible = false;
-                this.submitLoading = false;
-                this.templateAuthority = undefined;
-            },
-            clearAuthority(){
-                this.templateAuthority = undefined;
-            },
-            doSaveContentUser() {
-                this.submitLoading = true;
-                setUserAuthority({userId: this.currentRow.id, authority: this.templateAuthority}).then((response)=>{
-                    if (response.data) {
-                        this.closeContentDialog();
-                        this.$message.success("设置成功")
-                    } else {
-                        this.$message.error("设置失败")
-                    }
-                });
-            },
-
-            // 用户站点
-            btnStationGroup(row) {
-                this.currentRow = row;
-                this.loadStationGroupUser(row.id);
-                this.dialogStationVisible = true;
-            },
-            closeStationDialog() {
-                this.currentRow = undefined;
-                this.submitLoading = false;
-                this.dialogStationVisible = false;
-            },
-            doSaveStationUser() {
-                this.submitLoading = true;
-                // 仅返回被选中的叶子节点的 keys
-                let checkedKeys = this.$refs['stationTree'].getCheckedKeys(true);
-                setUserStationGroups(this.currentRow.id, checkedKeys).then(() => {
-                    this.closeStationDialog();
-                    this.reloadList();
-                    this.$message.success(this.$t("table.associateSuccess"));
-                }).catch(() => {
-                    this.submitLoading = false;
-                })
-            },
-            getAllStationGroup(){
-                this.stationGroupList = [];
-                getClassificationStationCascader().then(response => {
-                    this.stationGroupList = response.data;
-                })
-            },
-            loadStationGroupUser(userId) {
-                this.treeLoading = true;
-                getAllStationGroupUser({userId:userId}).then(response => {
-                    this.userStationGroupList = response.data;
-                    this.treeLoading = false;
-                    this.checkUserStationGroup();
-                }).catch(err => {
-                    this.treeLoading = false;
-                })
-            },
-            checkUserStationGroup() {
-                this.$nextTick(()=>{
-                    // 选中用户已分配的站点
-                    if (this.userStationGroupList && this.userStationGroupList.length > 0) {
-                        for (let sg of this.userStationGroupList) {
-                            this.$refs['stationTree'].setChecked(sg.stationGroupId, true, false);
-                        }
-                    }
-                });
-            }
         }
     }
 </script>

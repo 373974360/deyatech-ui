@@ -84,9 +84,9 @@ export function runOrStopStationById(query) {
     });
 }
 
-export function getClassificationStationCascader(query) {
+export function getAllStationCascader(query) {
     return request({
-        url: '/manage/resource/stationGroup/getClassificationStationCascader',
+        url: '/manage/resource/stationGroup/getAllStationCascader',
         method: 'get',
         params: query
     });
@@ -105,5 +105,19 @@ export function getLoginUserStationCascader() {
         url: '/manage/resource/stationGroup/getLoginUserStationCascader',
         method: 'get',
         params: {}
+    });
+}
+export function getRoleStationCascader(query) {
+    return request({
+        url: '/manage/resource/stationGroup/getRoleStationCascader',
+        method: 'get',
+        params: query
+    });
+}
+export function getUserStationCascader(query) {
+    return request({
+        url: '/manage/resource/stationGroup/getUserStationCascader',
+        method: 'get',
+        params: query
     });
 }

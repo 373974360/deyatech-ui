@@ -116,13 +116,13 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <!--<el-row :gutter="20" :span="24">
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="站点id" prop="siteId">
-                                <el-input v-model.trim="page.siteId"></el-input>
+                            <el-form-item label="自动更新" prop="autoUpdate">
+                                <el-switch v-model.trim="page.autoUpdate" :active-value=1 :inactive-value=0></el-switch>
                             </el-form-item>
                         </el-col>
-                    </el-row>-->
+                    </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')" prop="remark">
@@ -237,6 +237,7 @@
                     pagePath: undefined,
                     templatePath: undefined,
                     siteId: undefined,
+                    autoUpdate: 0,
                     pageInterval: undefined,
                     ids: undefined
                 },
@@ -261,6 +262,9 @@
                     pageInterval: [
                         { required: true, message: this.$t("table.pleaseInput") + '更新频率'},
                         {validator: checkInterval, trigger: ['change', 'blur']}
+                    ],
+                    autoUpdate: [
+                        { required: true, message: this.$t("table.selectInput") + '自动更新'},
                     ],
                     remark: [
                         {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
@@ -468,6 +472,7 @@
                     pageEnglishName: undefined,
                     pagePath: undefined,
                     templatePath: undefined,
+                    autoUpdate: 0,
                     siteId: undefined,
                     pageInterval: undefined,
                     ids: undefined
