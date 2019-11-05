@@ -43,12 +43,14 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="230">
                     <template slot-scope="scope">
                         <el-button title="新增版本" type="primary" icon="el-icon-plus" :size="btnSize" circle @click="btnAddVersion(scope.row)"></el-button>
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button title="设置主版本" type="primary" icon="iconwarehouse-delivery" :size="btnSize" circle @click="btnMainVersion(scope.row)"></el-button>
+                        <el-button title="表单排序" type="primary" icon="iconfilter" :size="btnSize" circle @click="btnSort(scope.row)"></el-button>
+
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.countModel > 0"></el-button>
                     </template>
@@ -173,10 +175,8 @@
                             </el-table-column>
                             <el-table-column label="操作">
                                 <template slot-scope="scope">
-                                    <el-button icon="el-icon-arrow-up" :size="btnSize" circle title="上移" @click="sortUp(scope.$index)">
-                                    </el-button>
-                                    <el-button icon="el-icon-arrow-down" :size="btnSize" circle title="下移" @click="sortDown(scope.$index)">
-                                    </el-button>
+                                    <el-button icon="el-icon-arrow-up" :size="btnSize" circle title="上移" @click="sortUp(scope.$index)"></el-button>
+                                    <el-button icon="el-icon-arrow-down" :size="btnSize" circle title="下移" @click="sortDown(scope.$index)"></el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -240,6 +240,73 @@
                     <el-button :size="btnSize" @click="resetDialogVersion">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
+
+            <el-dialog title="表单排序" width="80%" :visible.sync="dialogSortVisible" :close-on-click-modal="closeOnClickModal" @close="closeSortDialog">
+                <el-row :gutter="20" :span="24">
+                    <el-col :span="24">
+                        <el-form ref="form" label-width="40px">
+                            <el-form-item label="版本">
+                                <el-select filterable v-model.trim="sortVersion" @change="handleSortVersionChange">
+                                    <el-option v-for="item in collectionVersionList" :key="item.id" :label="item.mdcVersion" :value="item.mdcVersion"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-form>
+                    </el-col>
+                </el-row>
+
+                <div class="unsortedBox">
+                    <div style="margin-bottom: 5px;">
+                        <el-input size="mini" value="未排序" readonly style="width: 133px; margin-right: 10px;"/>
+                        <el-button size="mini" icon="el-icon-plus" @click="addPage" :disabled="maxPageNumber >= 4" style="width: 50px;"></el-button>
+                    </div>
+                    <div class="tableBox">
+                        <el-table :data="unsorted" border>
+                            <el-table-column align="center" label="名称" prop="metadataName"/>
+                            <el-table-column label="移动到" align="center" width="70">
+                                <template slot-scope="scope">
+                                    <el-dropdown trigger="click" @command="moveUnsorted">
+                                        <el-button size="mini"><i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                                        <el-dropdown-menu slot="dropdown">
+                                            <el-dropdown-item v-for="num in maxPageNumber" :command="scope.$index + '_' + num">第{{num}}页</el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </el-dropdown>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+
+                <div class="sortBox" v-for="item in sorted">
+                    <div style="margin-bottom: 5px;">
+                        <el-input size="mini" v-model="item.pageName" style="margin-right: 10px; width: 236px;"/>
+                        <el-button size="mini" icon="el-icon-close" @click="closePage(item.pageNumber)" sytle="width: 50px;"></el-button>
+                    </div>
+                    <div class="tableBox">
+                        <el-table :data="item.list" border>
+                            <el-table-column align="center" label="名称" prop="metadataName"/>
+                            <el-table-column label="移动到" align="center" width="70">
+                                <template slot-scope="scope">
+                                    <el-dropdown trigger="click" @command="moveSorted">
+                                        <el-button size="mini"><i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                                        <el-dropdown-menu slot="dropdown">
+                                            <el-dropdown-item :command="scope.$index + '_' + item.pageNumber + '_0'">未排序</el-dropdown-item>
+                                            <el-dropdown-item v-if="item.pageNumber != num" v-for="num in maxPageNumber" :command="scope.$index  + '_' + item.pageNumber + '_' + num">第{{num}}页</el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </el-dropdown>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="排序" align="center" width="96">
+                                <template slot-scope="scope">
+                                    <el-button size="mini" icon="el-icon-arrow-up" :size="btnSize" circle title="上移" @click="moveUp(scope.$index)"></el-button>
+                                    <el-button size="mini" icon="el-icon-arrow-down" :size="btnSize" circle title="下移" @click="moveDown(scope.$index)"></el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -272,6 +339,9 @@
     import {
         countModelByCollectionIds
     } from "../../api/station/model"
+    import {
+        getSortDataByCollectionId
+    } from '@/api/station/templateFormOrder';
 
     export default {
         name: 'metadataCollection',
@@ -408,7 +478,14 @@
                 dialogRelationVisible: false,
                 collectionVersionList: [],
                 mainVersionId: undefined,
-                dialogVersionVisible: false
+                dialogVersionVisible: false,
+
+                // 表单排序
+                dialogSortVisible: false,
+                sortVersion: undefined,
+                unsorted: [],
+                sorted: [],
+                maxPageNumber: 0
             }
         },
         computed: {
@@ -470,7 +547,6 @@
                                         this.$set(m, 'countModel', 0);
                                     }
                                 }
-                                console.dir(this.metadataCollectionList);
                             }
                         });
                     }
@@ -576,7 +652,6 @@
                 });
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
-                console.dir(this.metadataCollection);
             },
             handleMdcVersionChange(value) {
                 for (const item of this.collectionVersionList) {
@@ -875,9 +950,103 @@
                         return item.name
                     }
                 }
+            },
+
+
+            // 表单排序
+            btnSort(row) {
+                findMetadataCollectionAllData({enName: row.enName}).then(response => {
+                    this.collectionVersionList = response.data;
+
+                    // if (this.collectionVersionList && this.collectionVersionList.length > 0) {
+                    //     for (const item of this.collectionVersionList) {
+                    //         if (item.id === row.id) {
+                    //             this.metadataCollection = deepClone(item);
+                    //             this.relationData = this.mapRelatedList(item.metadataList);
+                    //             this.relationDataReal = deepClone(this.relationData);
+                    //         }
+                    //     }
+                    // } else {
+                    //     this.metadataCollection = deepClone(row);
+                    // }
+                });
+                getSortDataByCollectionId({collectionId: row.id}).then(response => {
+                    let data = response.data;
+                    this.unsorted = data.unsorted;
+                    this.sorted = data.sorted;
+                    this.maxPageNumber = this.sorted.length;
+                });
+                this.dialogSortVisible = true;
+            },
+            closeSortDialog() {
+                this.dialogSortVisible = false;
+            },
+            handleSortVersionChange(v) {
+
+            },
+            addPage() {
+                this.maxPageNumber += 1;
+                let page = {};
+                page.pageName = "第"+this.maxPageNumber+"页";
+                page.pageNumber = this.maxPageNumber;
+                page.list = []
+                this.sorted.push(page);
+            },
+            closePage(page) {
+                let item = this.sorted.splice(parseInt(page) - 1, 1);
+                item = item[0];
+                console.dir(item);
+                // for (let i of item.list) {
+                //     console.dir(i);
+                //     //this.unsorted.push(i);
+                // }
+
+            },
+            moveUnsorted(command) {
+                let c = command.split('_');
+                let index = c[0];
+                let page = parseInt(c[1]) - 1;
+                let item = this.unsorted.splice(index, 1);
+                this.sorted[page].list.push(item[0]);
+            },
+            moveSorted(command) {
+                let c = command.split('_');
+                let index = c[0];
+                let fromPage = parseInt(c[1]) - 1;
+                let toPage = parseInt(c[2]) - 1;
+                let fromList = this.sorted[fromPage].list;
+                let item = fromList.splice(index, 1);
+                // 未排序
+                if (toPage == -1) {
+                    this.unsorted.push(item[0])
+                } else {
+                    let toList = this.sorted[toPage].list;
+                    toList.push(item[0]);
+                }
+            },
+            moveUp(index) {
+
+            },
+            moveDown(index) {
+
             }
         }
     }
 </script>
 
 
+<style>
+    .unsortedBox {
+        width: 200px;
+        display: inline-block;
+    }
+    .sortBox {
+        width: 296px;
+        margin-left: 20px;
+        display: inline-block;
+    }
+    .tableBox {
+        height: 400px;
+        overflow-y: scroll;
+    }
+</style>

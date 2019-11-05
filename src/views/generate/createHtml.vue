@@ -18,7 +18,7 @@
                 </div>
                 <el-form class="deyatech-form" label-position="right" label-width="80px">
                     <el-row>
-                        <el-form-item label="时间范围" prop="timeFrame">
+                        <el-form-item label="发布时间" prop="timeFrame">
                             <el-date-picker
                                 v-model.trim="timeFrame"
                                 type="daterange"
