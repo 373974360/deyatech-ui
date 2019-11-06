@@ -103,7 +103,7 @@
                 <div v-loading="dialogUsersFormLoading">
                     <div class="dialog-search">
                         <el-cascader :options="departmentCascader" @change="handleDepartmentChange"
-                                     class="dialog-search-item dialog-keywords"
+                                     class="dialog-search-item dialog-keywords" ref="mycascader"
                                      :show-all-levels="false" expand-trigger="hover" clearable change-on-select
                                      :size="searchSize" placeholder="根据部门筛选"></el-cascader>
                         <el-input v-model="userListQuery.userName" class="dialog-search-item dialog-keywords"
@@ -115,7 +115,7 @@
                     </div>
                     <div>
                         <el-table ref="memberCategoryUserTable" :data="userList" border @select="selectRowUser"
-                                  @select-all="selectAllUser" @selection-change="handleSelectionChangeRoleUser">
+                                  @select-all="selectAllUser" @selection-change="handleSelectionChangeMemberCategoryUser">
                             <el-table-column type="selection" width="50" align="center"></el-table-column>
                             <el-table-column prop="departmentName" label="部门"></el-table-column>
                             <el-table-column prop="userName" label="姓名"></el-table-column>
@@ -359,6 +359,8 @@
                 this.resetMemberCategory();
                 this.$refs['memberCategoryDialogForm'].resetFields();
             },
+
+
             btnUsers(row) {
                 this.currentRow = row;
                 this.dialogUsersVisible = true;
@@ -422,7 +424,7 @@
                     }
                 }
             },
-            handleSelectionChangeRoleUser(rows) {
+            handleSelectionChangeMemberCategoryUser(rows) {
                 this.selectedRowsUser = rows;
             },
             handleSizeChangeMemberCategoryUser(val) {
@@ -464,6 +466,9 @@
             closeMemberCategoryUserDialog() {
                 this.dialogUsersVisible = false;
                 this.submitLoading = false;
+                let obj = {};
+                obj.stopPropagation = () =>{};
+                this.$refs.mycascader.clearValue(obj);
                 this.userListQuery.departmentId = undefined;
                 this.userListQuery.userName = undefined;
                 this.userListQuery.categoryId = undefined;
