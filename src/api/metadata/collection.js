@@ -88,3 +88,4 @@ export function getAllMetadataCollection(query) {
         params: query
     })
 }
+

@@ -47,3 +47,19 @@ export function getSortDataByCollectionId(query) {
     });
 }
 
+export function saveOrUpdateByJson(json) {
+    const data = {json};
+    return request({
+        url: '/manage/station/templateFormOrder/saveOrUpdateByJson',
+        method: 'post',
+        data
+    })
+}
+
+export function getCollectionList(query) {
+    return request({
+        url: '/manage/station/templateFormOrder/getCollectionList',
+        method: 'get',
+        params: query
+    });
+}

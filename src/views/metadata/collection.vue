@@ -47,12 +47,12 @@
                     <template slot-scope="scope">
                         <el-button title="新增版本" type="primary" icon="el-icon-plus" :size="btnSize" circle @click="btnAddVersion(scope.row)"></el-button>
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
+                                   @click.stop="btnUpdate(scope.row)"></el-button>
                         <el-button title="设置主版本" type="primary" icon="iconwarehouse-delivery" :size="btnSize" circle @click="btnMainVersion(scope.row)"></el-button>
                         <el-button title="表单排序" type="primary" icon="iconfilter" :size="btnSize" circle @click="btnSort(scope.row)"></el-button>
 
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.countModel > 0"></el-button>
+                                   @click.stop="btnDelete(scope.row)" :disabled="scope.row.countModel > 0"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -232,7 +232,7 @@
                        :close-on-click-modal="closeOnClickModal">
                 <div style="width: 90%; margin: 0 auto">
                     <el-radio-group v-model.trim="mainVersionId">
-                        <el-radio v-for="item in collectionVersionList" :label="item.id">{{item.mdcVersion}}</el-radio>
+                        <el-radio v-for="item in collectionVersionList" :key="item.id" :label="item.id">{{item.mdcVersion}}</el-radio>
                     </el-radio-group>
                 </div>
                 <span slot="footer" class="dialog-footer">
@@ -247,64 +247,66 @@
                     <el-col :span="24">
                         <el-form ref="form" label-width="40px">
                             <el-form-item label="版本">
-                                <el-select filterable v-model.trim="sortVersion" @change="handleSortVersionChange">
-                                    <el-option v-for="item in collectionVersionList" :key="item.id" :label="item.mdcVersion" :value="item.mdcVersion"></el-option>
+                                <el-select filterable v-model.trim="collectionId" @change="handleSortVersionChange">
+                                    <el-option v-for="item in collectionVersionList" :key="item.id" :label="item.mdcVersion" :value="item.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </el-form>
                     </el-col>
                 </el-row>
-
-                <div class="unsortedBox">
-                    <div style="margin-bottom: 5px;">
-                        <el-input size="mini" value="未排序" readonly style="width: 133px; margin-right: 10px;"/>
-                        <el-button size="mini" icon="el-icon-plus" @click="addPage" :disabled="maxPageNumber >= 4" style="width: 50px;"></el-button>
+                <!--未排序-->
+                <div style="width: 200px; display: inline-block;">
+                    <div class="tableHead">
+                        <el-dropdown trigger="click" @command="moveUnsorted" >
+                            <el-button size="mini" type="primary" :disabled="maxPageNumber <= 0 || unsortedRowsToMove.length <= 0">移动到<i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item v-for="num in maxPageNumber" :key="num" :command="num">第{{num}}页</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                        <el-button size="mini" type="success" icon="el-icon-plus" @click="addPage" :disabled="maxPageNumber >= 4" style="position: relative; left: 64px;"></el-button>
                     </div>
-                    <div class="tableBox">
-                        <el-table :data="unsorted" border>
+                    <div class="tableHeadInput">
+                        <el-input size="mini" value="等待处理的数据" readonly/>
+                    </div>
+                    <div class="tableBody">
+                        <el-table ref="unsortedTable" :data="unsorted" border @selection-change="unsortedSelectionChange">
+                            <el-table-column type="selection" width="40" align="center"/>
                             <el-table-column align="center" label="名称" prop="metadataName"/>
-                            <el-table-column label="移动到" align="center" width="70">
+                        </el-table>
+                    </div>
+                </div>
+                <!--已排序-->
+                <div class="tableBox" :key="item.pageNumber" v-for="item in sorted">
+                    <div class="tableHead">
+                        <el-dropdown trigger="click" @command="moveSorted">
+                            <el-button size="mini" type="primary">第{{item.pageNumber}}页移动到<i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item :command="item.pageNumber + '_0'" :key="0">未排序</el-dropdown-item>
+                                <el-dropdown-item v-if="item.pageNumber != num" v-for="num in maxPageNumber" :key="num" :command="item.pageNumber + '_' + num">第{{num}}页</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                        <el-button size="mini" type="danger" icon="el-icon-close" @click="closePage(item.pageNumber)" style="position: relative; left: 134px;"></el-button>
+                    </div>
+                    <div class="tableHeadInput">
+                        <el-input size="mini" v-model="item.pageName"/>
+                    </div>
+                    <div class="tableBody">
+                        <el-table :data="item.list" border @selection-change="sortedSelectionChange">
+                            <el-table-column type="selection" width="40" align="center"/>
+                            <el-table-column align="center" label="名称" prop="metadataName"/>
+                            <el-table-column label="排序" align="center" width="100">
                                 <template slot-scope="scope">
-                                    <el-dropdown trigger="click" @command="moveUnsorted">
-                                        <el-button size="mini"><i class="el-icon-arrow-down el-icon--right"></i></el-button>
-                                        <el-dropdown-menu slot="dropdown">
-                                            <el-dropdown-item v-for="num in maxPageNumber" :command="scope.$index + '_' + num">第{{num}}页</el-dropdown-item>
-                                        </el-dropdown-menu>
-                                    </el-dropdown>
+                                    <el-button size="mini" icon="el-icon-arrow-up" circle title="上移" @click="moveUp(item.pageNumber, scope.$index)"></el-button>
+                                    <el-button size="mini" icon="el-icon-arrow-down" circle title="下移" @click="moveDown(item.pageNumber, scope.$index)"></el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
                     </div>
                 </div>
-
-                <div class="sortBox" v-for="item in sorted">
-                    <div style="margin-bottom: 5px;">
-                        <el-input size="mini" v-model="item.pageName" style="margin-right: 10px; width: 236px;"/>
-                        <el-button size="mini" icon="el-icon-close" @click="closePage(item.pageNumber)" sytle="width: 50px;"></el-button>
-                    </div>
-                    <div class="tableBox">
-                        <el-table :data="item.list" border>
-                            <el-table-column align="center" label="名称" prop="metadataName"/>
-                            <el-table-column label="移动到" align="center" width="70">
-                                <template slot-scope="scope">
-                                    <el-dropdown trigger="click" @command="moveSorted">
-                                        <el-button size="mini"><i class="el-icon-arrow-down el-icon--right"></i></el-button>
-                                        <el-dropdown-menu slot="dropdown">
-                                            <el-dropdown-item :command="scope.$index + '_' + item.pageNumber + '_0'">未排序</el-dropdown-item>
-                                            <el-dropdown-item v-if="item.pageNumber != num" v-for="num in maxPageNumber" :command="scope.$index  + '_' + item.pageNumber + '_' + num">第{{num}}页</el-dropdown-item>
-                                        </el-dropdown-menu>
-                                    </el-dropdown>
-                                </template>
-                            </el-table-column>
-                            <el-table-column label="排序" align="center" width="96">
-                                <template slot-scope="scope">
-                                    <el-button size="mini" icon="el-icon-arrow-up" :size="btnSize" circle title="上移" @click="moveUp(scope.$index)"></el-button>
-                                    <el-button size="mini" icon="el-icon-arrow-down" :size="btnSize" circle title="下移" @click="moveDown(scope.$index)"></el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                    </div>
-                </div>
+                <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveSort" :loading="submitLoading" :disabled="this.unsorted.length > 0">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeSortDialog">{{$t('table.cancel')}}</el-button>
+                </span>
             </el-dialog>
 
         </div>
@@ -340,7 +342,9 @@
         countModelByCollectionIds
     } from "../../api/station/model"
     import {
-        getSortDataByCollectionId
+        getSortDataByCollectionId,
+        saveOrUpdateByJson,
+        getCollectionList
     } from '@/api/station/templateFormOrder';
 
     export default {
@@ -482,10 +486,12 @@
 
                 // 表单排序
                 dialogSortVisible: false,
-                sortVersion: undefined,
                 unsorted: [],
+                unsortedRowsToMove: [],
                 sorted: [],
-                maxPageNumber: 0
+                sortedRowsToMove: [],
+                maxPageNumber: 0,
+                collectionId: undefined
             }
         },
         computed: {
@@ -955,80 +961,198 @@
 
             // 表单排序
             btnSort(row) {
-                findMetadataCollectionAllData({enName: row.enName}).then(response => {
+                getCollectionList({enName: row.enName}).then(response => {
                     this.collectionVersionList = response.data;
-
-                    // if (this.collectionVersionList && this.collectionVersionList.length > 0) {
-                    //     for (const item of this.collectionVersionList) {
-                    //         if (item.id === row.id) {
-                    //             this.metadataCollection = deepClone(item);
-                    //             this.relationData = this.mapRelatedList(item.metadataList);
-                    //             this.relationDataReal = deepClone(this.relationData);
-                    //         }
-                    //     }
-                    // } else {
-                    //     this.metadataCollection = deepClone(row);
-                    // }
+                    console.dir(this.collectionVersionList);
                 });
-                getSortDataByCollectionId({collectionId: row.id}).then(response => {
-                    let data = response.data;
-                    this.unsorted = data.unsorted;
-                    this.sorted = data.sorted;
-                    this.maxPageNumber = this.sorted.length;
-                });
+                this.collectionId = row.id;
+                this.getSortData(row.id);
                 this.dialogSortVisible = true;
+            },
+            getSortData(collectionId) {
+                getSortDataByCollectionId({collectionId: collectionId}).then(response => {
+                    let data = response.data;
+                    console.dir(data);
+                    this.unsorted = data.unsorted;
+                    this.sorted = [];
+                    this.sortedRowsToMove = [];
+                    this.maxPageNumber = 0;
+
+                    let array = data.sorted;
+                    if (array && array.length > 0) {
+                        this.maxPageNumber = array.length;
+                        // 循环每一页
+                        for (let i = 1; i <= this.maxPageNumber; i++) {
+                            let page = {};
+                            page.pageNumber = i;
+                            page.pageName = undefined;
+                            page.list = array[i - 1];
+                            for (let item of page.list) {
+                                if (!page.pageName && item.pageName) {
+                                    page.pageName = item.pageName;
+                                    break;
+                                }
+                            }
+                            this.sorted.push(page);
+                            this.sortedRowsToMove.push([]);
+                        }
+                    }
+                });
+            },
+            handleSortVersionChange(id) {
+                this.collectionId = id;
+                this.getSortData(id);
             },
             closeSortDialog() {
                 this.dialogSortVisible = false;
-            },
-            handleSortVersionChange(v) {
-
+                this.unsorted = [];
+                this.unsortedRowsToMove = [];
+                this.sorted = [];
+                this.sortedRowsToMove = [];
+                this.maxPageNumber = 0;
+                this.collectionId = undefined;
             },
             addPage() {
                 this.maxPageNumber += 1;
                 let page = {};
-                page.pageName = "第"+this.maxPageNumber+"页";
+                page.pageName = 'N' + this.maxPageNumber;
                 page.pageNumber = this.maxPageNumber;
                 page.list = []
                 this.sorted.push(page);
+                this.sortedRowsToMove.push([]);
             },
             closePage(page) {
-                let item = this.sorted.splice(parseInt(page) - 1, 1);
-                item = item[0];
-                console.dir(item);
-                // for (let i of item.list) {
-                //     console.dir(i);
-                //     //this.unsorted.push(i);
-                // }
-
+                let deletePage = this.sorted.splice(parseInt(page) - 1, 1);
+                this.maxPageNumber = this.sorted.length;
+                deletePage = deletePage[0];
+                this.sortedRowsToMove.splice(parseInt(page) - 1, 1);
+                if (deletePage.list.length > 0) {
+                    for (let i of deletePage.list) {
+                        this.unsorted.push(i);
+                    }
+                }
+                if (this.sorted.length > 0) {
+                    for (let i = 0; i < this.sorted.length; i++) {
+                        this.sorted[i].pageNumber = i + 1;
+                        for (let item of this.sorted[i].list) {
+                            item.pageNumber = i + 1;
+                        }
+                    }
+                }
+            },
+            unsortedSelectionChange(rows) {
+                this.unsortedRowsToMove = rows;
             },
             moveUnsorted(command) {
-                let c = command.split('_');
-                let index = c[0];
-                let page = parseInt(c[1]) - 1;
-                let item = this.unsorted.splice(index, 1);
-                this.sorted[page].list.push(item[0]);
+                let toPage = parseInt(command) - 1;
+                if (this.unsortedRowsToMove.length > 0) {
+                    for (let item of this.unsortedRowsToMove) {
+                        // 添加
+                        item.pageName = this.sorted[toPage].pageName;
+                        item.pageNumber = this.sorted[toPage].pageNumber;
+                        this.sorted[toPage].list.push(item);
+                        // 删除
+                        let index = -1;
+                        for (let i = 0; i < this.unsorted.length; i++) {
+                            if (item.metadataId === this.unsorted[i].metadataId) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        if (index > -1) {
+                            this.unsorted.splice(index, 1);
+                        }
+                    }
+                    this.unsortedRowsToMove = [];
+                }
+            },
+            sortedSelectionChange(rows) {
+                if (rows.length > 0) {
+                    let metadataId = rows[0].metadataId;
+                    let index = -1;
+                    for (let i = 0; i < this.sorted.length && index == -1; i++) {
+                        for (let item of this.sorted[i].list) {
+                            if (metadataId === item.metadataId) {
+                                index = i;
+                                break;
+                            }
+                        }
+                    }
+                    if (index != -1) {
+                        this.sortedRowsToMove[index] = rows;
+                    }
+                }
             },
             moveSorted(command) {
                 let c = command.split('_');
-                let index = c[0];
-                let fromPage = parseInt(c[1]) - 1;
-                let toPage = parseInt(c[2]) - 1;
-                let fromList = this.sorted[fromPage].list;
-                let item = fromList.splice(index, 1);
-                // 未排序
-                if (toPage == -1) {
-                    this.unsorted.push(item[0])
-                } else {
-                    let toList = this.sorted[toPage].list;
-                    toList.push(item[0]);
+                let fromPage = parseInt(c[0]) - 1;
+                let toPage = parseInt(c[1]) - 1;
+                if (this.sortedRowsToMove[fromPage].length > 0) {
+                    for (let item of this.sortedRowsToMove[fromPage]) {
+                        if (toPage >= 0) {
+                            // 添加
+                            item.pageName = this.sorted[toPage].pageName;
+                            item.pageNumber = this.sorted[toPage].pageNumber;
+                            this.sorted[toPage].list.push(item);
+                        } else {
+                            this.unsorted.push(item);
+                        }
+                        // 删除
+                        let index = -1;
+                        for (let i = 0; i < this.sorted[fromPage].list.length; i++) {
+                            let target = this.sorted[fromPage].list[i];
+                            if (item.metadataId === target.metadataId) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        if (index > -1) {
+                            this.sorted[fromPage].list.splice(index, 1);
+                        }
+                    }
+                    this.sortedRowsToMove[fromPage] = [];
                 }
             },
-            moveUp(index) {
-
+            moveUp(page, index) {
+                let i = page - 1;
+                if (index > 0) {
+                    const item = this.sorted[i].list.splice(index, 1)[0];
+                    this.sorted[i].list.splice(index - 1, 0, item);
+                }
             },
-            moveDown(index) {
-
+            moveDown(page, index) {
+                let i = page - 1;
+                let len = this.sorted[i].list.length;
+                if (index < len -1) {
+                    const item = this.sorted[i].list.splice(index, 1)[0];
+                    this.sorted[i].list.splice(index + 1, 0, item);
+                }
+            },
+            doSaveSort() {
+                let data = [];
+                for (let i = 0; i < this.sorted.length; i++) {
+                    let pageName = this.sorted[i].pageName;
+                    let pageNumber = i + 1;
+                    let list = this.sorted[i].list;
+                    for (let page = 0; page < list.length; page++) {
+                        let item = list[page];
+                        item.collectionId = this.collectionId;
+                        item.pageName = pageName;
+                        item.pageNumber = pageNumber;
+                        item.sortNo = page + 1;
+                        data.push(item);
+                    }
+                }
+                console.dir(JSON.stringify(data));
+                saveOrUpdateByJson(JSON.stringify(data)).then(response=>{
+                    if (response && response.data) {
+                        this.$message.success("保存成功");
+                        this.closeSortDialog();
+                        this.reloadList();
+                    } else {
+                        this.$message.error("保存失败");
+                    }
+                });
             }
         }
     }
@@ -1036,16 +1160,19 @@
 
 
 <style>
-    .unsortedBox {
-        width: 200px;
-        display: inline-block;
-    }
-    .sortBox {
-        width: 296px;
+    .tableBox{
+        width: 300px;
         margin-left: 20px;
         display: inline-block;
     }
-    .tableBox {
+    .tableHeadInput {
+        margin-bottom: 5px;
+        padding-right: 6px;
+    }
+    .tableHead {
+        margin-bottom: 5px;
+    }
+    .tableBody {
         height: 400px;
         overflow-y: scroll;
     }
