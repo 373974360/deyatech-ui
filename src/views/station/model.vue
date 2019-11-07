@@ -94,7 +94,7 @@
                                     <el-option
                                         v-for="m in metadataCollectionList"
                                         :key="m.id"
-                                        :label="m.name"
+                                        :label="m.name + ' V' + m.mdcVersion"
                                         :value="m.id">
                                     </el-option>
                                 </el-select>

@@ -389,17 +389,18 @@
                         {required: true, message: this.$t("table.pleaseInput") + '类型'}
                     ],
                     dataType: [
-                        {required: true, message: this.$t("table.pleaseInput") + '数据类型'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '数据类型'}
                     ],
                     controlType: [
-                        {required: true, message: this.$t("table.pleaseInput") + '控件类型'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '控件类型'}
+                    ],
+                    controlLength: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '控件长度'}
                     ],
                     dictionaryId: [
                         {required: true, message: this.$t("table.pleaseInput") + '数据字典'}
                     ],
-                    /*definition: [
-                        {required: true, message: this.$t("table.pleaseInput") + '定义'}
-                    ],
+                    /*
                     field: [
                         {required: true, message: this.$t("table.pleaseInput") + '值域'}
                     ],*/

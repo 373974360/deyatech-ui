@@ -93,6 +93,23 @@
                             </template>
                         </el-table-column>
 
+                        <!--<el-table-column label="标题">
+                            <template slot-scope="scope">
+                                <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.title}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column align="center" label="发布时间" prop="resourcePublicationDate" width="150"/>
+                        <el-table-column align="center" label="权重" prop="sortNo" width="130">
+                            <template slot-scope="scope">
+                                <el-input-number v-model.trim="scope.row.sortNo" controls-position="right" :precision="0" :step="1" :min="1" :max="9999" size="small" style="width:100px;" @change="sortNoChange(scope.row)"></el-input-number>
+                            </template>
+                        </el-table-column>
+                        <el-table-column align="center" label="置顶" prop="flagTop" width="50">
+                            <template slot-scope="scope">
+                                <el-checkbox v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
+                            </template>
+                        </el-table-column>
+                        <el-table-column align="center" label="录入人" prop="inputUserName" width="80"/>-->
 
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                             <template slot-scope="scope">
@@ -112,33 +129,232 @@
             </el-row>
 
             <!--弹窗-->
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeTemplateDialog">
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeTemplateDialog">
 
                 <el-steps :active="stepsActive" finish-status="success" simple style="margin-top: -25px; margin-bottom: 20px">
-                    <el-step v-for="step in formList" :key="step.pageNumber" :title="step.pageName"></el-step>
+                    <el-step title="基本属性设置" ></el-step>
+                    <el-step title="核心属性设置" v-if="stepsActive != 0"></el-step>
+                    <el-step title="元数据属性设置" v-if="stepsActive == 2"></el-step>
                 </el-steps>
 
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="24">
-                        <el-form-item label="标题" prop="title">
-                            <el-input v-model.trim="template.title"></el-input>
+                <el-form ref="templateDialogForm" class="deyatech-form" :model="template" label-position="right"
+                         label-width="80px" :rules="templateRules">
+
+                    <!--基本属性设置-->
+                    <div v-show="stepsActive == 0">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="标题" prop="title">
+                                    <el-input v-model.trim="template.title"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="来源" prop="source">
+                                    <el-input v-model.trim="template.source"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="作者姓名" prop="author">
+                                    <el-input v-model.trim="template.author"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+
+                            <el-col :span="12">
+                                <el-form-item label="权重" prop="sortNo">
+                                    <el-input v-model.trim="template.sortNo" maxlength="4"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="资源分类" prop="resourceCategory">
+                                    <el-select filterable v-model.trim="template.resourceCategory" placeholder="请选择资源分类" style="width: 100%;">
+                                        <el-option
+                                            v-for="item in resourceCategoryList"
+                                            :key="item.id"
+                                            :label="item.codeText"
+                                            :value="item.id">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="摘要" prop="resourceSummary">
+                                    <el-input type="textarea" v-model.trim="template.resourceSummary" :rows="3"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="关键字" prop="keyword">
+                                    <el-tag
+                                        :key="tag"
+                                        v-for="tag in dynamicTags"
+                                        closable
+                                        :disable-transitions="false"
+                                        @close="handleClose(tag)">
+                                        {{tag}}
+                                    </el-tag>
+                                    <el-input
+                                        class="input-new-tag"
+                                        v-if="inputVisible"
+                                        v-model.trim="inputValue"
+                                        ref="saveTagInput"
+                                        size="small"
+                                        @keyup.enter.native="handleInputConfirm"
+                                        @blur="handleInputConfirm"
+                                        placeholder="请输入关键字"
+                                        maxlength="20">
+                                    </el-input>
+                                    <el-button :disabled="dynamicTags.length >= 10" class="button-new-tag" size="small" @click="showInput">添加关键字</el-button>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="缩略图" prop="thumbnail">
+                                    <el-upload class="avatar-uploader"
+                                               :class="{hide: template.thumbnailUrl}"
+                                               :action="uploadUrlCms"
+                                               :data="{'path': siteUploadPath, 'siteId': template.siteId}"
+                                               :accept="$store.state.common.imageAccepts"
+                                               :file-list="thumbnailList"
+                                               list-type="picture-card"
+                                               :on-success="handleAvatarSuccess"
+                                               :on-error="handleAvatarError"
+                                               :before-upload="beforeAvatarUpload"
+                                               :on-preview="handlePictureCardPreview"
+                                               :on-remove="handleAvatarRemove">
+                                        <i class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>
+                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
+                                        <img width="100%" :src="dialogImageUrl" alt="">
+                                    </el-dialog>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="12">
+                                <el-form-item label="外链" prop="flagExternal">
+                                    <el-switch v-model.trim="template.flagExternal" @change="isFlagExternal"></el-switch>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="置顶" prop="flagTop">
+                                    <el-switch v-model.trim="template.flagTop">
+                                    </el-switch>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+                    <!--外链属性设置-->
+                    <div v-if="template.flagExternal">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="URL" prop="url">
+                                    <el-input v-model.trim="template.url"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+
+                    <!--核心属性设置-->
+                    <div v-show="stepsActive == 1">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item prop="resourceContent" label-width="0">
+                                    <editor ref="resourceContent" :id="'editor'" :default-msg="template.resourceContent" :config="editorConfig" @editorContentTxtChange="contentChange"></editor>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+
+                    <!--元数据属性设置-->
+                    <div v-show="stepsActive == 2 && metadataCollection.metadataList.length > 0">
+                        <!-- 选择内容模型后，元数据等相关 TODO -->
+                        <el-form-item
+                            class="el-form-item" v-for="(item, index) in metadataCollection.metadataList"
+                            :key="item.id" :label="item.metadata.name" label-width="80px"
+                            :prop="'content.' + item.fieldName"
+                            :rules="item | formItemRules">
+                            <!--                        <template slot-scope>-->
+                            <!-- 输入框 -->
+                            <el-input v-if="item.controlType === 'inputElement'"
+                                      v-model.trim="template.content[item.fieldName]"></el-input>
+                            <!-- 选择器 -->
+                            <el-select filterable v-if="item.controlType === 'selectElement'&& contentItemOptions[item.id]" v-model.trim="template.content[item.fieldName]" placeholder="请选择">
+                                <el-option v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.codeText"
+                                           :value="opt.id"></el-option>
+                            </el-select>
+                            <!-- 单选框 -->
+                            <el-radio-group v-if="item.controlType === 'radioElement' && contentItemOptions[item.id]" v-model.trim="template.content[item.fieldName]">
+                                <el-radio v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
+                                    {{opt.codeText}}
+                                </el-radio>
+                            </el-radio-group>
+                            <!-- 多选框 -->
+                            <el-checkbox-group v-if="item.controlType === 'checkboxElement' && contentItemOptions[item.id]" v-model.trim="contentItemArray[item.fieldName]">
+                                <el-checkbox v-for="opt in contentItemOptions[item.id]" :key="opt.id" :label="opt.id">
+                                    {{opt.codeText}}
+                                </el-checkbox>
+                            </el-checkbox-group>
+                            <!-- 文本域 -->
+                            <el-input type="textarea" v-if="item.controlType === 'textareaElement'"
+                                      v-model.trim="template.content[item.fieldName]"></el-input>
+                            <!-- 富文本 -->
+                            <editor v-if="item.controlType === 'richTextElement'" :ref="item.id" :id="'editor' + index"
+                                    :default-msg="editorDefaultMsg[item.id]" :config="editorConfig"></editor>
+                            <!-- 时间类型 -->
+                            <template v-if="item.metadata.dataType === 'date'">
+                                <el-time-picker v-if="item.controlType === 'timeElement'" v-model.trim="template.content[item.fieldName]"
+                                                value-format="HH:mm:ss" placeholder="请选择时间"></el-time-picker>
+                                <el-date-picker v-else-if="item.controlType === 'datetimeElement'"
+                                                v-model.trim="template.content[item.fieldName]"
+                                                type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择时间"></el-date-picker>
+                                <el-date-picker v-else v-model.trim="template.content[item.fieldName]" type="date" value-format="yyyy-MM-dd"
+                                                placeholder="请选择日期"></el-date-picker>
+                            </template>
+
+                            <el-upload v-if="item.controlType === 'fileElement'"
+                                       :action="uploadUrlCms"
+                                       :data="{'path': siteUploadPath, 'siteId': template.siteId}"
+                                       multiple
+                                       :file-list="uploadFileReader"
+                                       :before-upload="beforeUpload"
+                                       :on-success="handleSuccess"
+                                       :on-preview="handlePreview"
+                                       :on-remove="handleRemove"
+                                       :before-remove="pickUploader(item.fieldName)">
+                                <el-button size="small" type="primary" @click="pickUploader(item.fieldName)">点击上传</el-button>
+                            </el-upload>
+
                         </el-form-item>
-                    </el-col>
-                </el-row>
-
-                <el-form :inline="true" v-for="form in formList" ref="templateDialogForm" :model="form.pageModel" class="deyatech-form" label-position="right" label-width="80px" style="margin-bottom: 100px">
-
-                    <el-row :gutter="20" :span="24" v-for="row in form.rows">
-                        <el-col :span="row.length == 1 ? 24 : 12" v-for="item in row">
-                            <el-form-item :label="item.name" :prop="item.briefName">
-                                <!--<el-input v-model.trim="form.pageModel[item.briefName]"></el-input>-->
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-
-
+                    </div>
                 </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button v-if="stepsActive != 0" type="primary" :size="btnSize" @click="previousStep" :loading="submitLoading">上一步</el-button>
+                    <el-button v-if="(!template.flagExternal && stepsActive == 0) || (stepsActive == 1 && metadataCollection.metadataList.length > 0)"
+                               type="primary" :size="btnSize" @click="nextStep" :loading="submitLoading">下一步</el-button>
 
+                    <el-button v-if="dialogTitle=='create' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               type="primary" :size="btnSize" @click="doCreate(false)" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='create' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               :size="btnSize" @click="doCreate(true)" :loading="submitLoading">草稿</el-button>
+
+                    <el-button v-if="dialogTitle=='update' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               type="primary" :size="btnSize" @click="doUpdate(false)" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='update' && (template.flagExternal || stepsActive == 2  || (stepsActive == 1 && metadataCollection.metadataList.length == 0))"
+                               :size="btnSize" @click="doUpdate(true)" :loading="submitLoading">草稿</el-button>
+                    <!--<el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>-->
+                </span>
             </el-dialog>
         </div>
     </basic-container>
@@ -162,8 +378,7 @@
         genStaticPage,
         reindex,
         keyword,
-        summary,
-        getDynamicForm
+        summary
     } from '@/api/station/template';
     import {
         getSiteUploadPath,
@@ -386,10 +601,7 @@
                 dialogVisiblePicture: undefined,
                 stepsActive: 0,
                 resourceCategoryList: [],
-                isAddTemplate: false,
-
-                // 动态表单
-                formList: []
+                isAddTemplate: false
             }
         },
         watch: {
@@ -445,9 +657,7 @@
 
         },
         created(){
-            // 动态表头
             this.loadHeadData();
-            // 数据状态
             const array = getStore({name: 'enums'})['ContentStatusEnum'];
             for (let cs of array) {
                 if (cs.var === 'PUBLISH') { // 已发布
@@ -479,10 +689,10 @@
             }
         },
         methods: {
-            // 加载动态表头
             loadHeadData() {
                 getTableHeadContentData().then(response=>{
                     this.headData = response.data;
+                    console.dir(this.headData);
                 });
             },
             getCatalogTree(){
@@ -607,12 +817,6 @@
                     });
                 }
             },
-            loadForm(contentModelId, templateId) {
-                getDynamicForm({contentModelId: contentModelId, templateId: templateId}).then(response=>{
-                    this.formList = response.data;
-                    console.dir(this.formList);
-                });
-            },
             btnCreate(command){
                 if (command) {
                     let catalogNode = this.$refs.catalogTree.getCurrentNode()
@@ -627,9 +831,8 @@
                     this.template.workflowKey = this.workflowKey;
                     this.dialogTitle = 'create';
                     this.dialogVisible = true;
-                    //this.getContentForm();
+                    this.getContentForm();
                 }
-                this.loadForm(command, undefined);
             },
             btnUpdate(row){
                 this.resetTemplate();
@@ -931,14 +1134,14 @@
                 this.dynamicTags = [];
                 this.thumbnailList = [];
                 this.resetTemplate();
-                // this.$refs['templateDialogForm'].resetFields();
-                // // 清空内容
-                // if (this.$refs['resourceContent']) {
-                //     this.$refs['resourceContent'].setUeContent('');
-                // }
-                // // 清除富文本缓存，否则二次以后加载失败
-                // $('#ueditor_textarea_editorValue').remove()
-                // this.stepsActive = 0;
+                this.$refs['templateDialogForm'].resetFields();
+                // 清空内容
+                if (this.$refs['resourceContent']) {
+                    this.$refs['resourceContent'].setUeContent('');
+                }
+                // 清除富文本缓存，否则二次以后加载失败
+                $('#ueditor_textarea_editorValue').remove()
+                this.stepsActive = 0;
             },
             /*            handleModelChange() {
                             this.getContentForm();

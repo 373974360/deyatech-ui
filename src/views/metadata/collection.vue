@@ -279,7 +279,7 @@
                 <div class="tableBox" :key="item.pageNumber" v-for="item in sorted">
                     <div class="tableHead">
                         <el-dropdown trigger="click" @command="moveSorted">
-                            <el-button size="mini" type="primary">第{{item.pageNumber}}页移动到<i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                            <el-button size="mini" type="primary" :disabled="sortedRowsToMove[item.pageNumber - 1].length <= 0">第{{item.pageNumber}}页移动到<i class="el-icon-arrow-down el-icon--right"></i></el-button>
                             <el-dropdown-menu slot="dropdown">
                                 <el-dropdown-item :command="item.pageNumber + '_0'" :key="0">未排序</el-dropdown-item>
                                 <el-dropdown-item v-if="item.pageNumber != num" v-for="num in maxPageNumber" :key="num" :command="item.pageNumber + '_' + num">第{{num}}页</el-dropdown-item>
@@ -291,7 +291,7 @@
                         <el-input size="mini" v-model="item.pageName"/>
                     </div>
                     <div class="tableBody">
-                        <el-table :data="item.list" border @selection-change="sortedSelectionChange">
+                        <el-table :ref="'page' + item.pageNumber" :data="item.list" border @selection-change="sortedSelectionChange">
                             <el-table-column type="selection" width="40" align="center"/>
                             <el-table-column align="center" label="名称" prop="metadataName"/>
                             <el-table-column label="排序" align="center" width="100">
@@ -963,7 +963,6 @@
             btnSort(row) {
                 getCollectionList({enName: row.enName}).then(response => {
                     this.collectionVersionList = response.data;
-                    console.dir(this.collectionVersionList);
                 });
                 this.collectionId = row.id;
                 this.getSortData(row.id);
@@ -972,7 +971,6 @@
             getSortData(collectionId) {
                 getSortDataByCollectionId({collectionId: collectionId}).then(response => {
                     let data = response.data;
-                    console.dir(data);
                     this.unsorted = data.unsorted;
                     this.sorted = [];
                     this.sortedRowsToMove = [];
@@ -1066,22 +1064,27 @@
                     this.unsortedRowsToMove = [];
                 }
             },
-            sortedSelectionChange(rows) {
-                if (rows.length > 0) {
-                    let metadataId = rows[0].metadataId;
-                    let index = -1;
-                    for (let i = 0; i < this.sorted.length && index == -1; i++) {
-                        for (let item of this.sorted[i].list) {
-                            if (metadataId === item.metadataId) {
-                                index = i;
-                                break;
-                            }
-                        }
-                    }
-                    if (index != -1) {
-                        this.sortedRowsToMove[index] = rows;
-                    }
+            sortedSelectionChange() {
+                for (let i = 1; i <= this.maxPageNumber; i++) {
+                    this.$set(this.sortedRowsToMove, i - 1, this.$refs['page'+i][0].selection);
                 }
+                // if (rows.length > 0) {
+                //     let metadataId = rows[0].metadataId;
+                //     let index = -1;
+                //     for (let i = 0; i < this.sorted.length && index == -1; i++) {
+                //
+                //         this.sortedRowsToMove[i] = [];
+                //         for (let item of this.sorted[i].list) {
+                //             if (metadataId === item.metadataId) {
+                //                 index = i;
+                //                 break;
+                //             }
+                //         }
+                //     }
+                //     if (index != -1) {
+                //         this.$set(this.sortedRowsToMove, index, rows);
+                //     }
+                // }
             },
             moveSorted(command) {
                 let c = command.split('_');
@@ -1143,7 +1146,6 @@
                         data.push(item);
                     }
                 }
-                console.dir(JSON.stringify(data));
                 saveOrUpdateByJson(JSON.stringify(data)).then(response=>{
                     if (response && response.data) {
                         this.$message.success("保存成功");

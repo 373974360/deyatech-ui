@@ -118,3 +118,10 @@ export function summary(submit) {
         data
     });
 }
+export function getDynamicForm(query) {
+    return request({
+        url: '/manage/station/template/getDynamicForm',
+        method: 'get',
+        params: query
+    });
+}
