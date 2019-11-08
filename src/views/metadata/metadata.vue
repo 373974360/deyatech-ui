@@ -149,7 +149,7 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
+                    <el-row :gutter="20" :span="24" v-if="metadata.type === 1 && (metadata.controlType === 'selectElement' || metadata.controlType === 'radioElement' || metadata.controlType === 'checkboxElement')">
                         <el-col :span="12">
                             <el-form-item label="数据来源" prop="dataSource">
                                 <el-select filterable v-model.trim="metadata.dataSource" placeholder="请选择" style="width: 100%">
@@ -397,13 +397,12 @@
                     controlLength: [
                         {required: true, message: this.$t("table.pleaseSelect") + '控件长度'}
                     ],
-                    dictionaryId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '数据字典'}
+                    dataSource: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '数据来源'}
                     ],
-                    /*
-                    field: [
-                        {required: true, message: this.$t("table.pleaseInput") + '值域'}
-                    ],*/
+                    dictionaryId: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '数据字典'}
+                    ],
                     annotationCount: [
                         {required: true, message: this.$t("table.pleaseInput") + '出现次数'}
                     ],

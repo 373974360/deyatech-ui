@@ -118,20 +118,76 @@
                     <el-step v-for="step in formList" :key="step.pageNumber" :title="step.pageName"></el-step>
                 </el-steps>
 
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="24">
-                        <el-form-item label="标题" prop="title">
-                            <el-input v-model.trim="template.title"></el-input>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
 
-                <el-form :inline="true" v-for="form in formList" ref="templateDialogForm" :model="form.pageModel" class="deyatech-form" label-position="right" label-width="80px" style="margin-bottom: 100px">
+                <el-form v-for="(form, formIndex) in formList" :ref="'dynamicForm' + formIndex" :model="form.pageModel"  class="deyatech-form" label-position="right" label-width="80px" style="margin-bottom: 100px">
 
-                    <el-row :gutter="20" :span="24" v-for="row in form.rows">
-                        <el-col :span="row.length == 1 ? 24 : 12" v-for="item in row">
-                            <el-form-item :label="item.name" :prop="item.briefName">
-                                <!--<el-input v-model.trim="form.pageModel[item.briefName]"></el-input>-->
+                    <el-row :gutter="20" :span="24" v-for="(row, rowIndex) in form.rows">
+                        <el-col :span="item.controlLength == 1 ? 12 : 24" v-for="(item, itemIndex) in row">
+                            <el-form-item :label="item.name" :prop="item.briefName" :rules="loadRules(item)">
+                                <!-- 输入框 -->
+                                <el-input v-if="item.controlType === 'inputElement'"
+                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength"></el-input>
+
+                                <!-- 文本域 -->
+                                <el-input v-else-if="item.controlType === 'textareaElement'" type="textarea"
+                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength" :rows="3"></el-input>
+
+                                <!-- 下拉框 -->
+                                <el-select v-else-if="item.controlType === 'selectElement'" filterable
+                                           v-model.trim="form.pageModel[item.briefName]" :placeholder="'请选择' + item.name" style="width: 100%;">
+                                    <el-option
+                                        v-for="item in form.pageList[item.briefName]"
+                                        :key="item.id"
+                                        :label="item.codeText"
+                                        :value="item.id">
+                                    </el-option>
+                                </el-select>
+
+                                <!-- 开关 -->
+                                <el-switch v-else-if="item.controlType === 'switchElement' && item.briefName != 'flag_external'"
+                                           v-model.trim="form.pageModel[item.briefName]"></el-switch>
+                                <div v-else-if="item.controlType === 'switchElement' && item.briefName === 'flag_external'"><!-- 外链 特殊处理 -->
+                                    <el-switch v-model.trim="form.pageModel[item.briefName]"></el-switch>
+                                    <el-input v-if="form.pageModel[item.briefName]" maxlength="1000"></el-input>
+                                </div>
+
+                                <!-- 标签 -->
+                                <el-tag v-else-if="item.controlType === 'tagElement'" v-for="tag in loadTag(form.pageModel[item.briefName])" :key="tag">{{tag}}</el-tag>
+
+                                <!-- 附件 -->
+                                <el-upload v-else-if="item.controlType === 'fileElement'"
+                                           :action="uploadUrlCms"
+                                           :data="{path: siteUploadPath, siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
+                                           multiple
+                                           :file-list="uploadFileReader"
+                                           :before-upload="beforeFileUpload"
+                                           :on-success="handleFileSuccess"
+                                           :on-preview="handleFilePreview"
+                                           :on-remove="handleFileRemove">
+                                    <el-button size="small" type="primary">点击上传</el-button>
+                                </el-upload>
+
+                                <!-- 图片 -->
+                                <div v-else-if="item.controlType === 'imageElement'">
+                                    <el-upload class="avatar-uploader"
+                                               :class="{hide: form.pageModel[item.briefName]}"
+                                               :action="uploadUrlCms"
+                                               :data="{path: siteUploadPath, siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
+                                               :accept="$store.state.common.imageAccepts"
+                                               list-type="picture-card"
+                                               :on-success="handleImageSuccess"
+                                               :on-error="handleImageError"
+                                               :before-upload="beforeImageUpload"
+                                               :on-preview="handleImageCardPreview"
+                                               :on-remove="handleImageRemove">
+                                        <i class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>
+                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
+                                        <img width="100%" :src="dialogImageUrl" alt="">
+                                    </el-dialog>
+                                </div>
+                                <span v-else>{{item.controlType}}</span>
+                                <!--ycx-->
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -226,6 +282,9 @@
                 } else {
                     callback();
                 }
+            };
+            const checkDefault = (rule, value, callback) => {
+                callback();
             };
             return {
                 headData: [],
@@ -375,7 +434,6 @@
                     initialFrameHeight: 350,
                     zIndex: 3000
                 },
-                currentUploaderKey: undefined,
                 dynamicTags: [],
                 inputVisible: false,
                 inputValue: '',
@@ -389,7 +447,9 @@
                 isAddTemplate: false,
 
                 // 动态表单
-                formList: []
+                formList: [],
+                formImageTemp:[],
+                formFileTemp:[],
             }
         },
         watch: {
@@ -478,7 +538,52 @@
                 this.getResourceCategoryList();
             }
         },
-        methods: {
+        methods: {//ycx
+            // 加载图片地址
+            loadImageSrc(url) {
+                return "/manage/station/material/showPicImg?filePath=" + url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+            },
+            // 加载标签数组
+            loadTag(value) {
+                if (value)
+                    return value.split(',');
+                else
+                    return [];
+            },
+            // 加载规则
+            loadRules(item) {
+              let rules = [];
+              if (item.required && item.required == true) {
+                  let rule = {};
+                  rule.required = true;
+                  let please = "";
+                  if (item.controlType === "inputElement" || item.controlType === "textareaElement" || item.controlType === "richTextElement") {
+                      please = "请输入";
+                  } else {
+                      please = "请选择";
+                  }
+                  rule.message = please + item.name;
+                  rules.push(rule);
+              }
+              if (item.checkModel) {
+                  let rule = {};
+                  rule.trigger = ['blur','change'];
+                  if (item.checkModel === 'positiveInteger') {
+                      rule.validator = (rule, value, callback) => {
+                          //除了数字
+                          if (/[^\d]/g.test(value)) {
+                              callback(new Error('请输入正整数'));
+                          } else {
+                              callback();
+                          }
+                      };
+                  } else {
+                      rule.validator = (rule, value, callback) => callback();
+                  }
+                  rules.push(rule);
+              }
+              return rules;
+            },
             // 加载动态表头
             loadHeadData() {
                 getTableHeadContentData().then(response=>{
@@ -927,7 +1032,6 @@
                 this.contentItemArray = {};
                 this.uploadFileList = {};
                 this.uploadFileReader = [];
-                this.currentUploaderKey = undefined;
                 this.dynamicTags = [];
                 this.thumbnailList = [];
                 this.resetTemplate();
@@ -1028,20 +1132,38 @@
                     }
                 }
             },
-            handleAvatarSuccess(res, file) {
-                if (res.status === 200 && res.data.state === 'SUCCESS') {
-                    // this.template.thumbnail = res.data.url;
-                    this.$set(this.template, 'thumbnail', res.data.customData.id)
-                    this.$set(this.template, 'thumbnailUrl', res.data.customData.url)
+            handleImageSuccess(response, file, fileList) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    let data = response.data;
+                    let attach = data.attach.split(',');
+                    let formIndex = attach[0];
+                    let briefName = attach[1];
+                    this.formList[formIndex].pageModel[briefName] = data.url;
+
+                    // 丢弃原来的
+                    let tmp = [];
+                    for (let i = 0; i < this.formImageTemp.length; i++) {
+                        let item = this.formImageTemp[i];
+                        if (item.briefName != briefName) {
+                            tmp.push(item)
+                        }
+                    }
+                    this.formImageTemp = tmp;
+                    // 存入新的
+                    this.formImageTemp.push({
+                        uid: file.uid,
+                        briefName: briefName,
+                        formIndex: formIndex
+                    });
                     this.$message.success('上传成功！');
                 } else {
                     this.$message.error('上传失败！');
                 }
             },
-            handleAvatarError() {
+            handleImageError(err, file, fileList) {
                 this.$message.error('网络不稳定，上传失败！')
             },
-            beforeAvatarUpload(file) {
+            beforeImageUpload(file) {
                 const isJPG = this.$store.state.common.imageAccepts.includes(file.type);
                 const isLt2M = file.size / 1024 / 1024 < 2;
                 if (!isJPG) {
@@ -1052,13 +1174,30 @@
                 }
                 return isJPG && isLt2M;
             },
-            handlePictureCardPreview(file) {
+            handleImageCardPreview(file) {
                 this.dialogImageUrl = file.url;
                 this.dialogVisiblePicture = true;
             },
-            handleAvatarRemove() {
-                this.template.thumbnail = '';
-                this.template.thumbnailUrl = '';
+            handleImageRemove(file, fileList) {
+                console.log();
+                console.dir(file);
+                console.dir(fileList);
+
+                let target = undefined;
+                // 丢弃原来的
+                let tmp = [];
+                for (let i = 0; i < this.formImageTemp.length; i++) {
+                    let item = this.formImageTemp[i];
+                    if (item.uid == file.uid) {
+                        target = item;
+                    } else {
+                        tmp.push(item)
+                    }
+                }
+                this.formImageTemp = tmp;
+                if (target) {
+                    this.formList[target.formIndex].pageModel[target.briefName] = undefined;
+                }
             },
             // 选择菜单触发
             handleCommand(command) {
@@ -1260,45 +1399,43 @@
                 }
                 // }
             },
-            beforeUpload(file) {
+            beforeFileUpload(file) {
                 const isLt2M = file.size / 1024 / 1024 < 2;
                 if (!isLt2M) {
                     this.$message.error('上传文件大小不能超过 2MB!');
                 }
                 return isLt2M;
             },
-            handleSuccess(res, file) {
-                if (res.status === 200 && res.data.state === 'SUCCESS') {
+            handleFileSuccess(response, file) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    let data = response.data;
+                    console.dir(data);
                     this.$message.success('上传成功！');
 
-                    let uploadFile = {
-                        id: res.data.customData.id,
-                        name: res.data.customData.name,
-                        url: res.data.customData.url}
-
-                    // 初始化uploadFileList
-                    if (!this.uploadFileList[this.currentUploaderKey]) {
-                        this.$set(this.uploadFileList, this.currentUploaderKey, [])
-                    }
-                    this.uploadFileList[this.currentUploaderKey].push(uploadFile)
+                    // let uploadFile = {
+                    //     id: res.data.customData.id,
+                    //     name: res.data.customData.name,
+                    //     url: res.data.customData.url}
+                    //
+                    // // 初始化uploadFileList
+                    // if (!this.uploadFileList[this.currentUploaderKey]) {
+                    //     this.$set(this.uploadFileList, this.currentUploaderKey, [])
+                    // }
+                    // this.uploadFileList[this.currentUploaderKey].push(uploadFile)
                 } else {
                     this.$message.error('上传失败！');
                 }
             },
-            handlePreview(file) {
+            handleFilePreview(file) {
                 // 下载文件
-                // window.open(this.$store.state.common.downloadUrl + file.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/'));
                 window.location.href = this.$store.state.common.downloadUrl + file.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
             },
-            handleRemove(file, fileList) {
-                for (let [index, item] of this.uploadFileList[this.currentUploaderKey].entries()) {
-                    if (file.id === item.id) {
-                        this.uploadFileList[this.currentUploaderKey].splice(index, 1)
-                    }
-                }
-            },
-            pickUploader(key) {
-                this.currentUploaderKey = key
+            handleFileRemove(file, fileList) {
+                // for (let [index, item] of this.uploadFileList[this.currentUploaderKey].entries()) {
+                //     if (file.id === item.id) {
+                //         this.uploadFileList[this.currentUploaderKey].splice(index, 1)
+                //     }
+                // }
             },
             // 动态添加关键字 start
             handleClose(tag) {
