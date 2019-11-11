@@ -15,6 +15,10 @@
                 type: String,
                 default: ''
             },
+            attach: {
+                type: String,
+                default: ''
+            },
             config: {
                 type: Object,
                 default: {
@@ -35,16 +39,10 @@
             })
             this.ue.addListener('contentChange', this.contentChange);
         },
-        // watch: {
-        //     defaultMsg: function() {
-        //         this.ue.setContent(this.defaultMsg)
-        //     }
-        // },
         methods: {
             contentChange() {
-                console.log('富文本内容变更');
-                this.$emit('editorContentChange', this.ue.getContent());
-                this.$emit('editorContentTxtChange', this.ue.getContentTxt());
+                this.$emit('editorContentChange', this.ue.getContent(), this.attach);
+                this.$emit('editorContentTxtChange', this.ue.getContentTxt(), this.attach);
             },
             getUeContent() {
                 return this.ue.getContent()
@@ -54,7 +52,6 @@
             }
         },
         beforeDestroy() {
-            console.log('销毁富文本id: ' + this.id);
             this.ue.destroy()
             this.ue = null
         }

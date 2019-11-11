@@ -125,3 +125,10 @@ export function getDynamicForm(query) {
         params: query
     });
 }
+export function getBaseAndMetaField(query) {
+    return request({
+        url: '/manage/station/template/getBaseAndMetaField',
+        method: 'get',
+        params: query
+    });
+}

@@ -1002,6 +1002,7 @@
                 this.getSortData(id);
             },
             closeSortDialog() {
+                this.submitLoading = false;
                 this.dialogSortVisible = false;
                 this.unsorted = [];
                 this.unsortedRowsToMove = [];
@@ -1132,6 +1133,7 @@
                 }
             },
             doSaveSort() {
+                this.submitLoading = true;
                 let data = [];
                 for (let i = 0; i < this.sorted.length; i++) {
                     let pageName = this.sorted[i].pageName;

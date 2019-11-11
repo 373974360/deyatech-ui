@@ -119,11 +119,11 @@
                 </el-steps>
 
 
-                <el-form v-for="(form, formIndex) in formList" :ref="'dynamicForm' + formIndex" :model="form.pageModel"  class="deyatech-form" label-position="right" label-width="80px" style="margin-bottom: 100px">
+                <el-form v-show="formIndex == stepsActive" v-for="(form, formIndex) in formList" :ref="'dynamicForm' + formIndex" :model="form.pageModel"  class="deyatech-form" label-position="right" label-width="80px" style="margin-bottom: 100px">
 
                     <el-row :gutter="20" :span="24" v-for="(row, rowIndex) in form.rows">
                         <el-col :span="item.controlLength == 1 ? 12 : 24" v-for="(item, itemIndex) in row">
-                            <el-form-item :label="item.name" :prop="item.briefName" :rules="loadRules(item)">
+                            <el-form-item :label="item.name" :prop="item.briefName" :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == false) ? templateRules.resource_content : loadRules(item)">
                                 <!-- 输入框 -->
                                 <el-input v-if="item.controlType === 'inputElement'"
                                           v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength"></el-input>
@@ -136,29 +136,40 @@
                                 <el-select v-else-if="item.controlType === 'selectElement'" filterable
                                            v-model.trim="form.pageModel[item.briefName]" :placeholder="'请选择' + item.name" style="width: 100%;">
                                     <el-option
-                                        v-for="item in form.pageList[item.briefName]"
-                                        :key="item.id"
-                                        :label="item.codeText"
-                                        :value="item.id">
+                                        v-for="s in form.pageList[item.briefName]"
+                                        :key="s.id"
+                                        :label="s.codeText"
+                                        :value="s.id">
                                     </el-option>
                                 </el-select>
 
+                                <!-- 单选框 -->
+                                <el-radio-group v-else-if="item.controlType === 'radioElement'" v-model.trim="form.pageModel[item.briefName]">
+                                    <el-radio
+                                        v-for="rd in form.pageList[item.briefName]"
+                                        :key="rd.id"
+                                        :label="rd.id">{{rd.codeText}}</el-radio>
+                                </el-radio-group>
+
+                                <!-- 多选框 -->
+                                <el-checkbox-group v-else-if="item.controlType === 'checkboxElement'" v-model.trim="form.pageModel[item.briefName]">
+                                    <el-checkbox
+                                        v-for="ckb in form.pageList[item.briefName]"
+                                        :key="ckb.id"
+                                        :label="ckb.id">{{ckb.codeText}}</el-checkbox>
+                                </el-checkbox-group>
+
                                 <!-- 开关 -->
-                                <el-switch v-else-if="item.controlType === 'switchElement' && item.briefName != 'flag_external'"
+                                <el-switch v-else-if="item.controlType === 'switchElement'"
                                            v-model.trim="form.pageModel[item.briefName]"></el-switch>
-                                <div v-else-if="item.controlType === 'switchElement' && item.briefName === 'flag_external'"><!-- 外链 特殊处理 -->
-                                    <el-switch v-model.trim="form.pageModel[item.briefName]"></el-switch>
-                                    <el-input v-if="form.pageModel[item.briefName]" maxlength="1000"></el-input>
-                                </div>
 
                                 <!-- 标签 -->
                                 <el-tag v-else-if="item.controlType === 'tagElement'" v-for="tag in loadTag(form.pageModel[item.briefName])" :key="tag">{{tag}}</el-tag>
 
                                 <!-- 附件 -->
                                 <el-upload v-else-if="item.controlType === 'fileElement'"
-                                           :action="uploadUrlCms"
+                                           :action="uploadUrlCms" multiple
                                            :data="{path: siteUploadPath, siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
-                                           multiple
                                            :file-list="uploadFileReader"
                                            :before-upload="beforeFileUpload"
                                            :on-success="handleFileSuccess"
@@ -168,7 +179,7 @@
                                 </el-upload>
 
                                 <!-- 图片 -->
-                                <div v-else-if="item.controlType === 'imageElement'">
+                                <template v-else-if="item.controlType === 'imageElement'">
                                     <el-upload class="avatar-uploader"
                                                :class="{hide: form.pageModel[item.briefName]}"
                                                :action="uploadUrlCms"
@@ -185,15 +196,73 @@
                                     <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
                                         <img width="100%" :src="dialogImageUrl" alt="">
                                     </el-dialog>
-                                </div>
+                                </template>
+
+                                <!-- 日期 -->
+                                <el-date-picker v-else-if="item.controlType === 'dateElement'"
+                                                v-model.trim="form.pageModel[item.briefName]"
+                                                value-format="yyyy-MM-dd" type="date"
+                                                placeholder="请选择日期"></el-date-picker>
+
+                                <!-- 时间 -->
+                                <el-time-picker v-else-if="item.controlType === 'timeElement'"
+                                                v-model.trim="form.pageModel[item.briefName]"
+                                                value-format="HH:mm:ss"
+                                                placeholder="请选择时间"></el-time-picker>
+
+                                <!-- 时间戳 -->
+                                <el-date-picker v-else-if="item.controlType === 'datetimeElement'"
+                                                v-model.trim="form.pageModel[item.briefName]"
+                                                value-format="yyyy-MM-dd HH:mm:ss" type="datetime"
+                                                placeholder="请选择时间"></el-date-picker>
+
+                                <!-- 富文本 -->
+                                <editor v-else-if="item.controlType === 'richTextElement'" :config="editorConfig" :attach="formIndex + ',' + item.briefName"
+                                        :ref="'editor' + form.pageNumber" :id="'editor' + form.pageNumber"
+                                        :default-msg="form.pageModel[item.briefName]"
+                                        @editorContentTxtChange="contentTxtChange"
+                                        @editorContentChange="contentChange"></editor>
+
                                 <span v-else>{{item.controlType}}</span>
-                                <!--ycx-->
+
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24" v-if="form.pageModel['flag_external']">
+                        <el-col :span="24">
+                            <el-form-item label="URL" prop="url" :rules="form.pageModel['flag_external'] ? templateRules.url : []">
+                                <el-input v-model.trim="form.pageModel['url']"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
 
-
                 </el-form>
+                <span v-if="stepsActive == form.pageNumber - 1" v-for="form in formList" slot="footer" class="dialog-footer"><!--ycx-->
+                    <el-button v-if="form.pageNumber > 1" type="primary" :size="btnSize" :loading="submitLoading"
+                               @click="previousStep(form.pageNumber - 1)">上一步</el-button>
+
+                    <template v-if="form.pageModel['flag_external']">
+                        <el-button type="primary" :size="btnSize" :loading="submitLoading"
+                                   @click="doCreate(false)" >{{$t('table.confirm')}}</el-button>
+
+                        <el-button :size="btnSize" :loading="submitLoading"
+                                   @click="doCreate(true)">草稿</el-button>
+                    </template>
+
+                    <template v-else>
+                        <el-button v-if="form.pageNumber < maxPage" type="primary" :size="btnSize" :loading="submitLoading"
+                                   @click="nextStep(form.pageNumber - 1)">下一步</el-button>
+
+                        <el-button v-if="form.pageNumber == maxPage" type="primary" :size="btnSize" :loading="submitLoading"
+                                   @click="doCreate(false)" >{{$t('table.confirm')}}</el-button>
+
+                        <el-button v-if="form.pageNumber == maxPage" :size="btnSize" :loading="submitLoading"
+                                   @click="doCreate(true)">草稿</el-button>
+                    </template>
+
+
+                    <el-button :size="btnSize" @click="closeTemplateDialog">{{$t('table.cancel')}}</el-button>
+                </span>
 
             </el-dialog>
         </div>
@@ -219,7 +288,8 @@
         reindex,
         keyword,
         summary,
-        getDynamicForm
+        getDynamicForm,
+        getBaseAndMetaField
     } from '@/api/station/template';
     import {
         getSiteUploadPath,
@@ -232,7 +302,7 @@
         getAllModelBySiteId,
         getModelByCatalogId
     } from '@/api/station/model';
-    import {validateURL} from '@/util/validate';
+    import {validateURL,validateEmail, isEnglish} from '@/util/validate';
     import {findMetadataCollectionAllData} from '@/api/metadata/collection';
     import {getDictionaryList} from '@/api/admin/dictionary';
     import {getTableHeadContentData} from '@/api/assembly/customizationFunction'
@@ -263,15 +333,13 @@
                 })
             }
             const validateUrl = (rule, value, callback) => {
-                if (this.template.flagExternal) {
-                    if (!value) {
-                        callback(new Error('请输入URL'))
+                if (!value) {
+                    callback(new Error('请输入URL'))
+                } else {
+                    if (!validateURL(value)) {
+                        callback(new Error('URL格式错误'))
                     } else {
-                        if (!validateURL(value)) {
-                            callback(new Error('URL格式错误'))
-                        } else {
-                            callback()
-                        }
+                        callback()
                     }
                 }
             }
@@ -345,7 +413,15 @@
                 uploadFileList: {},
                 uploadFileReader: [],
                 templateRules: {
-                    siteId: [
+                    url: [
+                        {required: true, message: this.$t("table.pleaseInput") + 'URL'},
+                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
+                        {validator: validateUrl, trigger: ['change', 'blur']}
+                    ],
+                    resource_content: [
+                        {required: true, message: this.$t("table.pleaseInput") + '正文'}
+                    ]
+                    /*siteId: [
                         {required: true, message: this.$t("table.pleaseInput") + '站点id'}
                     ],
                     templatePath: [
@@ -366,11 +442,7 @@
                     contentModelTemplateId: [
                         {required: true, message: this.$t("table.pleaseInput") + '内容模型模板ID'}
                     ],
-                    url: [
-                        {required: true, message: this.$t("table.pleaseInput") + '外部链接地址'},
-                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
-                        {validator: validateUrl, trigger: 'blur'}
-                    ],
+
                     author: [
                         {required: true, message: this.$t("table.pleaseInput") + '作者姓名'},
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
@@ -410,9 +482,7 @@
                     resourceSummary: [
                         {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
                     ],
-                    resourceContent: [
-                        {max: 4000, message: '长度最多 4000 个字符', trigger: 'blur'}
-                    ],
+                    */
                 },
                 selectedRows: [],
                 dialogVisible: false,
@@ -450,6 +520,10 @@
                 formList: [],
                 formImageTemp:[],
                 formFileTemp:[],
+                maxPage: 0,
+                flagExternalIndex: 0,
+                baseFields: [],
+                metaFields: []
             }
         },
         watch: {
@@ -570,6 +644,9 @@
                   rule.trigger = ['blur','change'];
                   if (item.checkModel === 'positiveInteger') {
                       rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
                           //除了数字
                           if (/[^\d]/g.test(value)) {
                               callback(new Error('请输入正整数'));
@@ -577,6 +654,72 @@
                               callback();
                           }
                       };
+                  } else if (item.checkModel === 'mail') {
+                      rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
+                          if (validateEmail(value)) {
+                              callback();
+                          } else {
+                              callback(new Error("请输入正确的邮箱地址"))
+                          }
+                      }
+                  } else if (item.checkModel === 'int') {
+                      rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
+                          if (/^(\+|\-)?\d+$/.test(value)) {
+                              callback();
+                          } else {
+                              callback(new Error('请输入整数'));
+                          }
+                      };
+                  } else if (item.checkModel === 'english') {
+                      rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
+                          if (isEnglish(value)) {
+                              callback();
+                          } else {
+                              callback(new Error('请输入英文字母'));
+                          }
+                      };
+                  } else if (item.checkModel === 'float') {
+                      rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
+                          if (/^(\-|\+)?\d+(\.\d+)?$/.test(value)) {
+                              callback();
+                          } else {
+                              callback(new Error('请输入浮点数'));
+                          }
+                      }
+                  } else if (item.checkModel === 'chinese') {
+                      rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
+                          if (/^[\u4e00-\u9fa5]+$/.test(value)) {
+                              callback();
+                          } else {
+                              callback(new Error('请输入中文'));
+                          }
+                      }
+                  } else if (item.checkModel === 'url') {
+                      rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
+                          if (validateURL(value)) {
+                              callback();
+                          } else {
+                              callback(new Error('URL格式错误'))
+                          }
+                      }
                   } else {
                       rule.validator = (rule, value, callback) => callback();
                   }
@@ -712,10 +855,33 @@
                     });
                 }
             },
+            // 加载动态表单
             loadForm(contentModelId, templateId) {
+                getBaseAndMetaField({contentModelId: contentModelId}).then(response=>{
+                    let data = response.data;
+                    console.dir(data);
+                    this.baseFields = data.baseFields;
+                    this.metaFields = data.metaFields;
+                    this.template.metaDataCollectionId = data.metaDataCollectionId;
+                });
+
                 getDynamicForm({contentModelId: contentModelId, templateId: templateId}).then(response=>{
                     this.formList = response.data;
                     console.dir(this.formList);
+                    if (this.formList.length > 0) {
+                        this.maxPage = this.formList.length;
+                        for (let i = 0; i < this.formList.length; i++) {
+                            let pageModel = this.formList[i].pageModel;
+                            if (pageModel.hasOwnProperty("flag_external")) {
+                                this.flagExternalIndex = i;
+                                break;
+                            }
+                        }
+                    } else {
+                        this.maxPage = 0;
+                        this.flagExternalIndex = 0;
+                    }
+                    // console.dir(this.formList);
                 });
             },
             btnCreate(command){
@@ -732,9 +898,15 @@
                     this.template.workflowKey = this.workflowKey;
                     this.dialogTitle = 'create';
                     this.dialogVisible = true;
+                    this.stepsActive = 0;
+                    this.maxPage = 0;
+                    this.formList = [];
+                    this.formImageTemp = [];
+                    this.formFileTemp = [];
+                    this.loadForm(command, undefined);
                     //this.getContentForm();
                 }
-                this.loadForm(command, undefined);
+
             },
             btnUpdate(row){
                 this.resetTemplate();
@@ -743,28 +915,33 @@
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
-                this.metadataCollection = this.template.metadataCollectionVo;
-                // 删除查询出来的元数据信息，否则保存时报错
-                Vue.delete(this.template, 'metadataCollectionVo');
-                if (this.template.thumbnailUrl) {
-                    this.thumbnailList.push({
-                        id: this.template.thumbnail,
-                        url: "/manage/station/material/showPicImg?filePath=" + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
-                    })
-                }
-                // 必须这么设置
-                if (!this.template.content) {
-                    this.$set(this.template, 'content', {})
-                }
-                // 设置内容
-                if (this.$refs['resourceContent'] && this.template.resourceContent) {
-                    this.$refs['resourceContent'].setUeContent(this.template.resourceContent);
-                }
-                this.dynamicTags = this.template.keyword ? this.template.keyword.split(',') : [];
-                this.template.workflowKey = this.workflowKey;
+                console.dir(this.template);
+                this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
-                this.getContentForm();
+
+                // this.metadataCollection = this.template.metadataCollectionVo;
+                // // 删除查询出来的元数据信息，否则保存时报错
+                // Vue.delete(this.template, 'metadataCollectionVo');
+                // if (this.template.thumbnailUrl) {
+                //     this.thumbnailList.push({
+                //         id: this.template.thumbnail,
+                //         url: "/manage/station/material/showPicImg?filePath=" + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+                //     })
+                // }
+                // // 必须这么设置
+                // if (!this.template.content) {
+                //     this.$set(this.template, 'content', {})
+                // }
+                // // 设置内容
+                // if (this.$refs['resourceContent'] && this.template.resourceContent) {
+                //     this.$refs['resourceContent'].setUeContent(this.template.resourceContent);
+                // }
+                // this.dynamicTags = this.template.keyword ? this.template.keyword.split(',') : [];
+                // this.template.workflowKey = this.workflowKey;
+                // this.dialogTitle = 'update';
+                // this.dialogVisible = true;
+                // this.getContentForm();
             },
             btnCancel(row){
                 this.$confirm('此操作将撤销已发布信息, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
@@ -836,147 +1013,106 @@
                     })
                 }
             },
-            doCreate(draftFlag){
-                // 外链
-                if (this.template.flagExternal) {
-                    var _this = this;
-                    var title = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var author = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var source = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var flagExternal = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var url = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('url', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    Promise.all([title, author, source, flagExternal, url]).then(function(){
-                        _this.submitLoading = true;
-                        if (draftFlag) _this.template.draftFlag = draftFlag;
-                        createOrUpdateTemplate(_this.template).then(() => {
-                            _this.resetTemplateDialogAndList();
-                            _this.$message.success(_this.$t("table.createSuccess"));
-                        })
-                    });
-                } else {
-                    // 元数据相关 TODO
-                    // 富文本
-                    for (let item of this.metadataCollection.metadataList) {
-                        if (item.controlType === 'richTextElement') {
-                            this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
-                        }
+            // draftFlag草稿
+            doCreate(draftFlag) {
+                this.template.draftFlag = draftFlag;
+                let _this = this;
+                let formValidate = [];
+                for (let form of this.formList) {
+                    let formIndex = parseInt(form.pageNumber) - 1;
+                    if (_this.$refs['dynamicForm' + formIndex]) {
+                        formValidate.push(new Promise(function(resolve, reject) {
+                            _this.$refs['dynamicForm' + formIndex][0].validate(valid => {
+                                if(valid) {
+                                    resolve();
+                                }
+                            });
+                        }));
                     }
-                    // 文件上传
-                    for (let item in this.uploadFileList) {
-                        let ids = []
-                        for (let file of this.uploadFileList[item]) {
-                            ids.push(file.id)
-                        }
-                        this.template.content[item] = ids.join()
-                    }
-
-                    this.$refs['templateDialogForm'].validate(valid => {
-                        if(valid) {
-                            // 元数据信息字符串
-                            this.template.contentMapStr = JSON.stringify(this.template.content);
-
-                            /*if (!this.template.flagSearch) {
-                                this.template.flagSearch = false;
-                            }*/
-                            if (!this.template.flagTop) {
-                                this.template.flagTop = false;
-                            }
-
-                            this.template.flagExternal = false;
-
-                            // 关键字标签
-                            this.template.keyword = this.dynamicTags.join();
-                            // 内容
-                            this.template.resourceContent = this.$refs['resourceContent'].getUeContent()
-
-                            this.submitLoading = true;
-                            if (draftFlag) this.template.draftFlag = draftFlag;
-                            createOrUpdateTemplate(this.template).then(() => {
-                                this.resetTemplateDialogAndList();
-                                this.$message.success(this.$t("table.createSuccess"));
-                            })
-
-                        } else {
-                            return false;
-                        }
-                    });
                 }
+                Promise.all(formValidate).then(function(){
+                    let content = {};
+                    for (let form of _this.formList) {
+                        let pageModel = form.pageModel;
+                        // 基础字段
+                        for (let base of _this.baseFields) {
+                            if (pageModel.hasOwnProperty(base)) {
+                                let dest = base.replace(/_(\w)/g,function ($0,$1){return $1.toUpperCase();});
+                                _this.template[dest] = pageModel[base];
+                            }
+                        }
+                        // 元数据字段
+                        for (let meta of _this.metaFields) {
+                            if (pageModel.hasOwnProperty(meta) && pageModel[meta]) {
+                                content[meta] = pageModel[meta];
+                            }
+                        }
+                    }
+                    if (draftFlag) {
+                        _this.template.draftFlag = draftFlag;
+                    }
+                    _this.template.contentMapStr = JSON.stringify(content);
+                    console.dir(_this.template);
+                    _this.submitLoading = true;
+                    createOrUpdateTemplate(_this.template).then(() => {
+                        _this.resetTemplateDialogAndList();
+                        _this.$message.success(_this.$t("table.createSuccess"));
+                    }, (error)=>{
+                        _this.$message.error(error);
+                    }).catch((err)=>{
+                        _this.$message.error(err);
+                    });
+                });
             },
             doUpdate(draftFlag){
-                // 外链
-                if (this.template.flagExternal) {
-                    var _this = this;
-                    var title = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var author = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var source = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var flagExternal = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var url = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('url', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    Promise.all([title, author, source, flagExternal, url]).then(function(){
-                        _this.submitLoading = true;
-                        if (draftFlag) _this.template.draftFlag = draftFlag;
-                        createOrUpdateTemplate(_this.template).then(() => {
-                            _this.resetTemplateDialogAndList();
-                            _this.$message.success(_this.$t("table.updateSuccess"));
-                        })
-                    });
-                } else {
-                    // 元数据相关 TODO
-                    // 富文本
-                    for (let item of this.metadataCollection.metadataList) {
-                        if (item.controlType === 'richTextElement') {
-                            this.$set(this.template.content, item.fieldName, this.$refs[item.id][0].getUeContent())
-                        }
+                this.template.draftFlag = draftFlag;
+                let _this = this;
+                let formValidate = [];
+                for (let form of this.formList) {
+                    let formIndex = parseInt(form.pageNumber) - 1;
+                    if (_this.$refs['dynamicForm' + formIndex]) {
+                        formValidate.push(new Promise(function(resolve, reject) {
+                            _this.$refs['dynamicForm' + formIndex][0].validate(valid => {
+                                if(valid) {
+                                    resolve();
+                                }
+                            });
+                        }));
                     }
-                    // 文件上传
-                    for (let item in this.uploadFileList) {
-                        let ids = []
-                        for (let file of this.uploadFileList[item]) {
-                            ids.push(file.id)
-                        }
-                        this.template.content[item] = ids.join()
-                    }
-
-                    this.$refs['templateDialogForm'].validate(valid => {
-                        if (valid) {
-                            // 元数据信息字符串
-                            this.template.contentMapStr = JSON.stringify(this.template.content);
-
-                            // 关键字标签
-                            this.template.keyword = this.dynamicTags.join();
-                            // 内容
-                            this.template.resourceContent = this.$refs['resourceContent'].getUeContent()
-
-                            this.submitLoading = true;
-                            if (draftFlag) this.template.draftFlag = draftFlag;
-                            createOrUpdateTemplate(this.template).then(() => {
-                                this.resetTemplateDialogAndList();
-                                this.$message.success(this.$t("table.updateSuccess"));
-                            })
-                        } else {
-                            return false;
-                        }
-                    })
                 }
+                Promise.all(formValidate).then(function(){
+                    let content = {};
+                    for (let form of _this.formList) {
+                        let pageModel = form.pageModel;
+                        // 基础字段
+                        for (let base of _this.baseFields) {
+                            if (pageModel.hasOwnProperty(base)) {
+                                let dest = base.replace(/_(\w)/g,function ($0,$1){return $1.toUpperCase();});
+                                _this.template[dest] = pageModel[base];
+                            }
+                        }
+                        // 元数据字段
+                        for (let meta of _this.metaFields) {
+                            if (pageModel.hasOwnProperty(meta) && pageModel[meta]) {
+                                content[meta] = pageModel[meta];
+                            }
+                        }
+                    }
+                    if (draftFlag) {
+                        _this.template.draftFlag = draftFlag;
+                    }
+                    _this.template.contentMapStr = JSON.stringify(content);
+                    console.dir(_this.template);
+                    _this.submitLoading = true;
+                    createOrUpdateTemplate(_this.template).then(() => {
+                        _this.resetTemplateDialogAndList();
+                        _this.$message.success(_this.$t("table.createSuccess"));
+                    }, (error)=>{
+                        _this.$message.error(error);
+                    }).catch((err)=>{
+                        _this.$message.error(err);
+                    });
+                });
             },
             doDelete(ids){
                 this.listLoading = true;
@@ -1014,8 +1150,7 @@
                     workflowKey: undefined,
                     contentModelName: undefined,
                     contentMapStr: undefined,
-                    content: {},
-                    metaDataCollectionId: undefined
+                    content: {}
                 }
             },
             resetTemplateDialogAndList(){
@@ -1130,73 +1265,6 @@
                             }
                         })
                     }
-                }
-            },
-            handleImageSuccess(response, file, fileList) {
-                if (response.status === 200 && response.data.state === 'SUCCESS') {
-                    let data = response.data;
-                    let attach = data.attach.split(',');
-                    let formIndex = attach[0];
-                    let briefName = attach[1];
-                    this.formList[formIndex].pageModel[briefName] = data.url;
-
-                    // 丢弃原来的
-                    let tmp = [];
-                    for (let i = 0; i < this.formImageTemp.length; i++) {
-                        let item = this.formImageTemp[i];
-                        if (item.briefName != briefName) {
-                            tmp.push(item)
-                        }
-                    }
-                    this.formImageTemp = tmp;
-                    // 存入新的
-                    this.formImageTemp.push({
-                        uid: file.uid,
-                        briefName: briefName,
-                        formIndex: formIndex
-                    });
-                    this.$message.success('上传成功！');
-                } else {
-                    this.$message.error('上传失败！');
-                }
-            },
-            handleImageError(err, file, fileList) {
-                this.$message.error('网络不稳定，上传失败！')
-            },
-            beforeImageUpload(file) {
-                const isJPG = this.$store.state.common.imageAccepts.includes(file.type);
-                const isLt2M = file.size / 1024 / 1024 < 2;
-                if (!isJPG) {
-                    this.$message.error('上传图片格式不正确!');
-                }
-                if (!isLt2M) {
-                    this.$message.error('上传图片大小不能超过 2MB!');
-                }
-                return isJPG && isLt2M;
-            },
-            handleImageCardPreview(file) {
-                this.dialogImageUrl = file.url;
-                this.dialogVisiblePicture = true;
-            },
-            handleImageRemove(file, fileList) {
-                console.log();
-                console.dir(file);
-                console.dir(fileList);
-
-                let target = undefined;
-                // 丢弃原来的
-                let tmp = [];
-                for (let i = 0; i < this.formImageTemp.length; i++) {
-                    let item = this.formImageTemp[i];
-                    if (item.uid == file.uid) {
-                        target = item;
-                    } else {
-                        tmp.push(item)
-                    }
-                }
-                this.formImageTemp = tmp;
-                if (target) {
-                    this.formList[target.formIndex].pageModel[target.briefName] = undefined;
                 }
             },
             // 选择菜单触发
@@ -1399,6 +1467,87 @@
                 }
                 // }
             },
+
+            // 图片处理
+            handleImageSuccess(response, file, fileList) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    let data = response.data;
+                    let attach = data.attach.split(',');
+                    let formIndex = attach[0];
+                    let briefName = attach[1];
+                    this.formList[formIndex].pageModel[briefName] = data.url;
+
+                    // 丢弃原来的
+                    let tmp = [];
+                    for (let i = 0; i < this.formImageTemp.length; i++) {
+                        let item = this.formImageTemp[i];
+                        if (item.briefName != briefName) {
+                            tmp.push(item)
+                        }
+                    }
+                    this.formImageTemp = tmp;
+                    // 存入新的
+                    this.formImageTemp.push({
+                        uid: file.uid,
+                        briefName: briefName,
+                        formIndex: formIndex
+                    });
+                    this.$message.success('上传成功！');
+                } else {
+                    this.$message.error('上传失败！');
+                }
+            },
+            handleImageError(err, file, fileList) {
+                this.$message.error('网络不稳定，上传失败！')
+            },
+            beforeImageUpload(file) {
+                const isJPG = this.$store.state.common.imageAccepts.includes(file.type);
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if (!isJPG) {
+                    this.$message.error('上传图片格式不正确!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            },
+            handleImageCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisiblePicture = true;
+            },
+            handleImageRemove(file, fileList) {
+                let target = undefined;
+                // 丢弃原来的
+                let tmp = [];
+                for (let i = 0; i < this.formImageTemp.length; i++) {
+                    let item = this.formImageTemp[i];
+                    if (item.uid == file.uid) {
+                        target = item;
+                    } else {
+                        tmp.push(item)
+                    }
+                }
+                this.formImageTemp = tmp;
+                if (target) {
+                    this.formList[target.formIndex].pageModel[target.briefName] = undefined;
+                }
+            },
+
+            // 文件处理
+            getFileListUrl(fileList) {
+                let tmp = [];
+                for (let fl of fileList) {
+                    let res = fl.response;
+                    if (res.status == 200) {
+                        tmp.push(res.data.url);
+                    }
+                }
+                if (tmp.length > 0) {
+                    return tmp.join(',');
+                } else {
+                    return undefined;
+                }
+            },
             beforeFileUpload(file) {
                 const isLt2M = file.size / 1024 / 1024 < 2;
                 if (!isLt2M) {
@@ -1406,36 +1555,44 @@
                 }
                 return isLt2M;
             },
-            handleFileSuccess(response, file) {
+            handleFileSuccess(response, file, fileList) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
                     let data = response.data;
-                    console.dir(data);
+                    let attach = data.attach.split(',');
+                    let formIndex = attach[0];
+                    let briefName = attach[1];
+                    this.formList[formIndex].pageModel[briefName] = this.getFileListUrl(fileList);
+                    // 存入新的
+                    this.formFileTemp.push({
+                        uid: file.uid,
+                        briefName: briefName,
+                        formIndex: formIndex
+                    });
                     this.$message.success('上传成功！');
-
-                    // let uploadFile = {
-                    //     id: res.data.customData.id,
-                    //     name: res.data.customData.name,
-                    //     url: res.data.customData.url}
-                    //
-                    // // 初始化uploadFileList
-                    // if (!this.uploadFileList[this.currentUploaderKey]) {
-                    //     this.$set(this.uploadFileList, this.currentUploaderKey, [])
-                    // }
-                    // this.uploadFileList[this.currentUploaderKey].push(uploadFile)
                 } else {
                     this.$message.error('上传失败！');
                 }
             },
             handleFilePreview(file) {
                 // 下载文件
-                window.location.href = this.$store.state.common.downloadUrl + file.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+                window.location.href = this.$store.state.common.downloadUrl + file.response.data.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
             },
             handleFileRemove(file, fileList) {
-                // for (let [index, item] of this.uploadFileList[this.currentUploaderKey].entries()) {
-                //     if (file.id === item.id) {
-                //         this.uploadFileList[this.currentUploaderKey].splice(index, 1)
-                //     }
-                // }
+                let target = undefined;
+                // 丢弃原来的
+                let tmp = [];
+                for (let i = 0; i < this.formFileTemp.length; i++) {
+                    let item = this.formFileTemp[i];
+                    if (item.uid == file.uid) {
+                        target = item;
+                    } else {
+                        tmp.push(item)
+                    }
+                }
+                this.formFileTemp = tmp;
+                if (target) {
+                    this.formList[target.formIndex].pageModel[target.briefName] = this.getFileListUrl(fileList);
+                }
             },
             // 动态添加关键字 start
             handleClose(tag) {
@@ -1456,65 +1613,80 @@
                 this.inputValue = '';
             },
             // 动态添加关键字 end
-            previousStep() {
-                this.$refs['templateDialogForm'].clearValidate();
-                this.stepsActive --;
+            previousStep(formIndex) {
+                // this.$refs['templateDialogForm'].clearValidate();
+                this.stepsActive--;
             },
-            nextStep() {
-                var _this = this;
-                // 基本属性
-                if (this.stepsActive == 0) {
-                    var title = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var author = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var source = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var flagExternal = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    Promise.all([title, author, source, flagExternal]).then(function(){
-                        _this.stepsActive ++;
-                    });
-                }
-
-                // 核心属性
-                if (this.stepsActive == 1) {
-                    var resourceSummary = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('resourceSummary', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var resourceContent = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('resourceContent', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var sortNo = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('sortNo', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    var flagTop = new Promise(function(resolve, reject) {
-                        _this.$refs['templateDialogForm'].validateField('flagTop', function (errorMessage) {if (!errorMessage) {resolve();}});
-                    });
-                    Promise.all([resourceSummary, resourceContent, sortNo, flagTop]).then(function(){
-                        _this.stepsActive ++;
-                    });
-                }
+            nextStep(formIndex) {
+                this.$refs['dynamicForm' + formIndex][0].validate(valid => {
+                    if(valid) {
+                        this.stepsActive++;
+                    } else {
+                        return false;
+                    }
+                });
+                // var _this = this;
+                // // 基本属性
+                // if (this.stepsActive == 0) {
+                //     var title = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     var author = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     var source = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     var flagExternal = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     Promise.all([title, author, source, flagExternal]).then(function(){
+                //         _this.stepsActive ++;
+                //     });
+                // }
+                //
+                // // 核心属性
+                // if (this.stepsActive == 1) {
+                //     var resourceSummary = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('resourceSummary', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     var resourceContent = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('resourceContent', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     var sortNo = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('sortNo', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     var flagTop = new Promise(function(resolve, reject) {
+                //         _this.$refs['templateDialogForm'].validateField('flagTop', function (errorMessage) {if (!errorMessage) {resolve();}});
+                //     });
+                //     Promise.all([resourceSummary, resourceContent, sortNo, flagTop]).then(function(){
+                //         _this.stepsActive ++;
+                //     });
+                // }
             },
-            contentChange(v) {
-                if (this.template.title && v) {
-                    keyword({title: this.template.title, content: v}).then(response=>{
-                        if (response && response.status == 200) {
-                            this.dynamicTags = response.data;
-                        }
-                    });
-                    summary({title: this.template.title, content: v, maxSummaryLen: 100}).then(response=>{
-                        if (response && response.status == 200) {
-                            this.template.resourceSummary = response.data;
-                        }
-                    });
-                }
+            contentChange(content, attach) {
+                let value = attach.split(',');
+                let formIndex = parseInt(value[0]);
+                let briefName = value[1];
+                this.formList[formIndex].pageModel[briefName] = content;
 
-
+            },
+            contentTxtChange(content, attach) {
+                let value = attach.split(',');
+                let formIndex = parseInt(value[0]);
+                let briefName = value[1];
+                // if (this.template.title && v) {
+                //     keyword({title: this.template.title, content: v}).then(response=>{
+                //         if (response && response.status == 200) {
+                //             this.dynamicTags = response.data;
+                //         }
+                //     });
+                //     summary({title: this.template.title, content: v, maxSummaryLen: 100}).then(response=>{
+                //         if (response && response.status == 200) {
+                //             this.template.resourceSummary = response.data;
+                //         }
+                //     });
+                // }
             }
         }
     }
