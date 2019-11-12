@@ -97,6 +97,7 @@
                     <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
             </div>
+
             <el-table :data="detailList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column align="center" label="事项名称" prop="itemName"/>
@@ -113,12 +114,11 @@
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="300">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="160">
                     <template slot-scope="scope">
-                        <el-button v-if="scope.row.poorFlag === 0" title="整改" type="primary" :size="btnSize" @click="btnReform(scope.row)">整改回复</el-button>
-                        <el-button v-if="scope.row.reformStatus === 1" type="primary" :size="btnSize" @click="reformChanged(scope.row)">整改完成</el-button>
-                        <el-button v-if="scope.row.reformStatus === 1" type="primary" :size="btnSize" @click="reformUnchanged(scope.row)">无法整改</el-button>
-                        <el-button v-if="scope.row.reformStatus === 1 && scope.row.delayFlag === 0" type="primary" :size="btnSize" @click="btnReformDelay(scope.row)">申请延期</el-button>
+                        <el-button v-if="scope.row.delayFlag === 1 && scope.row.delayStatus === 0" type="primary" :size="btnSize" @click="btnReformDelay(scope.row)">延期审核</el-button>
+                        <!--todo 警告-->
+                        <!--<el-tag v-if="scope.row.reformStatus === 1"></el-tag>-->
                         <el-tag v-if="scope.row.poorFlag === 2" type="info">无效差评</el-tag>
                         <el-tag v-if="scope.row.reformStatus === 2" type="success">已完成整改</el-tag>
                         <el-tag v-if="scope.row.reformStatus === 3" type="info">无法整改</el-tag>
@@ -199,7 +199,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="评价是否有效" prop="poorFlag">
-                                <el-radio-group v-model="detail.poorFlag">
+                                <el-radio-group disabled v-model="detail.poorFlag">
                                     <el-radio :label="1" >有效</el-radio>
                                     <el-radio :label="2" >无效</el-radio>
                                 </el-radio-group>
@@ -209,42 +209,40 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="回复内容" prop="reformContent">
-                                <el-input type="textarea" v-model="detail.reformContent" :rows="3"/>
+                                <el-input type="textarea" disabled v-model="detail.reformContent" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24" v-if="detail.poorFlag === 1">
                         <el-col :span="24">
                             <el-form-item label="整改期限" prop="reformDate">
-                                <el-date-picker v-model="detail.reformDate" type="date" value-format="yyyy-MM-dd"
-                                                :picker-options="datePickerOptions" placeholder="选择日期">
+                                <el-date-picker disabled v-model="detail.reformDate" type="date" value-format="yyyy-MM-dd" placeholder="选择日期">
                                 </el-date-picker>
                             </el-form-item>
                         </el-col>
                     </el-row>
-                </el-form>
-                <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doReform" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeDetailDialog">{{$t('table.cancel')}}</el-button>
-                </span>
-            </el-dialog>
-
-            <el-dialog title="整改延期" :visible.sync="dialogDelayVisible" :close-on-click-modal="closeOnClickModal" @close="closeDelayDialog">
-                <el-form ref="delayDialogForm" class="deyatech-form" :model="detail" label-position="right"
-                         label-width="110px" :rules="detailRules" style="margin-top: 20px">
+                    <el-row :gutter="20" :span="24" v-if="detail.delayFlag === 1">
+                        <el-col :span="24">
+                            <el-form-item label="延期日期" prop="delayDate">
+                                <el-date-picker disabled v-model="detail.delayDate" type="date" value-format="yyyy-MM-dd" placeholder="选择日期">
+                                </el-date-picker>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="整改期限" prop="delayDate">
-                                <el-date-picker v-model="detail.delayDate" type="date" value-format="yyyy-MM-dd"
-                                                :picker-options="delayDateOptions" placeholder="选择日期">
-                                </el-date-picker>
+                            <el-form-item label="是否同意延期" prop="delayStatus">
+                                <el-radio-group v-model="detail.delayStatus">
+                                    <el-radio :label="1" >同意</el-radio>
+                                    <el-radio :label="2" >不同意</el-radio>
+                                </el-radio-group>
                             </el-form-item>
                         </el-col>
                     </el-row>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doDelay" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeDelayDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button type="primary" :size="btnSize" @click="doReformDelay">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeDetailDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -258,9 +256,7 @@
     import {getStore} from '@/util/store';
     import {
         getReplyDetailList,
-        saveReply,
-        reformChange,
-        reformDelay
+        reformDelayAudit
     } from '@/api/evaluate/detail';
 
     export default {
@@ -272,16 +268,6 @@
         },
         data() {
             return {
-                datePickerOptions: {
-                    disabledDate(time) {
-                        return time.getTime() < Date.now() || (time.getTime() - 3600 * 1000 * 24 * 15) > Date.now();
-                    }
-                },
-                delayDateOptions: {
-                    disabledDate(time) {
-                        return time.getTime() < Date.now();
-                    }
-                },
                 levelParseInt: {},
                 detailList: undefined,
                 total: undefined,
@@ -329,26 +315,16 @@
                     reformStatus: undefined,
                     delayFlag: undefined,
                     delayDate: undefined,
+                    delayStatus: undefined,
                     content: ''
                 },
                 detailRules: {
-                    poorFlag: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '评价是否有效'}
-                    ],
-                    reformContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + '整改内容'},
-                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
-                    ],
-                    reformDate: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '整改期限'}
-                    ],
-                    delayDate: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '整改期限'}
+                    delayStatus: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '是否同意延期'}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
-                dialogDelayVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
                 departmentList: [],
@@ -374,7 +350,6 @@
             }
         },
         created(){
-            // this.listQuery.proDepartment = this.userInfo.orgName;
             this.reloadList();
         },
         methods: {
@@ -445,13 +420,9 @@
                     reformStatus: undefined,
                     delayFlag: undefined,
                     delayDate: undefined,
+                    delayStatus: undefined,
                     content: ''
                 }
-            },
-            resetDetailDialogAndList(){
-                this.closeDetailDialog();
-                this.submitLoading = false;
-                this.reloadList();
             },
             closeDetailDialog() {
                 this.dialogVisible = false;
@@ -470,57 +441,17 @@
                     this.listQuery.evaluationTimeEnd = undefined;
                 }
             },
-            btnReform(row) {
-                this.resetDetail();
+            btnReformDelay(row) {
                 this.detail = deepClone(row);
                 this.dialogVisible = true;
             },
-            doReform(){
+            doReformDelay() {
                 this.$refs['detailDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        saveReply(this.detail).then(() => {
-                            this.resetDetailDialogAndList();
+                        reformDelayAudit(this.detail).then(() => {
                             this.$message.success(this.$t("table.submitSuccess"));
-                        }).catch(() => {
-                            this.submitLoading = false;
-                        })
-                    } else {
-                        return false;
-                    }
-                });
-            },
-            reformChanged(row) {
-                this.resetDetail();
-                this.detail.id = row.id;
-                this.detail.reformStatus = 2;
-                reformChange(this.detail).then(response => {
-                    this.$message.success('操作成功');
-                    this.reloadList();
-                })
-            },
-            reformUnchanged(row) {
-                this.resetDetail();
-                this.detail.id = row.id;
-                this.detail.reformStatus = 3;
-                reformChange(this.detail).then(response => {
-                    this.$message.success('操作成功');
-                    this.reloadList();
-                })
-            },
-            btnReformDelay(row) {
-                this.resetDetail();
-                this.detail.id = row.id;
-                this.detail.delayFlag = 1;
-                this.dialogDelayVisible = true;
-            },
-            doDelay() {
-                this.$refs['delayDialogForm'].validate(valid => {
-                    if(valid) {
-                        this.submitLoading = true;
-                        reformDelay(this.detail).then(() => {
-                            this.$message.success(this.$t("table.submitSuccess"));
-                            this.closeDelayDialog();
+                            this.closeDetailDialog();
                             this.submitLoading = false;
                             this.reloadList();
                         }).catch(() => {
@@ -530,11 +461,6 @@
                         return false;
                     }
                 });
-            },
-            closeDelayDialog() {
-                this.dialogDelayVisible = false;
-                this.resetDetail();
-                this.$refs['delayDialogForm'].resetFields();
             }
         }
     }

@@ -64,59 +64,55 @@
                     <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
             </div>-->
-            <el-table :data="detailList" v-loading.body="listLoading" stripe border highlight-current-row>
+
+            <h3 class="table-title">按评价得分排名</h3>
+            <el-table :data="deptSortByScoreList" v-loading.body="listScoreLoading" stripe border highlight-current-row>
+                <el-table-column align="center" type="index" label="序号" width="50"/>
                 <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="非常满意">
+                <el-table-column align="center" label="评价得分" prop="score">
                     <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].count : 0}}
+                        {{Math.round(scope.row.score * 100) / 100}}
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="基本满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="不满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="非常不满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
+            </el-table>
+
+            <div class="spacer"></div>
+
+            <h3 class="table-title">按总评价数排名</h3>
+            <el-table :data="deptSortByCountList" v-loading.body="listCountLoading" stripe border highlight-current-row>
+                <el-table-column align="center" type="index" label="序号" width="50"/>
+                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
                 <el-table-column align="center" label="总评价数" prop="count"/>
+            </el-table>
+
+            <div class="spacer"></div>
+
+            <h3 class="table-title">按评价率分排名</h3>
+            <el-table :data="deptSortByRateEvaluateList" v-loading.body="listRateEvaluateLoading" stripe border highlight-current-row>
+                <el-table-column align="center" type="index" label="序号" width="50"/>
+                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
+                <el-table-column align="center" label="办件数" prop="countAccept"/>
+                <el-table-column align="center" label="评价数" prop="count"/>
+                <el-table-column align="center" label="评价率" prop="rate">
+                    <template slot-scope="scope">
+                        {{Math.round(scope.row.rate * 100) / 100}}%
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <div class="spacer"></div>
+
+            <h3 class="table-title">按差评比例排名</h3>
+            <el-table :data="deptSortByRatePoorList" v-loading.body="listRatePoorLoading" stripe border highlight-current-row>
+                <el-table-column align="center" type="index" label="序号" width="50"/>
+                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
+                <el-table-column align="center" label="评价总数" prop="count"/>
+                <el-table-column align="center" label="差评数" prop="countPoor"/>
+                <el-table-column align="center" label="差评比例" prop="rate">
+                    <template slot-scope="scope">
+                        {{Math.round(scope.row.rate * 100) / 100}}%
+                    </template>
+                </el-table-column>
             </el-table>
             <!--<el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
@@ -130,29 +126,26 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {deepClone} from '@/util/util';
     import {getStore} from '@/util/store';
     import {
-        getDetailList,
-        createOrUpdateDetail,
-        delDetails
-    } from '@/api/evaluate/detail';
-    import {
-        queryEvaluateCountByDept
+        qryDeptSortByScore,
+        qryDeptSortByCount,
+        qryDeptSortByRateEvaluate,
+        qryDeptSortByRatePoor
     } from "../../api/evaluate/count";
 
     export default {
-        name: 'detail',
-        filters: {
-            levelParseInt: function (value) {
-                return parseInt(value);
-            }
-        },
+        name: 'deptSort',
         data() {
             return {
-                detailList: [],
-                total: 0,
-                listLoading: true,
+                deptSortByScoreList: [],
+                deptSortByCountList: [],
+                deptSortByRateEvaluateList: [],
+                deptSortByRatePoorList: [],
+                listScoreLoading: true,
+                listCountLoading: true,
+                listRateEvaluateLoading: true,
+                listRatePoorLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -168,14 +161,7 @@
                     evaluationTimeStart: undefined,
                     evaluationTimeEnd: undefined,
                 },
-                selectedRows: [],
-                dialogVisible: false,
-                dialogTitle: undefined,
-                submitLoading: false,
-                departmentList: [], //TODO  阿里提供接口查询
-                submitTimeRange: [],
-                levelParseInt: {},
-                dialogVisibleDetails: false,
+                submitTimeRange: []
             }
         },
         computed: {
@@ -196,7 +182,10 @@
             }
         },
         created(){
-            this.reloadList();
+            this.loadDeptSortByScoreList();
+            this.loadDeptSortByCountList();
+            this.loadDeptSortByRateEvaluateList();
+            this.loadDeptSortByRatePoorList();
         },
         methods: {
             resetSearch(){
@@ -213,20 +202,39 @@
                 this.listQuery.evaluationTimeEnd = undefined;
                 this.submitTimeRange = [];
             },
-            reloadList(){
-                this.listLoading = true;
-                this.detailList = [];
-                this.total = 0;
-                queryEvaluateCountByDept().then(response => {
-                    this.listLoading = false;
-                    this.detailList = response.data;
+            loadDeptSortByScoreList() {
+                this.listScoreLoading = true;
+                qryDeptSortByScore().then(response => {
+                    this.listScoreLoading = false;
+                    this.deptSortByScoreList = response.data;
+                })
+            },
+            loadDeptSortByCountList() {
+                this.listCountLoading = true;
+                qryDeptSortByCount().then(response => {
+                    this.listCountLoading = false;
+                    this.deptSortByCountList = response.data;
+                })
+            },
+            loadDeptSortByRateEvaluateList() {
+                this.listRateEvaluateLoading = true;
+                qryDeptSortByRateEvaluate().then(response => {
+                    this.listRateEvaluateLoading = false;
+                    this.deptSortByRateEvaluateList = response.data;
+                })
+            },
+            loadDeptSortByRatePoorList() {
+                this.listRatePoorLoading = true;
+                qryDeptSortByRatePoor().then(response => {
+                    this.listRatePoorLoading = false;
+                    this.deptSortByRatePoorList = response.data;
                 })
             },
             loadEnum(name) {
                 return getStore({name: 'enums'})[name];
             },
             submitTimeRangeChange(submitTimeRange) {
-                if (!!submitTimeRange) {
+                if (submitTimeRange && submitTimeRange.length > 0) {
                     this.listQuery.evaluationTimeStart = submitTimeRange[0];
                     this.listQuery.evaluationTimeEnd = submitTimeRange[1];
                 } else {
@@ -239,31 +247,10 @@
 </script>
 
 <style>
-    .mailTable, .mailTable tr, .mailTable tr td {
-        border:1px solid #E6EAEE;
+    .spacer {
+        height: 28px;
     }
-    .mailTable {
-        font-size: 14px;
-        color: #71787E;
-    }
-    .mailTable tr td {
-        border:1px solid #E6EAEE;
-        width: 225px;
-        height: 40px;
-        line-height: 40px;
-        box-sizing: border-box;
-        padding: 0 10px;
-    }
-    .mailTable tr td.column {
-        width: 175px;
-        background-color: #EFF3F6;
-        color: #393C3E;
-    }
-    .mailTable tr td.reform {
-        height: auto;
-        line-height: 30px;
-    }
-    ul {
-        padding-inline-start: 20px;
+    .table-title {
+        color: #909399;
     }
 </style>
