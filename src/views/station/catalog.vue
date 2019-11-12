@@ -8,6 +8,7 @@
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || templateCount > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
+                    显示设置<el-button type="primary" :size="btnSize" icon="el-icon-setting" circle @click="displaySetting"></el-button>
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
@@ -386,6 +387,27 @@
             </div>
         </el-dialog>
 
+        <el-dialog title="显示设置" width="30%" :visible.sync="displaySettingVisible" :close-on-click-modal="closeOnClickModal" @close="closeDisplaySettingDialog">
+            <el-table :data="headList" border>
+                <el-table-column prop="label" label="名称"></el-table-column>
+                <el-table-column label="显示" align="center" width="50">
+                    <template slot-scope="scope">
+                        <el-checkbox v-model="scope.row.show"/>
+                    </template>
+                </el-table-column>
+                <el-table-column label="排序" align="center" width="100">
+                    <template slot-scope="scope">
+                        <el-button icon="el-icon-arrow-up" :size="btnSize" circle title="上移" @click="sortFunctionUp(headList, scope.$index)"></el-button>
+                        <el-button icon="el-icon-arrow-down" :size="btnSize" circle title="下移" @click="sortFunctionDown(headList, scope.$index)"></el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="btnFunctionSave" :size="btnSize">保存</el-button>
+                    <el-button :size="btnSize" @click="closeDisplaySettingDialog">{{$t('table.cancel')}}</el-button>
+                </span>
+        </el-dialog>
+
     </basic-container>
 </template>
 
@@ -415,7 +437,7 @@
     import {validateURL,isEnglish} from '@/util/validate';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {getUserList} from '@/api/admin/user';
-    import {getTableHeadCatalogData} from '@/api/assembly/customizationFunction'
+    import {getTableHeadCatalogData, getCustomizationFunctionCatalog, saveOrUpdate} from '@/api/assembly/customizationFunction'
 
     export default {
         name: 'catalog',
@@ -794,7 +816,12 @@
                     departmentId: undefined
                 },
                 currentUser: undefined,
-                userTotal: undefined
+                userTotal: undefined,
+
+                // 显示设置
+                displaySettingVisible: false,
+                customizationFunction: undefined,
+                headList: [],
             }
         },
         created() {
@@ -828,6 +855,8 @@
         },
         methods: {
             loadHeadData() {
+                this.frontTreeHeadData = [];
+                this.afterTreeHeadData = [];
                 getTableHeadCatalogData().then(response=>{
                     this.headData = response.data;
                     let flag = 0;
@@ -1404,6 +1433,45 @@
                     });
                 }
             },
+            displaySetting() {
+                this.headList = [];
+                this.displaySettingVisible = true;
+                getCustomizationFunctionCatalog().then(response=>{
+                    this.customizationFunction = response.data;
+                    this.headList = this.customizationFunction.headList;
+                });
+            },
+            closeDisplaySettingDialog() {
+                this.displaySettingVisible = false;
+                this.customizationFunction = undefined;
+                this.headList = [];
+            },
+            sortFunctionUp(headList, index) {
+                if (index > 0) {
+                    const row = headList.splice(index, 1)[0];
+                    headList.splice(index - 1, 0, row);
+                }
+            },
+            sortFunctionDown(headList, index) {
+                if (index !== headList.length - 1) {
+                    const row = headList.splice(index, 1)[0];
+                    headList.splice(index + 1, 0, row);
+                }
+            },
+            btnFunctionSave() {
+                let data = JSON.stringify(this.headList);
+                this.customizationFunction.headList = undefined;
+                this.customizationFunction.data = data;
+                saveOrUpdate(this.customizationFunction).then(response=>{
+                    if (response.status == 200 && response.data) {
+                        this.loadHeadData();
+                        this.closeDisplaySettingDialog();
+                        this.$message.success("保存成功");
+                    } else {
+                        this.$message.success("保存失败");
+                    }
+                });
+            }
         }
     }
 </script>

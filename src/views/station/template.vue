@@ -50,6 +50,7 @@
                     </el-dropdown>
                 </div>
                 <div class="deyatech-menu_right">
+                    显示设置<el-button type="primary" :size="btnSize" icon="el-icon-setting" circle @click="displaySetting"></el-button>
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
@@ -123,7 +124,7 @@
 
                     <el-row :gutter="20" :span="24" v-for="(row, rowIndex) in form.rows">
                         <el-col :span="item.controlLength == 1 ? 12 : 24" v-for="(item, itemIndex) in row">
-                            <el-form-item :label="item.name" :prop="item.briefName" :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == false) ? templateRules.resource_content : loadRules(item)">
+                            <el-form-item :label="item.name" :prop="item.briefName" :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == 0) ? templateRules.resource_content : loadRules(item)">
                                 <!-- 输入框 -->
                                 <el-input v-if="item.controlType === 'inputElement'"
                                           v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength"></el-input>
@@ -151,8 +152,8 @@
                                         :label="rd.id">{{rd.codeText}}</el-radio>
                                 </el-radio-group>
 
-                                <!-- 多选框 -->
-                                <el-checkbox-group v-else-if="item.controlType === 'checkboxElement'" v-model.trim="form.pageModel[item.briefName]">
+                                <!-- 复选框 -->
+                                <el-checkbox-group v-else-if="item.controlType === 'checkboxElement'" v-model.trim="form.pageModel['checkbox_' + item.briefName]">
                                     <el-checkbox
                                         v-for="ckb in form.pageList[item.briefName]"
                                         :key="ckb.id"
@@ -161,10 +162,11 @@
 
                                 <!-- 开关 -->
                                 <el-switch v-else-if="item.controlType === 'switchElement'"
-                                           v-model.trim="form.pageModel[item.briefName]"></el-switch>
+                                           v-model.trim="form.pageModel[item.briefName]" :active-value="1" :inactive-value="0"></el-switch>
 
-                                <!-- 标签 -->
+                                <!-- 标签
                                 <el-tag v-else-if="item.controlType === 'tagElement'" v-for="tag in loadTag(form.pageModel[item.briefName])" :key="tag">{{tag}}</el-tag>
+                                -->
 
                                 <!-- 附件 -->
                                 <el-upload v-else-if="item.controlType === 'fileElement'"
@@ -238,7 +240,7 @@
 
                 </el-form>
                 <span v-if="stepsActive == form.pageNumber - 1" v-for="form in formList" slot="footer" class="dialog-footer"><!--ycx-->
-                    <el-button v-if="form.pageNumber > 1" type="primary" :size="btnSize" :loading="submitLoading"
+                    <el-button v-if="form.pageNumber > 1" type="primary" :size="btnSize"
                                @click="previousStep(form.pageNumber - 1)">上一步</el-button>
 
                     <template v-if="form.pageModel['flag_external']">
@@ -250,7 +252,7 @@
                     </template>
 
                     <template v-else>
-                        <el-button v-if="form.pageNumber < maxPage" type="primary" :size="btnSize" :loading="submitLoading"
+                        <el-button v-if="form.pageNumber < maxPage" type="primary" :size="btnSize"
                                    @click="nextStep(form.pageNumber - 1)">下一步</el-button>
 
                         <el-button v-if="form.pageNumber == maxPage" type="primary" :size="btnSize" :loading="submitLoading"
@@ -265,6 +267,30 @@
                 </span>
 
             </el-dialog>
+
+
+
+            <el-dialog title="显示设置" width="30%" :visible.sync="displaySettingVisible" :close-on-click-modal="closeOnClickModal" @close="closeDisplaySettingDialog">
+                <el-table :data="headList" border>
+                    <el-table-column prop="label" label="名称"></el-table-column>
+                    <el-table-column label="显示" align="center" width="50">
+                        <template slot-scope="scope">
+                            <el-checkbox v-model="scope.row.show"/>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="排序" align="center" width="100">
+                        <template slot-scope="scope">
+                            <el-button icon="el-icon-arrow-up" :size="btnSize" circle title="上移" @click="sortFunctionUp(headList, scope.$index)"></el-button>
+                            <el-button icon="el-icon-arrow-down" :size="btnSize" circle title="下移" @click="sortFunctionDown(headList, scope.$index)"></el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="btnFunctionSave" :size="btnSize">保存</el-button>
+                    <el-button :size="btnSize" @click="closeDisplaySettingDialog">{{$t('table.cancel')}}</el-button>
+                </span>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -305,7 +331,7 @@
     import {validateURL,validateEmail, isEnglish} from '@/util/validate';
     import {findMetadataCollectionAllData} from '@/api/metadata/collection';
     import {getDictionaryList} from '@/api/admin/dictionary';
-    import {getTableHeadContentData} from '@/api/assembly/customizationFunction'
+    import {getTableHeadContentData, getCustomizationFunctionContent, saveOrUpdate} from '@/api/assembly/customizationFunction'
 
     export default {
         name: 'template',
@@ -523,7 +549,12 @@
                 maxPage: 0,
                 flagExternalIndex: 0,
                 baseFields: [],
-                metaFields: []
+                metaFields: [],
+
+                // 显示设置
+                displaySettingVisible: false,
+                customizationFunction: undefined,
+                headList: [],
             }
         },
         watch: {
@@ -881,7 +912,6 @@
                         this.maxPage = 0;
                         this.flagExternalIndex = 0;
                     }
-                    // console.dir(this.formList);
                 });
             },
             btnCreate(command){
@@ -915,7 +945,6 @@
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
-                console.dir(this.template);
                 this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -1034,17 +1063,41 @@
                     let content = {};
                     for (let form of _this.formList) {
                         let pageModel = form.pageModel;
+                        let checkboxFields = [];
+                        let pageModelFields = Object.getOwnPropertyNames(pageModel);
+                        for (let f of pageModelFields) {
+                            if (f.startsWith('checkbox_')) {
+                                checkboxFields.push(f.substring(f.indexOf('_') + 1));
+                            }
+                        }
                         // 基础字段
                         for (let base of _this.baseFields) {
-                            if (pageModel.hasOwnProperty(base)) {
-                                let dest = base.replace(/_(\w)/g,function ($0,$1){return $1.toUpperCase();});
+                            let dest = base.replace(/_(\w)/g,function ($0,$1){return $1.toUpperCase();});
+                            if (dest.endsWith('_')) {
+                                dest = dest.substr(0, dest.length -1);
+                            }
+                            if (pageModel[base] || typeof(pageModel[base]) === 'number') {
                                 _this.template[dest] = pageModel[base];
                             }
                         }
                         // 元数据字段
                         for (let meta of _this.metaFields) {
-                            if (pageModel.hasOwnProperty(meta) && pageModel[meta]) {
-                                content[meta] = pageModel[meta];
+                            let isCheckbox = false;
+                            for(let ckb of checkboxFields) {
+                                if (ckb === meta) {
+                                    isCheckbox = true;
+                                    break;
+                                }
+                            }
+                            if (isCheckbox) {
+                                let arr = pageModel['checkbox_' + meta];
+                                if (arr instanceof Array && arr.length > 0) {
+                                    content[meta] = arr.join(',');
+                                }
+                            } else {
+                                if (pageModel[meta] || typeof(pageModel[meta]) === 'number') {
+                                    content[meta] = pageModel[meta];
+                                }
                             }
                         }
                     }
@@ -1052,6 +1105,10 @@
                         _this.template.draftFlag = draftFlag;
                     }
                     _this.template.contentMapStr = JSON.stringify(content);
+                    _this.template.metadataCollectionVo = undefined;
+                    _this.template.content = undefined;
+
+                    console.log("=== template ===");
                     console.dir(_this.template);
                     _this.submitLoading = true;
                     createOrUpdateTemplate(_this.template).then(() => {
@@ -1102,7 +1159,6 @@
                         _this.template.draftFlag = draftFlag;
                     }
                     _this.template.contentMapStr = JSON.stringify(content);
-                    console.dir(_this.template);
                     _this.submitLoading = true;
                     createOrUpdateTemplate(_this.template).then(() => {
                         _this.resetTemplateDialogAndList();
@@ -1156,6 +1212,7 @@
             resetTemplateDialogAndList(){
                 this.closeTemplateDialog();
                 this.submitLoading = false;
+                this.stepsActive = 0;
                 this.reloadList();
             },
             closeTemplateDialog() {
@@ -1687,7 +1744,47 @@
                 //         }
                 //     });
                 // }
+            },
+            displaySetting() {
+                this.headList = [];
+                this.displaySettingVisible = true;
+                getCustomizationFunctionContent().then(response=>{
+                    this.customizationFunction = response.data;
+                    this.headList = this.customizationFunction.headList;
+                });
+            },
+            closeDisplaySettingDialog() {
+                this.displaySettingVisible = false;
+                this.customizationFunction = undefined;
+                this.headList = [];
+            },
+            sortFunctionUp(headList, index) {
+                if (index > 0) {
+                    const row = headList.splice(index, 1)[0];
+                    headList.splice(index - 1, 0, row);
+                }
+            },
+            sortFunctionDown(headList, index) {
+                if (index !== headList.length - 1) {
+                    const row = headList.splice(index, 1)[0];
+                    headList.splice(index + 1, 0, row);
+                }
+            },
+            btnFunctionSave() {
+                let data = JSON.stringify(this.headList);
+                this.customizationFunction.headList = undefined;
+                this.customizationFunction.data = data;
+                saveOrUpdate(this.customizationFunction).then(response=>{
+                    if (response.status == 200 && response.data) {
+                        this.loadHeadData();
+                        this.closeDisplaySettingDialog();
+                        this.$message.success("保存成功");
+                    } else {
+                        this.$message.success("保存失败");
+                    }
+                });
             }
+
         }
     }
 </script>
