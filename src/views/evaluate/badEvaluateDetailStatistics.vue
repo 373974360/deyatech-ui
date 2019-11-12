@@ -202,45 +202,6 @@
                 <el-table-column align="center" label="总评价数" prop="count"/>
             </el-table>
 
-            <div class="spacer"></div>
-
-            <h3 class="table-title">部门差评事项统计</h3>
-            <el-table :data="countByDeptItemLevelList" v-loading.body="listDeptItemLevelLoading" stripe border highlight-current-row>
-                <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="事项名称" prop="itemName"/>
-                <el-table-column align="center" label="总评价数" prop="count"/>
-                <el-table-column align="center" label="差评总数">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'] : 0)
-                        + (scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'] : 0)}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="不满意数">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'] : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="非常不满意数">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'] : 0}}
-                    </template>
-                </el-table-column>
-            </el-table>
-
-            <div class="spacer"></div>
-
-            <h3 class="table-title">“差评”整改进度汇总</h3>
-            <el-table :data="countDeptReformList" v-loading.body="listDeptReformLoading" stripe border highlight-current-row>
-                <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="差评总数" prop="countPoor"/>
-                <el-table-column align="center" label="无效差评" prop="countPoorInvalid"/>
-                <el-table-column align="center" label="有效差评" prop="countPoorValid"/>
-                <el-table-column align="center" label="正在整改中" prop="countChanging"/>
-                <el-table-column align="center" label="已完成整改" prop="countChanged"/>
-                <el-table-column align="center" label="无法整改" prop="countUnchanged"/>
-            </el-table>
             <!--<el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
                            :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
@@ -255,8 +216,6 @@
     import {getStore} from '@/util/store';
     import {
         qryCountByDeptDimensionCode,
-        qryCountByDeptItemLevel,
-        qryCountDeptReform
     } from "../../api/evaluate/count";
 
     export default {
@@ -264,11 +223,7 @@
         data() {
             return {
                 countByDeptDimensionCodeList: [],
-                countByDeptItemLevelList: [],
-                countDeptReformList: [],
                 listDeptDimensionCodeLoading: true,
-                listDeptItemLevelLoading: true,
-                listDeptReformLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -303,8 +258,6 @@
         methods: {
             reloadPage() {
                 this.loadCountByDeptDimensionCodeList();
-                this.loadCountByDeptItemLevelList();
-                this.loadCountDeptReformList();
             },
             resetSearch(){
                 this.listQuery.channel = undefined;
@@ -326,22 +279,6 @@
                 qryCountByDeptDimensionCode(this.listQuery).then(response => {
                     this.listDeptDimensionCodeLoading = false;
                     this.countByDeptDimensionCodeList = response.data;
-                })
-            },
-            loadCountByDeptItemLevelList() {
-                this.listDeptItemLevelLoading = true;
-                this.countByDeptItemLevelList = [];
-                qryCountByDeptItemLevel(this.listQuery).then(response => {
-                    this.listDeptItemLevelLoading = false;
-                    this.countByDeptItemLevelList = response.data;
-                })
-            },
-            loadCountDeptReformList() {
-                this.listDeptReformLoading = true;
-                this.countDeptReformList = [];
-                qryCountDeptReform(this.listQuery).then(response => {
-                    this.listDeptReformLoading = false;
-                    this.countDeptReformList = response.data;
                 })
             },
             loadEnum(name) {

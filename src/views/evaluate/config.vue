@@ -132,7 +132,7 @@
                                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
                                     ]"
                                 >
-                                    <el-input type="textarea" v-model="content.content" :rows="3"></el-input>
+                                    <el-input v-model="content.content"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>

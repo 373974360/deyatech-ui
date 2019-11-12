@@ -65,122 +65,28 @@
                 </div>
             </div>
 
-            <h3 class="table-title">总体评价统计</h3>
-            <el-table :data="countByDeptLevelList" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row>
+            <h3 class="table-title">部门差评事项统计</h3>
+            <el-table :data="countByDeptItemLevelList" v-loading.body="listDeptItemLevelLoading" stripe border highlight-current-row>
                 <el-table-column align="center" type="index" label="序号" width="50"/>
                 <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="非常满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="基本满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="不满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="非常不满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
+                <el-table-column align="center" label="事项名称" prop="itemName"/>
                 <el-table-column align="center" label="总评价数" prop="count"/>
-            </el-table>
-
-            <div class="spacer"></div>
-
-            <h3 class="table-title">按来源渠道统计</h3>
-            <el-table :data="countByDeptChannelList" v-loading.body="listDeptChannelLoading" stripe border highlight-current-row>
-                <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="实体大厅">
+                <el-table-column align="center" label="差评总数">
                     <template slot-scope="scope">
-                        {{scope.row.countByChannelMap['3'] ? scope.row.countByChannelMap['3'].count : 0}}
+                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'] : 0)
+                        + (scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'] : 0)}}
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="占比">
+                <el-table-column align="center" label="不满意数">
                     <template slot-scope="scope">
-                        {{(scope.row.countByChannelMap['5'] ? scope.row.countByChannelMap['5'].rate : 0).toFixed(2)}}%
+                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'] : 0}}
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="西安政务服务网">
+                <el-table-column align="center" label="非常不满意数">
                     <template slot-scope="scope">
-                        {{scope.row.countByChannelMap['1'] ? scope.row.countByChannelMap['1'].count : 0}}
+                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'] : 0}}
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByChannelMap['1'] ? scope.row.countByChannelMap['1'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="I西安">
-                    <template slot-scope="scope">
-                        {{scope.row.countByChannelMap['2'] ? scope.row.countByChannelMap['2'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByChannelMap['2'] ? scope.row.countByChannelMap['2'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="短信">
-                    <template slot-scope="scope">
-                        {{scope.row.countByChannelMap['4'] ? scope.row.countByChannelMap['4'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByChannelMap['4'] ? scope.row.countByChannelMap['4'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <!--<template v-for="item in enums['EvaluationChannelEnum']">
-                    <el-table-column align="center" :label="item.value">
-                        <template slot-scope="scope">
-                            {{scope.row.countByChannelMap[item.code] ? scope.row.countByChannelMap[item.code].count : 0}}
-                        </template>
-                    </el-table-column>
-                    <el-table-column align="center" label="占比">
-                        <template slot-scope="scope">
-                            {{(scope.row.countByChannelMap[item.code] ? scope.row.countByChannelMap[item.code].rate : 0).toFixed(2)}}%
-                        </template>
-                    </el-table-column>
-                </template>-->
-                <el-table-column align="center" label="总评价数" prop="count"/>
             </el-table>
 
             <!--<el-pagination class="deyatech-pagination pull-right" background
@@ -196,18 +102,15 @@
     import {mapGetters} from 'vuex';
     import {getStore} from '@/util/store';
     import {
-        queryEvaluateCountByDept,
-        qryCountByDeptChannel
+        qryCountByDeptItemLevel,
     } from "../../api/evaluate/count";
 
     export default {
-        name: 'deptStatistics',
+        name: 'deptStatistics2',
         data() {
             return {
-                countByDeptLevelList: [],
-                countByDeptChannelList: [],
-                listDeptLevelLoading: true,
-                listDeptChannelLoading: true,
+                countByDeptItemLevelList: [],
+                listDeptItemLevelLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -241,8 +144,7 @@
         },
         methods: {
             reloadPage() {
-                this.loadCountByDeptLevelList();
-                this.loadCountByDeptChannelList();
+                this.loadCountByDeptItemLevelList();
             },
             resetSearch(){
                 this.listQuery.channel = undefined;
@@ -258,20 +160,12 @@
                 this.listQuery.evaluationTimeEnd = undefined;
                 this.submitTimeRange = [];
             },
-            loadCountByDeptLevelList(){
-                this.listDeptLevelLoading = true;
-                this.countByDeptLevelList = [];
-                queryEvaluateCountByDept(this.listQuery).then(response => {
-                    this.listDeptLevelLoading = false;
-                    this.countByDeptLevelList = response.data;
-                })
-            },
-            loadCountByDeptChannelList() {
-                this.listDeptChannelLoading = true;
-                this.countByDeptChannelList = [];
-                qryCountByDeptChannel(this.listQuery).then(response => {
-                    this.listDeptChannelLoading = false;
-                    this.countByDeptChannelList = response.data;
+            loadCountByDeptItemLevelList() {
+                this.listDeptItemLevelLoading = true;
+                this.countByDeptItemLevelList = [];
+                qryCountByDeptItemLevel(this.listQuery).then(response => {
+                    this.listDeptItemLevelLoading = false;
+                    this.countByDeptItemLevelList = response.data;
                 })
             },
             loadEnum(name) {

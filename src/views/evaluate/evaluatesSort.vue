@@ -65,54 +65,11 @@
                 </div>
             </div>-->
 
-            <h3 class="table-title">按评价得分排名</h3>
-            <el-table :data="deptSortByScoreList" v-loading.body="listScoreLoading" stripe border highlight-current-row>
-                <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="评价得分" prop="score">
-                    <template slot-scope="scope">
-                        {{Math.round(scope.row.score * 100) / 100}}
-                    </template>
-                </el-table-column>
-            </el-table>
-
-            <div class="spacer"></div>
-
             <h3 class="table-title">按总评价数排名</h3>
             <el-table :data="deptSortByCountList" v-loading.body="listCountLoading" stripe border highlight-current-row>
                 <el-table-column align="center" type="index" label="序号" width="50"/>
                 <el-table-column align="center" label="部门名称" prop="acceptDept"/>
                 <el-table-column align="center" label="总评价数" prop="count"/>
-            </el-table>
-
-            <div class="spacer"></div>
-
-            <h3 class="table-title">按评价率分排名</h3>
-            <el-table :data="deptSortByRateEvaluateList" v-loading.body="listRateEvaluateLoading" stripe border highlight-current-row>
-                <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="办件数" prop="countAccept"/>
-                <el-table-column align="center" label="评价数" prop="count"/>
-                <el-table-column align="center" label="评价率" prop="rate">
-                    <template slot-scope="scope">
-                        {{Math.round(scope.row.rate * 100) / 100}}%
-                    </template>
-                </el-table-column>
-            </el-table>
-
-            <div class="spacer"></div>
-
-            <h3 class="table-title">按差评比例排名</h3>
-            <el-table :data="deptSortByRatePoorList" v-loading.body="listRatePoorLoading" stripe border highlight-current-row>
-                <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="评价总数" prop="count"/>
-                <el-table-column align="center" label="差评数" prop="countPoor"/>
-                <el-table-column align="center" label="差评比例" prop="rate">
-                    <template slot-scope="scope">
-                        {{Math.round(scope.row.rate * 100) / 100}}%
-                    </template>
-                </el-table-column>
             </el-table>
             <!--<el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
@@ -128,24 +85,15 @@
     import {mapGetters} from 'vuex';
     import {getStore} from '@/util/store';
     import {
-        qryDeptSortByScore,
         qryDeptSortByCount,
-        qryDeptSortByRateEvaluate,
-        qryDeptSortByRatePoor
     } from "../../api/evaluate/count";
 
     export default {
         name: 'deptSort',
         data() {
             return {
-                deptSortByScoreList: [],
                 deptSortByCountList: [],
-                deptSortByRateEvaluateList: [],
-                deptSortByRatePoorList: [],
-                listScoreLoading: true,
                 listCountLoading: true,
-                listRateEvaluateLoading: true,
-                listRatePoorLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -182,10 +130,7 @@
             }
         },
         created(){
-            this.loadDeptSortByScoreList();
             this.loadDeptSortByCountList();
-            this.loadDeptSortByRateEvaluateList();
-            this.loadDeptSortByRatePoorList();
         },
         methods: {
             resetSearch(){
@@ -202,32 +147,11 @@
                 this.listQuery.evaluationTimeEnd = undefined;
                 this.submitTimeRange = [];
             },
-            loadDeptSortByScoreList() {
-                this.listScoreLoading = true;
-                qryDeptSortByScore().then(response => {
-                    this.listScoreLoading = false;
-                    this.deptSortByScoreList = response.data;
-                })
-            },
             loadDeptSortByCountList() {
                 this.listCountLoading = true;
                 qryDeptSortByCount().then(response => {
                     this.listCountLoading = false;
                     this.deptSortByCountList = response.data;
-                })
-            },
-            loadDeptSortByRateEvaluateList() {
-                this.listRateEvaluateLoading = true;
-                qryDeptSortByRateEvaluate().then(response => {
-                    this.listRateEvaluateLoading = false;
-                    this.deptSortByRateEvaluateList = response.data;
-                })
-            },
-            loadDeptSortByRatePoorList() {
-                this.listRatePoorLoading = true;
-                qryDeptSortByRatePoor().then(response => {
-                    this.listRatePoorLoading = false;
-                    this.deptSortByRatePoorList = response.data;
                 })
             },
             loadEnum(name) {
