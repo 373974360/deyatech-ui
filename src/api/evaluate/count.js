@@ -81,3 +81,10 @@ export function qryDeptSortByRatePoor() {
         method: 'get'
     })
 }
+
+export function qryDeptSortComposite() {
+    return request({
+        url: '/manage/evaluate/count/qryDeptSortComposite',
+        method: 'get'
+    })
+}

@@ -117,8 +117,7 @@
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="160">
                     <template slot-scope="scope">
                         <el-button v-if="scope.row.delayFlag === 1 && scope.row.delayStatus === 0" type="primary" :size="btnSize" @click="btnReformDelay(scope.row)">延期审核</el-button>
-                        <!--todo 警告-->
-                        <!--<el-tag v-if="scope.row.reformStatus === 1"></el-tag>-->
+                        <el-tag v-if="checkOverdue(scope.row)">整改超期</el-tag>
                         <el-tag v-if="scope.row.poorFlag === 2" type="info">无效差评</el-tag>
                         <el-tag v-if="scope.row.reformStatus === 2" type="success">已完成整改</el-tag>
                         <el-tag v-if="scope.row.reformStatus === 3" type="info">无法整改</el-tag>
@@ -461,6 +460,15 @@
                         return false;
                     }
                 });
+            },
+            checkOverdue(row) {
+                if (row.poorFlag !== 1 || row.reformStatus !== 1) {
+                    return false;
+                }
+                if (row.delayStatus === 1) {
+                    return new Date(row.delayDate).getTime() < Date.now();
+                }
+                return new Date(row.reformDate).getTime() < Date.now();
             }
         }
     }

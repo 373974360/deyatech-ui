@@ -1,9 +1,9 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
+            <!--<div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
-                    <!--<el-form-item>
+                    <el-form-item>
                         <el-select :size="searchSize" v-model="listQuery.levelCode" clearable :placeholder="$t('table.pleaseSelect') + '评价等级'">
                             <el-option
                                 v-for="item in loadEnum('EvaluationLevelEnum')"
@@ -41,8 +41,8 @@
                     </el-form-item>
                     <el-form-item>
                         <el-input clearable :size="searchSize" :placeholder="$t('table.pleaseInput') + '用户姓名'" v-model="listQuery.userName" style="width: 187px"></el-input>
-                    </el-form-item>-->
-                    <el-form-item label="评价时间">
+                    </el-form-item>
+                    <el-form-item>
                         <el-date-picker
                             style="width: 384px"
                             :size="searchSize"
@@ -60,63 +60,18 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_right">
-                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadPage">{{$t('table.search')}}</el-button>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
                     <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
-            </div>
+            </div>-->
 
-            <h3 class="table-title">总体评价统计</h3>
-            <el-table :data="countByDeptLevelList" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row>
+            <h3 class="table-title">考核得分</h3>
+            <el-table :data="deptSortCompositeList" v-loading.body="listCompositeLoading" stripe border highlight-current-row>
                 <el-table-column align="center" type="index" label="序号" width="50"/>
                 <el-table-column align="center" label="部门名称" prop="acceptDept"/>
-                <el-table-column align="center" label="非常满意">
+                <el-table-column align="center" label="评价得分" prop="score">
                     <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="基本满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="不满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="非常不满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].rate : 0).toFixed(2)}}%
+                        {{Math.round(scope.row.score * 100) / 100}}
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="总评价数" prop="count"/>
@@ -125,6 +80,17 @@
                         {{Math.round(scope.row.rate * 100) / 100}}%
                     </template>
                 </el-table-column>
+                <el-table-column align="center" label="差评比例" prop="score">
+                    <template slot-scope="scope">
+                        {{Math.round(scope.row.ratePoor * 100) / 100}}%
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="整改率" prop="score">
+                    <template slot-scope="scope">
+                        {{Math.round(scope.row.rateChanged * 100) / 100}}%
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="考核得分"/>
             </el-table>
 
             <!--<el-pagination class="deyatech-pagination pull-right" background
@@ -136,19 +102,20 @@
     </basic-container>
 </template>
 
+
 <script>
     import {mapGetters} from 'vuex';
     import {getStore} from '@/util/store';
     import {
-        queryEvaluateCountByDept,
+        qryDeptSortComposite
     } from "../../api/evaluate/count";
 
     export default {
-        name: 'deptStatistics',
+        name: 'sortComposite',
         data() {
             return {
-                countByDeptLevelList: [],
-                listDeptLevelLoading: true,
+                deptSortCompositeList: [],
+                listCompositeLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
@@ -175,15 +142,19 @@
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
-            ])
+            ]),
+            btnEnable() {
+                return {
+                    create: this.permission.detail_create,
+                    update: this.permission.detail_update,
+                    delete: this.permission.detail_delete
+                };
+            }
         },
         created(){
-            this.reloadPage();
+            this.loadDeptSortCompositeList();
         },
         methods: {
-            reloadPage() {
-                this.loadCountByDeptLevelList();
-            },
             resetSearch(){
                 this.listQuery.channel = undefined;
                 this.listQuery.itemCode = undefined;
@@ -198,12 +169,11 @@
                 this.listQuery.evaluationTimeEnd = undefined;
                 this.submitTimeRange = [];
             },
-            loadCountByDeptLevelList(){
-                this.listDeptLevelLoading = true;
-                this.countByDeptLevelList = [];
-                queryEvaluateCountByDept(this.listQuery).then(response => {
-                    this.listDeptLevelLoading = false;
-                    this.countByDeptLevelList = response.data;
+            loadDeptSortCompositeList() {
+                this.listCompositeLoading = true;
+                qryDeptSortComposite().then(response => {
+                    this.listCompositeLoading = false;
+                    this.deptSortCompositeList = response.data;
                 })
             },
             loadEnum(name) {

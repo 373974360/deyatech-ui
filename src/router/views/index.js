@@ -155,6 +155,16 @@ export default [
                     isAuth: true
                 },
                 component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/scoreSort')
+            },
+            {
+                path: 'sortComposite',
+                name: '考核得分',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/sortComposite')
             }
         ]
     }
