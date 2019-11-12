@@ -67,34 +67,94 @@ export default [
                 component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/statisticsIndex')
             },
             {
-                path: 'deptStatistics',
-                name: '部门评价统计',
+                path: 'allEvaluateStatistics',
+                name: '总体评价统计',
                 meta: {
                     keepAlive: true,
                     isTab: false,
                     isAuth: true
                 },
-                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/deptStatistics')
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/allEvaluateStatistics')
             },
             {
-                path: 'deptStatistics2',
-                name: '部门评价统计2',
+                path: 'badEvaluateDeptStatistics',
+                name: '部门差评事项统计',
                 meta: {
                     keepAlive: true,
                     isTab: false,
                     isAuth: true
                 },
-                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/deptStatistics2')
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/badEvaluateDeptStatistics')
             },
             {
-                path: 'deptSort',
-                name: '部门评价排名',
+                path: 'badEvaluateDetailStatistics',
+                name: '差评分项统计',
                 meta: {
                     keepAlive: true,
                     isTab: false,
                     isAuth: true
                 },
-                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/deptSort')
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/badEvaluateDetailStatistics')
+            },
+            {
+                path: 'badEvaluateRateSort',
+                name: '按差评率统计',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/badEvaluateRateSort')
+            },
+            {
+                path: 'badEvaluateReformStatistics',
+                name: '按差评整改率统计',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/badEvaluateReformStatistics')
+            },
+            {
+                path: 'channelStatistics',
+                name: '按评价渠道统计',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/channelStatistics')
+            },
+            {
+                path: 'evaluateRateSort',
+                name: '按评价率统计',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/evaluateRateSort')
+            },
+            {
+                path: 'evaluatesSort',
+                name: '按评价总数统计',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/evaluatesSort')
+            },
+            {
+                path: 'scoreSort',
+                name: '按评价得分统计',
+                meta: {
+                    keepAlive: true,
+                    isTab: false,
+                    isAuth: true
+                },
+                component: () => import( /* webpackChunkName: "views" */ '@/views/evaluate/scoreSort')
             }
         ]
     }
