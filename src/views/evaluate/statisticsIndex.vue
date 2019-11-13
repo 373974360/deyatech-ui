@@ -43,7 +43,7 @@
     }
 </script>
 
-<style>
+<style scoped>
     body, body div {
         background-color: #fafafa;
     }
