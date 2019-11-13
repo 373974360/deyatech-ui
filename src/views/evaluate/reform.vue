@@ -374,7 +374,7 @@
             }
         },
         created(){
-            // this.listQuery.proDepartment = this.userInfo.orgName;
+            this.listQuery.proDepartment = this.userInfo.orgName;
             this.reloadList();
         },
         methods: {
