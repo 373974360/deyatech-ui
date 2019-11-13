@@ -173,12 +173,12 @@
                                     <el-checkbox v-model.trim="relationDataReal[scope.$index].useFullIndex"></el-checkbox>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="操作">
+                            <!--<el-table-column label="操作">
                                 <template slot-scope="scope">
                                     <el-button icon="el-icon-arrow-up" :size="btnSize" circle title="上移" @click="sortUp(scope.$index)"></el-button>
                                     <el-button icon="el-icon-arrow-down" :size="btnSize" circle title="下移" @click="sortDown(scope.$index)"></el-button>
                                 </template>
-                            </el-table-column>
+                            </el-table-column>-->
                         </el-table>
                     </el-row>
                 </el-form>
@@ -266,7 +266,7 @@
                         <el-button size="mini" type="success" icon="el-icon-plus" @click="addPage" :disabled="maxPageNumber >= 4" style="position: relative; left: 64px;"></el-button>
                     </div>
                     <div class="tableHeadInput">
-                        <el-input size="mini" value="等待处理的数据" readonly/>
+                        <el-input size="mini" value="未排序" readonly/>
                     </div>
                     <div class="tableBody">
                         <el-table ref="unsortedTable" :data="unsorted" border @selection-change="unsortedSelectionChange">

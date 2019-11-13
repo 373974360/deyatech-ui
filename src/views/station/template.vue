@@ -112,7 +112,7 @@
                 </el-col>
             </el-row>
 
-            <!--弹窗-->
+            <!-- 表单 -->
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeTemplateDialog">
 
                 <el-steps :active="stepsActive" finish-status="success" simple style="margin-top: -25px; margin-bottom: 20px">
@@ -122,16 +122,17 @@
 
                 <el-form v-show="formIndex == stepsActive" v-for="(form, formIndex) in formList" :ref="'dynamicForm' + formIndex" :model="form.pageModel"  class="deyatech-form" label-position="right" label-width="80px" style="margin-bottom: 100px">
 
-                    <el-row :gutter="20" :span="24" v-for="(row, rowIndex) in form.rows">
+                    <template v-for="(row, rowIndex) in form.rows">
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="item.controlLength == 1 ? 12 : 24" v-for="(item, itemIndex) in row">
                             <el-form-item :label="item.name" :prop="item.briefName" :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == 0) ? templateRules.resource_content : loadRules(item)">
                                 <!-- 输入框 -->
                                 <el-input v-if="item.controlType === 'inputElement'"
-                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength"></el-input>
+                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength" :placeholder="'请输入' + item.name"></el-input>
 
                                 <!-- 文本域 -->
                                 <el-input v-else-if="item.controlType === 'textareaElement'" type="textarea"
-                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength" :rows="3"></el-input>
+                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength" :rows="3" :placeholder="'请输入' + item.name"></el-input>
 
                                 <!-- 下拉框 -->
                                 <el-select v-else-if="item.controlType === 'selectElement'" filterable
@@ -219,7 +220,11 @@
                                                 placeholder="请选择时间"></el-date-picker>
 
                                 <!-- 富文本 -->
-                                <editor v-else-if="item.controlType === 'richTextElement'" :config="editorConfig" :attach="formIndex + ',' + item.briefName"
+                                <editor v-else-if="item.controlType === 'richTextElement' && item.briefName != 'resource_content'" :config="editorConfig"
+                                        :ref="'editor' + form.pageNumber" :id="'editor' + form.pageNumber"
+                                        :default-msg="form.pageModel[item.briefName]"></editor>
+                                <!-- 富文本 正文特殊处理 -->
+                                <editor v-else-if="item.controlType === 'richTextElement' && item.briefName == 'resource_content' " :config="editorConfig" :attach="formIndex + ',' + item.briefName"
                                         :ref="'editor' + form.pageNumber" :id="'editor' + form.pageNumber"
                                         :default-msg="form.pageModel[item.briefName]"
                                         @editorContentTxtChange="contentTxtChange"
@@ -230,13 +235,14 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="20" :span="24" v-if="form.pageModel['flag_external']">
+                    <el-row :gutter="20" :span="24" v-if="showUrl(row) && form.pageModel['flag_external']">
                         <el-col :span="24">
                             <el-form-item label="URL" prop="url" :rules="form.pageModel['flag_external'] ? templateRules.url : []">
                                 <el-input v-model.trim="form.pageModel['url']"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
+                    </template>
 
                 </el-form>
                 <span v-if="stepsActive == form.pageNumber - 1" v-for="form in formList" slot="footer" class="dialog-footer"><!--ycx-->
@@ -639,8 +645,6 @@
                 this.getAllModelBySiteId();
                 // 获取站点上传路径
                 this.getSiteUploadPath();
-                // 获取资源分类
-                this.getResourceCategoryList();
             }
         },
         methods: {//ycx
@@ -794,7 +798,6 @@
                 } else {
                     this.isAddTemplate = false;
                 }
-
             },
             handleTabClick() {
                 // 获取template
@@ -820,16 +823,6 @@
                         this.siteUploadPath = response.data
                     } else {
                         this.$message.warning('获取站点上传文件存放地址失败')
-                    }
-                })
-            },
-            // 资源分类
-            getResourceCategoryList() {
-                getDictionaryList({indexId: 'ziyuanfenlei'}).then(response => {
-                    if (response.status == 200) {
-                        this.resourceCategoryList = response.data;
-                    } else {
-                        this.$message.error('获取字典项失败')
                     }
                 })
             },
@@ -934,7 +927,6 @@
                     this.formImageTemp = [];
                     this.formFileTemp = [];
                     this.loadForm(command, undefined);
-                    //this.getContentForm();
                 }
 
             },
@@ -948,29 +940,6 @@
                 this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
-
-                // this.metadataCollection = this.template.metadataCollectionVo;
-                // // 删除查询出来的元数据信息，否则保存时报错
-                // Vue.delete(this.template, 'metadataCollectionVo');
-                // if (this.template.thumbnailUrl) {
-                //     this.thumbnailList.push({
-                //         id: this.template.thumbnail,
-                //         url: "/manage/station/material/showPicImg?filePath=" + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
-                //     })
-                // }
-                // // 必须这么设置
-                // if (!this.template.content) {
-                //     this.$set(this.template, 'content', {})
-                // }
-                // // 设置内容
-                // if (this.$refs['resourceContent'] && this.template.resourceContent) {
-                //     this.$refs['resourceContent'].setUeContent(this.template.resourceContent);
-                // }
-                // this.dynamicTags = this.template.keyword ? this.template.keyword.split(',') : [];
-                // this.template.workflowKey = this.workflowKey;
-                // this.dialogTitle = 'update';
-                // this.dialogVisible = true;
-                // this.getContentForm();
             },
             btnCancel(row){
                 this.$confirm('此操作将撤销已发布信息, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
@@ -1059,7 +1028,7 @@
                         }));
                     }
                 }
-                Promise.all(formValidate).then(function(){
+                Promise.all(formValidate).then(function() {
                     let content = {};
                     for (let form of _this.formList) {
                         let pageModel = form.pageModel;
@@ -1121,7 +1090,7 @@
                     });
                 });
             },
-            doUpdate(draftFlag){
+            doUpdate(draftFlag) {
                 this.template.draftFlag = draftFlag;
                 let _this = this;
                 let formValidate = [];
@@ -1226,6 +1195,10 @@
                 this.uploadFileReader = [];
                 this.dynamicTags = [];
                 this.thumbnailList = [];
+                this.stepsActive = 0;
+                this.formList = [];
+                this.formImageTemp =[];
+                this.formFileTemp = [];
                 this.resetTemplate();
                 // this.$refs['templateDialogForm'].resetFields();
                 // // 清空内容
@@ -1234,96 +1207,92 @@
                 // }
                 // // 清除富文本缓存，否则二次以后加载失败
                 // $('#ueditor_textarea_editorValue').remove()
-                // this.stepsActive = 0;
+                //
             },
-            /*            handleModelChange() {
-                            this.getContentForm();
-                        },*/
-            // 获取内容对象 TODO
-            getContentForm() {
-                for (let model of this.modelList) {
-                    if (this.template.contentModelId == model.id) {
-                        // 设置内容模型名称
-                        this.template.contentModelName = model.name;
-                        // 设置元数据id
-                        this.template.metaDataCollectionId = model.metaDataCollectionId;
-
-                        // 新增，元数据集为空，获取元数据集
-                        if (this.dialogTitle == 'create') {
-                            // 获取数字字段，获取元数据集 TODO
-                            const query = {id: model.metaDataCollectionId}
-                            findMetadataCollectionAllData(query).then(response => {
-                                if (response.status == 200 && response.data.length > 0) {
-                                    this.metadataCollection = response.data[0];
-                                    this.setMetadataAndDictionary();
-                                } else {
-                                    this.$message.error('获取内容表单结构失败')
-                                }
-                            })
-                        } else {
-                            this.setMetadataAndDictionary();
-                        }
-                    }
-                }
-            },
+            // getContentForm() {
+            //     for (let model of this.modelList) {
+            //         if (this.template.contentModelId == model.id) {
+            //             // 设置内容模型名称
+            //             this.template.contentModelName = model.name;
+            //             // 设置元数据id
+            //             this.template.metaDataCollectionId = model.metaDataCollectionId;
+            //
+            //             // 新增，元数据集为空，获取元数据集
+            //             if (this.dialogTitle == 'create') {
+            //                 // 获取数字字段，获取元数据集 TODO
+            //                 const query = {id: model.metaDataCollectionId}
+            //                 findMetadataCollectionAllData(query).then(response => {
+            //                     if (response.status == 200 && response.data.length > 0) {
+            //                         this.metadataCollection = response.data[0];
+            //                         this.setMetadataAndDictionary();
+            //                     } else {
+            //                         this.$message.error('获取内容表单结构失败')
+            //                     }
+            //                 })
+            //             } else {
+            //                 this.setMetadataAndDictionary();
+            //             }
+            //         }
+            //     }
+            // },
             // 设置元数据值及字典选项
-            setMetadataAndDictionary() {
-                for (let item of this.metadataCollection.metadataList) {
-                    // 初始化，必须!
-                    if (item.controlType === 'checkboxElement') {
-                        this.$set(this.contentItemArray, item.fieldName, [])
-                    }
-
-                    // 元数据值
-                    let val = this.template.content[item.fieldName];
-                    if (val) {
-                        // 输入框元素, 设置值, 否则校验会出错
-                        if (item.controlType === 'inputElement') {
-                            this.template.content[item.fieldName] = val.toString();
-                        }
-                        // 多选框元素
-                        if (item.controlType === 'checkboxElement') {
-                            this.$set(this.contentItemArray, item.fieldName, val.split(','))
-                        }
-                        // 富文本元素
-                        if (item.controlType === 'richTextElement') {
-                            this.$set(this.editorDefaultMsg, item.id, val)
-                        }
-                        // 上传文件
-                        if (item.controlType === 'fileElement') {
-                            // 根据上传文件记录id查找文件信息
-                            let fileIds = this.template.content[item.fieldName].split(',')
-                            this.$set(this.uploadFileList, item.fieldName, [])
-                            for (let id of fileIds) {
-                                getMaterial(id).then(response => {
-                                    if (response.status == 200) {
-                                        let uploadFile = {
-                                            id: response.data.id,
-                                            name: response.data.name,
-                                            url: response.data.url
-                                        }
-                                        // 读写分离 ，否则上传列表会出错
-                                        this.uploadFileReader.push(uploadFile);
-                                        this.uploadFileList[item.fieldName].push(uploadFile)
-                                    }
-                                })
-                            }
-                        }
-                    }
-
-                    // 数据源是数据字典
-                    if (item.dataSource === 'dataItem') {
-                        // 根据字典id查询字典项
-                        getDictionaryList({indexId: item.dictionaryId}).then(response => {
-                            if (response.status == 200) {
-                                this.$set(this.contentItemOptions, item.id, eval(response.data))
-                            } else {
-                                this.$message.error('获取字典项失败')
-                            }
-                        })
-                    }
-                }
-            },
+            // setMetadataAndDictionary() {
+            //     for (let item of this.metadataCollection.metadataList) {
+            //         // 初始化，必须!
+            //         if (item.controlType === 'checkboxElement') {
+            //             this.$set(this.contentItemArray, item.fieldName, [])
+            //         }
+            //
+            //         // 元数据值
+            //         let val = this.template.content[item.fieldName];
+            //         if (val) {
+            //             // 输入框元素, 设置值, 否则校验会出错
+            //             if (item.controlType === 'inputElement') {
+            //                 this.template.content[item.fieldName] = val.toString();
+            //             }
+            //             // 多选框元素
+            //             if (item.controlType === 'checkboxElement') {
+            //                 this.$set(this.contentItemArray, item.fieldName, val.split(','))
+            //             }
+            //             // 富文本元素
+            //             if (item.controlType === 'richTextElement') {
+            //                 this.$set(this.editorDefaultMsg, item.id, val)
+            //             }
+            //             // 上传文件
+            //             if (item.controlType === 'fileElement') {
+            //                 // 根据上传文件记录id查找文件信息
+            //                 let fileIds = this.template.content[item.fieldName].split(',')
+            //                 this.$set(this.uploadFileList, item.fieldName, [])
+            //                 for (let id of fileIds) {
+            //                     getMaterial(id).then(response => {
+            //                         if (response.status == 200) {
+            //                             let uploadFile = {
+            //                                 id: response.data.id,
+            //                                 name: response.data.name,
+            //                                 url: response.data.url
+            //                             }
+            //                             // 读写分离 ，否则上传列表会出错
+            //                             this.uploadFileReader.push(uploadFile);
+            //                             this.uploadFileList[item.fieldName].push(uploadFile)
+            //                         }
+            //                     })
+            //                 }
+            //             }
+            //         }
+            //
+            //         // 数据源是数据字典
+            //         if (item.dataSource === 'dataItem') {
+            //             // 根据字典id查询字典项
+            //             getDictionaryList({indexId: item.dictionaryId}).then(response => {
+            //                 if (response.status == 200) {
+            //                     this.$set(this.contentItemOptions, item.id, eval(response.data))
+            //                 } else {
+            //                     this.$message.error('获取字典项失败')
+            //                 }
+            //             })
+            //         }
+            //     }
+            // },
             // 选择菜单触发
             handleCommand(command) {
                 // 生成勾选的内容页
@@ -1430,19 +1399,6 @@
                     this.$message.info('请先勾选数据')
                     return
                 }
-                // 校验
-                /*const titles = [];
-                for (let t of this.templateList) {
-                    for (let id of ids) {
-                        if (id == t.id && !t.flagSearch) {
-                            titles.push(t.title);
-                        }
-                    }
-                }
-                if (titles.length > 0) {
-                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
-                    return;
-                }*/
 
                 let params = {
                     ids: ids.join(),
@@ -1467,17 +1423,6 @@
                     this.$message.error('请先选择栏目！')
                     return
                 }
-                // 校验
-                /*const titles = [];
-                for (let t of this.templateList) {
-                    if (this.listQuery.cmsCatalogId == t.cmsCatalogId && !t.flagSearch) {
-                        titles.push(t.title);
-                    }
-                }
-                if (titles.length > 0) {
-                    this.$message.error('不被允许搜索到的内容不可以生成索引！内容标题：' + titles.join());
-                    return;
-                }*/
                 let params = {
                     cmsCatalogId: this.listQuery.cmsCatalogId,
                     siteId: this.listQuery.siteId
@@ -1671,7 +1616,6 @@
             },
             // 动态添加关键字 end
             previousStep(formIndex) {
-                // this.$refs['templateDialogForm'].clearValidate();
                 this.stepsActive--;
             },
             nextStep(formIndex) {
@@ -1682,44 +1626,6 @@
                         return false;
                     }
                 });
-                // var _this = this;
-                // // 基本属性
-                // if (this.stepsActive == 0) {
-                //     var title = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('title', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     var author = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('author', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     var source = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('source', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     var flagExternal = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('flagExternal', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     Promise.all([title, author, source, flagExternal]).then(function(){
-                //         _this.stepsActive ++;
-                //     });
-                // }
-                //
-                // // 核心属性
-                // if (this.stepsActive == 1) {
-                //     var resourceSummary = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('resourceSummary', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     var resourceContent = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('resourceContent', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     var sortNo = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('sortNo', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     var flagTop = new Promise(function(resolve, reject) {
-                //         _this.$refs['templateDialogForm'].validateField('flagTop', function (errorMessage) {if (!errorMessage) {resolve();}});
-                //     });
-                //     Promise.all([resourceSummary, resourceContent, sortNo, flagTop]).then(function(){
-                //         _this.stepsActive ++;
-                //     });
-                // }
             },
             contentChange(content, attach) {
                 let value = attach.split(',');
@@ -1732,19 +1638,47 @@
                 let value = attach.split(',');
                 let formIndex = parseInt(value[0]);
                 let briefName = value[1];
-                // if (this.template.title && v) {
-                //     keyword({title: this.template.title, content: v}).then(response=>{
-                //         if (response && response.status == 200) {
-                //             this.dynamicTags = response.data;
-                //         }
-                //     });
-                //     summary({title: this.template.title, content: v, maxSummaryLen: 100}).then(response=>{
-                //         if (response && response.status == 200) {
-                //             this.template.resourceSummary = response.data;
-                //         }
-                //     });
-                // }
+                let keywordFormIndex = -1;
+                let summaryFormIndex = -1;
+                let titleFormIndex = -1
+                for (let i = 0; i < this.formList.length; i++) {
+                    let pageModel = this.formList[i].pageModel;
+                    if (pageModel.hasOwnProperty('title_')) {
+                        titleFormIndex = i;
+                    }
+                    if (pageModel.hasOwnProperty('keyword_')) {
+                        keywordFormIndex = i;
+                    }
+                    if (pageModel.hasOwnProperty('resource_summary')) {
+                        summaryFormIndex = i;
+                    }
+                    if (titleFormIndex != -1 && keywordFormIndex != -1 && summaryFormIndex != -1) {
+                        break;
+                    }
+                }
+                let title = this.formList[titleFormIndex].pageModel['title_'];
+                if (content) {
+                    if (title) {
+                        if (title.length > 40) {
+                            title = title.substr(0, 40);
+                        }
+                        // 文章标题，最大80字节
+                        keyword({title: title, content: content}).then(response=>{
+                            if (response && response.status == 200) {
+                                if (response.data.length > 0) {
+                                    this.formList[keywordFormIndex].pageModel['keyword_'] = response.data.join(',');
+                                }
+                            }
+                        });
+                    }
+                    summary({title: title, content: content, maxSummaryLen: 100}).then(response=>{
+                        if (response && response.status == 200) {
+                            this.formList[summaryFormIndex].pageModel['resource_summary'] = response.data;
+                        }
+                    });
+                }
             },
+
             displaySetting() {
                 this.headList = [];
                 this.displaySettingVisible = true;
@@ -1783,6 +1717,16 @@
                         this.$message.success("保存失败");
                     }
                 });
+            },
+            showUrl(row) {
+                if (row && row.length > 0) {
+                    for (let item of row) {
+                        if (item.briefName === 'flag_external') {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
 
         }
