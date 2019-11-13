@@ -75,7 +75,7 @@
             </el-pagination>-->
 
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeConfigDialog">
                 <el-form ref="configDialogForm" class="deyatech-form" :model="config" label-position="right"
                          label-width="110px" :rules="configRules">

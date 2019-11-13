@@ -130,7 +130,7 @@
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
-            <el-dialog title="评价整改回复" :visible.sync="dialogVisible"
+            <el-dialog title="评价整改回复" :visible.sync="dialogVisible" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialog">
                 <el-form ref="detailDialogForm" class="deyatech-form" :model="detail" label-position="right"
                          label-width="110px" :rules="detailRules" style="margin-top: 20px">

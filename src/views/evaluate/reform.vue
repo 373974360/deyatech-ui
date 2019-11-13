@@ -131,7 +131,7 @@
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
-            <el-dialog title="评价整改回复" :visible.sync="dialogVisible"
+            <el-dialog title="评价整改回复" :visible.sync="dialogVisible" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialog">
                 <el-form ref="detailDialogForm" class="deyatech-form" :model="detail" label-position="right"
                          label-width="110px" :rules="detailRules" style="margin-top: 20px">
@@ -229,7 +229,8 @@
                 </span>
             </el-dialog>
 
-            <el-dialog title="整改延期" :visible.sync="dialogDelayVisible" :close-on-click-modal="closeOnClickModal" @close="closeDelayDialog">
+            <el-dialog title="整改延期" :visible.sync="dialogDelayVisible"  width="60%"
+                       :close-on-click-modal="closeOnClickModal" @close="closeDelayDialog">
                 <el-form ref="delayDialogForm" class="deyatech-form" :model="detail" label-position="right"
                          label-width="110px" :rules="detailRules" style="margin-top: 20px">
                     <el-row :gutter="20" :span="24">

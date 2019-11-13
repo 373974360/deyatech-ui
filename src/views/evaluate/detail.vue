@@ -207,7 +207,7 @@
             </el-pagination>
 
             <!--详情-->
-            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails"
+            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialogDetails">
                 <table class="mailTable">
                     <tr>
@@ -279,7 +279,7 @@
                 </table>
             </el-dialog>
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialog">
                 <el-form ref="detailDialogForm" class="deyatech-form" :model="detail" label-position="right"
                          label-width="80px" :rules="detailRules">
