@@ -676,17 +676,8 @@
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '姓名'}
                     ],
-                    photo: [
-                        {required: true, message: '请上传照片'}
-                    ],
-                    job: [
-                        {required: true, message: this.$t("table.pleaseInput") + '职务'}
-                    ],
                     type: [
                         {required: true, message: this.$t("table.pleaseSelect") + '类型'}
-                    ],
-                    departmentName: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '部门'}
                     ]
                 },
                 guestListLoading: false,

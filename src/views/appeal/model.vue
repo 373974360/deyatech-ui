@@ -231,7 +231,7 @@
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
-                                    :options="templateTreeData"
+                                    :options="formTemplateTreeData"
                                     v-model.trim="model.formTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
@@ -244,7 +244,7 @@
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
-                                    :options="templateTreeData"
+                                    :options="listTemplateTreeData"
                                     v-model.trim="model.listTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
@@ -259,7 +259,7 @@
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
-                                    :options="templateTreeData"
+                                    :options="detailsTemplateTreeData"
                                     v-model.trim="model.viewTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
@@ -272,7 +272,7 @@
                                     placeholder="请选择模板地址"
                                     clearable
                                     expand-trigger="hover"
-                                    :options="templateTreeData"
+                                    :options="printTemplateTreeData"
                                     v-model.trim="model.printTemplet"
                                     :props="cascaderProps">
                                 </el-cascader>
@@ -447,7 +447,10 @@
                     label: 'fileName',
                     children: 'children'
                 },
-                templateTreeData: [],
+                printTemplateTreeData: [],
+                listTemplateTreeData: [],
+                formTemplateTreeData: [],
+                detailsTemplateTreeData: [],
                 workflowList: []
             }
         },
@@ -505,10 +508,25 @@
                 })
             },
             listTemplateAllFiles(){
-                this.templateTreeData = [];
-                listTemplateAllFiles(this.$store.state.common.siteId,"appeal").then(response => {
+                this.listTemplateTreeData = [];
+                this.printTemplateTreeData = [];
+                this.formTemplateTreeData = [];
+                this.detailsTemplateTreeData = [];
+                listTemplateAllFiles(this.$store.state.common.siteId,"list").then(response => {
                     let result = JSON.parse(response.data)
-                    this.templateTreeData = result.files
+                    this.listTemplateTreeData = result.files
+                })
+                listTemplateAllFiles(this.$store.state.common.siteId,"print").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.printTemplateTreeData = result.files
+                })
+                listTemplateAllFiles(this.$store.state.common.siteId,"form").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.formTemplateTreeData = result.files
+                })
+                listTemplateAllFiles(this.$store.state.common.siteId,"details").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.detailsTemplateTreeData = result.files
                 })
             },
             getDepartmentCascader() {
