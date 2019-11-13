@@ -355,6 +355,7 @@
                         const contentInfo = JSON.stringify(this.config.contentList);
                         this.$set(this.config, 'contentInfo', contentInfo);
                         this.$delete(this.config, 'contentList');
+                        this.$delete(this.config, 'dimensionList');
 
                         this.submitLoading = true;
                         createOrUpdateConfig(this.config).then(() => {
