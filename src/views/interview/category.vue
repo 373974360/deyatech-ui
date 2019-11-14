@@ -78,20 +78,18 @@
                         <el-col :span="12">
                             <el-form-item label="列表页模板" prop="listPageTemplate">
                                 <el-cascader filterable
-                                    v-model="selectedListTemplate"
+                                    v-model="category.listPageTemplate"
                                     :props="templateProps"
                                     :options="listTemplates"
-                                    @change="selectedListTemplateChange"
                                     placeholder="请选择列表页模板" style="width: 100%"></el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="详情页模板" prop="detailPageTemplate">
                                 <el-cascader filterable
-                                    v-model="selectedDetailTemplate"
+                                     v-model="category.detailPageTemplate"
                                     :props="templateProps"
                                     :options="detailTemplates"
-                                    @change="selectedDetailTemplateChange"
                                     placeholder="请选详情页模板" style="width: 100%"></el-cascader>
                             </el-form-item>
                         </el-col>
@@ -151,12 +149,6 @@
                     ],
                     siteId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '站点'}
-                    ],
-                    listPageTemplate: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '列表页模板'}
-                    ],
-                    detailPageTemplate: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '详情页模板'}
                     ]
                 },
                 selectedRows: [],
@@ -165,8 +157,6 @@
                 submitLoading: false,
                 listTemplates: [],
                 detailTemplates: [],
-                selectedListTemplate: [],
-                selectedDetailTemplate: [],
                 templateProps: {
                     value: 'fileName',
                     label: 'fileName',
@@ -199,20 +189,6 @@
             }
         },
         methods: {
-            selectedListTemplateChange(v) {
-                if (v && v.length > 0) {
-                    this.$set(this.category, 'listPageTemplate', '/' + v.join('/'));
-                } else {
-                    this.$set(this.category, 'listPageTemplate', undefined);
-                }
-            },
-            selectedDetailTemplateChange(v) {
-                if (v && v.length > 0) {
-                    this.$set(this.category, 'detailPageTemplate', '/' + v.join('/'));
-                } else {
-                    this.$set(this.category, 'detailPageTemplate', undefined);
-                }
-            },
             loadTemplates() {
                 this.listTemplates = [];
                 listTemplateAllFiles(this.$store.state.common.siteId, "list").then(response => {
@@ -220,7 +196,7 @@
                     this.listTemplates = result.files;
                 });
                 this.detailTemplates = [];
-                listTemplateAllFiles(this.$store.state.common.siteId, "detail").then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId, "details").then(response => {
                     let result = JSON.parse(response.data)
                     this.detailTemplates = result.files
                 })
@@ -270,10 +246,14 @@
                 } else {
                     this.category = deepClone(this.selectedRows[0]);
                 }
-                this.selectedListTemplate = this.category.listPageTemplate.substring(1).split('/');
-                this.selectedDetailTemplate = this.category.detailPageTemplate.substring(1).split('/');
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
+                if(this.category.listPageTemplate != undefined){
+                    this.category.listPageTemplate = this.category.listPageTemplate.split('/').slice(1);
+                }
+                if(this.category.detailPageTemplate != undefined){
+                    this.category.detailPageTemplate = this.category.detailPageTemplate.split('/').slice(1);
+                }
             },
             btnDelete(row){
                 let ids = [];
@@ -295,6 +275,12 @@
                 this.$refs['categoryDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if(this.category.listPageTemplate != undefined){
+                            this.category.listPageTemplate = "/" + this.category.listPageTemplate.join("/");
+                        }
+                        if(this.category.detailPageTemplate != undefined){
+                            this.category.detailPageTemplate = "/" + this.category.detailPageTemplate.join("/");
+                        }
                         createOrUpdateCategory(this.category).then(() => {
                             this.resetCategoryDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
@@ -308,6 +294,12 @@
                 this.$refs['categoryDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
+                        if(this.category.listPageTemplate != undefined){
+                            this.category.listPageTemplate = "/" + this.category.listPageTemplate.join("/");
+                        }
+                        if(this.category.detailPageTemplate != undefined){
+                            this.category.detailPageTemplate = "/" + this.category.detailPageTemplate.join("/");
+                        }
                         createOrUpdateCategory(this.category).then(() => {
                             this.resetCategoryDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));

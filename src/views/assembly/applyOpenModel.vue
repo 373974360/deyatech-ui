@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.modelName"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -24,41 +24,41 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="applyOpenModelList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table :data="modelList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="业务名称" prop="modelName"/>
-                <el-table-column align="center" label="参与方式" prop="mustMember">
+                <el-table-column align="left" label="业务名称" prop="modelName"/>
+                <el-table-column align="center" label="办理时限" prop="limitDay" width="90"/>
+                <el-table-column align="center" label="自动发布" prop="autoPublish" width="90">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.mustMember == 1">
-                            不限
-                        </span>
-                        <span v-if="scope.row.mustMember == 2">
-                            仅会员
-                        </span>
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="自动发布" prop="isAutoPublish">
-                    <template slot-scope="scope">
-                        <span v-if="scope.row.isAutoPublish == 1">
+                        <span v-if="scope.row.autoPublish == 1">
                             是
                         </span>
-                        <span v-if="scope.row.isAutoPublish == 2">
+                        <span v-if="scope.row.autoPublish == 2">
                             否
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="提醒方式" prop="remindType">
+                <el-table-column align="center" label="业务模式" prop="busType" width="90">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.remindType == 1">
-                            Email
+                        <span v-if="scope.row.busType == 1">
+                            转发
                         </span>
-                        <span v-if="scope.row.remindType == 2">
-                            手机短信
+                        <span v-if="scope.row.busType == 2">
+                            部门直投
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="办理时限" prop="timeLimit"/>
+                <el-table-column align="center" label="部门间转办" prop="deptTransfer" width="100">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.deptTransfer == 1">
+                            是
+                        </span>
+                        <span v-if="scope.row.deptTransfer == 2">
+                            否
+                        </span>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -83,58 +83,105 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeApplyOpenModelDialog" width="80%">
-                <el-form ref="applyOpenModelDialogForm" class="deyatech-form" :model="applyOpenModel" label-position="right"
-                         label-width="100px" :rules="applyOpenModelRules">
+                       :close-on-click-modal="closeOnClickModal" @close="closeModelDialog" width="80%">
+                <el-form ref="modelDialogForm" class="deyatech-form" :model="model" label-position="right"
+                         label-width="100px" :rules="modelRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="业务名称" prop="modelName">
-                                <el-input v-model.trim="applyOpenModel.modelName"></el-input>
+                                <el-input v-model.trim="model.modelName" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="6">
-                            <el-form-item label="参与方式" prop="mustMember">
-                                <el-radio-group v-model="applyOpenModel.mustMember">
-                                    <el-radio :label="1">不限</el-radio>
-                                    <el-radio :label="2">仅会员</el-radio>
+                            <el-form-item label="参与人员" prop="participant">
+                                <el-radio-group v-model.trim="model.participant">
+                                    <el-radio :label="1">会员</el-radio>
+                                    <el-radio :label="2">所有人</el-radio>
                                 </el-radio-group>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
-                            <el-form-item label="提醒方式" prop="remindType">
-                                <el-radio-group v-model="applyOpenModel.remindType">
-                                    <el-radio :label="1">Email</el-radio>
-                                    <el-radio :label="2">短信</el-radio>
-                                </el-radio-group>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="自动发布" prop="isAutoPublish">
+                            <el-form-item label="自动发布" prop="autoPublish">
                                 <el-switch
-                                    v-model.trim="applyOpenModel.isAutoPublish"
+                                    v-model.trim="model.autoPublish"
                                     :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
+                            <el-form-item label="业务模式" prop="busType">
+                                <el-radio-group v-model.trim="model.busType">
+                                    <el-radio :label="1">转发</el-radio>
+                                    <el-radio :label="2">直投</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
                             <el-form-item label="部门间转办" prop="deptTransfer">
                                 <el-switch
-                                    v-model.trim="applyOpenModel.deptTransfer" :active-value=1 :inactive-value=2>
+                                    v-model.trim="model.deptTransfer" :active-value=1 :inactive-value=2>
                                 </el-switch>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="8">
-                            <el-form-item label="业务编码" prop="codePre">
-                                <el-input v-model.trim="applyOpenModel.codePre"></el-input>
+                        <el-col :span="6">
+                            <el-form-item label="办理时限" prop="limitDay">
+                                <el-input v-model.trim="model.limitDay" maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="日期码" prop="codeRule">
-                                <el-select filterable style="width: 100%;" v-model.trim="applyOpenModel.codeRule" placeholder="请选择">
+                        <el-col :span="6">
+                            <el-form-item label="提醒件" prop="reminderDay">
+                                <el-input v-model.trim="model.reminderDay" maxlength="10"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-form-item label="黄牌件" prop="yellowDay">
+                                <el-input v-model.trim="model.yellowDay" maxlength="10"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-form-item label="红牌件" prop="redDay">
+                                <el-input v-model.trim="model.redDay" maxlength="10"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="主管部门" prop="competentDept">
+                                <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="model.competentDept"
+                                             expand-trigger="hover" ></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="参与部门" prop="partDept">
+                                <el-cascader filterable
+                                             style="width: 100%"
+                                             placeholder="请选择绑定栏目"
+                                             :options="departmentCascader"
+                                             v-model.trim="model.partDept"
+                                             :props="props"
+                                             collapse-tags
+                                             clearable></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="6">
+                            <el-form-item label="业务码" prop="busCode">
+                                <el-input v-model.trim="model.busCode" maxlength="10"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-form-item label="间隔符" prop="spacera">
+                                <el-input v-model.trim="model.spacera" maxlength="5"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-form-item label="日期码" prop="dayCode">
+                                <el-select filterable style="width: 100%;" v-model.trim="model.dayCode" placeholder="请选择">
                                     <el-option
                                         v-for="item in dayCodeOptions"
                                         :key="item.value"
@@ -144,9 +191,28 @@
                                 </el-select>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="随机码" prop="codeNum">
-                                <el-select filterable style="width: 100%;" v-model.trim="applyOpenModel.codeNum" placeholder="请选择">
+                        <el-col :span="6">
+                            <el-form-item label="间隔符" prop="spacerb">
+                                <el-input v-model.trim="model.spacerb" maxlength="5"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="随机码位数" prop="randomcodeCount">
+                                <el-select filterable style="width: 100%;" v-model.trim="model.randomcodeCount" placeholder="请选择">
+                                    <el-option
+                                        v-for="item in codeLengthOptions"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="查询码位数" prop="querycodeCount">
+                                <el-select filterable style="width: 100%;" v-model.trim="model.querycodeCount" placeholder="请选择">
                                     <el-option
                                         v-for="item in codeLengthOptions"
                                         :key="item.value"
@@ -159,130 +225,56 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="查询码" prop="queryNum">
-                                <el-select filterable style="width: 100%;" v-model.trim="applyOpenModel.queryNum" placeholder="请选择">
-                                    <el-option
-                                        v-for="item in codeLengthOptions"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="办理时限" prop="timeLimit">
-                                <el-input v-model.trim="applyOpenModel.timeLimit"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="主管部门" prop="competentDept">
-                                <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="applyOpenModel.competentDept"
-                                             expand-trigger="hover" ></el-cascader>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="参与部门" prop="partDept">
+                            <el-form-item label="表单模板" prop="formTemplet">
                                 <el-cascader filterable
-                                    style="width: 100%"
-                                    placeholder="请选择绑定栏目"
-                                    :options="departmentCascader"
-                                    v-model.trim="applyOpenModel.partDept"
-                                    :props="props"
-                                    collapse-tags
-                                    clearable></el-cascader>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="申请表" prop="fileUrl">
-                                <el-input v-model.trim="applyOpenModel.fileUrl"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="表单模板" prop="templateForm">
-                                <el-cascader filterable
-                                    style="width: 100%"
-                                    placeholder="请选择模板地址"
-                                    clearable
-                                    expand-trigger="hover"
-                                    :options="templateTreeData"
-                                    v-model.trim="applyOpenModel.templateForm"
-                                    :props="cascaderProps">
+                                             style="width: 100%"
+                                             placeholder="请选择模板地址"
+                                             clearable
+                                             expand-trigger="hover"
+                                             :options="formTemplateTreeData"
+                                             v-model.trim="model.formTemplet"
+                                             :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="列表模板" prop="templateList">
+                            <el-form-item label="列表模板" prop="listTemplet">
                                 <el-cascader filterable
-                                    style="width: 100%"
-                                    placeholder="请选择模板地址"
-                                    clearable
-                                    expand-trigger="hover"
-                                    :options="templateTreeData"
-                                    v-model.trim="applyOpenModel.templateList"
-                                    :props="cascaderProps">
+                                             style="width: 100%"
+                                             placeholder="请选择模板地址"
+                                             clearable
+                                             expand-trigger="hover"
+                                             :options="listTemplateTreeData"
+                                             v-model.trim="model.listTemplet"
+                                             :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="详情模板" prop="templateContent">
+                            <el-form-item label="正文模板" prop="viewTemplet">
                                 <el-cascader filterable
-                                    style="width: 100%"
-                                    placeholder="请选择模板地址"
-                                    clearable
-                                    expand-trigger="hover"
-                                    :options="templateTreeData"
-                                    v-model.trim="applyOpenModel.templateContent"
-                                    :props="cascaderProps">
+                                             style="width: 100%"
+                                             placeholder="请选择模板地址"
+                                             clearable
+                                             expand-trigger="hover"
+                                             :options="detailsTemplateTreeData"
+                                             v-model.trim="model.viewTemplet"
+                                             :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="查询模板" prop="templateQuery">
+                            <el-form-item label="打印模板" prop="printTemplet">
                                 <el-cascader filterable
-                                    style="width: 100%"
-                                    placeholder="请选择模板地址"
-                                    clearable
-                                    expand-trigger="hover"
-                                    :options="templateTreeData"
-                                    v-model.trim="applyOpenModel.templateQuery"
-                                    :props="cascaderProps">
-                                </el-cascader>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="回执模板" prop="templateOver">
-                                <el-cascader filterable
-                                    style="width: 100%"
-                                    placeholder="请选择模板地址"
-                                    clearable
-                                    expand-trigger="hover"
-                                    :options="templateTreeData"
-                                    v-model.trim="applyOpenModel.templateOver"
-                                    :props="cascaderProps">
-                                </el-cascader>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="打印模板" prop="templatePrint">
-                                <el-cascader filterable
-                                    style="width: 100%"
-                                    placeholder="请选择模板地址"
-                                    clearable
-                                    expand-trigger="hover"templateTreeData
-                                    :options="templateTreeData"
-                                    v-model.trim="applyOpenModel.templatePrint"
-                                    :props="cascaderProps">
+                                             style="width: 100%"
+                                             placeholder="请选择模板地址"
+                                             clearable
+                                             expand-trigger="hover"
+                                             :options="printTemplateTreeData"
+                                             v-model.trim="model.printTemplet"
+                                             :props="cascaderProps">
                                 </el-cascader>
                             </el-form-item>
                         </el-col>
@@ -291,14 +283,14 @@
                         <el-col :span="12">
                             <el-form-item label="启用工作流" prop="workflowType">
                                 <el-switch
-                                    v-model.trim="applyOpenModel.workflowType"
+                                    v-model.trim="model.workflowType"
                                     :active-value=1 :inactive-value=2 @change="isWorkflowEnable">
                                 </el-switch>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="选择工作流" prop="workflowId" v-if="applyOpenModel.workflowType == 1">
-                                <el-select filterable v-model.trim="applyOpenModel.workflowId" placeholder="请选择工作流" style="width:100%">
+                            <el-form-item label="选择工作流" prop="workflowId" v-if="model.workflowType == 1">
+                                <el-select filterable v-model.trim="model.workflowId" placeholder="请选择工作流" style="width:100%">
                                     <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -307,7 +299,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="applyOpenModel.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="model.remark" :rows="3" maxlength="500"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -315,7 +307,7 @@
                 <span slot="footer" class="dialog-footer">
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeApplyOpenModelDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeModelDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -327,74 +319,103 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getApplyOpenModelList,
-        createOrUpdateApplyOpenModel,
-        delApplyOpenModels
+        getModelList,
+        createOrUpdateModel,
+        delModels
     } from '@/api/assembly/applyOpenModel';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {listTemplateAllFiles} from '@/api/template/template';
     import {getProcessDefinitionList} from '@/api/workflow/definition';
 
     export default {
-        name: 'applyOpenModel',
+        name: 'model',
         data() {
+            const checkInteger = (rule, value, callback) => {
+                if (/^[-+]?\d+$/.test(value)) {
+                    callback();
+                } else {
+                    callback(new Error('请输入整数'));
+                }
+            };
             return {
-                applyOpenModelList: undefined,
+                modelList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    modelName: undefined,
+                    name: undefined,
                     siteId: this.$store.state.common.siteId
                 },
-                applyOpenModel: {
+                model: {
                     id: undefined,
-                    modelName: undefined,
-                    mustMember: 1,
-                    isAutoPublish: 2,
-                    remindType: 1,
-                    codePre: 'YSQGK',
-                    codeRule: 'YYYYMMDD',
-                    codeNum: 4,
-                    timeLimit: 15,
-                    queryNum: 6,
-                    fileUrl: undefined,
-                    templateForm: undefined,
-                    templateList: undefined,
-                    templateContent: undefined,
-                    templateOver: undefined,
-                    templatePrint: undefined,
-                    templateQuery: undefined,
                     siteId: this.$store.state.common.siteId,
+                    modelName: undefined,
+                    participant: 2,
+                    autoPublish: 2,
+                    limitDay: 15,
+                    reminderDay: -5,
+                    yellowDay: -2,
+                    redDay: 2,
+                    busType: 1,
                     deptTransfer: 2,
                     competentDept: undefined,
                     partDept: undefined,
-                    workflowType: undefined,
+                    busCode: 'GPPS',
+                    spacera: '-',
+                    dayCode: 'YYYYMMDD',
+                    spacerb: '-',
+                    randomcodeCount: '4',
+                    querycodeCount: '6',
+                    workflowType: 2,
                     workflowId: undefined,
-                    remark: undefined
+                    formTemplet: undefined,
+                    listTemplet: undefined,
+                    viewTemplet: undefined,
+                    printTemplet: undefined
                 },
-                applyOpenModelRules: {
+                modelRules: {
                     modelName: [
                         {required: true, message: this.$t("table.pleaseInput") + '业务名称'}
                     ],
-                    codePre: [
-                        {required: true, message: this.$t("table.pleaseInput") + '业务编码'}
+                    limitDay: [
+                        {required: true, message: this.$t("table.pleaseInput") + '办理时限'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ],
-                    timeLimit: [
-                        {required: true, message: this.$t("table.pleaseInput") + '办理时限'}
+                    reminderDay: [
+                        {required: true, message: this.$t("table.pleaseInput") + '提醒件'},
+                        {validator: checkInteger, trigger: ['change','blur']}
+                    ],
+                    yellowDay: [
+                        {required: true, message: this.$t("table.pleaseInput") + '黄牌件'},
+                        {validator: checkInteger, trigger: ['change','blur']}
+                    ],
+                    redDay: [
+                        {required: true, message: this.$t("table.pleaseInput") + '红牌件'},
+                        {validator: checkInteger, trigger: ['change','blur']}
                     ],
                     competentDept: [
                         {required: true, message: this.$t("table.pleaseInput") + '主管部门引用部门ID'}
                     ],
                     partDept: [
                         {required: true, message: this.$t("table.pleaseInput") + '参与部门部门ID数组'}
+                    ],
+                    busCode: [
+                        {required: true, message: this.$t("table.pleaseInput") + '业务码'}
+                    ],
+                    randomcodeCount: [
+                        {required: true, message: this.$t("table.pleaseInput") + '随机码位数'}
+                    ],
+                    querycodeCount: [
+                        {required: true, message: this.$t("table.pleaseInput") + '查询码位数'}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
+                departmentCascader: [],
+                props: { multiple: true},
                 dayCodeOptions: [{
                     value: 'YYMM',
                     label: 'YYMM'
@@ -426,9 +447,10 @@
                     label: 'fileName',
                     children: 'children'
                 },
-                props: { multiple: true},
-                departmentCascader: [],
-                templateTreeData: [],
+                printTemplateTreeData: [],
+                listTemplateTreeData: [],
+                formTemplateTreeData: [],
+                detailsTemplateTreeData: [],
                 workflowList: []
             }
         },
@@ -443,28 +465,21 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.applyOpenModel_create,
-                    update: this.permission.applyOpenModel_update,
-                    delete: this.permission.applyOpenModel_delete
+                    create: this.permission.model_create,
+                    update: this.permission.model_update,
+                    delete: this.permission.model_delete
                 };
             }
         },
         created(){
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
-                this.getDepartmentCascader();
                 this.reloadList();
+                this.getDepartmentCascader();
                 this.listTemplateAllFiles();
             }
         },
         methods: {
-            listTemplateAllFiles(){
-                this.templateTreeData = [];
-                listTemplateAllFiles(this.$store.state.common.siteId,"ysqgk").then(response => {
-                    let result = JSON.parse(response.data)
-                    this.templateTreeData = result.files
-                })
-            },
             isWorkflowEnable (value) {
                 if (value == 1) {
                     if (this.workflowList.length == 0) {
@@ -492,6 +507,28 @@
                     }
                 })
             },
+            listTemplateAllFiles(){
+                this.listTemplateTreeData = [];
+                this.printTemplateTreeData = [];
+                this.formTemplateTreeData = [];
+                this.detailsTemplateTreeData = [];
+                listTemplateAllFiles(this.$store.state.common.siteId,"list").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.listTemplateTreeData = result.files
+                })
+                listTemplateAllFiles(this.$store.state.common.siteId,"print").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.printTemplateTreeData = result.files
+                })
+                listTemplateAllFiles(this.$store.state.common.siteId,"form").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.formTemplateTreeData = result.files
+                })
+                listTemplateAllFiles(this.$store.state.common.siteId,"details").then(response => {
+                    let result = JSON.parse(response.data)
+                    this.detailsTemplateTreeData = result.files
+                })
+            },
             getDepartmentCascader() {
                 this.submitLoading = true;
                 getDepartmentCascader().then(response => {
@@ -504,11 +541,11 @@
             },
             reloadList(){
                 this.listLoading = true;
-                this.applyOpenModelList = undefined;
+                this.modelList = undefined;
                 this.total = undefined;
-                getApplyOpenModelList(this.listQuery).then(response => {
+                getModelList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.applyOpenModelList = response.data.records;
+                    this.modelList = response.data.records;
                     this.total = response.data.total;
                 })
             },
@@ -524,25 +561,37 @@
                 this.selectedRows = rows;
             },
             btnCreate(){
-                this.resetApplyOpenModel();
+                this.resetModel();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
             btnUpdate(row){
-                this.resetApplyOpenModel();
+                this.resetModel();
                 if (row.id) {
-                    this.applyOpenModel = deepClone(row);
+                    this.model = deepClone(row);
                 } else {
-                    this.applyOpenModel = deepClone(this.selectedRows[0]);
+                    this.model = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
-                this.applyOpenModel.competentDept = this.applyOpenModel.competentDept.split(",");
+                this.model.competentDept = this.model.competentDept.split(",");
                 let ids = [];
-                for(const id of this.applyOpenModel.partDept.split("&")){
+                for(const id of this.model.partDept.split("&")){
                     ids.push(id.split(","));
                 }
-                this.applyOpenModel.partDept = ids;
+                this.model.partDept = ids;
+                if(this.model.formTemplet != undefined){
+                    this.model.formTemplet = this.model.formTemplet.split('/').slice(1);
+                }
+                if(this.model.listTemplet != undefined){
+                    this.model.listTemplet = this.model.listTemplet.split('/').slice(1);
+                }
+                if(this.model.viewTemplet != undefined){
+                    this.model.viewTemplet = this.model.viewTemplet.split('/').slice(1);
+                }
+                if(this.model.printTemplet != undefined){
+                    this.model.printTemplet = this.model.printTemplet.split('/').slice(1);
+                }
             },
             btnDelete(row){
                 let ids = [];
@@ -561,17 +610,29 @@
                 }
             },
             doCreate(){
-                this.$refs['applyOpenModelDialogForm'].validate(valid => {
+                this.$refs['modelDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        this.applyOpenModel.competentDept = this.applyOpenModel.competentDept.join(",");
+                        this.model.competentDept = this.model.competentDept.join(",");
                         let ids = [];
-                        for(const id of this.applyOpenModel.partDept){
+                        for(const id of this.model.partDept){
                             ids.push(id.join(","));
                         }
-                        this.applyOpenModel.partDept = ids.join("&");
-                        createOrUpdateApplyOpenModel(this.applyOpenModel).then(() => {
-                            this.resetApplyOpenModelDialogAndList();
+                        this.model.partDept = ids.join("&");
+                        if(this.model.formTemplet != undefined){
+                            this.model.formTemplet = "/" + this.model.formTemplet.join("/");
+                        }
+                        if(this.model.listTemplet != undefined){
+                            this.model.listTemplet = "/" + this.model.listTemplet.join("/");
+                        }
+                        if(this.model.viewTemplet != undefined){
+                            this.model.viewTemplet = "/" + this.model.viewTemplet.join("/");
+                        }
+                        if(this.model.printTemplet != undefined){
+                            this.model.printTemplet = "/" + this.model.printTemplet.join("/");
+                        }
+                        createOrUpdateModel(this.model).then(() => {
+                            this.resetModelDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -580,17 +641,29 @@
                 });
             },
             doUpdate(){
-                this.$refs['applyOpenModelDialogForm'].validate(valid => {
+                this.$refs['modelDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        this.applyOpenModel.competentDept = this.applyOpenModel.competentDept.join(",");
+                        this.model.competentDept = this.model.competentDept.join(",");
                         let ids = [];
-                        for(const id of this.applyOpenModel.partDept){
+                        for(const id of this.model.partDept){
                             ids.push(id.join(","));
                         }
-                        this.applyOpenModel.partDept = ids.join("&");
-                        createOrUpdateApplyOpenModel(this.applyOpenModel).then(() => {
-                            this.resetApplyOpenModelDialogAndList();
+                        this.model.partDept = ids.join("&");
+                        if(this.model.formTemplet != undefined){
+                            this.model.formTemplet = "/" + this.model.formTemplet.join("/");
+                        }
+                        if(this.model.listTemplet != undefined){
+                            this.model.listTemplet = "/" + this.model.listTemplet.join("/");
+                        }
+                        if(this.model.viewTemplet != undefined){
+                            this.model.viewTemplet = "/" + this.model.viewTemplet.join("/");
+                        }
+                        if(this.model.printTemplet != undefined){
+                            this.model.printTemplet = "/" + this.model.printTemplet.join("/");
+                        }
+                        createOrUpdateModel(this.model).then(() => {
+                            this.resetModelDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -600,48 +673,49 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delApplyOpenModels(ids).then(() => {
+                delModels(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetApplyOpenModel(){
-                this.applyOpenModel = {
+            resetModel(){
+                this.model = {
                     id: undefined,
-                    modelName: undefined,
-                    mustMember: 1,
-                    isAutoPublish: 2,
-                    remindType: 1,
-                    codePre: 'YSQGK',
-                    codeRule: 'YYYYMMDD',
-                    codeNum: 4,
-                    timeLimit: 15,
-                    queryNum: 6,
-                    fileUrl: undefined,
-                    templateForm: undefined,
-                    templateList: undefined,
-                    templateContent: undefined,
-                    templateOver: undefined,
-                    templatePrint: undefined,
-                    templateQuery: undefined,
                     siteId: this.$store.state.common.siteId,
+                    modelName: undefined,
+                    participant: 2,
+                    autoPublish: 2,
+                    limitDay: 15,
+                    reminderDay: -5,
+                    yellowDay: -2,
+                    redDay: 2,
+                    busType: 1,
                     deptTransfer: 2,
                     competentDept: undefined,
                     partDept: undefined,
-                    workflowType: undefined,
+                    busCode: 'GPPS',
+                    spacera: '-',
+                    dayCode: 'YYYYMMDD',
+                    spacerb: '-',
+                    randomcodeCount: '4',
+                    querycodeCount: '6',
+                    workflowType: 2,
                     workflowId: undefined,
-                    remark: undefined
+                    formTemplet: undefined,
+                    listTemplet: undefined,
+                    viewTemplet: undefined,
+                    printTemplet: undefined
                 }
             },
-            resetApplyOpenModelDialogAndList(){
-                this.closeApplyOpenModelDialog();
+            resetModelDialogAndList(){
+                this.closeModelDialog();
                 this.submitLoading = false;
                 this.reloadList();
             },
-            closeApplyOpenModelDialog() {
+            closeModelDialog() {
                 this.dialogVisible = false;
-                this.resetApplyOpenModel();
-                this.$refs['applyOpenModelDialogForm'].resetFields();
+                this.resetModel();
+                this.$refs['modelDialogForm'].resetFields();
             }
         }
     }

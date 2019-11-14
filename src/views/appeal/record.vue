@@ -526,48 +526,57 @@
                 treeData:[{
                     label: '发布管理',
                     children: [{
-                        flag: 0,
+                        label: '未发布',
                         isPublish: 2,
-                        timeFlag: 0,
-                        label: '未发布'
+                        sqFlag: 0,
+                        sqStatus: 0,
+                        isBack: 0,
+                        limitFlag: 0
                     },{
-                        flag: 0,
+                        label: '已发布',
                         isPublish: 1,
-                        timeFlag: 0,
-                        label: '已发布'
+                        sqFlag: 0,
+                        sqStatus: 0,
+                        isBack: 0,
+                        limitFlag: 0
                     }]
                 }, {
                     label: '信件管理',
                     children: [{
-                        flag: 1,
+                        label: '待处理',
                         isPublish: 0,
-                        timeFlag: 0,
-                        label: '待处理'
+                        sqFlag: 0,
+                        sqStatus: 0,
+                        isBack: 0,
+                        limitFlag: 0
                     },{
-                        flag: 8,
+                        label: '退回件',
                         isPublish: 0,
-                        timeFlag: 0,
-                        label: '退回件'
+                        sqFlag: 0,
+                        sqStatus: 0,
+                        isBack: 1,
+                        limitFlag: 0
                     },{
-                        flag: 2,
+                        label: '办理中',
                         isPublish: 0,
-                        timeFlag: 0,
-                        label: '已受理'
-                    },{
-                        flag: 4,
-                        isPublish: 0,
-                        timeFlag: 0,
-                        label: '办理中'
+                        sqFlag: 0,
+                        sqStatus: 1,
+                        isBack: 0,
+                        limitFlag: 0
                     }, {
-                        flag: 99,
+                        label: '待审核',
                         isPublish: 0,
-                        timeFlag: 0,
-                        label: '待审核'
+                        sqFlag: 0,
+                        sqStatus: 2,
+                        isBack: 0,
+                        limitFlag: 0
                     }, {
-                        flag: 5,
+                        label: '已办结',
                         isPublish: 0,
-                        timeFlag: 0,
-                        label: '已办结'
+                        sqFlag: 0,
+                        sqStatus: 3,
+                        isBack: 0,
+                        limitFlag: 0
                     }]
                 }, {
                     label: '督查督办',
@@ -604,8 +613,16 @@
                         isPublish: 0,
                         timeFlag: 0,
                         label: '重复件'
+                    }]
+                }, {
+                    label: '延期审核',
+                    children: [{
+                        label: '已审核'
                     }, {
-                        label: '转办件'
+                        flag: 6,
+                        isPublish: 0,
+                        timeFlag: 0,
+                        label: '待审核'
                     }]
                 }],
                 recordList: undefined,
@@ -618,10 +635,12 @@
                     modelId: undefined,
                     purId: undefined,
                     timeFrame: undefined,
+                    userDepartmentId: this.$store.state.user.userInfo.departmentId,
                     isPublish: 0,
-                    flag: 0,
-                    timeFlag: 0,
-                    userDepartmentId: this.$store.state.user.userInfo.departmentId
+                    sqFlag: 0,
+                    sqStatus: 0,
+                    isBack: 0,
+                    limitFlag: 0
                 },
                 recordDepartment: [],
                 recordReplyDepartment: [],

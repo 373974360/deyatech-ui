@@ -1,5 +1,5 @@
 import request from '@/router/axios';
-export function getApplyOpenModel(id) {
+export function getModel(id) {
     return request({
         url: '/manage/assembly/applyOpenModel/getByApplyOpenModel',
         method: 'get',
@@ -7,8 +7,8 @@ export function getApplyOpenModel(id) {
     })
 }
 
-export function createOrUpdateApplyOpenModel(applyOpenModelVo){
-    const data = applyOpenModelVo;
+export function createOrUpdateModel(modelVo){
+    const data = modelVo;
     return request({
         url: '/manage/assembly/applyOpenModel/saveOrUpdate',
         method: 'post',
@@ -16,7 +16,7 @@ export function createOrUpdateApplyOpenModel(applyOpenModelVo){
     })
 }
 
-export function delApplyOpenModel(id) {
+export function delModel(id) {
     const data = {id};
     return request({
         url: '/manage/assembly/applyOpenModel/removeByApplyOpenModel',
@@ -24,7 +24,7 @@ export function delApplyOpenModel(id) {
         data
     })
 }
-export function delApplyOpenModels(ids) {
+export function delModels(ids) {
     const data = {ids};
     return request({
         url: '/manage/assembly/applyOpenModel/removeByIds',
@@ -32,14 +32,14 @@ export function delApplyOpenModels(ids) {
         data
     })
 }
-export function getApplyOpenModelList(query) {
+export function getModelList(query) {
     return request({
         url: '/manage/assembly/applyOpenModel/pageByApplyOpenModel',
         method: 'get',
         params: query
     });
 }
-export function getAllApplyOpenModelList(query) {
+export function getModeAllList(query) {
     return request({
         url: '/manage/assembly/applyOpenModel/listByApplyOpenModel',
         method: 'get',
@@ -47,4 +47,11 @@ export function getAllApplyOpenModelList(query) {
     });
 }
 
+export function getModelByCompetentDeptId(query) {
+    return request({
+        url: '/manage/assembly/applyOpenModel/listApplyOpenModelByCompetentDeptId',
+        method: 'get',
+        params: query
+    });
+}
 
