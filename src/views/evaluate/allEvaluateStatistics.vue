@@ -109,7 +109,7 @@
                         {{(scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].rate : 0).toFixed(2)}}%
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="非常不满意">
+                <el-table-column align="center" label="非常不满意" width="92">
                     <template slot-scope="scope">
                         {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].count : 0}}
                     </template>

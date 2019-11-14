@@ -68,7 +68,7 @@
             <h3 class="table-title">按来源渠道统计</h3>
             <el-table :data="countByDeptChannelList" v-loading.body="listDeptChannelLoading" stripe border highlight-current-row>
                 <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
+                <el-table-column align="center" label="部门名称" prop="acceptDept" width="150"/>
                 <el-table-column align="center" label="实体大厅">
                     <template slot-scope="scope">
                         {{scope.row.countByChannelMap['3'] ? scope.row.countByChannelMap['3'].count : 0}}
@@ -79,7 +79,7 @@
                         {{(scope.row.countByChannelMap['5'] ? scope.row.countByChannelMap['5'].rate : 0).toFixed(2)}}%
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="西安政务服务网">
+                <el-table-column align="center" label="西安政务服务网" width="120">
                     <template slot-scope="scope">
                         {{scope.row.countByChannelMap['1'] ? scope.row.countByChannelMap['1'].count : 0}}
                     </template>
