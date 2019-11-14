@@ -73,18 +73,18 @@
                 <el-table-column align="center" label="总评价数" prop="count"/>
                 <el-table-column align="center" label="差评总数">
                     <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'] : 0)
-                        + (scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'] : 0)}}
+                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].count : 0)
+                        + (scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].count : 0)}}
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="不满意数">
                     <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'] : 0}}
+                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].count : 0}}
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="非常不满意数">
                     <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'] : 0}}
+                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].count : 0}}
                     </template>
                 </el-table-column>
             </el-table>
