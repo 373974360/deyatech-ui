@@ -33,7 +33,7 @@ router.beforeEach((to, from, next) => {
     }
 
     const meta = to.meta || {};
-    if (getToken()) {
+    // if (getToken()) {
         /*if (store.getters.isLock && to.path != lockPage) { //如果系统激活锁屏，全部跳转到锁屏页
             next({path: lockPage})
         }*/
@@ -42,7 +42,7 @@ router.beforeEach((to, from, next) => {
         }*/
         // {
             //如果用户信息为空则获取用户信息，获取用户信息失败，跳转到登录页
-            if (store.getters.userId.length === 0) {
+            // if (store.getters.userId.length === 0) {
                 /*store.dispatch('FedLogOut').then(() => {
                     next({path: '/login'})
                 })*/
@@ -51,7 +51,7 @@ router.beforeEach((to, from, next) => {
                 }).catch(err => {
                     window.location.href = '/manage/evaluate/sso/redirect?url=' + to.path
                 })
-            } else {
+            // } else {
                 /*const value = to.query.src || to.fullPath;
                 const label = to.query.name || to.name;
                 const meta = to.meta || router.$avueRouter.meta || {};
@@ -73,21 +73,21 @@ router.beforeEach((to, from, next) => {
                         group: router.$avueRouter.group || []
                     });
                 }*/
-                next()
-            }
+                // next()
+            // }
         // }
-    } else {
-        //判断是否需要认证，没有登录访问去登录页
-        if (meta.isAuth === false) {
-            next()
-        } else {
-            // next('/login')
-            /*store.dispatch('GetUserInfo').then(() => {
-                next()
-            })*/
-            window.location.href = '/manage/evaluate/sso/redirect?url=' + to.path
-        }
-    }
+    // } else {
+    //     //判断是否需要认证，没有登录访问去登录页
+    //     if (meta.isAuth === false) {
+    //         next()
+    //     } else {
+    //         // next('/login')
+    //         /*store.dispatch('GetUserInfo').then(() => {
+    //             next()
+    //         })*/
+    //         window.location.href = '/manage/evaluate/sso/redirect?url=' + to.path
+    //     }
+    // }
 })
 
 router.afterEach(() => {

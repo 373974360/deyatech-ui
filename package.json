@@ -16,7 +16,7 @@
     "classlist-polyfill": "^1.2.0",
     "echarts": "^4.2.1",
     "element-tree-grid": "^0.1.3",
-    "element-ui": "^2.4.5",
+    "element-ui": "^2.12.0",
     "file-saver": "^2.0.2",
     "js-cookie": "^2.2.0",
     "jsonlint": "^1.6.3",

@@ -66,9 +66,14 @@
             </div>
 
             <h3 class="table-title">总体评价统计</h3>
-            <el-table :data="countByDeptLevelList" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row>
+            <el-table :data="countByAreaList" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row
+                      :tree-props="{children: 'countByDeptList'}">
                 <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称" prop="acceptDept"/>
+                <el-table-column align="center" label="部门名称">
+                    <template slot-scope="scope">
+                        {{scope.row.areaName || scope.row.acceptDept}}
+                    </template>
+                </el-table-column>
                 <el-table-column align="center" label="非常满意">
                     <template slot-scope="scope">
                         {{scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].count : 0}}
@@ -140,14 +145,14 @@
     import {mapGetters} from 'vuex';
     import {getStore} from '@/util/store';
     import {
-        queryEvaluateCountByDept,
+        queryEvaluateCountByDept
     } from "../../api/evaluate/count";
 
     export default {
         name: 'deptStatistics',
         data() {
             return {
-                countByDeptLevelList: [],
+                countByAreaList: [],
                 listDeptLevelLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
@@ -200,10 +205,12 @@
             },
             loadCountByDeptLevelList(){
                 this.listDeptLevelLoading = true;
-                this.countByDeptLevelList = [];
+                this.countByAreaList = [];
                 queryEvaluateCountByDept(this.listQuery).then(response => {
                     this.listDeptLevelLoading = false;
-                    this.countByDeptLevelList = response.data;
+                    for (let key in response.data) {
+                        this.countByAreaList.push(response.data[key]);
+                    }
                 })
             },
             loadEnum(name) {
