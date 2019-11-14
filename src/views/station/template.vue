@@ -82,7 +82,7 @@
                               @selection-change="handleSelectionChange" style="border-top:none;">
                         <el-table-column type="selection" width="50" align="center"/>
 
-                        <el-table-column align="center"
+                        <el-table-column align="left"
                                          v-for="item in headData"
                                          :label="item.label"
                                          :prop="item.prop">

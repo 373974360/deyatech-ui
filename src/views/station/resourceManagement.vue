@@ -1,7 +1,7 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
+            <!--<div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
@@ -11,7 +11,7 @@
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
-            </div>
+            </div>-->
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.detail" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">详情</el-button>
@@ -26,34 +26,33 @@
             <el-table :data="resourceManagementList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="标题" prop="title"/>
-                <el-table-column align="center" label="作者" prop="author"/>
-                <el-table-column align="center" label="资源分类" prop="resourceCategoryName"/>
-                <el-table-column align="center" label="置顶" prop="flagTop">
-                    <template slot-scope="scope">
-                        {{scope.row.flagTop | enums('YesNoEnum')}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="外链" prop="flagExternal">
+                <el-table-column label="标题" prop="title" :show-overflow-tooltip="true"/>
+                <el-table-column align="center" label="作者姓名" prop="author" :show-overflow-tooltip="true" width="90"/>
+                <el-table-column align="center" label="资源分类" prop="resourceCategoryName" :show-overflow-tooltip="true" width="160"/>
+                <el-table-column align="center" label="发布时间" prop="resourcePublicationDate" :show-overflow-tooltip="true" width="160"/>
+                <el-table-column align="center" label="外链" prop="flagExternal" width="60">
                     <template slot-scope="scope">
                         {{scope.row.flagExternal | enums('YesNoEnum')}}
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="发布时间" prop="resourcePublicationDate"/>
-
+                <el-table-column align="center" label="置顶" prop="flagTop" width="60">
+                    <template slot-scope="scope">
+                        {{scope.row.flagTop | enums('YesNoEnum')}}
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="权重" prop="sortNo" width="60"/>
+                <el-table-column align="center" label="录入人" prop="inputUserName" :show-overflow-tooltip="true" width="90"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
-                        <el-tag :type="scope.row.status | enums('ContentStatusEnum') | statusFilter">
-                            {{scope.row.status | enums('ContentStatusEnum')}}
-                        </el-tag>
+                        {{scope.row.status | enums('ContentStatusEnum')}}
                     </template>
                 </el-table-column>
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.detail" title="详情" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                        <el-button v-if="btnEnable.detail" title="详情" type="primary" icon="el-icon-tickets" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row, false)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -64,19 +63,107 @@
             </el-pagination>
 
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeResourceManagementDialog">
-
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="12">
-
-                    </el-col>
-                    <el-col :span="12">
-
-                    </el-col>
+            <el-dialog title="详情" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeResourceManagementDialog">
+                <el-row>
+                    <el-col style="color: #409EFF; font-weight: bold;">基础数据</el-col>
                 </el-row>
 
+                <el-form class="deyatech-form " label-position="right" label-width="80px">
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="站点:" style="margin: 0;">{{template.siteName}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="栏目:" style="margin: 0;">{{template.cmsCatalogName}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="模型:" style="margin: 0;">{{template.contentModelName}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="状态:" style="margin: 0;">{{template.status | enums('ContentStatusEnum')}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="标题:" style="margin: 0;">{{template.title}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="作者姓名:" style="margin: 0;">{{template.author}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="来源:" style="margin: 0;">{{template.source}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="录入人:" style="margin: 0;">{{template.inputUserName}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="资源分类:" style="margin: 0;">{{template.resourceCategoryName}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="发布时间:" style="margin: 0;">{{template.resourcePublicationDate}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="索引码:" style="margin: 0;">{{template.indexCode}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="缩略图:" style="margin: 0;">{{template.thumbnail}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="权重:" style="margin: 0;">{{template.sortNo}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="置顶:" style="margin: 0;">{{template.flagTop | enums('YesNoEnum')}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="外链:" style="margin: 0;">{{template.flagExternal | enums('YesNoEnum')}}</el-form-item>
+                        </el-col>
+                        <el-col :span="12" v-if="template.flagExternal">
+                            <el-form-item label="URL:" style="margin: 0;">{{template.url}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="24" style="margin: 0;">
+                            <el-form-item label="关键字:" style="margin: 0;">{{template.keyword}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="24" style="margin: 0;">
+                            <el-form-item label="摘要:" style="margin: 0;">{{template.resourceSummary}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="24" style="margin: 0;">
+                            <el-form-item label="正文:" style="margin: 0;"><div v-html="template.resourceContent" style="max-height: 300px; overflow-y: scroll;"></div></el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form>
+
+                <el-row>
+                    <el-col style="color: #409EFF; font-weight: bold;">元数据</el-col>
+                </el-row>
+
+                <el-form class="deyatech-form " label-position="right" label-width="80px">
+                    <el-row>
+                        <el-col :span="12" style="margin: 0;" v-for="item in template.contentList">
+                            <el-form-item :label="item.label" style="margin: 0;">{{item.value}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form>
+
                 <span slot="footer" class="dialog-footer">
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete(template, true)">删除</el-button>
                     <el-button :size="btnSize" @click="closeResourceManagementDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
@@ -88,11 +175,8 @@
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
-    import {
-        getResourceManagementList,
-        createOrUpdateResourceManagement,
-        delResourceManagements
-    } from '@/api/station/resourceManagement';
+    import {getResourceManagementList} from '@/api/station/resourceManagement';
+    import {delTemplates} from '@/api/station/template';
 
     export default {
         name: 'resourceManagement',
@@ -109,8 +193,38 @@
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false,
-                template: undefined
+                template: {
+                    id_: undefined,
+                    siteId: undefined,
+                    templatePath: undefined,
+                    cmsCatalogId: undefined,
+                    contentModelId: undefined,
+                    contentId: undefined,
+                    status: undefined,
+                    contentModelTemplateId: undefined,
+                    url: undefined,
+                    author: undefined,
+                    source: undefined,
+                    thumbnail: undefined,
+                    title: undefined,
+                    sortNo: undefined,
+                    flagTop: undefined,
+                    flagExternal: undefined,
+                    resourceSummary: undefined,
+                    resourceContent: undefined,
+                    resourceCategory: undefined,
+                    resourcePublicationDate: undefined,
+                    keyword: undefined,
+                    indexCode: undefined,
+                    siteName: undefined,
+                    cmsCatalogName: undefined,
+                    resourceCategoryName: undefined,
+                    contentList: [],
+                    // 无用
+                    flagSearch: undefined,
+                    views: undefined,
+                    editor: undefined
+                }
             }
         },
         computed: {
@@ -139,11 +253,13 @@
             reloadList(){
                 this.listLoading = true;
                 this.resourceManagementList = undefined;
-                this.total = undefined;
                 getResourceManagementList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.resourceManagementList = response.data.records;
                     this.total = response.data.total;
+                }).catch(() => {
+                    this.listLoading = false;
+                    this.total = 0;
                 })
             },
             handleSizeChange(val){
@@ -158,51 +274,57 @@
                 this.selectedRows = rows;
             },
             btnUpdate(row){
-                this.resetModel();
+                this.template = undefined;
                 if (row.id) {
                     this.template = deepClone(row);
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
+                console.dir(this.template);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
-            btnDelete(row){
+            btnDelete(row, flag){
                 let ids = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        ids.push(row.id);
-                        this.doDelete(ids);
+                        ids.push({
+                            id: row.id,
+                            metaDataCollectionId: row.metaDataCollectionId,
+                            contentId: row.contentId ? row.contentId : undefined,
+                            contentModelId: row.contentModelId
+                        });
+                        this.doDelete(ids, flag);
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for(const deleteRow of this.selectedRows){
-                            ids.push(deleteRow.id);
+                            ids.push({
+                                id: deleteRow.id,
+                                metaDataCollectionId: deleteRow.metaDataCollectionId,
+                                contentId: deleteRow.contentId ? deleteRow.contentId : undefined,
+                                contentModelId: deleteRow.contentModelId
+                            });
                         }
-                        this.doDelete(ids);
+                        this.doDelete(ids, flag);
                     })
                 }
             },
-            doDelete(ids){
+            doDelete(ids, flag) {
                 this.listLoading = true;
-                delResourceManagements(ids).then(() => {
+                console.dir(JSON.stringify(ids));
+                delTemplates(JSON.stringify(ids)).then(() => {
+                    if (flag) {
+                        this.closeResourceManagementDialog();
+                    }
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetResourceManagement(){
-                this.resourceManagement = {
-                    id: undefined,
-                    siteName: undefined
-                }
-            },
             closeResourceManagementDialog() {
                 this.dialogVisible = false;
-                this.resetResourceManagement();
-                this.$refs['resourceManagementDialogForm'].resetFields();
             }
         }
     }
 </script>
-
 
