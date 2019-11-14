@@ -297,11 +297,6 @@
     }
 </script>
 
-<style>
-    .spacer {
-        height: 28px;
-    }
-    .table-title {
-        color: #909399;
-    }
+<style scoped>
+    @import "../../assets/css/evaluateStatistics.css";
 </style>
