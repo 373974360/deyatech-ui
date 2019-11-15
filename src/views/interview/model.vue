@@ -80,6 +80,13 @@
                 <el-form ref="modelDialogForm" class="deyatech-form" :model="model" label-position="right"
                          label-width="80px" :rules="modelRules">
                     <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
+                            <el-form-item label="访谈名称" prop="name">
+                                <el-input v-model.trim="model.name" maxlength="100" placeholder="请输入访谈名称"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="分类" prop="categoryId">
                                 <el-select filterable v-model.trim="model.categoryId" placeholder="请选择分类" style="width: 100%;">
@@ -90,11 +97,15 @@
                                 </el-select>
                             </el-form-item>
                         </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item label="访谈名称" prop="name">
-                                <el-input v-model.trim="model.name" maxlength="100" placeholder="请输入访谈名称"></el-input>
+                        <el-col :span="12">
+                            <el-form-item label="发布状态" prop="isPublish">
+                                <el-select filterable v-model.trim="model.isPublish" placeholder="请选择发布状态" style="width: 100%;">
+                                    <el-option v-for="o in enums['InterviewModelPublishEnum']"
+                                               :key="o.code"
+                                               :label="o.value"
+                                               :value="o.code">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -106,13 +117,13 @@
                                     type="datetime"
                                     format="yyyy-MM-dd HH:mm"
                                     value-format="yyyy-MM-dd HH:mm"
-                                    placeholder="请选择访谈时间">
+                                    placeholder="请选择访谈时间" style="width: 100%;">
                                 </el-date-picker>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="访谈状态" prop="status">
-                                <el-select filterable v-model.trim="model.status" placeholder="请选择访谈状态">
+                                <el-select filterable v-model.trim="model.status" placeholder="请选择访谈状态" style="width: 100%;">
                                     <el-option v-for="o in enums['InterviewModelStatusEnum']"
                                                :key="o.code"
                                                :label="o.value"
@@ -564,7 +575,8 @@
                     videoUrl: undefined,
                     images: undefined,
                     content: undefined,
-                    status: undefined
+                    status: undefined,
+                    isPublish: undefined
                 },
                 modelRules: {
                     categoryId: [
@@ -592,6 +604,9 @@
                     ],
                     status: [
                         {required: true, message: this.$t("table.pleaseSelect") + '访谈状态'}
+                    ],
+                    isPublish: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '发布状态'}
                     ]
                 },
                 selectedRows: [],
@@ -841,7 +856,8 @@
                     videoUrl: undefined,
                     images: undefined,
                     content: undefined,
-                    status: undefined
+                    status: undefined,
+                    isPublish: undefined
                 }
             },
             resetModelDialogAndList(){
