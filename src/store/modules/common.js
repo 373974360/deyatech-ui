@@ -1,6 +1,7 @@
 import {getStore, removeStore, setStore} from '@/util/store'
 import website from '@/config/website'
 import {getDicts, getEnums} from '@/api/common';
+import {getToken} from '@/util/auth';
 
 const common = {
 
@@ -20,6 +21,7 @@ const common = {
             associateItem: '关联事项',
             associateMaterials: '关联材料',
             review: '复核',
+            examine: '审核',
         },
         enums: getStore({name: 'enums'}) || [],
         dicts: getStore({name: 'dicts'}) || [],
@@ -49,7 +51,8 @@ const common = {
         themeName: getStore({name: 'themeName'}) || 'theme-default',
         lockPasswd: getStore({name: 'lockPasswd'}) || '',
         website: website,
-        callThirdPartyInterface: true // 是否调用第三方接口
+        callThirdPartyInterface: true, // 是否调用第三方接口
+        initHeaders: {"Deyatech-Token": getToken()},
     },
     actions: {
         // 获取后台的所有枚举json数据

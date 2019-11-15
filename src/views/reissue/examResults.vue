@@ -4,16 +4,10 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.pleaseInput') + '专业名称及层次'" v-model.trim="listQuery.majorNameLevel" clearable></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.pleaseInput') + '学号'" v-model.trim="listQuery.studentId" clearable></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.pleaseInput') + '姓名'" v-model.trim="listQuery.name" clearable></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -30,10 +24,12 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="practicalCoursesExamResultsList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table :data="examResultsList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="专业名称及层次" prop="majorNameLevel"/>
+                <el-table-column align="center" label="试卷号" prop="examPaperCode"/>
+                <el-table-column align="center" label="专业名称及层次" prop="professionalNameLevel"/>
+                <el-table-column align="center" label="班级代码" prop="classCode"/>
                 <el-table-column align="center" label="学号" prop="studentId"/>
                 <el-table-column align="center" label="姓名" prop="name">
                     <template slot-scope="scope">
@@ -41,22 +37,25 @@
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="组别" prop="group"/>
+                <el-table-column align="center" label="作业" prop="homework"/>
+                <el-table-column align="center" label="实践" prop="practical"/>
+                <el-table-column align="center" label="论坛发帖" prop="forumPosts"/>
+                <el-table-column align="center" label="在线时长" prop="onlineDuration"/>
+                <el-table-column align="center" label="资源点击次数" prop="resourceClicks"/>
                 <el-table-column align="center" label="成绩" prop="results"/>
-                <el-table-column align="center" label="等次" prop="rank"/>
                 <el-table-column align="center" label="复核成绩" prop="reviewResults"/>
-                <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <el-table-column align="center" label="等次" prop="rank"/>
+                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                             {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
-                </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                </el-table-column>
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update && !scope.row.reviewResults" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="!scope.row.reviewResults" title="复核" type="success" icon="el-icon-check" :size="btnSize" circle
-                                   @click.stop.safe="btnReview(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
@@ -70,64 +69,105 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closePracticalCoursesExamResultsDialog">
-                <el-form ref="practicalCoursesExamResultsDialogForm" class="deyatech-form" :model="practicalCoursesExamResults" label-position="right"
-                         label-width="120px" :rules="practicalCoursesExamResultsRules">
+                       :close-on-click-modal="closeOnClickModal" @close="closeExamResultsDialog">
+                <el-form ref="examResultsDialogForm" class="deyatech-form" :model="examResults" label-position="right"
+                         label-width="80px" :rules="examResultsRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="专业名称及层次" prop="majorNameLevel">
-                                <el-input v-model.trim="practicalCoursesExamResults.majorNameLevel" :disabled="dialogTitle == 'review'"></el-input>
+                            <el-form-item label="试卷号" prop="examPaperCode">
+                                <el-input v-model.trim="examResults.examPaperCode"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="专业名称及层次" prop="professionalNameLevel">
+                                <el-input v-model.trim="examResults.professionalNameLevel"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="班级代码" prop="classCode">
+                                <el-input v-model.trim="examResults.classCode"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="学号" prop="studentId">
-                                <el-input v-model.trim="practicalCoursesExamResults.studentId" :disabled="dialogTitle == 'review'"></el-input>
+                                <el-input v-model.trim="examResults.studentId"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="姓名" prop="name">
-                                <el-input v-model.trim="practicalCoursesExamResults.name" :disabled="dialogTitle == 'review'"></el-input>
+                                <el-input v-model.trim="examResults.name"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="组别" prop="group">
-                                <el-input v-model.trim="practicalCoursesExamResults.group" :disabled="dialogTitle == 'review'"></el-input>
+                                <el-input v-model.trim="examResults.group"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
+                            <el-form-item label="作业" prop="homework">
+                                <el-input v-model.trim="examResults.homework"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="实践" prop="practical">
+                                <el-input v-model.trim="examResults.practical"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="论坛发帖" prop="forumPosts">
+                                <el-input v-model.trim="examResults.forumPosts"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="在线时长" prop="onlineDuration">
+                                <el-input v-model.trim="examResults.onlineDuration"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="资源点击次数" prop="resourceClicks">
+                                <el-input v-model.trim="examResults.resourceClicks"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
                             <el-form-item label="成绩" prop="results">
-                                <el-input v-model.trim="practicalCoursesExamResults.results" :disabled="dialogTitle == 'review'"></el-input>
+                                <el-input v-model.trim="examResults.results"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="复核成绩" prop="reviewResults">
+                                <el-input v-model.trim="examResults.reviewResults"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="等次" prop="rank">
-                                <el-input v-model.trim="practicalCoursesExamResults.rank" :disabled="dialogTitle == 'review'"></el-input>
+                                <el-input v-model.trim="examResults.rank"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="20" :span="24" v-if="dialogTitle == 'review'">
-                        <el-col :span="12">
-                            <el-form-item label="复核成绩" prop="reviewResults">
-                                <el-input v-model.trim="practicalCoursesExamResults.reviewResults"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <!--<el-row :gutter="20" :span="24">
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="practicalCoursesExamResults.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="examResults.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
-                    </el-row>-->
+                    </el-row>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closePracticalCoursesExamResultsDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeExamResultsDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -139,72 +179,82 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getPracticalCoursesExamResultsList,
-        createOrUpdatePracticalCoursesExamResults,
-        delPracticalCoursesExamResultss
-    } from '@/api/reissue/practicalCoursesExamResults';
-    import {validatename} from '@/util/validate';
+        getExamResultsList,
+        createOrUpdateExamResults,
+        delExamResultss
+    } from '@/api/reissue/examResults';
 
     export default {
-        name: 'practicalCoursesExamResults',
+        name: 'examResults',
         data() {
-            const validateName = (rule, value, callback) => {
-                let result = validatename(value)
-                if (result) {
-                    callback()
-                } else {
-                    callback(new Error(this.$t("table.pleaseInput") + '正确的姓名'))
-                }
-            };
             return {
-                practicalCoursesExamResultsList: undefined,
+                examResultsList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    majorNameLevel: undefined,
-                    name: undefined,
-                    studentId: undefined,
+                    name: undefined
                 },
-                practicalCoursesExamResults: {
+                examResults: {
                     id: undefined,
-                    majorNameLevel: undefined,
-                    name: undefined,
+                    examPaperCode: undefined,
+                    professionalNameLevel: undefined,
+                    classCode: undefined,
                     studentId: undefined,
+                    name: undefined,
                     group: undefined,
+                    homework: undefined,
+                    practical: undefined,
+                    forumPosts: undefined,
+                    onlineDuration: undefined,
+                    resourceClicks: undefined,
                     results: undefined,
                     reviewResults: undefined,
                     rank: undefined
                 },
-                practicalCoursesExamResultsRules: {
-                    majorNameLevel: [
-                        {required: true, message: this.$t("table.pleaseInput") + '专业名称及层次'},
-                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
+                examResultsRules: {
+                    examPaperCode: [
+                        {required: true, message: this.$t("table.pleaseInput") + '试卷号'}
                     ],
-                    name: [
-                        {required: true, message: this.$t("table.pleaseInput") + '姓名'},
-                        {validator: validateName, trigger: 'blur'}
+                    professionalNameLevel: [
+                        {required: true, message: this.$t("table.pleaseInput") + '专业名称及层次'}
+                    ],
+                    classCode: [
+                        {required: true, message: this.$t("table.pleaseInput") + '班级代码'}
                     ],
                     studentId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '学号'},
-                        {min: 1, max: 30, message: '长度在 1 到 30 个字符', trigger: 'blur'},
+                        {required: true, message: this.$t("table.pleaseInput") + '学号'}
+                    ],
+                    name: [
+                        {required: true, message: this.$t("table.pleaseInput") + '姓名'}
                     ],
                     group: [
-                        {required: true, message: this.$t("table.pleaseInput") + '组别'},
-                        {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'},
+                        {required: true, message: this.$t("table.pleaseInput") + '组别'}
+                    ],
+                    homework: [
+                        {required: true, message: this.$t("table.pleaseInput") + '作业'}
+                    ],
+                    practical: [
+                        {required: true, message: this.$t("table.pleaseInput") + '实践'}
+                    ],
+                    forumPosts: [
+                        {required: true, message: this.$t("table.pleaseInput") + '论坛发帖'}
+                    ],
+                    onlineDuration: [
+                        {required: true, message: this.$t("table.pleaseInput") + '在线时长'}
+                    ],
+                    resourceClicks: [
+                        {required: true, message: this.$t("table.pleaseInput") + '资源点击次数'}
                     ],
                     results: [
-                        {required: true, message: this.$t("table.pleaseInput") + '成绩'},
-                        {min: 1, max: 5, message: '长度在 1 到 5 个字符', trigger: 'blur'},
+                        {required: true, message: this.$t("table.pleaseInput") + '成绩'}
                     ],
                     reviewResults: [
-                        {required: true, message: this.$t("table.pleaseInput") + '复核成绩'},
-                        {min: 1, max: 5, message: '长度在 1 到 5 个字符', trigger: 'blur'},
+                        {required: true, message: this.$t("table.pleaseInput") + '复核成绩'}
                     ],
                     rank: [
-                        {required: true, message: this.$t("table.pleaseInput") + '等次'},
-                        {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'},
+                        {required: true, message: this.$t("table.pleaseInput") + '等次'}
                     ]
                 },
                 selectedRows: [],
@@ -224,9 +274,9 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.practicalCoursesExamResults_create,
-                    update: this.permission.practicalCoursesExamResults_update,
-                    delete: this.permission.practicalCoursesExamResults_delete
+                    create: this.permission.examResults_create,
+                    update: this.permission.examResults_update,
+                    delete: this.permission.examResults_delete
                 };
             }
         },
@@ -235,20 +285,15 @@
         },
         methods: {
             resetSearch(){
-                this.listQuery.majorNameLevel = undefined;
-                this.listQuery.studentId = undefined;
                 this.listQuery.name = undefined;
-            },
-            searchReloadList() {
-                this.handleCurrentChange(1);
             },
             reloadList(){
                 this.listLoading = true;
-                this.practicalCoursesExamResultsList = undefined;
+                this.examResultsList = undefined;
                 this.total = undefined;
-                getPracticalCoursesExamResultsList(this.listQuery).then(response => {
+                getExamResultsList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.practicalCoursesExamResultsList = response.data.records;
+                    this.examResultsList = response.data.records;
                     this.total = response.data.total;
                 })
             },
@@ -264,16 +309,16 @@
                 this.selectedRows = rows;
             },
             btnCreate(){
-                this.resetPracticalCoursesExamResults();
+                this.resetExamResults();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
             btnUpdate(row){
-                this.resetPracticalCoursesExamResults();
+                this.resetExamResults();
                 if (row.id) {
-                    this.practicalCoursesExamResults = deepClone(row);
+                    this.examResults = deepClone(row);
                 } else {
-                    this.practicalCoursesExamResults = deepClone(this.selectedRows[0]);
+                    this.examResults = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -295,11 +340,11 @@
                 }
             },
             doCreate(){
-                this.$refs['practicalCoursesExamResultsDialogForm'].validate(valid => {
+                this.$refs['examResultsDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdatePracticalCoursesExamResults(this.practicalCoursesExamResults).then(() => {
-                            this.resetPracticalCoursesExamResultsDialogAndList();
+                        createOrUpdateExamResults(this.examResults).then(() => {
+                            this.resetExamResultsDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -308,11 +353,11 @@
                 });
             },
             doUpdate(){
-                this.$refs['practicalCoursesExamResultsDialogForm'].validate(valid => {
+                this.$refs['examResultsDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdatePracticalCoursesExamResults(this.practicalCoursesExamResults).then(() => {
-                            this.resetPracticalCoursesExamResultsDialogAndList();
+                        createOrUpdateExamResults(this.examResults).then(() => {
+                            this.resetExamResultsDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -322,43 +367,40 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delPracticalCoursesExamResultss(ids).then(() => {
+                delExamResultss(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetPracticalCoursesExamResults(){
-                this.practicalCoursesExamResults = {
+            resetExamResults(){
+                this.examResults = {
                     id: undefined,
-                    majorNameLevel: undefined,
-                    name: undefined,
+                    examPaperCode: undefined,
+                    professionalNameLevel: undefined,
+                    classCode: undefined,
                     studentId: undefined,
+                    name: undefined,
                     group: undefined,
+                    homework: undefined,
+                    practical: undefined,
+                    forumPosts: undefined,
+                    onlineDuration: undefined,
+                    resourceClicks: undefined,
                     results: undefined,
                     reviewResults: undefined,
                     rank: undefined
                 }
             },
-            resetPracticalCoursesExamResultsDialogAndList(){
-                this.closePracticalCoursesExamResultsDialog();
+            resetExamResultsDialogAndList(){
+                this.closeExamResultsDialog();
                 this.submitLoading = false;
                 this.reloadList();
             },
-            closePracticalCoursesExamResultsDialog() {
+            closeExamResultsDialog() {
                 this.dialogVisible = false;
-                this.resetPracticalCoursesExamResults();
-                this.$refs['practicalCoursesExamResultsDialogForm'].resetFields();
-            },
-            btnReview(row){
-                this.resetPracticalCoursesExamResults();
-                if (row.id) {
-                    this.practicalCoursesExamResults = deepClone(row);
-                } else {
-                    this.practicalCoursesExamResults = deepClone(this.selectedRows[0]);
-                }
-                this.dialogTitle = 'review';
-                this.dialogVisible = true;
-            },
+                this.resetExamResults();
+                this.$refs['examResultsDialogForm'].resetFields();
+            }
         }
     }
 </script>

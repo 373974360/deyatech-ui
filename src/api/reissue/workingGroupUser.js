@@ -55,3 +55,10 @@ export function saveWorkingGroupUsers(groupId, userIds) {
         data: {groupId, userIds}
     })
 }
+export function getAllWorkingGroupUserByUserId(query) {
+    return request({
+        url: '/manage/reissue/workingGroupUser/listByUserId',
+        method: 'get',
+        params: query
+    })
+}
