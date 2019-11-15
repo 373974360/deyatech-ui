@@ -113,7 +113,7 @@
             </el-row>
 
             <!-- 表单 -->
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeTemplateDialog">
+            <el-dialog width="70%" :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeTemplateDialog">
 
                 <el-steps :active="stepsActive" finish-status="success" simple style="margin-top: -25px; margin-bottom: 20px">
                     <el-step v-for="step in formList" :key="step.pageNumber" :title="step.pageName"></el-step>

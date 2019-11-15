@@ -27,6 +27,7 @@
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.index" :size="btnSize" @click="btnIndex">索引</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -53,7 +54,7 @@
                         </el-tag>
                     </template>
                 </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
@@ -61,6 +62,8 @@
                                    @click.stop.safe="btnModelTemplate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.index" title="索引" icon="el-icon-document" :size="btnSize" circle
+                                   @click.stop.safe="btnIndex(scope.row)"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -240,7 +243,8 @@
         createOrUpdateModel,
         delModels,
         checkNameExist,
-        checkEnglishNameExist
+        checkEnglishNameExist,
+        index
     } from '@/api/station/model';
     import {
         createOrUpdateModelTemplateBatch,
@@ -452,7 +456,8 @@
                 return {
                     create: this.permission.model_create,
                     update: this.permission.model_update,
-                    delete: this.permission.model_delete
+                    delete: this.permission.model_delete,
+                    index:  this.permission.model_index
                 };
             }
         },
@@ -892,6 +897,27 @@
                 removeByModelTemplateVo(JSON.stringify(modelTemplateVo).toString()).then(() => {
                     this.reloadModelTemplateList();
                     this.$message.success(this.$t("table.deleteSuccess"));
+                })
+            },
+            btnIndex(row) {
+                let ids = [];
+                if (row.id) {
+                    ids.push(row.id);
+                } else {
+                    for(const deleteRow of this.selectedRows){
+                        ids.push(deleteRow.id);
+                    }
+                }
+                let msg = '';
+                if (ids.length == 0) {
+                    msg = '重建全部索引, 是否继续？';
+                } else {
+                    msg = '重建选中项索引, 是否继续？';
+                }
+                this.$confirm(msg, this.$t("table.tip"), {type: 'error'}).then(() => {
+                    index(ids).then(() => {
+                        this.$message.success("索引表创建完成");
+                    })
                 })
             }
         }

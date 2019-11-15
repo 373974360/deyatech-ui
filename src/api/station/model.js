@@ -87,3 +87,11 @@ export function countModelByCollectionIds(collectionIds) {
         data
     })
 }
+export function index(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/station/model/index',
+        method: 'post',
+        data
+    })
+}
