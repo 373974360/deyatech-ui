@@ -127,7 +127,7 @@
         delReviewProcesss
     } from '@/api/content/reviewProcess';
     import {
-        updateContentStatus
+        updateContentStatusPublish,updateContentStatusReject
     } from '@/api/station/template';
 
     export default {
@@ -303,8 +303,7 @@
                 completeTask(row.actTaskId).then(response => {
                     if (response.status == 200) {
                         if (response.data === 'FINISH') {
-                            updateContentStatus(row.variables.templateId).then(response => {
-                            })
+                            updateContentStatusPublish({id:row.variables.templateId}).then(response => {})
                         }
                         this.reloadList();
                         this.$message.success(row.name + '已通过')
@@ -326,6 +325,7 @@
             rejectTask(row) {
                 rejectTask(row.actTaskId).then(response => {
                     if (response.status == 200) {
+                        updateContentStatusReject({id:row.variables.templateId}).then(response => {})
                         this.reloadList();
                         this.$message.success(row.name + '已拒绝')
                     } else {

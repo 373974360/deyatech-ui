@@ -64,10 +64,18 @@ export function reindex(params) {
     });
 }
 
-export function updateContentStatus(id){
+export function updateContentStatusPublish(id){
     const data = {id};
     return request({
-        url: '/manage/station/template/updateContentStatus',
+        url: '/manage/station/template/updateContentStatusPublish',
+        method: 'post',
+        data
+    })
+}
+export function updateContentStatusReject(id){
+    const data = {id};
+    return request({
+        url: '/manage/station/template/updateContentStatusReject',
         method: 'post',
         data
     })

@@ -785,6 +785,7 @@
                 }
             },
             handleNoteClick(data) {
+                console.dir(data);
                 // 获取内容列表
                 // 设置内容工作流id
                 this.workflowKey = data.workflowKey;
@@ -937,6 +938,9 @@
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
+                this.template.siteId = this.listQuery.siteId;
+                this.template.cmsCatalogId = this.listQuery.cmsCatalogId;
+                this.template.workflowKey = this.workflowKey;
                 this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;

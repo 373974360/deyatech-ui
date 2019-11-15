@@ -729,6 +729,8 @@
                 this.currentRow = undefined;
                 this.submitLoading = false;
                 this.dialogStationVisible = false;
+                this.roleStationGroupList = [];
+                this.$refs['stationTree'].setCheckedKeys([])
             },
             doSaveRoleStations() {
                 this.submitLoading = true;
