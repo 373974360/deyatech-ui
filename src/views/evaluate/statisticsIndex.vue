@@ -2,7 +2,7 @@
     <basic-container>
         <div class="deyatech-container pull-auto">
             <div style="width: 100%; margin-top: -504px;">
-                <iframe width="100%" height="1900" src="http://127.0.0.1:10080/pc/index.html" scrolling="no" frameborder="0"></iframe>
+                <iframe width="100%" height="1900" :src="host + '/pc/index.html'" scrolling="no" frameborder="0"></iframe>
             </div>
         </div>
     </basic-container>
@@ -34,6 +34,9 @@
                     update: this.permission.detail_update,
                     delete: this.permission.detail_delete
                 };
+            },
+            host() {
+                return window.location.host.includes('http') ? window.location.host : 'http://' + window.location.host;
             }
         },
         created(){

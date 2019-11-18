@@ -66,7 +66,7 @@
             </div>
 
             <h3 class="table-title">总体评价统计</h3>
-            <el-table :data="countByAreaList" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row
+            <el-table :data="countByAreaList" row-key="name" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row
                       :tree-props="{children: 'countByDeptList'}">
                 <el-table-column align="center" type="index" label="序号" width="50"/>
                 <el-table-column align="center" label="部门名称">
@@ -124,10 +124,14 @@
                         {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].rate : 0).toFixed(2)}}%
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="总评价数" prop="count"/>
+                <el-table-column align="center" label="总评价数" prop="count">
+                    <template slot-scope="scope">
+                        {{scope.row.count ? scope.row.count : 0}}
+                    </template>
+                </el-table-column>
                 <el-table-column align="center" label="评价率" prop="rate">
                     <template slot-scope="scope">
-                        {{Math.round(scope.row.rate * 100) / 100}}%
+                        {{Math.round((scope.row.rate ? scope.row.rate : 0) * 100) / 100}}%
                     </template>
                 </el-table-column>
             </el-table>
@@ -208,8 +212,16 @@
                 this.countByAreaList = [];
                 queryEvaluateCountByDept(this.listQuery).then(response => {
                     this.listDeptLevelLoading = false;
-                    for (let key in response.data) {
-                        this.countByAreaList.push(response.data[key]);
+                    this.countByAreaList = response.data;
+                    if (this.countByAreaList) {
+                        for (let countByArea of this.countByAreaList) {
+                            this.$set(countByArea, 'name', countByArea.areaName);
+                            if (countByArea.countByDeptList) {
+                                for (let countByDept of countByArea.countByDeptList) {
+                                    this.$set(countByDept, 'name', countByDept.acceptDept);
+                                }
+                            }
+                        }
                     }
                 })
             },
