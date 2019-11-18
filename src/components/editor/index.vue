@@ -42,7 +42,8 @@
         methods: {
             contentChange() {
                 this.$emit('editorContentChange', this.ue.getContent(), this.attach);
-                this.$emit('editorContentTxtChange', this.ue.getContentTxt(), this.attach);
+                this.$emit('editorContentTxtChange', this.ue.getContentTxt(), this.attach);// 获取编辑器中的纯文本内容,没有段落格式
+                this.$emit('editorPlainTxtChange', this.ue.getPlainTxt(), this.attach);// 得到编辑器的纯文本内容，但会保留段落格式
             },
             getUeContent() {
                 return this.ue.getContent()

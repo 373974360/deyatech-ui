@@ -115,133 +115,162 @@
             <!-- 表单 -->
             <el-dialog width="70%" :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeTemplateDialog">
 
-                <el-steps :active="stepsActive" finish-status="success" simple style="margin-top: -25px; margin-bottom: 20px">
+                <el-steps :active="stepsActive" finish-status="success" simple style="margin-top: -25px; margin-bottom: 20px" v-if="formList.length > 1">
                     <el-step v-for="step in formList" :key="step.pageNumber" :title="step.pageName"></el-step>
                 </el-steps>
 
-
-                <el-form v-show="formIndex == stepsActive" v-for="(form, formIndex) in formList" :ref="'dynamicForm' + formIndex" :model="form.pageModel"  class="deyatech-form" label-position="right" label-width="80px" style="margin-bottom: 100px">
+                <el-form v-show="formIndex == stepsActive" v-for="(form, formIndex) in formList" :ref="'dynamicForm' + formIndex" :model="form.pageModel"  class="deyatech-form" label-position="right" label-width="120px">
 
                     <template v-for="(row, rowIndex) in form.rows">
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="item.controlLength == 1 ? 12 : 24" v-for="(item, itemIndex) in row">
-                            <el-form-item :label="item.name" :prop="item.briefName" :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == 0) ? templateRules.resource_content : loadRules(item)">
-                                <!-- 输入框 -->
-                                <el-input v-if="item.controlType === 'inputElement'"
-                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength" :placeholder="'请输入' + item.name"></el-input>
+                        <el-row :span="24">
+                            <el-col :span="item.controlLength == 1 ? 12 : 24"
+                                    v-for="(item, itemIndex) in row">
+                                <el-form-item :label="item.name"
+                                              :prop="item.briefName"
+                                              :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == 0) ? templateRules.resource_content : loadRules(item)"
+                                              :style="(item.briefName === 'resource_summary' || item.briefName === 'keyword_') ? 'margin-bottom: 0' : ''">
 
-                                <!-- 文本域 -->
-                                <el-input v-else-if="item.controlType === 'textareaElement'" type="textarea"
-                                          v-model.trim="form.pageModel[item.briefName]" :maxlength="item.dataLength" :rows="3" :placeholder="'请输入' + item.name"></el-input>
+                                    <!-- 输入框 -->
+                                    <el-input v-if="item.controlType === 'inputElement'"
+                                              v-model.trim="form.pageModel[item.briefName]"
+                                              :maxlength="item.dataLength"
+                                              :placeholder="'请输入' + item.name"></el-input>
 
-                                <!-- 下拉框 -->
-                                <el-select v-else-if="item.controlType === 'selectElement'" filterable
-                                           v-model.trim="form.pageModel[item.briefName]" :placeholder="'请选择' + item.name" style="width: 100%;">
-                                    <el-option
-                                        v-for="s in form.pageList[item.briefName]"
-                                        :key="s.id"
-                                        :label="s.codeText"
-                                        :value="s.id">
-                                    </el-option>
-                                </el-select>
+                                    <!-- 文本域 -->
+                                    <el-input v-else-if="item.controlType === 'textareaElement'"
+                                              type="textarea"
+                                              v-model.trim="form.pageModel[item.briefName]"
+                                              :maxlength="item.dataLength" :rows="3"
+                                              :placeholder="'请输入' + item.name"></el-input>
 
-                                <!-- 单选框 -->
-                                <el-radio-group v-else-if="item.controlType === 'radioElement'" v-model.trim="form.pageModel[item.briefName]">
-                                    <el-radio
-                                        v-for="rd in form.pageList[item.briefName]"
-                                        :key="rd.id"
-                                        :label="rd.id">{{rd.codeText}}</el-radio>
-                                </el-radio-group>
+                                    <!-- 下拉框 -->
+                                    <el-select v-else-if="item.controlType === 'selectElement'" filterable
+                                               v-model.trim="form.pageModel[item.briefName]"
+                                               :placeholder="'请选择' + item.name" style="width: 100%;">
+                                        <el-option
+                                            v-for="s in form.pageList[item.briefName]"
+                                            :key="s.id"
+                                            :label="s.codeText"
+                                            :value="s.id">
+                                        </el-option>
+                                    </el-select>
 
-                                <!-- 复选框 -->
-                                <el-checkbox-group v-else-if="item.controlType === 'checkboxElement'" v-model.trim="form.pageModel['checkbox_' + item.briefName]">
-                                    <el-checkbox
-                                        v-for="ckb in form.pageList[item.briefName]"
-                                        :key="ckb.id"
-                                        :label="ckb.id">{{ckb.codeText}}</el-checkbox>
-                                </el-checkbox-group>
+                                    <!-- 单选框 -->
+                                    <el-radio-group v-else-if="item.controlType === 'radioElement'"
+                                                    v-model.trim="form.pageModel[item.briefName]">
+                                        <el-radio
+                                            v-for="rd in form.pageList[item.briefName]"
+                                            :key="rd.id"
+                                            :label="rd.id">{{rd.codeText}}</el-radio>
+                                    </el-radio-group>
 
-                                <!-- 开关 -->
-                                <el-switch v-else-if="item.controlType === 'switchElement'"
-                                           v-model.trim="form.pageModel[item.briefName]" :active-value="1" :inactive-value="0"></el-switch>
+                                    <!-- 复选框 -->
+                                    <el-checkbox-group v-else-if="item.controlType === 'checkboxElement'"
+                                                       v-model.trim="form.pageModel['checkbox_' + item.briefName]">
+                                        <el-checkbox
+                                            v-for="ckb in form.pageList[item.briefName]"
+                                            :key="ckb.id"
+                                            :label="ckb.id">{{ckb.codeText}}</el-checkbox>
+                                    </el-checkbox-group>
 
-                                <!-- 标签
-                                <el-tag v-else-if="item.controlType === 'tagElement'" v-for="tag in loadTag(form.pageModel[item.briefName])" :key="tag">{{tag}}</el-tag>
-                                -->
+                                    <!-- 开关 -->
+                                    <el-switch v-else-if="item.controlType === 'switchElement'"
+                                               v-model.trim="form.pageModel[item.briefName]"
+                                               :active-value="1"
+                                               :inactive-value="0"></el-switch>
 
-                                <!-- 附件 -->
-                                <el-upload v-else-if="item.controlType === 'fileElement'"
-                                           :action="uploadUrlCms" multiple
-                                           :data="{path: siteUploadPath, siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
-                                           :file-list="uploadFileReader"
-                                           :before-upload="beforeFileUpload"
-                                           :on-success="handleFileSuccess"
-                                           :on-preview="handleFilePreview"
-                                           :on-remove="handleFileRemove">
-                                    <el-button size="small" type="primary">点击上传</el-button>
-                                </el-upload>
+                                    <!-- 标签
+                                    <el-tag v-else-if="item.controlType === 'tagElement'"
+                                            v-for="tag in loadTag(form.pageModel[item.briefName])"
+                                            :key="tag">{{tag}}</el-tag>
+                                    -->
 
-                                <!-- 图片 -->
-                                <template v-else-if="item.controlType === 'imageElement'">
-                                    <el-upload class="avatar-uploader"
-                                               :class="{hide: form.pageModel[item.briefName]}"
-                                               :action="uploadUrlCms"
-                                               :data="{path: siteUploadPath, siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
-                                               :accept="$store.state.common.imageAccepts"
-                                               list-type="picture-card"
-                                               :on-success="handleImageSuccess"
-                                               :on-error="handleImageError"
-                                               :before-upload="beforeImageUpload"
-                                               :on-preview="handleImageCardPreview"
-                                               :on-remove="handleImageRemove">
-                                        <i class="el-icon-plus avatar-uploader-icon"></i>
+                                    <!-- 附件 -->
+                                    <el-upload v-else-if="item.controlType === 'fileElement'"
+                                               :action="uploadUrlCms" multiple
+                                               :data="{path: siteUploadPath, siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
+                                               :file-list="uploadFileReader"
+                                               :before-upload="beforeFileUpload"
+                                               :on-success="handleFileSuccess"
+                                               :on-preview="handleFilePreview"
+                                               :on-remove="handleFileRemove">
+                                        <el-button size="small" type="primary">点击上传</el-button>
                                     </el-upload>
-                                    <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
-                                        <img width="100%" :src="dialogImageUrl" alt="">
-                                    </el-dialog>
-                                </template>
 
-                                <!-- 日期 -->
-                                <el-date-picker v-else-if="item.controlType === 'dateElement'"
-                                                v-model.trim="form.pageModel[item.briefName]"
-                                                value-format="yyyy-MM-dd" type="date"
-                                                placeholder="请选择日期"></el-date-picker>
+                                    <!-- 图片 -->
+                                    <template v-else-if="item.controlType === 'imageElement'">
+                                        <el-upload class="avatar-uploader"
+                                                   :class="{hide: form.pageModel[item.briefName]}"
+                                                   :action="uploadUrlCms"
+                                                   :data="{path: siteUploadPath, siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
+                                                   :accept="$store.state.common.imageAccepts"
+                                                   list-type="picture-card"
+                                                   :on-success="handleImageSuccess"
+                                                   :on-error="handleImageError"
+                                                   :before-upload="beforeImageUpload"
+                                                   :on-preview="handleImageCardPreview"
+                                                   :on-remove="handleImageRemove">
+                                            <i class="el-icon-plus avatar-uploader-icon"></i>
+                                        </el-upload>
+                                        <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
+                                            <img width="100%" :src="dialogImageUrl" alt="">
+                                        </el-dialog>
+                                    </template>
 
-                                <!-- 时间 -->
-                                <el-time-picker v-else-if="item.controlType === 'timeElement'"
-                                                v-model.trim="form.pageModel[item.briefName]"
-                                                value-format="HH:mm:ss"
-                                                placeholder="请选择时间"></el-time-picker>
+                                    <!-- 日期 -->
+                                    <el-date-picker v-else-if="item.controlType === 'dateElement'"
+                                                    v-model.trim="form.pageModel[item.briefName]"
+                                                    value-format="yyyy-MM-dd" type="date"
+                                                    placeholder="请选择日期"></el-date-picker>
 
-                                <!-- 时间戳 -->
-                                <el-date-picker v-else-if="item.controlType === 'datetimeElement'"
-                                                v-model.trim="form.pageModel[item.briefName]"
-                                                value-format="yyyy-MM-dd HH:mm:ss" type="datetime"
-                                                placeholder="请选择时间"></el-date-picker>
+                                    <!-- 时间 -->
+                                    <el-time-picker v-else-if="item.controlType === 'timeElement'"
+                                                    v-model.trim="form.pageModel[item.briefName]"
+                                                    value-format="HH:mm:ss"
+                                                    placeholder="请选择时间"></el-time-picker>
 
-                                <!-- 富文本 -->
-                                <editor v-else-if="item.controlType === 'richTextElement' && item.briefName != 'resource_content'" :config="editorConfig"
-                                        :ref="'editor' + form.pageNumber" :id="'editor' + form.pageNumber"
-                                        :default-msg="form.pageModel[item.briefName]"></editor>
-                                <!-- 富文本 正文特殊处理 -->
-                                <editor v-else-if="item.controlType === 'richTextElement' && item.briefName == 'resource_content' " :config="editorConfig" :attach="formIndex + ',' + item.briefName"
-                                        :ref="'editor' + form.pageNumber" :id="'editor' + form.pageNumber"
-                                        :default-msg="form.pageModel[item.briefName]"
-                                        @editorContentTxtChange="contentTxtChange"
-                                        @editorContentChange="contentChange"></editor>
+                                    <!-- 时间戳 -->
+                                    <el-date-picker v-else-if="item.controlType === 'datetimeElement'"
+                                                    v-model.trim="form.pageModel[item.briefName]"
+                                                    value-format="yyyy-MM-dd HH:mm:ss" type="datetime"
+                                                    placeholder="请选择时间"></el-date-picker>
 
-                                <span v-else>{{item.controlType}}</span>
+                                    <!-- 富文本 -->
+                                    <editor v-else-if="item.controlType === 'richTextElement'"
+                                            :config="editorConfig"
+                                            :id="'editor' + item.briefName"
+                                            :ref="'editor' + item.briefName"
+                                            :attach="formIndex + ',' + item.briefName"
+                                            :default-msg="form.pageModel[item.briefName]"
+                                            @editorPlainTxtChange="editorPlainTxtChange"
+                                            @editorContentChange="contentChange"></editor>
 
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24" v-if="showUrl(row) && form.pageModel['flag_external']">
-                        <el-col :span="24">
-                            <el-form-item label="URL" prop="url" :rules="form.pageModel['flag_external'] ? templateRules.url : []">
-                                <el-input v-model.trim="form.pageModel['url']"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
+                                    <span v-else>{{item.controlType}}</span>
+
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row :span="24" v-if="isShowRow(row, 'flag_external') && form.pageModel['flag_external']">
+                            <el-col :span="24">
+                                <el-form-item label="URL" prop="url" :rules="form.pageModel['flag_external'] ? templateRules.url : []">
+                                    <el-input v-model.trim="form.pageModel['url']"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row :span="24" v-if="isShowRow(row, 'resource_summary')" style="margin: 0; padding: 0;">
+                            <el-col :span="24">
+                                <el-form-item style="margin-bottom: 0"><el-button @click="extractSummary" :size="btnSize">提取摘要</el-button></el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row :span="24" v-if="isShowRow(row, 'keyword_')" style="margin: 0; padding: 0;">
+                            <el-col :span="24">
+                                <el-form-item style="margin-bottom: 0"><el-button @click="extractKeyword" :size="btnSize">提取关键字</el-button></el-form-item>
+                            </el-col>
+                        </el-row>
+
                     </template>
 
                 </el-form>
@@ -1631,58 +1660,6 @@
                     }
                 });
             },
-            contentChange(content, attach) {
-                let value = attach.split(',');
-                let formIndex = parseInt(value[0]);
-                let briefName = value[1];
-                this.formList[formIndex].pageModel[briefName] = content;
-
-            },
-            contentTxtChange(content, attach) {
-                let value = attach.split(',');
-                let formIndex = parseInt(value[0]);
-                let briefName = value[1];
-                let keywordFormIndex = -1;
-                let summaryFormIndex = -1;
-                let titleFormIndex = -1
-                for (let i = 0; i < this.formList.length; i++) {
-                    let pageModel = this.formList[i].pageModel;
-                    if (pageModel.hasOwnProperty('title_')) {
-                        titleFormIndex = i;
-                    }
-                    if (pageModel.hasOwnProperty('keyword_')) {
-                        keywordFormIndex = i;
-                    }
-                    if (pageModel.hasOwnProperty('resource_summary')) {
-                        summaryFormIndex = i;
-                    }
-                    if (titleFormIndex != -1 && keywordFormIndex != -1 && summaryFormIndex != -1) {
-                        break;
-                    }
-                }
-                let title = this.formList[titleFormIndex].pageModel['title_'];
-                if (content) {
-                    if (title) {
-                        if (title.length > 40) {
-                            title = title.substr(0, 40);
-                        }
-                        // 文章标题，最大80字节
-                        keyword({title: title, content: content}).then(response=>{
-                            if (response && response.status == 200) {
-                                if (response.data.length > 0) {
-                                    this.formList[keywordFormIndex].pageModel['keyword_'] = response.data.join(',');
-                                }
-                            }
-                        });
-                    }
-                    summary({title: title, content: content, maxSummaryLen: 100}).then(response=>{
-                        if (response && response.status == 200) {
-                            this.formList[summaryFormIndex].pageModel['resource_summary'] = response.data;
-                        }
-                    });
-                }
-            },
-
             displaySetting() {
                 this.headList = [];
                 this.displaySettingVisible = true;
@@ -1722,17 +1699,111 @@
                     }
                 });
             },
-            showUrl(row) {
+            isShowRow(row, field) {
                 if (row && row.length > 0) {
                     for (let item of row) {
-                        if (item.briefName === 'flag_external') {
+                        if (item.briefName === field) {
                             return true;
                         }
                     }
                 }
                 return false;
-            }
+            },
+            contentChange(content, attach) {
+                let value = attach.split(',');
+                let formIndex = parseInt(value[0]);
+                let briefName = value[1];
+                this.formList[formIndex].pageModel[briefName] = content;
+            },
+            editorPlainTxtChange(content, attach) {
+                console.log(content);
+                let value = attach.split(',');
+                let formIndex = parseInt(value[0]);
+                let briefName = value[1];
+                this.formList[formIndex].pageModel[briefName + '_PlainTxt'] = content;
+            },
+            extractSummary() {
+                let titleFormIndex = -1
+                let summaryFormIndex = -1;
+                let contentIndex = -1;
+                for (let i = 0; i < this.formList.length; i++) {
+                    let pageModel = this.formList[i].pageModel;
+                    if (pageModel.hasOwnProperty('title_')) {
+                        titleFormIndex = i;
+                    }
+                    if (pageModel.hasOwnProperty('resource_summary')) {
+                        summaryFormIndex = i;
+                    }
+                    if (pageModel.hasOwnProperty('resource_content')) {
+                        contentIndex = i;
+                    }
+                    if (titleFormIndex != -1 && summaryFormIndex != -1 && contentIndex != -1) {
+                        break;
+                    }
+                }
+                if (titleFormIndex != -1 && summaryFormIndex != -1 && contentIndex != -1) {
+                    let title = this.formList[titleFormIndex].pageModel['title_'];
+                    let content = this.formList[contentIndex].pageModel['resource_content_PlainTxt'];
+                    if (content) {
+                        summary({title: title, content: content}).then(response=>{
+                            if (response && response.status == 200) {
+                                console.dir(response.data);
+                                this.formList[summaryFormIndex].pageModel['resource_summary'] = response.data;
+                            }
+                        });
+                    } else {
+                        this.$message.error("请输入正文");
+                    }
+                } else {
+                    this.$message.error("摘要提取错误");
+                }
+            },
+            extractKeyword() {
+                let contentIndex = -1;
+                let keywordFormIndex = -1;
+                let titleFormIndex = -1
+                for (let i = 0; i < this.formList.length; i++) {
+                    let pageModel = this.formList[i].pageModel;
+                    if (pageModel.hasOwnProperty('title_')) {
+                        titleFormIndex = i;
+                    }
+                    if (pageModel.hasOwnProperty('keyword_')) {
+                        keywordFormIndex = i;
+                    }
+                    if (pageModel.hasOwnProperty('resource_content')) {
+                        contentIndex = i;
+                    }
+                    if (titleFormIndex != -1 && keywordFormIndex != -1 && contentIndex != -1) {
+                        break;
+                    }
+                }
+                if (titleFormIndex != -1 && keywordFormIndex != -1 && contentIndex != -1) {
+                    let title = this.formList[titleFormIndex].pageModel['title_'];
+                    let content = this.formList[contentIndex].pageModel['resource_content_PlainTxt'];
+                    if (!title) {
+                        this.$message.error("请输入标题");
+                        return;
+                    }
+                    if (!content) {
+                        this.$message.error("请输入正文");
+                        return;
+                    }
+                    if (title && content) {
+                        // 标题最大80字节，正文最大65535字节
+                        keyword({title: title, content: content}).then(response=>{
+                            if (response && response.status == 200) {
+                                if (response.data.length > 0) {
+                                    console.dir(response.data);
+                                    this.formList[keywordFormIndex].pageModel['keyword_'] = response.data.join(',');
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    this.$message.error("关键字提取错误");
+                }
 
+            }
         }
     }
 </script>

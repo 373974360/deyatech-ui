@@ -1016,7 +1016,7 @@
                 let page = {};
                 page.pageName = 'N' + this.maxPageNumber;
                 page.pageNumber = this.maxPageNumber;
-                page.list = []
+                page.list = [];
                 this.sorted.push(page);
                 this.sortedRowsToMove.push([]);
             },
@@ -1148,7 +1148,8 @@
                         data.push(item);
                     }
                 }
-                saveOrUpdateByJson(JSON.stringify(data)).then(response=>{
+
+                saveOrUpdateByJson({collectionId: this.collectionId, json: JSON.stringify(data)}).then(response=>{
                     if (response && response.data) {
                         this.$message.success("保存成功");
                         this.closeSortDialog();

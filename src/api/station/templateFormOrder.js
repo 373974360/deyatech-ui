@@ -47,8 +47,8 @@ export function getSortDataByCollectionId(query) {
     });
 }
 
-export function saveOrUpdateByJson(json) {
-    const data = {json};
+export function saveOrUpdateByJson(obj) {
+    const data = obj;
     return request({
         url: '/manage/station/templateFormOrder/saveOrUpdateByJson',
         method: 'post',
