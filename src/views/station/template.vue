@@ -82,20 +82,31 @@
                               @selection-change="handleSelectionChange" style="border-top:none;">
                         <el-table-column type="selection" width="50" align="center"/>
 
-                        <el-table-column align="left"
+                        <el-table-column :align="getAlign(item.prop)"
+                                         :show-overflow-tooltip="true"
                                          v-for="item in headData"
                                          :label="item.label"
-                                         :prop="item.prop">
-                            <template slot-scope="scope">
-                                <span v-if="item.prop == 'title'" class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.title}}</span>
-                                <el-input-number v-else-if="item.prop == 'sortNo'" v-model.trim="scope.row.sortNo" controls-position="right" :precision="0" :step="1" :min="1" :max="9999" size="small" style="width:100px;" @change="sortNoChange(scope.row)"></el-input-number>
-                                <el-checkbox v-else-if="item.prop == 'flagTop'" v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
-                                <span v-else>{{scope.row[item.prop]}}</span>
-                            </template>
-                        </el-table-column>
+                                         :prop="item.prop"
+                                         :min-width="getHeadWidth(item.prop)">
+                        <template slot-scope="scope">
+                            <span v-if="item.prop == 'title'" class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.title}}</span>
+                            <el-input-number v-else-if="item.prop == 'sortNo'" v-model.trim="scope.row.sortNo" controls-position="right" :precision="0" :step="1" :min="1" :max="9999" size="small" style="width:100px;" @change="sortNoChange(scope.row)"></el-input-number>
+                            <el-checkbox v-else-if="item.prop == 'flagTop'" v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
+                            <span v-else-if="item.prop == 'flagExternal'">{{scope.row.flagExternal | enums('YesNoEnum')}}</span>
+                            <span v-else-if="item.prop == 'status'">{{scope.row.status | enums('ContentStatusEnum')}}</span>
+                            <div v-else-if="item.prop == 'thumbnail'">
+                                <el-image v-if="scope.row.thumbnail"
+                                          style="width: 80px; height: 60px"
+                                          :src="loadImageSrc(scope.row.thumbnail)"
+                                          :preview-src-list="[loadImageSrc(scope.row.thumbnail)]">
+                                </el-image>
+                            </div>
+                            <span v-else>{{scope.row[item.prop]}}</span>
+                        </template>
+                    </el-table-column>
 
 
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150" fixed="right">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" title="彻底删除" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -306,11 +317,11 @@
 
 
             <el-dialog title="显示设置" width="30%" :visible.sync="displaySettingVisible" :close-on-click-modal="closeOnClickModal" @close="closeDisplaySettingDialog">
-                <el-table :data="headList" border>
+                <el-table :data="headList" border height="500">
                     <el-table-column prop="label" label="名称"></el-table-column>
                     <el-table-column label="显示" align="center" width="50">
                         <template slot-scope="scope">
-                            <el-checkbox v-model="scope.row.show"/>
+                            <el-checkbox v-model="scope.row.show" :disabled="scope.row.disabled"/>
                         </template>
                     </el-table-column>
                     <el-table-column label="排序" align="center" width="100">
@@ -706,18 +717,17 @@
               if (item.checkModel) {
                   let rule = {};
                   rule.trigger = ['blur','change'];
-                  if (item.checkModel === 'positiveInteger') {
+                  if (item.checkModel === 'chinese') {
                       rule.validator = (rule, value, callback) => {
                           if (!value) {
                               callback()
                           }
-                          //除了数字
-                          if (/[^\d]/g.test(value)) {
-                              callback(new Error('请输入正整数'));
-                          } else {
+                          if (/^[\u4e00-\u9fa5]+$/.test(value)) {
                               callback();
+                          } else {
+                              callback(new Error('请输入中文'));
                           }
-                      };
+                      }
                   } else if (item.checkModel === 'mail') {
                       rule.validator = (rule, value, callback) => {
                           if (!value) {
@@ -740,6 +750,18 @@
                               callback(new Error('请输入整数'));
                           }
                       };
+                  } else if (item.checkModel === 'positiveInteger') {
+                      rule.validator = (rule, value, callback) => {
+                          if (!value) {
+                              callback()
+                          }
+                          //除了数字
+                          if (/[^\d]/g.test(value)) {
+                              callback(new Error('请输入正整数'));
+                          } else {
+                              callback();
+                          }
+                      };
                   } else if (item.checkModel === 'english') {
                       rule.validator = (rule, value, callback) => {
                           if (!value) {
@@ -760,17 +782,6 @@
                               callback();
                           } else {
                               callback(new Error('请输入浮点数'));
-                          }
-                      }
-                  } else if (item.checkModel === 'chinese') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          if (/^[\u4e00-\u9fa5]+$/.test(value)) {
-                              callback();
-                          } else {
-                              callback(new Error('请输入中文'));
                           }
                       }
                   } else if (item.checkModel === 'url') {
@@ -814,7 +825,6 @@
                 }
             },
             handleNoteClick(data) {
-                console.dir(data);
                 // 获取内容列表
                 // 设置内容工作流id
                 this.workflowKey = data.workflowKey;
@@ -913,7 +923,6 @@
             loadForm(contentModelId, templateId) {
                 getBaseAndMetaField({contentModelId: contentModelId}).then(response=>{
                     let data = response.data;
-                    console.dir(data);
                     this.baseFields = data.baseFields;
                     this.metaFields = data.metaFields;
                     this.template.metaDataCollectionId = data.metaDataCollectionId;
@@ -921,14 +930,13 @@
 
                 getDynamicForm({contentModelId: contentModelId, templateId: templateId}).then(response=>{
                     this.formList = response.data;
-                    console.dir(this.formList);
                     if (this.formList.length > 0) {
                         this.maxPage = this.formList.length;
                         for (let i = 0; i < this.formList.length; i++) {
                             let pageModel = this.formList[i].pageModel;
                             if (pageModel.hasOwnProperty("flag_external")) {
                                 this.flagExternalIndex = i;
-                                break;
+                                break
                             }
                         }
                     } else {
@@ -1110,8 +1118,8 @@
                     _this.template.metadataCollectionVo = undefined;
                     _this.template.content = undefined;
 
-                    console.log("=== template ===");
                     console.dir(_this.template);
+
                     _this.submitLoading = true;
                     createOrUpdateTemplate(_this.template).then(() => {
                         _this.resetTemplateDialogAndList();
@@ -1716,7 +1724,6 @@
                 this.formList[formIndex].pageModel[briefName] = content;
             },
             editorPlainTxtChange(content, attach) {
-                console.log(content);
                 let value = attach.split(',');
                 let formIndex = parseInt(value[0]);
                 let briefName = value[1];
@@ -1747,7 +1754,6 @@
                     if (content) {
                         summary({title: title, content: content}).then(response=>{
                             if (response && response.status == 200) {
-                                console.dir(response.data);
                                 this.formList[summaryFormIndex].pageModel['resource_summary'] = response.data;
                             }
                         });
@@ -1793,7 +1799,6 @@
                         keyword({title: title, content: content}).then(response=>{
                             if (response && response.status == 200) {
                                 if (response.data.length > 0) {
-                                    console.dir(response.data);
                                     this.formList[keywordFormIndex].pageModel['keyword_'] = response.data.join(',');
                                 }
                             }
@@ -1803,6 +1808,32 @@
                     this.$message.error("关键字提取错误");
                 }
 
+            },
+            getAlign(prop) {
+                if (prop === 'title' || prop === '')
+                    return 'left';
+                else if (prop === '')
+                    return 'right'
+                else
+                    return 'center'
+            },
+            getHeadWidth(prop) {
+                if (prop === 'title')
+                    return '440';
+                else if (prop === 'flagTop')
+                    return '50';
+                else if (prop === 'flagExternal')
+                    return '50';
+                else if (prop === 'resourcePublicationDate')
+                    return '150';
+                else if (prop === 'status')
+                    return '80';
+                else if (prop === 'source')
+                    return '160';
+                else if (prop === 'sortNo')
+                    return '130';
+                else
+                    return '';
             }
         }
     }

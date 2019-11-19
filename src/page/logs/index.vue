@@ -118,7 +118,6 @@
                 })
                     .then(() => {
                         this.$store.commit("CLEAR_LOGS");
-                        console.log(this);
                         this.$parent.$parent.box = false;
                         this.$message({
                             type: "success",

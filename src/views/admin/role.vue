@@ -429,7 +429,6 @@
                                 this.$set(r, "contentCount", count[2]);
                             }
                             this.roleList = _roleList;
-                            console.dir(this.roleList);
                             this.total = _total;
                         });
                     }

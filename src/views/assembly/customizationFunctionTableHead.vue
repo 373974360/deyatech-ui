@@ -3,11 +3,11 @@
         <div class="deyatech-container pull-auto">
             <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
                 <el-tab-pane v-for="t in customizationHeads" :label="t.name" :name="t.type">
-                    <el-table :data="t.headList" border style="width: 500px">
+                    <el-table :data="t.headList" border style="width: 500px" height="500px">
                         <el-table-column prop="label" label="名称"></el-table-column>
                         <el-table-column label="显示" align="center" width="50">
                             <template slot-scope="scope">
-                                <el-checkbox v-model="scope.row.show"/>
+                                <el-checkbox v-model="scope.row.show" :disabled="scope.row.disabled"/>
                             </template>
                         </el-table-column>
                         <el-table-column label="排序" align="center" width="100">

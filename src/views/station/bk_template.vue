@@ -109,7 +109,7 @@
                                 <el-checkbox v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="录入人" prop="inputUserName" width="80"/>-->
+                        <el-table-column align="center" label="创建者" prop="createUserName" width="80"/>-->
 
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                             <template slot-scope="scope">

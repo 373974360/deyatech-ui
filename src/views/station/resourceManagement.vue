@@ -41,7 +41,7 @@
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="权重" prop="sortNo" width="60"/>
-                <el-table-column align="center" label="录入人" prop="inputUserName" :show-overflow-tooltip="true" width="90"/>
+                <el-table-column align="center" label="创建者" prop="createUserName" :show-overflow-tooltip="true" width="90"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         {{scope.row.status | enums('ContentStatusEnum')}}
@@ -68,69 +68,93 @@
                     <el-col style="color: #409EFF; font-weight: bold;">基础数据</el-col>
                 </el-row>
 
-                <el-form class="deyatech-form " label-position="right" label-width="80px">
+                <el-form class="deyatech-form " label-position="right" label-width="86px">
                     <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
+                        <el-col :span="8" style="margin: 0;">
                             <el-form-item label="站点:" style="margin: 0;">{{template.siteName}}</el-form-item>
                         </el-col>
-                        <el-col :span="12" style="margin: 0;">
+                        <el-col :span="8" style="margin: 0;">
                             <el-form-item label="栏目:" style="margin: 0;">{{template.cmsCatalogName}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="模型:" style="margin: 0;">{{template.contentModelName}}</el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="模型:" style="margin: 0;">{{template.contentModelName}}</el-form-item>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="标题:" style="margin: 0;">{{template.title}}</el-form-item>
                         </el-col>
-                        <el-col :span="12" style="margin: 0;">
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="来源:" style="margin: 0;">{{template.source}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="作者:" style="margin: 0;">{{template.author}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="置顶:" style="margin: 0;">{{template.flagTop | enums('YesNoEnum')}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="权重:" style="margin: 0;">{{template.sortNo}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
                             <el-form-item label="状态:" style="margin: 0;">{{template.status | enums('ContentStatusEnum')}}</el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="标题:" style="margin: 0;">{{template.title}}</el-form-item>
-                        </el-col>
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="作者姓名:" style="margin: 0;">{{template.author}}</el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="来源:" style="margin: 0;">{{template.source}}</el-form-item>
-                        </el-col>
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="录入人:" style="margin: 0;">{{template.inputUserName}}</el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
+                        <el-col :span="8" style="margin: 0;">
                             <el-form-item label="资源分类:" style="margin: 0;">{{template.resourceCategoryName}}</el-form-item>
                         </el-col>
-                        <el-col :span="12" style="margin: 0;">
+                        <el-col :span="8" style="margin: 0;">
                             <el-form-item label="发布时间:" style="margin: 0;">{{template.resourcePublicationDate}}</el-form-item>
                         </el-col>
-                    </el-row>
-                    <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
+                        <el-col :span="8" style="margin: 0;">
                             <el-form-item label="索引码:" style="margin: 0;">{{template.indexCode}}</el-form-item>
                         </el-col>
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="缩略图:" style="margin: 0;">{{template.thumbnail}}</el-form-item>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="创建者姓名:" style="margin: 0;">{{template.createUserName}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="创建者部门:" style="margin: 0;">{{template.createUserDepartmentName}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="创建时间:" style="margin: 0;">{{template.createTime}}</el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="权重:" style="margin: 0;">{{template.sortNo}}</el-form-item>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="更新者姓名:" style="margin: 0;">{{template.updateUserName}}</el-form-item>
                         </el-col>
-                        <el-col :span="12" style="margin: 0;">
-                            <el-form-item label="置顶:" style="margin: 0;">{{template.flagTop | enums('YesNoEnum')}}</el-form-item>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="更新者部门:" style="margin: 0;">{{template.updateUserDepartmentName}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="更新时间:" style="margin: 0;">{{template.updateTime}}</el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :span="24">
-                        <el-col :span="12" style="margin: 0;">
+                        <el-col :span="8" style="margin: 0;">
+                            <el-form-item label="模板路径:" style="margin: 0;">{{template.templatePath}}</el-form-item>
+                        </el-col>
+                        <el-col :span="8" style="margin: 0;">
                             <el-form-item label="外链:" style="margin: 0;">{{template.flagExternal | enums('YesNoEnum')}}</el-form-item>
                         </el-col>
-                        <el-col :span="12" v-if="template.flagExternal">
+                        <el-col :span="8" v-if="template.flagExternal">
                             <el-form-item label="URL:" style="margin: 0;">{{template.url}}</el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :span="24">
+                        <el-col :span="12" style="margin: 0;">
+                            <el-form-item label="缩略图:" style="margin: 0;">
+                                <el-image v-if="template.thumbnail"
+                                          style="width: 60px; height: 60px"
+                                          :src="loadImageSrc(template.thumbnail)"
+                                          :preview-src-list="[loadImageSrc(template.thumbnail)]">
+                                </el-image>
+                            </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :span="24">
@@ -177,17 +201,21 @@
     import {deepClone} from '@/util/util';
     import {getResourceManagementList} from '@/api/station/resourceManagement';
     import {delTemplates} from '@/api/station/template';
-
+    import {
+        getSiteUploadPath
+    } from "../../api/station/material";
     export default {
         name: 'resourceManagement',
         data() {
             return {
+                siteUploadPath: '',
                 resourceManagementList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
+                    siteId: this.$store.state.common.siteId,
                     name: undefined
                 },
                 selectedRows: [],
@@ -219,6 +247,12 @@
                     siteName: undefined,
                     cmsCatalogName: undefined,
                     resourceCategoryName: undefined,
+                    createUserName: undefined,
+                    createUserDepartmentName: undefined,
+                    createTime: undefined,
+                    updateUserName: undefined,
+                    updateUserDepartmentName: undefined,
+                    updateTime: undefined,
                     contentList: [],
                     // 无用
                     flagSearch: undefined,
@@ -244,9 +278,27 @@
             }
         },
         created(){
-            this.reloadList();
+            this.$store.state.common.selectSiteDisplay = true;
+            if(this.$store.state.common.siteId != undefined){
+                this.listQuery.siteId = this.$store.state.common.siteId;
+                this.loadSiteUploadPath();
+                this.reloadList();
+            }
         },
         methods: {
+            // 加载图片地址
+            loadImageSrc(url) {
+                return "/manage/station/material/showPicImg?filePath=" + url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+            },
+            loadSiteUploadPath() {
+                getSiteUploadPath(this.listQuery).then(response => {
+                    if (response.status == 200) {
+                        this.siteUploadPath = response.data
+                    } else {
+                        this.$message.warning('获取站点上传文件存放地址失败')
+                    }
+                })
+            },
             resetSearch(){
                 this.listQuery.name = undefined;
             },

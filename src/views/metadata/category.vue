@@ -272,7 +272,6 @@
                 this.getMetadataCategoryCascader(this.metadataCategory.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
-                console.dir(this.metadataCategory);
             },
             btnDelete(row){
                 let ids = [];
