@@ -18,7 +18,7 @@ export function queryEvaluateCountByDept(detailVo) {
     return request({
         url: '/manage/evaluate/count/qryEvaluateCountByDept',
         method: 'get',
-        data: detailVo
+        params: detailVo
     })
 }
 
@@ -26,7 +26,7 @@ export function qryCountByDeptChannel(detailVo) {
     return request({
         url: '/manage/evaluate/count/qryCountByDeptChannel',
         method: 'get',
-        data: detailVo
+        params: detailVo
     })
 }
 
@@ -34,7 +34,7 @@ export function qryCountByDeptDimensionCode(detailVo) {
     return request({
         url: '/manage/evaluate/count/qryCountByDeptDimensionCode',
         method: 'get',
-        data: detailVo
+        params: detailVo
     })
 }
 
@@ -42,7 +42,7 @@ export function qryCountByDeptItemLevel(detailVo) {
     return request({
         url: '/manage/evaluate/count/qryCountByDeptItemLevel',
         method: 'get',
-        data: detailVo
+        params: detailVo
     })
 }
 
@@ -50,7 +50,7 @@ export function qryCountDeptReform(detailVo) {
     return request({
         url: '/manage/evaluate/count/qryCountDeptReform',
         method: 'get',
-        data: detailVo
+        params: detailVo
     })
 }
 
