@@ -47,7 +47,7 @@
 </script>
 
 <style scoped>
-    body, body div {
-        background-color: #fafafa;
+    .basic-container, .basic-container /deep/ .el-card {
+        background-color: #ddd;
     }
 </style>
