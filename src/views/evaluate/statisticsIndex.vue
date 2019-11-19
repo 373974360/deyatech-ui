@@ -48,6 +48,6 @@
 
 <style scoped>
     .basic-container, .basic-container /deep/ .el-card {
-        background-color: #ddd;
+        background-color: #fafafa;
     }
 </style>
