@@ -149,7 +149,11 @@
                         </el-rate>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="评价人姓名" prop="userName"/>
+                <el-table-column align="center" label="评价人姓名" prop="userName">
+                    <template slot-scope="scope">
+                        {{scope.row.anonymityFlag == 1 ? '匿名用户' : scope.row.userName}}
+                    </template>
+                </el-table-column>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
 <!--                <el-table-column align="center" label="审核状态" prop="status" width="90px">
                     <template slot-scope="scope">
@@ -228,29 +232,30 @@
                         <td class="column">审核状态</td>
                         <td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <td class="column">是否匿名</td>
                         <td>{{detail.anonymityFlag | enums('EvaluationAnonymityEnum')}}</td>
                         <td class="column">是否公开</td>
                         <td>{{detail.publicFlag | enums('EvaluationPublicEnum')}}</td>
-                    </tr>
+                    </tr>-->
                     <tr>
                         <td class="column">评价渠道</td>
                         <td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
                         <td class="column">整体满意度</td>
                         <td>
-                            <el-rate
+                            <!--<el-rate
                                 disabled
                                 v-model="detail.levelCode | levelParseInt"
                                 :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
                                 show-text
                                 :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
-                            </el-rate>
+                            </el-rate>-->
+                            {{detail.levelCode | enums('EvaluationLevelEnum')}}
                         </td>
                     </tr>
                     <tr>
                         <td class="column">评价人姓名</td>
-                        <td>{{detail.userName}}</td>
+                        <td>{{detail.anonymityFlag == 1 ? '匿名用户' : detail.userName}}</td>
                         <td class="column">评价时间</td>
                         <td>{{detail.submitTime}}</td>
                     </tr>

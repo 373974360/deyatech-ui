@@ -103,13 +103,14 @@
                 <el-table-column align="center" label="受理部门" prop="proDepartment"/>
                 <el-table-column align="center" label="整体满意度" prop="levelCode">
                     <template slot-scope="scope">
-                        <el-rate
+                        <!--<el-rate
                             disabled
                             v-model="scope.row.levelCode | levelParseInt"
                             :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
                             show-text
                             :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
-                        </el-rate>
+                        </el-rate>-->
+                        {{scope.row.levelCode | enums('EvaluationLevelEnum')}}
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
@@ -138,14 +139,15 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="整体满意度">
-                                <el-rate
+                                <!--<el-rate
                                     style="margin-top: 10px"
                                     disabled
                                     v-model="detail.levelCode | levelParseInt"
                                     :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
                                     show-text
                                     :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
-                                </el-rate>
+                                </el-rate>-->
+                                <el-input disabled :value="detail.levelCode | enums('EvaluationLevelEnum')"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -169,7 +171,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="评价人姓名">
-                                <el-input disabled v-model="detail.userName"></el-input>
+                                <el-input disabled v-model="detail.anonymityFlag == 1 ? '匿名用户' : detail.userName"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
