@@ -20,6 +20,7 @@
                 </el-tab-pane>
             </el-tabs>
             <el-button type="primary" @click="btnSave" style="margin-top: 10px">保存</el-button>
+            <el-button type="warning" @click="btnDelete" style="margin-top: 10px">重置</el-button>
 
         </div>
     </basic-container>
@@ -31,7 +32,8 @@
     import {deepClone} from '@/util/util';
     import {
         getAllCustomizationFunction,
-        saveOrUpdateBatch
+        saveOrUpdateBatch,
+        removeAllData
     } from '@/api/assembly/customizationFunction';
     import {getStore} from '@/util/store';
 
@@ -92,13 +94,18 @@
                     cf.data = JSON.stringify(h.headList);
                     data.push(cf);
                 }
-                console.dir(data);
                 saveOrUpdateBatch(JSON.stringify(data)).then(response=>{
                     if (response.status == 200 && response.data) {
                         this.$message.success("保存成功");
                     } else {
                         this.$message.success("保存失败");
                     }
+                });
+            },
+            btnDelete() {
+                removeAllData().then(()=>{
+                    this.loadHeadData();
+                    this.$message.success("重置成功");
                 });
             }
         }

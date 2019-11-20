@@ -87,13 +87,17 @@
                                          v-for="item in headData"
                                          :label="item.label"
                                          :prop="item.prop"
-                                         :min-width="getHeadWidth(item.prop)">
+                                         :min-width="item.prop === 'title' ? 440: ''"
+                                         :width="getHeadWidth(item.prop)">
                         <template slot-scope="scope">
                             <span v-if="item.prop == 'title'" class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.title}}</span>
                             <el-input-number v-else-if="item.prop == 'sortNo'" v-model.trim="scope.row.sortNo" controls-position="right" :precision="0" :step="1" :min="1" :max="9999" size="small" style="width:100px;" @change="sortNoChange(scope.row)"></el-input-number>
                             <el-checkbox v-else-if="item.prop == 'flagTop'" v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
                             <span v-else-if="item.prop == 'flagExternal'">{{scope.row.flagExternal | enums('YesNoEnum')}}</span>
                             <span v-else-if="item.prop == 'status'">{{scope.row.status | enums('ContentStatusEnum')}}</span>
+                            <span v-else-if="item.prop == 'resourcePublicationDate'">{{scope.row.resourcePublicationDate ? scope.row.resourcePublicationDate.substr(0, 16) : ''}}</span>
+                            <span v-else-if="item.prop == 'createTime'">{{scope.row.createTime ? scope.row.createTime.substr(0, 16) : ''}}</span>
+                            <span v-else-if="item.prop == 'updateTime'">{{scope.row.updateTime ? scope.row.updateTime.substr(0, 16) : ''}}</span>
                             <div v-else-if="item.prop == 'thumbnail'">
                                 <el-image v-if="scope.row.thumbnail"
                                           style="width: 80px; height: 60px"
@@ -333,6 +337,7 @@
                 </el-table>
                 <span slot="footer" class="dialog-footer">
                     <el-button type="primary" @click="btnFunctionSave" :size="btnSize">保存</el-button>
+                    <el-button type="warning" @click="btnFunctionDelete" :size="btnSize">重置</el-button>
                     <el-button :size="btnSize" @click="closeDisplaySettingDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
@@ -377,7 +382,7 @@
     import {validateURL,validateEmail, isEnglish} from '@/util/validate';
     import {findMetadataCollectionAllData} from '@/api/metadata/collection';
     import {getDictionaryList} from '@/api/admin/dictionary';
-    import {getTableHeadContentData, getCustomizationFunctionContent, saveOrUpdate} from '@/api/assembly/customizationFunction'
+    import {getTableHeadContentData, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
 
     export default {
         name: 'template',
@@ -936,7 +941,11 @@
                             let pageModel = this.formList[i].pageModel;
                             if (pageModel.hasOwnProperty("flag_external")) {
                                 this.flagExternalIndex = i;
-                                break
+                            }
+                            if (!templateId && pageModel.hasOwnProperty("sort_no")) {
+                                // 默认权重
+                                pageModel['sort_no'] = 18;
+                                console.dir(pageModel);
                             }
                         }
                     } else {
@@ -1241,99 +1250,9 @@
                 this.formImageTemp =[];
                 this.formFileTemp = [];
                 this.resetTemplate();
-                // this.$refs['templateDialogForm'].resetFields();
-                // // 清空内容
-                // if (this.$refs['resourceContent']) {
-                //     this.$refs['resourceContent'].setUeContent('');
-                // }
-                // // 清除富文本缓存，否则二次以后加载失败
-                // $('#ueditor_textarea_editorValue').remove()
-                //
+                this.maxPage = 0;
+                this.flagExternalIndex = 0;
             },
-            // getContentForm() {
-            //     for (let model of this.modelList) {
-            //         if (this.template.contentModelId == model.id) {
-            //             // 设置内容模型名称
-            //             this.template.contentModelName = model.name;
-            //             // 设置元数据id
-            //             this.template.metaDataCollectionId = model.metaDataCollectionId;
-            //
-            //             // 新增，元数据集为空，获取元数据集
-            //             if (this.dialogTitle == 'create') {
-            //                 // 获取数字字段，获取元数据集 TODO
-            //                 const query = {id: model.metaDataCollectionId}
-            //                 findMetadataCollectionAllData(query).then(response => {
-            //                     if (response.status == 200 && response.data.length > 0) {
-            //                         this.metadataCollection = response.data[0];
-            //                         this.setMetadataAndDictionary();
-            //                     } else {
-            //                         this.$message.error('获取内容表单结构失败')
-            //                     }
-            //                 })
-            //             } else {
-            //                 this.setMetadataAndDictionary();
-            //             }
-            //         }
-            //     }
-            // },
-            // 设置元数据值及字典选项
-            // setMetadataAndDictionary() {
-            //     for (let item of this.metadataCollection.metadataList) {
-            //         // 初始化，必须!
-            //         if (item.controlType === 'checkboxElement') {
-            //             this.$set(this.contentItemArray, item.fieldName, [])
-            //         }
-            //
-            //         // 元数据值
-            //         let val = this.template.content[item.fieldName];
-            //         if (val) {
-            //             // 输入框元素, 设置值, 否则校验会出错
-            //             if (item.controlType === 'inputElement') {
-            //                 this.template.content[item.fieldName] = val.toString();
-            //             }
-            //             // 多选框元素
-            //             if (item.controlType === 'checkboxElement') {
-            //                 this.$set(this.contentItemArray, item.fieldName, val.split(','))
-            //             }
-            //             // 富文本元素
-            //             if (item.controlType === 'richTextElement') {
-            //                 this.$set(this.editorDefaultMsg, item.id, val)
-            //             }
-            //             // 上传文件
-            //             if (item.controlType === 'fileElement') {
-            //                 // 根据上传文件记录id查找文件信息
-            //                 let fileIds = this.template.content[item.fieldName].split(',')
-            //                 this.$set(this.uploadFileList, item.fieldName, [])
-            //                 for (let id of fileIds) {
-            //                     getMaterial(id).then(response => {
-            //                         if (response.status == 200) {
-            //                             let uploadFile = {
-            //                                 id: response.data.id,
-            //                                 name: response.data.name,
-            //                                 url: response.data.url
-            //                             }
-            //                             // 读写分离 ，否则上传列表会出错
-            //                             this.uploadFileReader.push(uploadFile);
-            //                             this.uploadFileList[item.fieldName].push(uploadFile)
-            //                         }
-            //                     })
-            //                 }
-            //             }
-            //         }
-            //
-            //         // 数据源是数据字典
-            //         if (item.dataSource === 'dataItem') {
-            //             // 根据字典id查询字典项
-            //             getDictionaryList({indexId: item.dictionaryId}).then(response => {
-            //                 if (response.status == 200) {
-            //                     this.$set(this.contentItemOptions, item.id, eval(response.data))
-            //                 } else {
-            //                     this.$message.error('获取字典项失败')
-            //                 }
-            //             })
-            //         }
-            //     }
-            // },
             // 选择菜单触发
             handleCommand(command) {
                 // 生成勾选的内容页
@@ -1707,6 +1626,13 @@
                     }
                 });
             },
+            btnFunctionDelete() {
+                removeContentData().then(()=>{
+                    this.loadHeadData();
+                    this.closeDisplaySettingDialog();
+                    this.$message.success("重置成功");
+                });
+            },
             isShowRow(row, field) {
                 if (row && row.length > 0) {
                     for (let item of row) {
@@ -1819,21 +1745,31 @@
             },
             getHeadWidth(prop) {
                 if (prop === 'title')
-                    return '440';
-                else if (prop === 'flagTop')
-                    return '50';
-                else if (prop === 'flagExternal')
-                    return '50';
-                else if (prop === 'resourcePublicationDate')
-                    return '150';
-                else if (prop === 'status')
-                    return '80';
+                    return '';
                 else if (prop === 'source')
                     return '160';
+                else if (prop === 'resourcePublicationDate' || prop === 'createTime' || prop === 'updateTime')
+                    return '140';
+                else if (prop === 'status')
+                    return '80';
                 else if (prop === 'sortNo')
                     return '130';
-                else
-                    return '';
+                else if (prop === 'flagTop' || prop === 'flagExternal')
+                    return '50';
+                else if (prop === 'thumbnail')
+                    return '120'
+                else if (prop === 'author' || prop === 'createUserName' || prop === 'updateUserName')
+                    return '100';
+                else if (prop === 'resourceCategory')
+                    return '160';
+                else if (prop === 'templatePath')
+                    return '200';
+                else if (prop === 'indexCode')
+                    return '230';
+                else if (prop === 'contentModelName')
+                    return '160';
+                else if (prop === 'createUserDepartmentName' || prop === 'updateUserDepartmentName')
+                    return '160';
             }
         }
     }

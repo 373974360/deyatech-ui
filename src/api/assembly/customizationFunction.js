@@ -53,3 +53,24 @@ export function saveOrUpdate(customizationFunction) {
         data
     });
 }
+export function removeAllData() {
+    return request({
+        url: '/manage/assembly/customizationFunction/removeAllData',
+        method: 'get',
+        params: {}
+    });
+}
+export function removeContentData() {
+    return request({
+        url: '/manage/assembly/customizationFunction/removeContentData',
+        method: 'get',
+        params: {}
+    });
+}
+export function removeCatalogData() {
+    return request({
+        url: '/manage/assembly/customizationFunction/removeCatalogData',
+        method: 'get',
+        params: {}
+    });
+}

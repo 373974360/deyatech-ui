@@ -29,7 +29,11 @@
                 <el-table-column label="标题" prop="title" :show-overflow-tooltip="true"/>
                 <el-table-column align="center" label="作者姓名" prop="author" :show-overflow-tooltip="true" width="90"/>
                 <el-table-column align="center" label="资源分类" prop="resourceCategoryName" :show-overflow-tooltip="true" width="160"/>
-                <el-table-column align="center" label="发布时间" prop="resourcePublicationDate" :show-overflow-tooltip="true" width="160"/>
+                <el-table-column align="center" label="发布时间" prop="resourcePublicationDate" :show-overflow-tooltip="true" width="160">
+                    <template slot-scope="scope">
+                        {{scope.row.resourcePublicationDate ? scope.row.resourcePublicationDate.substr(0, 16) : ''}}
+                    </template>
+                </el-table-column>
                 <el-table-column align="center" label="外链" prop="flagExternal" width="60">
                     <template slot-scope="scope">
                         {{scope.row.flagExternal | enums('YesNoEnum')}}
@@ -107,7 +111,7 @@
                             <el-form-item label="资源分类:" style="margin: 0;">{{template.resourceCategoryName}}</el-form-item>
                         </el-col>
                         <el-col :span="8" style="margin: 0;">
-                            <el-form-item label="发布时间:" style="margin: 0;">{{template.resourcePublicationDate}}</el-form-item>
+                            <el-form-item label="发布时间:" style="margin: 0;">{{template.resourcePublicationDate ? template.resourcePublicationDate.substr(0,16) : ''}}</el-form-item>
                         </el-col>
                         <el-col :span="8" style="margin: 0;">
                             <el-form-item label="索引码:" style="margin: 0;">{{template.indexCode}}</el-form-item>
@@ -121,7 +125,7 @@
                             <el-form-item label="创建者部门:" style="margin: 0;">{{template.createUserDepartmentName}}</el-form-item>
                         </el-col>
                         <el-col :span="8" style="margin: 0;">
-                            <el-form-item label="创建时间:" style="margin: 0;">{{template.createTime}}</el-form-item>
+                            <el-form-item label="创建时间:" style="margin: 0;">{{template.createTime ? template.createTime.substr(0,16) : ''}}</el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :span="24">
@@ -132,7 +136,7 @@
                             <el-form-item label="更新者部门:" style="margin: 0;">{{template.updateUserDepartmentName}}</el-form-item>
                         </el-col>
                         <el-col :span="8" style="margin: 0;">
-                            <el-form-item label="更新时间:" style="margin: 0;">{{template.updateTime}}</el-form-item>
+                            <el-form-item label="更新时间:" style="margin: 0;">{{template.updateTime ? template.updateTime.substr(0, 16) : ''}}</el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :span="24">

@@ -404,6 +404,7 @@
             </el-table>
             <span slot="footer" class="dialog-footer">
                     <el-button type="primary" @click="btnFunctionSave" :size="btnSize">保存</el-button>
+                    <el-button type="warning" @click="btnFunctionDelete" :size="btnSize">重置</el-button>
                     <el-button :size="btnSize" @click="closeDisplaySettingDialog">{{$t('table.cancel')}}</el-button>
                 </span>
         </el-dialog>
@@ -437,7 +438,7 @@
     import {validateURL,isEnglish} from '@/util/validate';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {getUserList} from '@/api/admin/user';
-    import {getTableHeadCatalogData, getCustomizationFunctionCatalog, saveOrUpdate} from '@/api/assembly/customizationFunction'
+    import {getTableHeadCatalogData, getCustomizationFunctionCatalog, saveOrUpdate, removeCatalogData} from '@/api/assembly/customizationFunction'
 
     export default {
         name: 'catalog',
@@ -1470,6 +1471,13 @@
                     } else {
                         this.$message.success("保存失败");
                     }
+                });
+            },
+            btnFunctionDelete() {
+                removeCatalogData().then(()=>{
+                    this.loadHeadData();
+                    this.closeDisplaySettingDialog();
+                    this.$message.success("重置成功");
                 });
             }
         }
