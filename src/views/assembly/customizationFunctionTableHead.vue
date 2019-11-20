@@ -19,8 +19,8 @@
                     </el-table>
                 </el-tab-pane>
             </el-tabs>
-            <el-button type="primary" @click="btnSave" style="margin-top: 10px">保存</el-button>
-            <el-button type="warning" @click="btnDelete" style="margin-top: 10px">重置</el-button>
+            <el-button v-if="btnEnable.save" type="primary" @click="btnSave" style="margin-top: 10px">保存</el-button>
+            <el-button v-if="btnEnable.delete" type="warning" @click="btnDelete" style="margin-top: 10px">重置</el-button>
 
         </div>
     </basic-container>
@@ -56,7 +56,8 @@
             ]),
             btnEnable() {
                 return {
-                    tableHead: this.permission.CustomizationFunction_TableHead
+                    save: this.permission.table_head_save,
+                    delete: this.permission.table_head_delete
                 };
             }
         },
