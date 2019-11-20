@@ -66,76 +66,6 @@
             </div>
 
             <h3 class="table-title">总体评价统计</h3>
-            <!--<el-table :data="countByAreaList" row-key="name" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row
-                      :tree-props="{children: 'countByDeptList'}">
-                <el-table-column align="center" type="index" label="序号" width="50"/>
-                <el-table-column align="center" label="部门名称">
-                    <template slot-scope="scope">
-                        {{scope.row.areaName || scope.row.acceptDept}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="非常满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['5'] ? scope.row.countByLevelMap['5'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['4'] ? scope.row.countByLevelMap['4'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="基本满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['3'] ? scope.row.countByLevelMap['3'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="不满意">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['2'] ? scope.row.countByLevelMap['2'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="非常不满意" width="92">
-                    <template slot-scope="scope">
-                        {{scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="占比">
-                    <template slot-scope="scope">
-                        {{(scope.row.countByLevelMap['1'] ? scope.row.countByLevelMap['1'].rate : 0).toFixed(2)}}%
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="总评价数" prop="count">
-                    <template slot-scope="scope">
-                        {{scope.row.count ? scope.row.count : 0}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="评价率" prop="rate">
-                    <template slot-scope="scope">
-                        {{Math.round((scope.row.rate ? scope.row.rate : 0) * 100) / 100}}%
-                    </template>
-                </el-table-column>
-            </el-table>-->
-
             <el-table :data="countByAreaList" row-key="name" v-loading.body="listDeptLevelLoading" stripe border highlight-current-row
                       :tree-props="{children: 'countByDeptList'}">
                 <el-table-tree-column fixed :expand-all="false" child-key="countByDeptList" levelKey="level" :indent-size="20"
@@ -282,16 +212,6 @@
                 queryEvaluateCountByDept(this.listQuery).then(response => {
                     this.listDeptLevelLoading = false;
                     this.countByAreaList = response.data;
-                    /*if (this.countByAreaList) {
-                        for (let countByArea of this.countByAreaList) {
-                            this.$set(countByArea, 'name', countByArea.areaName);
-                            if (countByArea.countByDeptList) {
-                                for (let countByDept of countByArea.countByDeptList) {
-                                    this.$set(countByDept, 'name', countByDept.acceptDept);
-                                }
-                            }
-                        }
-                    }*/
                 })
             },
             loadEnum(name) {
