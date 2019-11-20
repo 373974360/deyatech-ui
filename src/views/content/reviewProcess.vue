@@ -14,9 +14,9 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+                    <!--<el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>-->
                     <!--<el-button type="success" icon="el-icon-check" :size="btnSize" @click="btnCompleteTask" :disabled="selectedRows.length < 1">批量通过</el-button>
                     <el-button type="warning" icon="el-icon-back" :size="btnSize" @click="btnRollBackTask" :disabled="selectedRows.length < 1">批量回退</el-button>
                     <el-button type="danger" icon="el-icon-close" :size="btnSize" @click="btnRejectTask" :disabled="selectedRows.length < 1">批量拒绝</el-button>-->
@@ -57,11 +57,11 @@
                 </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
-                        <el-button title="通过" type="success" icon="el-icon-check" :size="btnSize" circle
+                        <el-button v-if="btnEnable.complete" title="通过" type="success" icon="el-icon-check" :size="btnSize" circle
                                    @click.stop.safe="completeTask(scope.row)"></el-button>
-                        <el-button title="回退" type="warning" icon="el-icon-back" :size="btnSize" circle
+                        <el-button v-if="btnEnable.rollBack" title="回退" type="warning" icon="el-icon-back" :size="btnSize" circle
                                    @click.stop.safe="rollBackTask(scope.row)"></el-button>
-                        <el-button title="拒绝" type="danger" icon="el-icon-close" :size="btnSize" circle
+                        <el-button v-if="btnEnable.reject" title="拒绝" type="danger" icon="el-icon-close" :size="btnSize" circle
                                    @click.stop.safe="rejectTask(scope.row)"></el-button>
                     </template>
                 </el-table-column>
@@ -127,7 +127,8 @@
         delReviewProcesss
     } from '@/api/content/reviewProcess';
     import {
-        updateContentStatusPublish,updateContentStatusReject
+        updateContentStatusPublish,
+        updateContentStatusReject
     } from '@/api/station/template';
 
     export default {
@@ -176,9 +177,9 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.reviewProcess_create,
-                    update: this.permission.reviewProcess_update,
-                    delete: this.permission.reviewProcess_delete
+                    complete: this.permission.process_task_complete,
+                    rollBack: this.permission.process_task_rollBack,
+                    reject: this.permission.process_task_reject
                 };
             }
         },
