@@ -270,12 +270,13 @@
                             <el-form-item label="水印图片" prop="watermarkUrl" ref="watermarkUrlField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 1" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 2 ? [] : settingRules.watermarkUrl">
                                 <el-upload name="file"
                                            class="avatar-uploader"
-                                           :action="this.$store.state.common.uploadUrl"
+                                           :action="imageUploadUrl"
+                                           :data="imageUploadData"
                                            accept="image/jpg,image/jpeg,image/png"
                                            :show-file-list="false"
                                            :on-success="watermarkUrlUploadSuccess"
                                            :on-error="uploadError">
-                                    <img v-if="setting.watermarkUrl" :src="imageUrl + setting.watermarkUrl" class="avatar">
+                                    <img v-if="setting.watermarkUrl" :src="imageShowUrl + setting.watermarkUrl" class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -314,12 +315,13 @@
                             <el-form-item label="ICO图片" prop="icoUrl">
                                 <el-upload name="file"
                                            class="avatar-uploader"
-                                           :action="this.$store.state.common.uploadUrl"
+                                           :action="imageUploadUrl"
+                                           :data="imageUploadData"
                                            accept="image/jpg,image/jpeg,image/png"
                                            :show-file-list="false"
                                            :on-success="icoUrlUploadSuccess"
                                            :on-error="uploadError">
-                                    <img v-if="setting.icoUrl" :src="imageUrl + setting.icoUrl" class="avatar">
+                                    <img v-if="setting.icoUrl" :src="imageShowUrl + setting.icoUrl" class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -452,45 +454,6 @@
                 </span>
             </el-dialog>
 
-
-            <!--关联用户-->
-            <el-dialog :title="titleMap['associateUser']" :visible.sync="dialogStationGroupUserVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
-                <div v-loading="dialogFormLoading">
-                    <div class="dialog-search">
-                        <el-cascader filterable v-model.trim="userDepartmentTreePosition"
-                                     :options="departmentCascader" @change="handleDepartmentChange"
-                                     class="dialog-search-item dialog-keywords"
-                                     :show-all-levels="false" expand-trigger="hover" clearable change-on-select
-                                     :size="searchSize" placeholder="根据部门筛选"></el-cascader>
-                        <el-input v-model.trim="userListQuery.name" class="dialog-search-item dialog-keywords"
-                                  clearable :size="searchSize" placeholder="根据姓名或帐户查询" maxlength="50"></el-input>
-                        <el-button type="primary" :size="searchSize" icon="el-icon-search" @click="reloadUserList">{{$t('table.search')}}</el-button>
-                    </div>
-                    <div class="dialog-search">
-                        <el-checkbox v-model.trim="showRelatedFlag" @change="handleShowRelated">只显示已关联用户</el-checkbox>
-                    </div>
-                    <div>
-                        <el-table ref="stationGroupUserTable" :data="userList" border @select="selectRowUser"
-                                  @select-all="selectAllUser" @selection-change="handleSelectionChangeStationGroupUser">
-                            <el-table-column type="selection" width="50" align="center"></el-table-column>
-                            <el-table-column prop="departmentName" label="部门"></el-table-column>
-                            <el-table-column prop="name" label="姓名"></el-table-column>
-                            <el-table-column prop="account" label="登录帐户"></el-table-column>
-                        </el-table>
-                        <el-pagination class="deyatech-pagination pull-right" background
-                                       :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                                       :page-size="userListQuery.size" :layout="this.$store.state.common.pageLayout" :total="userTotal"
-                                       @size-change="handleSizeChangeStationGroupUser" @current-change="handleCurrentChangeStationGroupUser">
-                        </el-pagination>
-                    </div>
-                </div>
-                <div slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doSaveStationGroupUser"
-                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeStationGroupUserDialog">{{$t('table.cancel')}}</el-button>
-                </div>
-            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -764,7 +727,7 @@
                 },
                 dialogSettingVisible: false,
                 uploadFileTypeArray: [],
-                imageUrl: '/manage/common/showPicImg?filePath=',
+
                 titleSetting: undefined,
 
                 // 域名管理
@@ -807,7 +770,10 @@
                 },
                 domainSelectedRows: [],
                 domainFormDialogVisible: false,
-                domainFormDialogTitle: undefined
+                domainFormDialogTitle: undefined,
+                imageShowUrl: undefined,
+                imageUploadUrl: undefined,
+                imageUploadData: undefined
             }
         },
         computed: {
@@ -870,16 +836,15 @@
             },
             btnEnable() {
                 return {
-                    create: this.permission.stationGroup_create,
-                    update: this.permission.stationGroup_update,
-                    delete: this.permission.stationGroup_delete,
-                    ctrl: this.permission.stationGroup_ctrl,
-                    setting: this.permission.stationGroup_setting,
-                    user: this.permission.stationGroup_user,
-                    domain: this.permission.stationGroup_domain,
-                    domainCreate: this.permission.domain_create,
-                    domainUpdate: this.permission.domain_update,
-                    domainDelete: this.permission.domain_delete
+                    create: this.permission.station_group_create,
+                    update: this.permission.station_group_update,
+                    delete: this.permission.station_group_delete,
+                    ctrl: this.permission.station_group_ctrl,
+                    setting: this.permission.station_group_setting,
+                    domain: this.permission.station_group_domain,
+                    domainCreate: this.permission.station_group_domain_create,
+                    domainUpdate: this.permission.station_group_domain_update,
+                    domainDelete: this.permission.station_group_domain_delete
                 };
             }
         },
@@ -1140,9 +1105,15 @@
             },
             btnGlobalSetting(){
                 this.titleSetting = "站点全局设置";
+                this.imageUploadUrl = this.$store.state.common.uploadUrl;
+                this.imageUploadData = undefined;
+                this.imageShowUrl = this.$store.state.common.showPicImgUrl;
                 this.getSetting(undefined);
             },
             btnSetting(row) {
+                this.imageUploadUrl = this.$store.state.common.materialUploadUrl;
+                this.imageUploadData = {siteId: row.id};
+                this.imageShowUrl = this.$store.state.common.materialShowImageByUrl + "?siteId=" + row.id + "&url=";
                 let stationGroupId = undefined;
                 if (row.id) {
                     stationGroupId = row.id;
@@ -1285,6 +1256,7 @@
             },
             watermarkUrlUploadSuccess(response) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    console.dir(response.data);
                     this.setting.watermarkUrl = response.data.url;
                     this.$message.success('上传成功！');
                 } else {

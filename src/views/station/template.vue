@@ -101,8 +101,8 @@
                             <div v-else-if="item.prop == 'thumbnail'">
                                 <el-image v-if="scope.row.thumbnail"
                                           style="width: 80px; height: 60px"
-                                          :src="loadImageSrc(scope.row.thumbnail)"
-                                          :preview-src-list="[loadImageSrc(scope.row.thumbnail)]">
+                                          :src="loadImageSrc(scope.row.siteId, scope.row.thumbnail)"
+                                          :preview-src-list="[loadImageSrc(scope.row.siteId, scope.row.thumbnail)]">
                                 </el-image>
                             </div>
                             <span v-else>{{scope.row[item.prop]}}</span>
@@ -202,8 +202,8 @@
 
                                     <!-- 附件 -->
                                     <el-upload v-else-if="item.controlType === 'fileElement'"
-                                               :action="uploadUrlCms" multiple
-                                               :data="{path: siteUploadPath, siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
+                                               :action="$store.state.common.materialUploadUrl" multiple
+                                               :data="{siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
                                                :file-list="uploadFileReader"
                                                :before-upload="beforeFileUpload"
                                                :on-success="handleFileSuccess"
@@ -216,8 +216,8 @@
                                     <template v-else-if="item.controlType === 'imageElement'">
                                         <el-upload class="avatar-uploader"
                                                    :class="{hide: form.pageModel[item.briefName]}"
-                                                   :action="uploadUrlCms"
-                                                   :data="{path: siteUploadPath, siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
+                                                   :action="$store.state.common.materialUploadUrl"
+                                                   :data="{siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
                                                    :accept="$store.state.common.imageAccepts"
                                                    list-type="picture-card"
                                                    :on-success="handleImageSuccess"
@@ -584,8 +584,6 @@
                 dynamicTags: [],
                 inputVisible: false,
                 inputValue: '',
-                uploadUrlCms: '/manage/station/material/uploadFile',
-                siteUploadPath: '',
                 thumbnailList: [],
                 dialogImageUrl: undefined,
                 dialogVisiblePicture: undefined,
@@ -651,11 +649,7 @@
                     update: this.permission.template_update,
                     delete: this.permission.template_delete
                 };
-            },
-            // 特殊字符转义
-            /*showPicImgUrl() {
-                return this.$store.state.common.showPicImgUrl + this.template.thumbnailUrl + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
-            }*/
+            }
         },
         updated() {
 
@@ -694,8 +688,8 @@
         },
         methods: {//ycx
             // 加载图片地址
-            loadImageSrc(url) {
-                return "/manage/station/material/showPicImg?filePath=" + url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+            loadImageSrc(siteId, url) {
+                return this.$store.state.common.materialShowImageByUrl + "?siteId=" + siteId + "&url=" + url;
             },
             // 加载标签数组
             loadTag(value) {

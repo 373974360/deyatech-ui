@@ -138,12 +138,13 @@
                             <el-form-item label="访谈封面" prop="cover">
                                 <el-input v-model.trim="model.cover" v-show="false"></el-input>
                                 <el-upload class="cover-uploader" name="file"
-                                           :action="$store.state.common.uploadUrl"
+                                           :action="$store.state.common.materialUploadUrl"
+                                           :data="{siteId: $store.state.common.siteId}"
                                            :accept="$store.state.common.imageAccepts"
                                            :show-file-list="false"
                                            :on-success="handleCoverSuccess"
                                            :on-error="handlerCoverError">
-                                    <img v-if="model.cover" :src="showPicImgUrl + model.cover" class="cover-add">
+                                    <img v-if="model.cover" :src="imageShowUrl + model.cover" class="cover-add">
                                     <i v-else class="el-icon-plus cover-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -208,7 +209,7 @@
                             <el-col :span="24">
                                 <div class="live-content-image" id="idLiveImage">
                                     <div class="live-row" v-for="i in liveImageArray" :key="i.key">
-                                        <img class="live-image" :src="showPicImgUrl + i.url"/>
+                                        <img class="live-image" :src="imageShowUrl + i.url"/>
                                         <div style="text-align: center">
                                             <span class="live-image-name" v-text="i.name"></span>
                                             <el-button :size="btnSize" @click="openModifyLiveImage(i.key)">编辑</el-button>
@@ -225,12 +226,13 @@
                                     <el-form-item label="" prop="url" style="line-height: 14px">
                                         <el-input v-model.trim="liveImage.url" v-show="false"></el-input>
                                         <el-upload class="image-uploader" name="file"
-                                                   :action="$store.state.common.uploadUrl"
+                                                   :action="$store.state.common.materialUploadUrl"
+                                                   :data="{siteId: $store.state.common.siteId}"
                                                    :accept="$store.state.common.imageAccepts"
                                                    :show-file-list="false"
                                                    :on-success="handleImagesSuccess"
                                                    :on-error="handlerImagesError">
-                                            <img v-if="liveImage.url" :src="showPicImgUrl + liveImage.url" class="image-add">
+                                            <img v-if="liveImage.url" :src="imageShowUrl + liveImage.url" class="image-add">
                                             <i v-else class="el-icon-plus image-uploader-icon"></i>
                                         </el-upload>
                                     </el-form-item>
@@ -298,12 +300,13 @@
                             <el-form-item label="" prop="url" style="line-height: 14px">
                                 <el-input v-model.trim="liveModifyImage.url" v-show="false"></el-input>
                                 <el-upload class="image-uploader" name="file"
-                                           :action="$store.state.common.uploadUrl"
+                                           :action="$store.state.common.materialUploadUrl"
+                                           :data="{siteId: $store.state.common.siteId}"
                                            :accept="$store.state.common.imageAccepts"
                                            :show-file-list="false"
                                            :on-success="handleModifyImagesSuccess"
                                            :on-error="handlerImagesError">
-                                    <img v-if="liveModifyImage.url" :src="showPicImgUrl + liveModifyImage.url" class="image-add">
+                                    <img v-if="liveModifyImage.url" :src="imageShowUrl + liveModifyImage.url" class="image-add">
                                     <i v-else class="el-icon-plus image-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>
@@ -384,7 +387,7 @@
                     </el-table-column>
                     <!--<el-table-column align="center" label="照片" prop="photo" width="120">
                         <template slot-scope="scope">
-                            <img :src="showPicImgUrl + scope.row.photo" style="width: 100px; height: 100px;">
+                            <img :src="imageShowUrl + scope.row.photo" style="width: 100px; height: 100px;">
                         </template>
                     </el-table-column>-->
                     <el-table-column align="center" label="职务" prop="job"/>
@@ -474,12 +477,13 @@
                                     <el-form-item label="照片" prop="photo">
                                         <el-input v-model.trim="guest.photo" v-show="false"></el-input>
                                         <el-upload class="photo-uploader" name="file"
-                                                   :action="$store.state.common.uploadUrl"
+                                                   :action="$store.state.common.materialUploadUrl"
+                                                   :data="{siteId: $store.state.common.siteId}"
                                                    :accept="$store.state.common.imageAccepts"
                                                    :show-file-list="false"
                                                    :on-success="handlePhotoSuccess"
                                                    :on-error="handlerPhotoError">
-                                            <img v-if="guest.photo" :src="showPicImgUrl + guest.photo" class="photo-add">
+                                            <img v-if="guest.photo" :src="imageShowUrl + guest.photo" class="photo-add">
                                             <i v-else class="el-icon-plus photo-uploader-icon"></i>
                                         </el-upload>
                                     </el-form-item>
@@ -552,9 +556,9 @@
                     serverUrl: this.$store.state.common.uploadUrl,
                     initialFrameWidth: '100%',
                     initialFrameHeight: 200,
-                    zIndex: 1999
+                    zIndex: 3999
                 },
-                showPicImgUrl: this.$store.state.common.showPicImgUrl,
+                imageShowUrl: undefined,
                 modelList: undefined,
                 total: undefined,
                 listLoading: false,
@@ -732,6 +736,7 @@
         created(){
             this.$store.state.common.selectSiteDisplay = true;
             if (this.$store.state.common.siteId) {
+                this.imageShowUrl = this.$store.state.common.materialShowImageByUrl + "?siteId=" + this.$store.state.common.siteId + "&url=";
                 this.loadCategory();
             }
         },
@@ -1341,7 +1346,7 @@
                 this.$refs['guestDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if (this.guest.departmentId.length < 3) {
+                        if (this.guest.departmentId && this.guest.departmentId.length < 3) {
                             this.guest.departmentId = undefined;
                         } else {
                             this.guest.departmentName = undefined;

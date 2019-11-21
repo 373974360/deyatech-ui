@@ -34,10 +34,10 @@
         scrawlActionName: "uploadscrawl",
         videoActionName: "uploadvideo",
         fileActionName: "uploadfile",
-        imageUrlPrefix: "/manage/common/showPicImg?filePath=",
+        imageUrlPrefix: "/manage/common/showPicImg?editor=editor&filePath=",
         scrawlUrlPrefix: "",
         videoUrlPrefix: "",
-        fileUrlPrefix: "/manage/common/download?filePath=",
+        fileUrlPrefix: "/manage/common/download?editor=editor&filePath=",
         catcherLocalDomain: "",
         imageMaxSize: 2 * 1024 * 1024, // 上传图片大小
         fileMaxSize: 10 * 1024 * 1024, // 上传附件大小

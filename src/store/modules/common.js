@@ -25,6 +25,9 @@ const common = {
         searchSize: 'small',
         btnSize: 'small',
         closeOnClickModal: false,
+        materialUploadUrl: '/manage/station/material/uploadFile', // 站点文件上传
+        materialShowImageByPath: '/manage/station/material/showImageByFilePath', // 站点图片显示,参数: filePath
+        materialShowImageByUrl: '/manage/station/material/showImageBySiteIdAndUrl', // 站点图片显示,参数: siteId, url
         uploadUrl: '/manage/common/upload',
         downloadUrl: '/manage/common/download?filePath=',
         showPicImgUrl: '/manage/common/showPicImg?filePath=',
