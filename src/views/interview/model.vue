@@ -556,7 +556,18 @@
                     serverUrl: this.$store.state.common.uploadUrl,
                     initialFrameWidth: '100%',
                     initialFrameHeight: 200,
-                    zIndex: 3999
+                    zIndex: 3999,
+                    toolbars: [
+                        [
+                            'fullscreen', 'source', '|', 'undo', 'redo', '|',
+                            'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'searchreplace','|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
+                            'fontfamily', 'fontsize', '|',
+                            'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|',
+                            'link', 'unlink', '|',
+                            'insertimage', 'attachment','insertvideo','inserttable', '|',
+                            'indent','removeformat', 'formatmatch', 'autotypeset','drafts'
+                        ]
+                    ]
                 },
                 imageShowUrl: undefined,
                 modelList: undefined,

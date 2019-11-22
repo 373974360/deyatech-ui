@@ -101,8 +101,8 @@
                             <div v-else-if="item.prop == 'thumbnail'">
                                 <el-image v-if="scope.row.thumbnail"
                                           style="width: 80px; height: 60px"
-                                          :src="loadImageSrc(scope.row.siteId, scope.row.thumbnail)"
-                                          :preview-src-list="[loadImageSrc(scope.row.siteId, scope.row.thumbnail)]">
+                                          :src="loadShowImageUrl(scope.row.thumbnail)"
+                                          :preview-src-list="[loadShowImageUrl(scope.row.thumbnail)]">
                                 </el-image>
                             </div>
                             <span v-else>{{scope.row[item.prop]}}</span>
@@ -200,11 +200,11 @@
                                             :key="tag">{{tag}}</el-tag>
                                     -->
 
-                                    <!-- 附件 -->
+                                    <!-- 附件 multiple -->
                                     <el-upload v-else-if="item.controlType === 'fileElement'"
-                                               :action="$store.state.common.materialUploadUrl" multiple
+                                               :action="$store.state.common.materialUploadUrl"
                                                :data="{siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
-                                               :file-list="uploadFileReader"
+                                               :file-list="form.pageModel['file_' + item.briefName]"
                                                :before-upload="beforeFileUpload"
                                                :on-success="handleFileSuccess"
                                                :on-preview="handleFilePreview"
@@ -212,14 +212,15 @@
                                         <el-button size="small" type="primary">点击上传</el-button>
                                     </el-upload>
 
-                                    <!-- 图片 -->
+                                    <!-- 图片  -->
                                     <template v-else-if="item.controlType === 'imageElement'">
                                         <el-upload class="avatar-uploader"
-                                                   :class="{hide: form.pageModel[item.briefName]}"
+                                                   :class="{hide: form.pageModel['image_' + item.briefName].length > 0}"
                                                    :action="$store.state.common.materialUploadUrl"
                                                    :data="{siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
                                                    :accept="$store.state.common.imageAccepts"
                                                    list-type="picture-card"
+                                                   :file-list="form.pageModel['image_' + item.briefName]"
                                                    :on-success="handleImageSuccess"
                                                    :on-error="handleImageError"
                                                    :before-upload="beforeImageUpload"
@@ -227,7 +228,7 @@
                                                    :on-remove="handleImageRemove">
                                             <i class="el-icon-plus avatar-uploader-icon"></i>
                                         </el-upload>
-                                        <el-dialog :visible.sync="dialogVisiblePicture" :append-to-body="true">
+                                        <el-dialog width="70%" :visible.sync="dialogVisiblePicture" :append-to-body="true">
                                             <img width="100%" :src="dialogImageUrl" alt="">
                                         </el-dialog>
                                     </template>
@@ -488,7 +489,6 @@
                 editorDefaultMsg: {},
                 contentItemOptions: {},
                 uploadFileList: {},
-                uploadFileReader: [],
                 templateRules: {
                     url: [
                         {required: true, message: this.$t("table.pleaseInput") + 'URL'},
@@ -579,7 +579,18 @@
                 editorConfig: {
                     initialFrameWidth: '100%',
                     initialFrameHeight: 350,
-                    zIndex: 3000
+                    zIndex: 3999,
+                    toolbars: [
+                        [
+                            'fullscreen', 'source', '|', 'undo', 'redo', '|',
+                            'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'searchreplace','|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
+                            'fontfamily', 'fontsize', '|',
+                            'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|',
+                            'link', 'unlink', '|',
+                            'insertimage', 'attachment','insertvideo','inserttable', '|',
+                            'indent','removeformat', 'formatmatch', 'autotypeset','drafts'
+                        ]
+                    ]
                 },
                 dynamicTags: [],
                 inputVisible: false,
@@ -593,7 +604,6 @@
 
                 // 动态表单
                 formList: [],
-                formImageTemp:[],
                 formFileTemp:[],
                 maxPage: 0,
                 flagExternalIndex: 0,
@@ -688,8 +698,13 @@
         },
         methods: {//ycx
             // 加载图片地址
-            loadImageSrc(siteId, url) {
-                return this.$store.state.common.materialShowImageByUrl + "?siteId=" + siteId + "&url=" + url;
+            loadShowImageUrl(url) {
+                if(!url) return undefined;
+                return this.$store.state.common.materialShowImageByUrl + "?siteId=" + this.$store.state.common.siteId + "&url=" + url;
+            },
+            loadDownloadUrl(url) {
+                if(!url) return undefined;
+                return this.$store.state.common.materialDownloadUrl + "?siteId=" + this.$store.state.common.siteId + "&url=" + url;
             },
             // 加载标签数组
             loadTag(value) {
@@ -939,7 +954,6 @@
                             if (!templateId && pageModel.hasOwnProperty("sort_no")) {
                                 // 默认权重
                                 pageModel['sort_no'] = 18;
-                                console.dir(pageModel);
                             }
                         }
                     } else {
@@ -965,7 +979,6 @@
                     this.stepsActive = 0;
                     this.maxPage = 0;
                     this.formList = [];
-                    this.formImageTemp = [];
                     this.formFileTemp = [];
                     this.loadForm(command, undefined);
                 }
@@ -1083,17 +1096,19 @@
                                 checkboxFields.push(f.substring(f.indexOf('_') + 1));
                             }
                         }
-                        // 基础字段
+                        // 保存基础字段
                         for (let base of _this.baseFields) {
+                            // 下划线转驼峰
                             let dest = base.replace(/_(\w)/g,function ($0,$1){return $1.toUpperCase();});
                             if (dest.endsWith('_')) {
                                 dest = dest.substr(0, dest.length -1);
                             }
+                            // 把有值的字段全部存起来，number类型的都是需要保存的，因为0在if中是false，所以对number类型必须单独处理
                             if (pageModel[base] || typeof(pageModel[base]) === 'number') {
                                 _this.template[dest] = pageModel[base];
                             }
                         }
-                        // 元数据字段
+                        // 保存元数据字段
                         for (let meta of _this.metaFields) {
                             let isCheckbox = false;
                             for(let ckb of checkboxFields) {
@@ -1102,12 +1117,15 @@
                                     break;
                                 }
                             }
+                            // 有复选框字段
                             if (isCheckbox) {
+                                // 复选框绑定的数组拼接成逗号分隔的字符
                                 let arr = pageModel['checkbox_' + meta];
                                 if (arr instanceof Array && arr.length > 0) {
                                     content[meta] = arr.join(',');
                                 }
                             } else {
+                                // 把有值的字段全部存起来，number类型的都是需要保存的，因为0在if中是false，所以对number类型必须单独处理
                                 if (pageModel[meta] || typeof(pageModel[meta]) === 'number') {
                                     content[meta] = pageModel[meta];
                                 }
@@ -1120,8 +1138,6 @@
                     _this.template.contentMapStr = JSON.stringify(content);
                     _this.template.metadataCollectionVo = undefined;
                     _this.template.content = undefined;
-
-                    console.dir(_this.template);
 
                     _this.submitLoading = true;
                     createOrUpdateTemplate(_this.template).then(() => {
@@ -1236,12 +1252,10 @@
                 this.contentItemOptions = {};
                 this.contentItemArray = {};
                 this.uploadFileList = {};
-                this.uploadFileReader = [];
                 this.dynamicTags = [];
                 this.thumbnailList = [];
                 this.stepsActive = 0;
                 this.formList = [];
-                this.formImageTemp =[];
                 this.formFileTemp = [];
                 this.resetTemplate();
                 this.maxPage = 0;
@@ -1416,42 +1430,90 @@
                     }
                 })
             },*/
-            isFlagExternal (value) {
-                // if (!value) {
-                if (this.template.url) {
-                    this.template.url = undefined;
+
+            handleSuccess(data, prefix) {
+                let attach = data.attach.split(',');
+                // 页索引
+                let formIndex = attach[0];
+                // 页字段
+                let briefName = attach[1];
+                // 上传返回的材料对象
+                let customData = data.customData;
+                if ('image_' === prefix) {
+                    // 显示地址
+                    customData.url = this.loadShowImageUrl(customData.url);
                 }
-                // }
+                else if ('file_' === prefix) {
+                    // 下载地址
+                    customData.url = this.loadDownloadUrl(customData.url);
+                } else {
+                    return
+                }
+                // 绑定数组
+                let dataList = this.formList[formIndex].pageModel[prefix + briefName];
+                // 追加新对象
+                dataList.push(customData);
+                let tmp = [];
+                for (let item of dataList) {
+                    tmp.push(item.value);
+                }
+                // 表单值
+                this.formList[formIndex].pageModel[briefName] = tmp.length > 0 ? tmp.join(',') : undefined;
             },
+            handleRemove(file, prefix) {
+                let value = undefined;
+                // 新上传的
+                if (file.hasOwnProperty("response")) {
+                    value = file.response.data.customData.value;
+                }
+                // 后端返回的
+                else if (file.hasOwnProperty("value")) {
+                    value = file.value;
+                }
+                if (!value) {
+                    return;
+                }
+                for(let i = 0; i < this.formList.length; i++) {
+                    let pageModel = this.formList[i].pageModel;
+                    let fields = Object.getOwnPropertyNames(pageModel);
+                    for (let field of fields) {
+                        if (field.startsWith(prefix)) {
+                            let index = -1;
+                            // 绑定数组中寻找要删除的url
+                            let list = pageModel[field];
+                            for(let j = 0; j < list.length; j++) {
+                                if (value === list[j].value) {
+                                    index = j;
+                                    break;
+                                }
+                            }
+                            if (index > -1) {
+                                list.splice(index, 1);
+                                index = -1;
+                                let tmp = [];
+                                for (let item of list) {
+                                    tmp.push(item.value);
+                                }
+                                pageModel[field.substring(5)] = tmp.length > 0 ? tmp.join(',') : undefined;
+                            }
+                        }
+                    }
+                }
+            },
+
+
 
             // 图片处理
             handleImageSuccess(response, file, fileList) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
-                    let data = response.data;
-                    let attach = data.attach.split(',');
-                    let formIndex = attach[0];
-                    let briefName = attach[1];
-                    this.formList[formIndex].pageModel[briefName] = data.url;
-
-                    // 丢弃原来的
-                    let tmp = [];
-                    for (let i = 0; i < this.formImageTemp.length; i++) {
-                        let item = this.formImageTemp[i];
-                        if (item.briefName != briefName) {
-                            tmp.push(item)
-                        }
-                    }
-                    this.formImageTemp = tmp;
-                    // 存入新的
-                    this.formImageTemp.push({
-                        uid: file.uid,
-                        briefName: briefName,
-                        formIndex: formIndex
-                    });
+                    this.handleSuccess(response.data, 'image_');
                     this.$message.success('上传成功！');
                 } else {
                     this.$message.error('上传失败！');
                 }
+            },
+            handleImageRemove(file, fileList) {
+                this.handleRemove(file, 'image_');
             },
             handleImageError(err, file, fileList) {
                 this.$message.error('网络不稳定，上传失败！')
@@ -1471,39 +1533,10 @@
                 this.dialogImageUrl = file.url;
                 this.dialogVisiblePicture = true;
             },
-            handleImageRemove(file, fileList) {
-                let target = undefined;
-                // 丢弃原来的
-                let tmp = [];
-                for (let i = 0; i < this.formImageTemp.length; i++) {
-                    let item = this.formImageTemp[i];
-                    if (item.uid == file.uid) {
-                        target = item;
-                    } else {
-                        tmp.push(item)
-                    }
-                }
-                this.formImageTemp = tmp;
-                if (target) {
-                    this.formList[target.formIndex].pageModel[target.briefName] = undefined;
-                }
-            },
+
+
 
             // 文件处理
-            getFileListUrl(fileList) {
-                let tmp = [];
-                for (let fl of fileList) {
-                    let res = fl.response;
-                    if (res.status == 200) {
-                        tmp.push(res.data.url);
-                    }
-                }
-                if (tmp.length > 0) {
-                    return tmp.join(',');
-                } else {
-                    return undefined;
-                }
-            },
             beforeFileUpload(file) {
                 const isLt2M = file.size / 1024 / 1024 < 2;
                 if (!isLt2M) {
@@ -1513,43 +1546,21 @@
             },
             handleFileSuccess(response, file, fileList) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
-                    let data = response.data;
-                    let attach = data.attach.split(',');
-                    let formIndex = attach[0];
-                    let briefName = attach[1];
-                    this.formList[formIndex].pageModel[briefName] = this.getFileListUrl(fileList);
-                    // 存入新的
-                    this.formFileTemp.push({
-                        uid: file.uid,
-                        briefName: briefName,
-                        formIndex: formIndex
-                    });
+                    this.handleSuccess(response.data, 'file_');
                     this.$message.success('上传成功！');
                 } else {
                     this.$message.error('上传失败！');
                 }
             },
-            handleFilePreview(file) {
-                // 下载文件
-                window.location.href = this.$store.state.common.downloadUrl + file.response.data.url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
-            },
             handleFileRemove(file, fileList) {
-                let target = undefined;
-                // 丢弃原来的
-                let tmp = [];
-                for (let i = 0; i < this.formFileTemp.length; i++) {
-                    let item = this.formFileTemp[i];
-                    if (item.uid == file.uid) {
-                        target = item;
-                    } else {
-                        tmp.push(item)
-                    }
-                }
-                this.formFileTemp = tmp;
-                if (target) {
-                    this.formList[target.formIndex].pageModel[target.briefName] = this.getFileListUrl(fileList);
-                }
+                this.handleRemove(file, 'file_');
             },
+            handleFilePreview(file) {
+                window.location.href = file.url;
+            },
+
+
+
             // 动态添加关键字 start
             handleClose(tag) {
                 this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);

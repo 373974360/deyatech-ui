@@ -25,9 +25,11 @@ const common = {
         searchSize: 'small',
         btnSize: 'small',
         closeOnClickModal: false,
-        materialUploadUrl: '/manage/station/material/uploadFile', // 站点文件上传
-        materialShowImageByPath: '/manage/station/material/showImageByFilePath', // 站点图片显示,参数: filePath
-        materialShowImageByUrl: '/manage/station/material/showImageBySiteIdAndUrl', // 站点图片显示,参数: siteId, url
+        materialUploadUrl: '/manage/station/material/uploadFile', // 站点文件上传,参数: siteId, file
+        materialDownloadUrl: '/manage/station/material/downloadFileBySiteIdAndUrl',        // 站点文件下载,参数: siteId, url 相对路径,    例/upload/123.txt
+        materialDownloadPath: '/manage/station/material/downloadFileByFilePath?filePath=', // 站点文件下载,参数: filePath    物理绝对路径, 例/deya/upload/123.txt
+        materialShowImageByUrl: '/manage/station/material/showImageBySiteIdAndUrl',        // 站点图片显示,参数: siteId, url 相对路径,     例/upload/123.txt
+        materialShowImageByPath: '/manage/station/material/showImageByFilePath?filePath=', // 站点图片显示,参数: filePath    物理绝对路径, 例/deya/upload/123.txt
         uploadUrl: '/manage/common/upload',
         downloadUrl: '/manage/common/download?filePath=',
         showPicImgUrl: '/manage/common/showPicImg?filePath=',
