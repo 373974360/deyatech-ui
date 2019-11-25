@@ -757,24 +757,25 @@
     }
 </script>
 
-<style>
+<style scoped>
     .mailTable, .mailTable tr, .mailTable tr td {
         border:1px solid #E6EAEE;
     }
     .mailTable {
         font-size: 14px;
         color: #71787E;
+        width: 100%;
     }
     .mailTable tr td {
         border:1px solid #E6EAEE;
-        width: 225px;
-        height: 40px;
-        line-height: 40px;
+        width: calc(50% - 110px);
+        line-height: 28px;
         box-sizing: border-box;
-        padding: 0 10px;
+        padding: 6px 10px;
+        word-break: break-all;
     }
     .mailTable tr td.column {
-        width: 175px;
+        width: 110px;
         background-color: #EFF3F6;
         color: #393C3E;
     }
