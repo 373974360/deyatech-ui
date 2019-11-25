@@ -306,10 +306,10 @@
                 },
                 appraiseRules: {
                     groupId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '工作小组'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '工作小组'}
                     ],
                     category: [
-                        {required: true, message: this.$t("table.pleaseInput") + '评优类型'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '评优类型'}
                     ],
                     name: [
                         // {required: true, message: this.$t("table.pleaseInput") + '姓名'}

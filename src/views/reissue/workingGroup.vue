@@ -343,8 +343,8 @@
                 this.selectAllUserId = [];
                 this.loadWorkingGroupUser(row.id).then(res => {
                     if (res && res.length > 0) {
-                        for (let memberCategoryUser of res) {
-                            this.selectAllUserId.push(memberCategoryUser.userId)
+                        for (let workingGroupUser of res) {
+                            this.selectAllUserId.push(workingGroupUser.userId)
                         }
                         this.showRelatedFlag = true;
                         this.handleShowRelated(true);
