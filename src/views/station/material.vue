@@ -1,57 +1,100 @@
 <template>
     <basic-container>
-        <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
-            <div class="deyatech-menu">
-                <div class="deyatech-menu_left">
-                    <!--<el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1">{{$t('table.create')}}</el-button>-->
-                    <!--<el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>-->
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
-                </div>
-                <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
-                </div>
-            </div>
+        <div style="margin-bottom: 10px">
+            <el-radio-group v-model="showType" @change="typeChange">
+                <el-radio-button :label="0">矩阵</el-radio-button>
+                <el-radio-button :label="1">列表</el-radio-button>
+            </el-radio-group>
         </div>
 
-        <el-table :data="materialList" v-loading.body="listLoading" stripe border highlight-current-row
-                  @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="50" align="center"/>
-            <el-table-column prop="name" label="原文件名称" align="center">
-                <!--<template slot-scope="scope">
-                    <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
-                </template>-->
-            </el-table-column>
-            <el-table-column align="center" label="URL" prop="url"/>
-            <el-table-column align="center" label="路径" prop="path"/>
-            <el-table-column class-name="status-col" :label="$t('table.operation')" align="center" width="150">
-                <template slot-scope="scope">
-                    <!--<el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
-                               @click.stop.safe="btnCreate(scope.row)"></el-button>-->
-                    <!--<el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                               @click.stop.safe="btnUpdate(scope.row)"></el-button>-->
-                    <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                               @click.stop.safe="btnDelete(scope.row)"></el-button>
-                </template>
-            </el-table-column>
-        </el-table>
-        <el-pagination class="deyatech-pagination pull-right" background
-                       :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                       :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
-                       @size-change="handleSizeChange" @current-change="handleCurrentChange">
-        </el-pagination>
+        <div v-show="showType == 0">
+            <el-row :span="24">
+                <el-col :span="4">
+                    <div class="directoryTree">
+                        <!--左侧树-->
+                        <el-tree ref="directoryTree" style="max-width:500px;"
+                                 :data="directoryTree"
+                                 node-key="path"
+                                 :highlight-current="true"
+                                 :expand-on-click-node="false"
+                                 @node-click="handleDirectoryTree">
+                        </el-tree>
+                    </div>
+                </el-col>
+                <el-col :span="20">
+                    <div>
+                        <div class="grid-box" v-for="item in treeMaterialList">
+                            <el-image style="width: 100%; height: 160px" :src="getImageUrl(item.type, item.url)"></el-image>
+                            <span v-text="item.name"></span>
+                            <div style="position: absolute; top: 64px; left: 64px;">
+                                <el-button class="hidebtn" v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnDelete(item, 'grid')"></el-button>
+                            </div>
+                        </div>
+                    </div>
+                    <el-pagination class="deyatech-pagination pull-right" background
+                                   :current-page.sync="treeListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                   :page-size="treeListQuery.size" :layout="this.$store.state.common.pageLayout" :total="treeMaterialTotal"
+                                   @size-change="handleSizeChangeTree" @current-change="handleCurrentChangeTree">
+                    </el-pagination>
+                </el-col>
+            </el-row>
+        </div>
+
+        <div v-show="showType == 1">
+            <div class="deyatech-container pull-auto">
+                <div class="deyatech-header" style="width: 100%;">
+                    <el-form :inline="true" ref="searchForm">
+                        <el-form-item>
+                            <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div class="deyatech-menu">
+                    <div class="deyatech-menu_left">
+                        <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    </div>
+                    <div class="deyatech-menu_right">
+                        <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
+                    </div>
+                </div>
+            </div>
+
+            <el-table :data="materialList" v-loading.body="listLoading" stripe border highlight-current-row
+                      @selection-change="handleSelectionChange">
+                <el-table-column type="selection" width="50" align="center"/>
+                <el-table-column prop="id" label="编号" align="center" width="180"/>
+                <el-table-column label="图片" align="center" width="130">
+                    <template slot-scope="scope">
+                        <el-image
+                            style="width: 100px; height: 100px"
+                            :src="getImageUrl(scope.row.type, scope.row.url)"
+                            :preview-src-list="[]">
+                        </el-image>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="name" label="原文件名称" align="center"/>
+
+                <el-table-column align="center" label="URL" prop="url" width="260"/>
+                <el-table-column align="center" label="路径" prop="path"/>
+                <el-table-column class-name="status-col" :label="$t('table.operation')" align="center" width="60">
+                    <template slot-scope="scope">
+                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-pagination class="deyatech-pagination pull-right" background
+                           :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
+                           @size-change="handleSizeChange" @current-change="handleCurrentChange">
+            </el-pagination>
+        </div>
+
+
     </basic-container>
 </template>
 
@@ -60,7 +103,9 @@
     import {getStore} from '@/util/store';
     import {
         getMaterialList,
-        delMaterials
+        delMaterials,
+        getDirectoryTree,
+        getTreeMaterialList
     } from "../../api/station/material";
 
     export default {
@@ -73,16 +118,30 @@
                     siteId: this.$store.state.common.siteId,
                     name: undefined
                 },
+                treeListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    siteId: this.$store.state.common.siteId,
+                    path: undefined
+                },
                 total: 0,
                 materialList: undefined,
                 listLoading: false,
-                selectedRows: []
+                selectedRows: [],
+                showType: 0,//矩阵
+                treeMaterialTotal: 0,
+                treeMaterialList: [],
+                directoryTree: [],
+                currentDirectory: undefined
             }
         },
         created() {
             this.$store.state.common.selectSiteDisplay = true;
             if (this.$store.state.common.siteId != undefined) {
-                this.reloadList();
+                this.listQuery.siteId= this.$store.state.common.siteId;
+                this.treeListQuery.siteId= this.$store.state.common.siteId;
+                this.reloadTree();
+                // this.reloadList();
             }
         },
         computed: {
@@ -103,6 +162,46 @@
             }
         },
         methods: {
+            getImageUrl(fileType, url) {
+                fileType = fileType.toLowerCase();
+                if (fileType === ".png" || fileType === ".jpg" || fileType === ".jpeg" || fileType === ".bmp" || fileType === ".gif") {
+                    return '/manage/station/material/showImageBySiteIdAndUrl?siteId=' + this.$store.state.common.siteId + '&url=' + url;
+                } else if (fileType === ".txt") {
+                    return "img/icon/txt.png"
+                } else if (fileType === ".xls" || fileType === ".xlsx") {
+                    return "img/icon/xls.png"
+                } else if (fileType === ".doc" || fileType === ".docx") {
+                    return "img/icon/doc.png"
+                } else if (fileType === ".ppt" || fileType === ".pptx") {
+                    return "img/icon/ppt.png"
+                } else {
+                    return "img/icon/other.png"
+                }
+
+            },
+            reloadTree() {
+                getDirectoryTree({siteId: this.$store.state.common.siteId}).then(response=>{
+                    this.directoryTree = response.data;
+                    if (this.directoryTree && this.directoryTree.length > 0) {
+                        this.currentDirectory = this.directoryTree[0].path;
+                        this.treeListQuery.path = this.directoryTree[0].path;
+                        this.reloadTreeList();
+                        this.$nextTick(()=>{
+                            this.$refs.directoryTree.setCurrentKey(this.currentDirectory);
+                        });
+                    }
+                });
+            },
+            reloadTreeList(){
+                if (!this.treeListQuery.siteId) {
+                    this.$message.warning("请先选择站点");
+                    return
+                }
+                getTreeMaterialList(this.treeListQuery).then(response => {
+                    this.treeMaterialList = response.data.records;
+                    this.treeMaterialTotal = response.data.total;
+                })
+            },
             btnSearch() {
                 this.listQuery.page = 1;
                 this.reloadList();
@@ -122,6 +221,14 @@
                     this.total = response.data.total;
                 })
             },
+            handleSizeChangeTree(val) {
+                this.treeListQuery.size = val;
+                this.reloadTreeList();
+            },
+            handleCurrentChangeTree(val) {
+                this.treeListQuery.page = val;
+                this.reloadTreeList();
+            },
             handleSizeChange(val) {
                 this.listQuery.size = val;
                 this.reloadList();
@@ -133,29 +240,76 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
             },
-            btnDelete(row){
+            btnDelete(row, type){
                 let ids = [];
                 if (row.id) {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                    this.$confirm('此操作将永久删除该数据及文件, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push(row.id);
-                        this.doDelete(ids);
+                        this.doDelete(ids, type);
                     })
                 } else {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
+                    this.$confirm('此操作将永久删除该数据及文件, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
                         for(const deleteRow of this.selectedRows) {
                             ids.push(deleteRow.id);
                         }
-                        this.doDelete(ids);
+                        this.doDelete(ids, type);
                     })
                 }
             },
-            doDelete(ids){
+            doDelete(ids, type){
                 this.listLoading = true;
                 delMaterials(ids).then(() => {
-                    this.reloadList();
+                    if (type === 'grid') {
+                        this.reloadTreeList();
+                    } else {
+                        this.reloadList();
+                    }
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
+            },
+            typeChange(data){
+                // 矩阵
+                if (data == 0) {
+                    this.reloadTreeList();
+                    this.$nextTick(()=>{
+                        this.$refs.directoryTree.setCurrentKey(this.currentDirectory);
+                    });
+                } else if (data == 1) {
+                    this.reloadList()
+                }
+            },
+            handleDirectoryTree(data) {
+                this.currentDirectory = data.path;
+                this.treeListQuery.path = data.path;
+                this.reloadTreeList();
             }
+
+
         }
     }
 </script>
+<style>
+    .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+        background-color: #a6d1ff;
+    }
+    .directoryTree {
+        border:1px solid #eceef5;
+        overflow-x: scroll;
+        margin-right:10px;
+        padding: 10px;
+        height: 100%;
+    }
+    .grid-box {
+        width: 160px;
+        position: relative;
+        display: inline-block;
+        margin-right: 10px;
+        margin-bottom: 20px;
+    }
+    .hidebtn {
+        visibility: hidden;
+    }
+    .grid-box:hover button {
+        visibility: visible;
+    }
+</style>

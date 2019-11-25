@@ -47,3 +47,18 @@ export function getSiteUploadPath(params) {
         params: params
     });
 }
+export function getDirectoryTree(params) {
+    return request({
+        url: '/manage/station/material/getDirectoryTree',
+        method: 'get',
+        params: params
+    });
+}
+
+export function getTreeMaterialList(query) {
+    return request({
+        url: '/manage/station/material/pageByDirectory',
+        method: 'get',
+        params: query
+    });
+}
