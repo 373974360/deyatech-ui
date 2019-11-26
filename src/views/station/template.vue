@@ -112,6 +112,7 @@
 
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150" fixed="right">
                             <template slot-scope="scope">
+                                <el-button v-if="btnEnable.preview" :title="'预览'" type="primary" icon="el-icon-search" :size="btnSize" circle @click.stop.safe="btnPreview(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" title="彻底删除" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnDelete(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" title="撤销" type="danger" icon="iconskip" :size="btnSize" circle @click.stop.safe="btnCancel(scope.row)"></el-button>
@@ -483,7 +484,8 @@
                     contentModelName: undefined,
                     contentMapStr: undefined,
                     content: {},
-                    metaDataCollectionId: undefined
+                    metaDataCollectionId: undefined,
+                    cmsCatalogPathName: undefined
                 },
                 contentItemArray: {},
                 editorDefaultMsg: {},
@@ -739,6 +741,7 @@
             ]),
             btnEnable() {
                 return {
+                    preview: this.permission.template_preview,
                     create: this.permission.template_create,
                     update: this.permission.template_update,
                     delete: this.permission.template_delete
@@ -1045,6 +1048,12 @@
                         this.flagExternalIndex = 0;
                     }
                 });
+            },
+            //预览
+            btnPreview(row) {
+                let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '_content_info_' + row.id;
+                this.$router.push({path: url});
+                //window.open(`${this.$store.state.common.activitiModelEditUrl}?modelId=${row.actModelId}`);
             },
             btnCreate(command){
                 if (command) {
