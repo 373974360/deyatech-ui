@@ -916,14 +916,14 @@
             // 获取模板
             listTemplateAllFiles() {
                 this.templateListTreeData = [];
-                listTemplateAllFiles(this.listQuery.siteId,"list").then(response => {
+                listTemplateAllFiles(this.listQuery.siteId,"列表页").then(response => {
                     let result = JSON.parse(response.data)
                     this.templateListTreeData = result.files
                 })
             },
             indexTemplateAllFiles() {
                 this.templateIndexTreeData = [];
-                listTemplateAllFiles(this.listQuery.siteId,"index").then(response => {
+                listTemplateAllFiles(this.listQuery.siteId,"首页和频道页").then(response => {
                     let result = JSON.parse(response.data)
                     this.templateIndexTreeData = result.files
                 })

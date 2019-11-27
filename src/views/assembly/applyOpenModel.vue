@@ -512,19 +512,19 @@
                 this.printTemplateTreeData = [];
                 this.formTemplateTreeData = [];
                 this.detailsTemplateTreeData = [];
-                listTemplateAllFiles(this.$store.state.common.siteId,"list").then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId,"列表页").then(response => {
                     let result = JSON.parse(response.data)
                     this.listTemplateTreeData = result.files
                 })
-                listTemplateAllFiles(this.$store.state.common.siteId,"print").then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId,"打印模板").then(response => {
                     let result = JSON.parse(response.data)
                     this.printTemplateTreeData = result.files
                 })
-                listTemplateAllFiles(this.$store.state.common.siteId,"form").then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId,"表单页").then(response => {
                     let result = JSON.parse(response.data)
                     this.formTemplateTreeData = result.files
                 })
-                listTemplateAllFiles(this.$store.state.common.siteId,"details").then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId,"详情页").then(response => {
                     let result = JSON.parse(response.data)
                     this.detailsTemplateTreeData = result.files
                 })
