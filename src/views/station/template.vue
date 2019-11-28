@@ -271,8 +271,8 @@
 
                         <el-row :span="24" v-if="isShowRow(row, 'flag_external') && form.pageModel['flag_external']">
                             <el-col :span="24">
-                                <el-form-item label="URL" prop="url" :rules="form.pageModel['flag_external'] ? templateRules.url : []">
-                                    <el-input v-model.trim="form.pageModel['url']"></el-input>
+                                <el-form-item label="URL" prop="url_" :rules="form.pageModel['flag_external'] ? templateRules.url_ : []">
+                                    <el-input v-model.trim="form.pageModel['url_']"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -492,7 +492,7 @@
                 contentItemOptions: {},
                 uploadFileList: {},
                 templateRules: {
-                    url: [
+                    url_: [
                         {required: true, message: this.$t("table.pleaseInput") + 'URL'},
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
                         {validator: validateUrl, trigger: ['change', 'blur']}
@@ -1026,6 +1026,7 @@
                 getBaseAndMetaField({contentModelId: contentModelId}).then(response=>{
                     let data = response.data;
                     this.baseFields = data.baseFields;
+                    this.baseFields.push('url_');
                     this.metaFields = data.metaFields;
                     this.template.metaDataCollectionId = data.metaDataCollectionId;
                 });
@@ -1182,6 +1183,7 @@
                     let content = {};
                     for (let form of _this.formList) {
                         let pageModel = form.pageModel;
+                        console.dir(pageModel);
                         let checkboxFields = [];
                         let pageModelFields = Object.getOwnPropertyNames(pageModel);
                         for (let f of pageModelFields) {
@@ -1189,6 +1191,7 @@
                                 checkboxFields.push(f.substring(f.indexOf('_') + 1));
                             }
                         }
+                        console.dir(_this.baseFields);
                         // 保存基础字段
                         for (let base of _this.baseFields) {
                             // 当前页没有 base 属性
