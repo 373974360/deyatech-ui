@@ -775,6 +775,7 @@
 
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
+                this.listQuery.siteId = this.$store.state.common.siteId;
                 // 获取栏目
                 this.getCatalogTree();
                 // 获取站点关联的内容模型
@@ -1084,9 +1085,7 @@
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
-                this.template.siteId = this.listQuery.siteId;
-                this.template.cmsCatalogId = this.listQuery.cmsCatalogId;
-                this.template.workflowKey = this.workflowKey;
+                console.dir(row);
                 this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
