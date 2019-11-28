@@ -110,7 +110,7 @@
                     </el-table-column>
 
 
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="180" fixed="right">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200" fixed="right">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.preview" :title="'预览'" type="primary" icon="el-icon-search" :size="btnSize" circle @click.stop.safe="btnPreview(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
@@ -1086,6 +1086,7 @@
                     this.template = deepClone(this.selectedRows[0]);
                 }
                 console.dir(row);
+                this.template.workflowKey = this.workflowKey;
                 this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;

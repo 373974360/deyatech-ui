@@ -41,6 +41,7 @@
                     </template>
                 </el-table-column>-->
                 <!--<el-table-column type="selection" width="50" align="center"/>-->
+                <el-table-column align="center" label="编号" prop="variables.templateId"/>
                 <el-table-column align="center" label="标题" prop="variables.title"/>
                 <el-table-column align="center" label="作者" prop="variables.author"/>
                 <el-table-column align="center" label="审核状态" prop="name"/>
@@ -304,7 +305,7 @@
                 completeTask(row.actTaskId).then(response => {
                     if (response.status == 200) {
                         if (response.data === 'FINISH') {
-                            updateContentStatusPublish({id:row.variables.templateId}).then(response => {})
+                            updateContentStatusPublish(row.variables.templateId).then(response => {})
                         }
                         this.reloadList();
                         this.$message.success(row.name + '已通过')
@@ -326,7 +327,7 @@
             rejectTask(row) {
                 rejectTask(row.actTaskId).then(response => {
                     if (response.status == 200) {
-                        updateContentStatusReject({id:row.variables.templateId}).then(response => {})
+                        updateContentStatusReject(row.variables.templateId).then(response => {})
                         this.reloadList();
                         this.$message.success(row.name + '已拒绝')
                     } else {

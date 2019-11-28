@@ -37,7 +37,7 @@ export function delMenus(ids) {
 
 export function getMenuTree(query) {
     return request({
-        url: '/manage/admin/menu/getTree',
+        url: '/manage/admin/menu/notCheckGetTree',
         method: 'get',
         params: query
     });
