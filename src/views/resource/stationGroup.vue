@@ -275,7 +275,8 @@
                                            accept="image/jpg,image/jpeg,image/png"
                                            :show-file-list="false"
                                            :on-success="watermarkUrlUploadSuccess"
-                                           :on-error="uploadError">
+                                           :on-error="handlerImagesError"
+                                           :before-upload="beforeImageUpload">
                                     <img v-if="setting.watermarkUrl" :src="imageShowUrl + setting.watermarkUrl" class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
@@ -320,7 +321,8 @@
                                            accept="image/jpg,image/jpeg,image/png"
                                            :show-file-list="false"
                                            :on-success="icoUrlUploadSuccess"
-                                           :on-error="uploadError">
+                                           :on-error="handlerImagesError"
+                                           :before-upload="beforeImageUpload">
                                     <img v-if="setting.icoUrl" :src="imageShowUrl + setting.icoUrl" class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
@@ -374,7 +376,6 @@
                             <span class="link-type" @click='btnDomainUpdate(scope.row)'>{{scope.row.name}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" label="英文名" prop="englishName"/>
                     <el-table-column align="center" label="端口" prop="port" width="90"/>
                     <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
                     <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
@@ -1260,7 +1261,8 @@
                     this.setting.watermarkUrl = response.data.url;
                     this.$message.success('上传成功！');
                 } else {
-                    this.$message.error(response.message);
+                    console.error(response);
+                    this.$message.error("上传失败");
                 }
             },
             icoUrlUploadSuccess(response) {
@@ -1268,13 +1270,25 @@
                     this.setting.icoUrl = response.data.url;
                     this.$message.success('上传成功！');
                 } else {
-                    this.$message.error(response.message);
+                    console.error(response);
+                    this.$message.error("上传失败");
                 }
             },
-            uploadError() {
-                this.$message.error("上传失败");
+            handlerImagesError(err) {
+                console.error(err);
+                this.$message.error('网络不稳定，上传失败！')
             },
-
+            beforeImageUpload(file) {
+                const isJPG = this.$store.state.common.imageAccepts.includes(file.type);
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if (!isJPG) {
+                    this.$message.error('上传图片格式不正确!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            },
             // 域名管理
             btnDomain(row) {
                 this.domainListQuery.page = 1;

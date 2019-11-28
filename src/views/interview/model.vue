@@ -25,7 +25,7 @@
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="!this.listQuery.categoryId">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
-                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnLiveUpdate" :disabled="selectedRows.length != 1">直播</el-button>
+                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnLiveUpdate" :disabled="selectedRows.length != 1 || selectedRows[0].status != 1">直播</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList" :disabled="!this.listQuery.categoryId"></el-button>
@@ -60,7 +60,7 @@
                                    @click.stop="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop="btnDelete(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.live" title="直播" type="primary" icon="iconvideo" :size="btnSize" circle
+                        <el-button v-if="btnEnable.live" title="直播" type="primary" icon="iconvideo" :size="btnSize" circle :disabled="scope.row.status != 1"
                                    @click.stop="btnLiveUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.guest" title="嘉宾" type="primary" icon="iconadd-account" :size="btnSize" circle
                                    @click.stop="btnGuest(scope.row)"></el-button>
@@ -143,7 +143,8 @@
                                            :accept="$store.state.common.imageAccepts"
                                            :show-file-list="false"
                                            :on-success="handleCoverSuccess"
-                                           :on-error="handlerCoverError">
+                                           :on-error="handlerImagesError"
+                                           :before-upload="beforeImageUpload">
                                     <img v-if="model.cover" :src="imageShowUrl + model.cover" class="cover-add">
                                     <i v-else class="el-icon-plus cover-uploader-icon"></i>
                                 </el-upload>
@@ -231,7 +232,8 @@
                                                    :accept="$store.state.common.imageAccepts"
                                                    :show-file-list="false"
                                                    :on-success="handleImagesSuccess"
-                                                   :on-error="handlerImagesError">
+                                                   :on-error="handlerImagesError"
+                                                   :before-upload="beforeImageUpload">
                                             <img v-if="liveImage.url" :src="imageShowUrl + liveImage.url" class="image-add">
                                             <i v-else class="el-icon-plus image-uploader-icon"></i>
                                         </el-upload>
@@ -305,7 +307,8 @@
                                            :accept="$store.state.common.imageAccepts"
                                            :show-file-list="false"
                                            :on-success="handleModifyImagesSuccess"
-                                           :on-error="handlerImagesError">
+                                           :on-error="handlerImagesError"
+                                           :before-upload="beforeImageUpload">
                                     <img v-if="liveModifyImage.url" :src="imageShowUrl + liveModifyImage.url" class="image-add">
                                     <i v-else class="el-icon-plus image-uploader-icon"></i>
                                 </el-upload>
@@ -482,7 +485,8 @@
                                                    :accept="$store.state.common.imageAccepts"
                                                    :show-file-list="false"
                                                    :on-success="handlePhotoSuccess"
-                                                   :on-error="handlerPhotoError">
+                                                   :on-error="handlerImagesError"
+                                                   :before-upload="beforeImageUpload">
                                             <img v-if="guest.photo" :src="imageShowUrl + guest.photo" class="photo-add">
                                             <i v-else class="el-icon-plus photo-uploader-icon"></i>
                                         </el-upload>
@@ -975,11 +979,9 @@
                     this.model.cover = res.data.url;
                     this.$message.success('上传成功！');
                 } else {
+                    console.error(res);
                     this.$message.error('上传失败！');
                 }
-            },
-            handlerCoverError() {
-                this.$message.error("上传失败");
             },
             // 关闭直播
             liveCloseModelDialog() {
@@ -1325,18 +1327,33 @@
                     this.liveImage.url = res.data.url;
                     this.$message.success('上传成功！');
                 } else {
+                    console.error(res);
                     this.$message.error('上传失败！');
                 }
             },
             handleModifyImagesSuccess(res) {
+                console.dir(res);
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
                     this.liveModifyImage.url = res.data.url;
                     this.$message.success('上传成功！');
                 } else {
+                    console.error(res);
                     this.$message.error('上传失败！');
                 }
             },
-            handlerImagesError() {
+            beforeImageUpload(file) {
+                const isJPG = this.$store.state.common.imageAccepts.includes(file.type);
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if (!isJPG) {
+                    this.$message.error('上传图片格式不正确!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            },
+            handlerImagesError(err, file, fileList) {
+                console.error(err);
                 this.$message.error("上传失败");
             },
 
@@ -1536,11 +1553,9 @@
                     this.guest.photo = res.data.url;
                     this.$message.success('上传成功！');
                 } else {
+                    console.error(res);
                     this.$message.error('上传失败！');
                 }
-            },
-            handlerPhotoError() {
-                this.$message.error("上传失败");
             },
             getDepartmentCascader() {
                 getDepartmentCascader().then(response => {
