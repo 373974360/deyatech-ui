@@ -110,7 +110,7 @@
                     </el-table-column>
 
 
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150" fixed="right">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="180" fixed="right">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.preview" :title="'预览'" type="primary" icon="el-icon-search" :size="btnSize" circle @click.stop.safe="btnPreview(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
@@ -206,8 +206,9 @@
                                                :action="$store.state.common.materialUploadUrl"
                                                :data="{siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
                                                :file-list="form.pageModel['file_' + item.briefName]"
-                                               :before-upload="beforeFileUpload"
                                                :on-success="handleFileSuccess"
+                                               :on-error="handleFileError"
+                                               :before-upload="beforeFileUpload"
                                                :on-preview="handleFilePreview"
                                                :on-remove="handleFileRemove">
                                         <el-button size="small" type="primary">点击上传</el-button>
@@ -297,10 +298,10 @@
 
                     <template v-if="form.pageModel['flag_external']">
                         <el-button type="primary" :size="btnSize" :loading="submitLoading"
-                                   @click="doCreate(false)" >{{$t('table.confirm')}}</el-button>
+                                   @click="doSave(false)" >{{$t('table.confirm')}}</el-button>
 
                         <el-button :size="btnSize" :loading="submitLoading"
-                                   @click="doCreate(true)">草稿</el-button>
+                                   @click="doSave(true)">草稿</el-button>
                     </template>
 
                     <template v-else>
@@ -308,10 +309,10 @@
                                    @click="nextStep(form.pageNumber - 1)">下一步</el-button>
 
                         <el-button v-if="form.pageNumber == maxPage" type="primary" :size="btnSize" :loading="submitLoading"
-                                   @click="doCreate(false)" >{{$t('table.confirm')}}</el-button>
+                                   @click="doSave(false)" >{{$t('table.confirm')}}</el-button>
 
                         <el-button v-if="form.pageNumber == maxPage" :size="btnSize" :loading="submitLoading"
-                                   @click="doCreate(true)">草稿</el-button>
+                                   @click="doSave(true)">草稿</el-button>
                     </template>
 
 
@@ -469,7 +470,6 @@
                     editor: undefined,
                     source: undefined,
                     thumbnail: undefined,
-                    thumbnailUrl: undefined,
                     title: undefined,
                     flagSearch: undefined,
                     sortNo: undefined,
@@ -1053,7 +1053,7 @@
             btnPreview(row) {
                 let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '_content_info_' + row.id;
                 this.$router.push({path: url});
-                //window.open(`${this.$store.state.common.activitiModelEditUrl}?modelId=${row.actModelId}`);
+                //window.open('');
             },
             btnCreate(command){
                 if (command) {
@@ -1162,7 +1162,7 @@
                 }
             },
             // draftFlag草稿
-            doCreate(draftFlag) {
+            doSave(draftFlag) {
                 this.template.draftFlag = draftFlag;
                 let _this = this;
                 let formValidate = [];
@@ -1191,18 +1191,23 @@
                         }
                         // 保存基础字段
                         for (let base of _this.baseFields) {
+                            // 当前页没有 base 属性
+                            if (!pageModel.hasOwnProperty(base)) {
+                                continue;
+                            }
                             // 下划线转驼峰
                             let dest = base.replace(/_(\w)/g,function ($0,$1){return $1.toUpperCase();});
                             if (dest.endsWith('_')) {
                                 dest = dest.substr(0, dest.length -1);
                             }
-                            // 把有值的字段全部存起来，number类型的都是需要保存的，因为0在if中是false，所以对number类型必须单独处理
-                            if (pageModel[base] || typeof(pageModel[base]) === 'number') {
-                                _this.template[dest] = pageModel[base];
-                            }
+                            _this.template[dest] = pageModel[base];
                         }
                         // 保存元数据字段
                         for (let meta of _this.metaFields) {
+                            // 当前页没有 meta 属性
+                            if (!pageModel.hasOwnProperty(meta)) {
+                                continue;
+                            }
                             let isCheckbox = false;
                             for(let ckb of checkboxFields) {
                                 if (ckb === meta) {
@@ -1218,10 +1223,7 @@
                                     content[meta] = arr.join(',');
                                 }
                             } else {
-                                // 把有值的字段全部存起来，number类型的都是需要保存的，因为0在if中是false，所以对number类型必须单独处理
-                                if (pageModel[meta] || typeof(pageModel[meta]) === 'number') {
-                                    content[meta] = pageModel[meta];
-                                }
+                                content[meta] = pageModel[meta];
                             }
                         }
                     }
@@ -1231,65 +1233,27 @@
                     _this.template.contentMapStr = JSON.stringify(content);
                     _this.template.metadataCollectionVo = undefined;
                     _this.template.content = undefined;
-
+                    console.dir(_this.template);
                     _this.submitLoading = true;
-                    createOrUpdateTemplate(_this.template).then(() => {
-                        _this.resetTemplateDialogAndList();
-                        _this.$message.success(_this.$t("table.createSuccess"));
-                    }, (error)=>{
-                        _this.$message.error(error);
-                    }).catch((err)=>{
-                        _this.$message.error(err);
-                    });
-                });
-            },
-            doUpdate(draftFlag) {
-                this.template.draftFlag = draftFlag;
-                let _this = this;
-                let formValidate = [];
-                for (let form of this.formList) {
-                    let formIndex = parseInt(form.pageNumber) - 1;
-                    if (_this.$refs['dynamicForm' + formIndex]) {
-                        formValidate.push(new Promise(function(resolve, reject) {
-                            _this.$refs['dynamicForm' + formIndex][0].validate(valid => {
-                                if(valid) {
-                                    resolve();
-                                }
-                            });
-                        }));
+                    if (_this.template.id) {
+                        createOrUpdateTemplate(_this.template).then(() => {
+                            _this.resetTemplateDialogAndList();
+                            _this.$message.success(_this.$t("table.updateSuccess"));
+                        }, (error)=>{
+                            _this.$message.error(error);
+                        }).catch((err)=>{
+                            _this.$message.error(err);
+                        });
+                    } else {
+                        createOrUpdateTemplate(_this.template).then(() => {
+                            _this.resetTemplateDialogAndList();
+                            _this.$message.success(_this.$t("table.createSuccess"));
+                        }, (error)=>{
+                            _this.$message.error(error);
+                        }).catch((err)=>{
+                            _this.$message.error(err);
+                        });
                     }
-                }
-                Promise.all(formValidate).then(function(){
-                    let content = {};
-                    for (let form of _this.formList) {
-                        let pageModel = form.pageModel;
-                        // 基础字段
-                        for (let base of _this.baseFields) {
-                            if (pageModel.hasOwnProperty(base)) {
-                                let dest = base.replace(/_(\w)/g,function ($0,$1){return $1.toUpperCase();});
-                                _this.template[dest] = pageModel[base];
-                            }
-                        }
-                        // 元数据字段
-                        for (let meta of _this.metaFields) {
-                            if (pageModel.hasOwnProperty(meta) && pageModel[meta]) {
-                                content[meta] = pageModel[meta];
-                            }
-                        }
-                    }
-                    if (draftFlag) {
-                        _this.template.draftFlag = draftFlag;
-                    }
-                    _this.template.contentMapStr = JSON.stringify(content);
-                    _this.submitLoading = true;
-                    createOrUpdateTemplate(_this.template).then(() => {
-                        _this.resetTemplateDialogAndList();
-                        _this.$message.success(_this.$t("table.createSuccess"));
-                    }, (error)=>{
-                        _this.$message.error(error);
-                    }).catch((err)=>{
-                        _this.$message.error(err);
-                    });
                 });
             },
             doDelete(ids){
@@ -1314,7 +1278,6 @@
                     editor: undefined,
                     source: undefined,
                     thumbnail: undefined,
-                    thumbnailUrl: undefined,
                     title: undefined,
                     flagSearch: undefined,
                     sortNo: undefined,
@@ -1551,10 +1514,10 @@
                     tmp.push(item.value);
                 }
                 // 表单值
-                this.formList[formIndex].pageModel[briefName] = tmp.length > 0 ? tmp.join(',') : undefined;
+                this.formList[formIndex].pageModel[briefName] = tmp.length > 0 ? tmp.join(',') : '';
             },
             handleRemove(file, prefix) {
-                let value = undefined;
+                let value = '';
                 // 新上传的
                 if (file.hasOwnProperty("response")) {
                     value = file.response.data.customData.value;
@@ -1587,7 +1550,7 @@
                                 for (let item of list) {
                                     tmp.push(item.value);
                                 }
-                                pageModel[field.substring(5)] = tmp.length > 0 ? tmp.join(',') : undefined;
+                                pageModel[field.substring(prefix.length)] = tmp.length > 0 ? tmp.join(',') : '';
                             }
                         }
                     }
@@ -1602,13 +1565,12 @@
                     this.handleSuccess(response.data, 'image_');
                     this.$message.success('上传成功！');
                 } else {
+                    console.error(response);
                     this.$message.error('上传失败！');
                 }
             },
-            handleImageRemove(file, fileList) {
-                this.handleRemove(file, 'image_');
-            },
             handleImageError(err, file, fileList) {
+                console.error(err);
                 this.$message.error('网络不稳定，上传失败！')
             },
             beforeImageUpload(file) {
@@ -1626,10 +1588,25 @@
                 this.dialogImageUrl = file.url;
                 this.dialogVisiblePicture = true;
             },
-
+            handleImageRemove(file, fileList) {
+                this.handleRemove(file, 'image_');
+            },
 
 
             // 文件处理
+            handleFileSuccess(response, file, fileList) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    this.handleSuccess(response.data, 'file_');
+                    this.$message.success('上传成功！');
+                } else {
+                    console.error(response);
+                    this.$message.error('上传失败！');
+                }
+            },
+            handleFileError(err, file, fileList) {
+                console.error(err);
+                this.$message.error('网络不稳定，上传失败！')
+            },
             beforeFileUpload(file) {
                 const isLt2M = file.size / 1024 / 1024 < 2;
                 if (!isLt2M) {
@@ -1637,19 +1614,11 @@
                 }
                 return isLt2M;
             },
-            handleFileSuccess(response, file, fileList) {
-                if (response.status === 200 && response.data.state === 'SUCCESS') {
-                    this.handleSuccess(response.data, 'file_');
-                    this.$message.success('上传成功！');
-                } else {
-                    this.$message.error('上传失败！');
-                }
+            handleFilePreview(file) {
+                window.location.href = file.url;
             },
             handleFileRemove(file, fileList) {
                 this.handleRemove(file, 'file_');
-            },
-            handleFilePreview(file) {
-                window.location.href = file.url;
             },
 
 
