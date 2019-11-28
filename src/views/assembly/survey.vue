@@ -8,7 +8,7 @@
     export default {
         data () {
             return {
-                src: 'http://192.168.0.180:8088/diaowen/design/my-survey.action?token_='+getToken(),
+                src: 'http://127.0.0.1:8088/diaowen/design/my-survey.action?token_='+getToken(),
                 iframeHeight: 0
             }
         },

@@ -643,7 +643,7 @@
             listTemplateAllFiles(siteId){
                 return new Promise((resolve, reject) => {
                     this.templateTreeData = [];
-                    listTemplateAllFiles(siteId,"details").then(response => {
+                    listTemplateAllFiles(siteId,"详情页").then(response => {
                         if (response.status == 200) {
                             let result = JSON.parse(response.data);
                             this.templateTreeData = result.files;

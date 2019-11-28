@@ -191,12 +191,12 @@
         methods: {
             loadTemplates() {
                 this.listTemplates = [];
-                listTemplateAllFiles(this.$store.state.common.siteId, "list").then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId, "列表页").then(response => {
                     let result = JSON.parse(response.data);
                     this.listTemplates = result.files;
                 });
                 this.detailTemplates = [];
-                listTemplateAllFiles(this.$store.state.common.siteId, "details").then(response => {
+                listTemplateAllFiles(this.$store.state.common.siteId, "详情页").then(response => {
                     let result = JSON.parse(response.data)
                     this.detailTemplates = result.files
                 })
