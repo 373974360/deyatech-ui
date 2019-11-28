@@ -353,7 +353,7 @@
             },
             listTemplateAllFiles(){
                 this.templateTreeData = [];
-                listTemplateAllFiles(this.listQuery.siteId,"首页和频道页").then(response => {
+                listTemplateAllFiles(this.listQuery.siteId,"").then(response => {
                     let result = JSON.parse(response.data)
                     this.templateTreeData = result.files
                 })
