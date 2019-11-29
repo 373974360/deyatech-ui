@@ -62,7 +62,7 @@
             </el-pagination>
 
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="60%"
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="55%"
                        :close-on-click-modal="closeOnClickModal" @close="closeAdmissionTemplateDialog">
                 <el-form ref="admissionTemplateDialogForm" class="deyatech-form" :model="admissionTemplate" label-position="right"
                          label-width="100px" :rules="admissionTemplateRules">
@@ -182,11 +182,11 @@
                     ],
                     frontContent: [
                         {required: true, message: this.$t("table.pleaseInput") + '正面内容'},
-                        {min: 1, max: 4000, message: '长度在 1 到 4000 个字符', trigger: 'blur'},
+                        {min: 1, max: 65535, message: '长度在 1 到 65535 个字符', trigger: 'blur'},
                     ],
                     backContent: [
                         {required: true, message: this.$t("table.pleaseInput") + '背面内容'},
-                        {min: 1, max: 4000, message: '长度在 1 到 4000 个字符', trigger: 'blur'},
+                        {min: 1, max: 65535, message: '长度在 1 到 65535 个字符', trigger: 'blur'},
                     ]
                 },
                 selectedRows: [],
