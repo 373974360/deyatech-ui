@@ -15,7 +15,7 @@
           <div>
             <img src="img/bg/img-logo.png"
                  width="30"
-                 alt="">{{website.indexTitle}}</div>
+                 alt="">{{userInfo.name}}</div>
         </span>
             </template>
         </transition-group>
@@ -28,7 +28,9 @@
     export default {
         name: "logo",
         data() {
-            return {};
+            return {
+                userInfo: this.$store.state.user.userInfo
+            };
         },
         created() {
         },

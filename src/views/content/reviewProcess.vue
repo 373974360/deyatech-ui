@@ -41,9 +41,9 @@
                     </template>
                 </el-table-column>-->
                 <!--<el-table-column type="selection" width="50" align="center"/>-->
-                <el-table-column align="center" label="编号" prop="variables.templateId"/>
-                <el-table-column align="center" label="标题" prop="variables.title"/>
-                <el-table-column align="center" label="作者" prop="variables.author"/>
+                <el-table-column align="center" label="内容编号" prop="variables.templateId"/>
+                <el-table-column align="center" label="内容标题" prop="variables.title"/>
+                <el-table-column align="center" label="内容作者" prop="variables.author"/>
                 <el-table-column align="center" label="审核状态" prop="name"/>
                 <el-table-column align="center" label="创建时间" prop="startTime"/>
                 <!--<el-table-column align="center" label="内容id" prop="contentId"/>
@@ -202,6 +202,7 @@
                 getCurrentTaskList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.reviewProcessList = response.data.records;
+                    console.dir(this.reviewProcessList);
                     this.total = response.data.total;
                 }).catch(() => {
                     this.listLoading = false;

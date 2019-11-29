@@ -141,9 +141,9 @@
                                 <el-checkbox v-model.trim="processTaskSetting.autoPass">没有对应审批人员时自动进入下一个审批环节</el-checkbox>
                             </div>
                             <div class="con-bank-20"></div>
-                            <div v-show="userTaskSettingVisible">
-                                <el-button type="primary" @click="saveTaskSetting">保存设置</el-button>
-                            </div>
+                        </div>
+                        <div v-show="userTaskSettingVisible">
+                            <el-button type="primary" @click="saveTaskSetting">保存设置</el-button>
                         </div>
                     </el-col>
                 </el-row>
@@ -331,7 +331,7 @@
                     }
                 },
                 set(v) {
-                    if (v.length > 0) {
+                    if (v && v.length > 0) {
                         let departmentIds = [];
                         let departmentTreePosition = [];
                         for (let item of v) {
@@ -476,7 +476,6 @@
                 this.dialogTaskSettingVisible = true;
                 this.processDefinition = deepClone(row);
                 this.flush(row.actDefinitionId);
-                console.dir(ProcessDiagramGenerator.processDiagrams);
             },
             btnSelectUser() {
                 this.dialogUserVisible = true;
@@ -515,12 +514,40 @@
                 })
             },
             saveTaskSetting() {
-                let userIds = [];
-                for (let user of this.candidateUserList) {
-                    userIds.push(user.id);
+                // 按用户分配
+                if (this.processTaskSetting.candidateType == 1) {
+                    let userIds = [];
+                    for (let user of this.candidateUserList) {
+                        userIds.push(user.id);
+                    }
+                    this.processTaskSetting.candidateUsers = userIds.join();
+                    this.processTaskSetting.candidateGroups = '';
+                    this.processTaskSetting.candidateDepartments = '';
+                    if (!this.processTaskSetting.candidateUsers) {
+                        this.$message.error('请选择用户');
+                        return;
+                    }
                 }
-                this.processTaskSetting.candidateUsers = userIds.join();
-                this.processTaskSetting.candidateGroups = this.candidateGroupList.join();
+                // 按角色分配
+                else if (this.processTaskSetting.candidateType == 2) {
+                    this.processTaskSetting.candidateUsers = '';
+                    this.processTaskSetting.candidateGroups = this.candidateGroupList.join();
+                    this.processTaskSetting.candidateDepartments = '';
+                    if (!this.processTaskSetting.candidateGroups) {
+                        this.$message.error('请选择角色');
+                        return;
+                    }
+                }
+                // 按部门分配
+                else if (this.processTaskSetting.candidateType == 3) {
+                    this.processTaskSetting.candidateUsers = '';
+                    this.processTaskSetting.candidateGroups = '';
+
+                    if (!this.processTaskSetting.candidateDepartments) {
+                        this.$message.error('请选择部门');
+                        return;
+                    }
+                }
                 createOrUpdateProcessTaskSetting(this.processTaskSetting).then(() => {
                     this.$message.success('保存成功');
                 })
@@ -707,7 +734,11 @@
                         if (this.processTaskSetting.candidateType === 1) {
                             this.getCandidateUserList(this.processTaskSetting.candidateUsers);
                         } else if (this.processTaskSetting.candidateType === 2) {
-                            this.candidateGroupList = this.processTaskSetting.candidateGroups.split(',')
+                            if (this.processTaskSetting.candidateGroups) {
+                                this.candidateGroupList = this.processTaskSetting.candidateGroups.split(',')
+                            } else {
+                                this.candidateGroupList = [];
+                            }
                         } else if (this.processTaskSetting.candidateType === 3) {
                             this.getCandidateDepartmentList(this.processTaskSetting.candidateDepartments).then(data => {
                                 this.candidateDepartmentTreePosition = [];
