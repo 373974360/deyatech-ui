@@ -39,5 +39,12 @@ export function getApplyOpenRecordList(query) {
         params: query
     });
 }
+export function getCompetentDept(query) {
+    return request({
+        url: '/manage/assembly/applyOpenRecord/getCompetentDept',
+        method: 'get',
+        params: query
+    });
+}
 
 

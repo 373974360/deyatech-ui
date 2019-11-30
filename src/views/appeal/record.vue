@@ -269,12 +269,6 @@
                                     <el-table-column type="expand">
                                         <template slot-scope="props">
                                             <table class="appeal_table">
-                                                <tr v-if="props.row.proType == 4">
-                                                    <th>延期至:</th>
-                                                    <td>
-                                                        {{props.row.reasonsTime}}
-                                                    </td>
-                                                </tr>
                                                 <tr>
                                                     <th>处理意见:</th>
                                                     <td>
@@ -1230,7 +1224,7 @@
                 }
                 this.getModelById(this.record.modelId);
                 this.dialogProcessVisible = true;
-                if(this.record.flag == 4){
+                if(this.record.sqStatus == 3){
                     this.replyContentDisabled = false;
                 }
                 this.getProcessDelayList(this.record.id);

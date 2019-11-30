@@ -49,7 +49,7 @@ export function getModeAllList(query) {
 
 export function getModelByCompetentDeptId(query) {
     return request({
-        url: '/manage/assembly/applyOpenModel/listApplyOpenModelByCompetentDeptId',
+        url: '/manage/assembly/applyOpenModel/listModelByCompetentDeptId',
         method: 'get',
         params: query
     });
