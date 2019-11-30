@@ -31,12 +31,7 @@
                 <el-table-column align="center" label="办理时限" prop="limitDay" width="90"/>
                 <el-table-column align="center" label="自动发布" prop="autoPublish" width="90">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.autoPublish == 1">
-                            是
-                        </span>
-                        <span v-if="scope.row.autoPublish == 2">
-                            否
-                        </span>
+                        {{scope.row.autoPublish | enums('YesNoEnum')}}
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="业务模式" prop="busType" width="90">
@@ -51,12 +46,7 @@
                 </el-table-column>
                 <el-table-column align="center" label="部门间转办" prop="deptTransfer" width="100">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.deptTransfer == 1">
-                            是
-                        </span>
-                        <span v-if="scope.row.deptTransfer == 2">
-                            否
-                        </span>
+                        {{scope.row.deptTransfer | enums('YesNoEnum')}}
                     </template>
                 </el-table-column>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
@@ -106,7 +96,7 @@
                             <el-form-item label="自动发布" prop="autoPublish">
                                 <el-switch
                                     v-model.trim="model.autoPublish"
-                                    :active-value=1 :inactive-value=2>
+                                    :active-value=1 :inactive-value=0>
                                 </el-switch>
                             </el-form-item>
                         </el-col>
@@ -121,7 +111,7 @@
                         <el-col :span="6">
                             <el-form-item label="部门间转办" prop="deptTransfer">
                                 <el-switch
-                                    v-model.trim="model.deptTransfer" :active-value=1 :inactive-value=2>
+                                    v-model.trim="model.deptTransfer" :active-value=1 :inactive-value=0>
                                 </el-switch>
                             </el-form-item>
                         </el-col>
@@ -280,23 +270,6 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="启用工作流" prop="workflowType">
-                                <el-switch
-                                    v-model.trim="model.workflowType"
-                                    :active-value=1 :inactive-value=2 @change="isWorkflowEnable">
-                                </el-switch>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="选择工作流" prop="workflowId" v-if="model.workflowType == 1">
-                                <el-select filterable v-model.trim="model.workflowId" placeholder="请选择工作流" style="width:100%">
-                                    <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
                                 <el-input type="textarea" v-model.trim="model.remark" :rows="3" maxlength="500"/>
@@ -352,13 +325,13 @@
                     siteId: this.$store.state.common.siteId,
                     modelName: undefined,
                     participant: 2,
-                    autoPublish: 2,
+                    autoPublish: 0,
                     limitDay: 15,
                     reminderDay: -5,
                     yellowDay: -2,
                     redDay: 2,
                     busType: 1,
-                    deptTransfer: 2,
+                    deptTransfer: 0,
                     competentDept: undefined,
                     partDept: undefined,
                     busCode: 'GPPS',
@@ -450,8 +423,7 @@
                 printTemplateTreeData: [],
                 listTemplateTreeData: [],
                 formTemplateTreeData: [],
-                detailsTemplateTreeData: [],
-                workflowList: []
+                detailsTemplateTreeData: []
             }
         },
         computed: {
@@ -480,33 +452,6 @@
             }
         },
         methods: {
-            isWorkflowEnable (value) {
-                if (value == 1) {
-                    if (this.workflowList.length == 0) {
-                        this.getWorkflowList();
-                    }
-                } else {
-                    if (this.model.workflowId) {
-                        this.model.workflowId = undefined;
-                    }
-                    this.workflowList = [];
-                }
-            },
-            // 获取工作流
-            getWorkflowList() {
-                this.workflowList = []
-                const query = {
-                    page: 1,
-                    size: 99999999
-                }
-                getProcessDefinitionList(query).then(response => {
-                    if (response.status == 200) {
-                        this.workflowList = response.data.records;
-                    } else {
-                        this.$message.error('工作流数据获取失败')
-                    }
-                })
-            },
             listTemplateAllFiles(){
                 this.listTemplateTreeData = [];
                 this.printTemplateTreeData = [];
@@ -684,13 +629,13 @@
                     siteId: this.$store.state.common.siteId,
                     modelName: undefined,
                     participant: 2,
-                    autoPublish: 2,
+                    autoPublish: 0,
                     limitDay: 15,
                     reminderDay: -5,
                     yellowDay: -2,
                     redDay: 2,
                     busType: 1,
-                    deptTransfer: 2,
+                    deptTransfer: 0,
                     competentDept: undefined,
                     partDept: undefined,
                     busCode: 'GPPS',

@@ -83,22 +83,12 @@
                         </el-table-column>
                         <el-table-column align="center" label="公开意愿" prop="isOpen" >
                             <template slot-scope="scope">
-                                <span v-if="scope.row.isOpen == 1">
-                                    是
-                                </span>
-                                <span v-if="scope.row.isOpen == 2">
-                                    否
-                                </span>
+                                {{scope.row.isOpen | enums('YesNoEnum')}}
                             </template>
                         </el-table-column>
                         <el-table-column align="center" label="发布状态" prop="isPublish" >
                             <template slot-scope="scope">
-                                <span v-if="scope.row.isPublish == 1">
-                                    是
-                                </span>
-                                <span v-if="scope.row.isPublish == 2">
-                                    否
-                                </span>
+                                {{scope.row.isPublish | enums('YesNoEnum')}}
                             </template>
                         </el-table-column>
                         <el-table-column align="center" label="来信时间" prop="createTime" min-width="170px;">
@@ -182,22 +172,6 @@
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
-                                <el-col :span="12">
-                                    <el-form-item label="收件部门" prop="deptId">
-                                        <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="recordDepartment"
-                                                     expand-trigger="hover" clearable @change="recordDepartmentChange" ></el-cascader>
-                                    </el-form-item>
-                                </el-col>
-                                <el-col :span="12">
-                                    <el-form-item label="公开意愿" prop="isOpen">
-                                        <el-switch
-                                            v-model.trim="record.isOpen"
-                                            :active-value=1 :inactive-value=2>
-                                        </el-switch>
-                                    </el-form-item>
-                                </el-col>
-                            </el-row>
-                            <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="来信内容" prop="content">
                                         <editor v-model.trim="record.content" :config="editorConfig" :default-msg="record.content" ref="content" id="content_index"></editor>
@@ -242,7 +216,7 @@
                                     <tr>
                                         <th>处理状态:</th>
                                         <td width="20%">
-                                            {{record.flag | enums('AppealStatusEnum')}}
+                                            {{record.sqStatus | enums('AppealStatusEnum')}}
                                         </td>
                                         <th>信件编码:</th>
                                         <td width="20%">{{record.sqCode}}</td>
@@ -262,21 +236,11 @@
                                         <td>{{record.modelName}}</td>
                                         <th>发布状态:</th>
                                         <td>
-                                            <span v-if="record.isPublish == 1">
-                                                已发布
-                                            </span>
-                                            <span v-if="record.isPublish == 2">
-                                                未发布
-                                            </span>
+                                            {{record.isPublish | enums('AppealStatusEnum')}}
                                         </td>
                                         <th>公开意愿:</th>
                                         <td>
-                                            <span v-if="record.isOpen == 1">
-                                                公开
-                                            </span>
-                                            <span v-if="record.isOpen == 2">
-                                                不公开
-                                            </span>
+                                            {{record.isOpen | enums('AppealStatusEnum')}}
                                         </td>
                                     </tr>
                                     <tr>
@@ -370,29 +334,6 @@
                                     </el-row>
                                     <el-row :gutter="20" :span="24">
                                         <el-col :span="12">
-                                            <el-form-item label="延期至" prop="reasonsTime" :hidden="reasonsTimeDisabled">
-                                                <el-date-picker
-                                                    style="width:100%;"
-                                                    v-model.trim="process.reasonsTime"
-                                                    type="datetime"
-                                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                                    placeholder="选择时间">
-                                                </el-date-picker>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
-                                    <el-row :gutter="20" :span="24">
-                                        <el-col :span="12">
-                                            <el-form-item label="是否同意" prop="reasonsStatus" :hidden="reasonsStatusDisabled">
-                                                <el-radio-group v-model="process.reasonsStatus">
-                                                    <el-radio :label="1">同意</el-radio>
-                                                    <el-radio :label="2">不同意</el-radio>
-                                                </el-radio-group>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
-                                    <el-row :gutter="20" :span="24">
-                                        <el-col :span="12">
                                             <el-form-item label="移交部门" prop="toDeptId" :hidden="toDeptIdDisabled">
                                                 <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="process.toDeptId"
                                                              expand-trigger="hover" ></el-cascader>
@@ -404,7 +345,7 @@
                                             <el-form-item label="是否公开" prop="isOpen" :hidden="isOpenDisabled">
                                                 <el-switch
                                                     v-model.trim="process.isOpen"
-                                                    :active-value=1 :inactive-value=2>
+                                                    :active-value=1 :inactive-value=0>
                                                 </el-switch>
                                             </el-form-item>
                                         </el-col>
@@ -412,7 +353,7 @@
                                             <el-form-item label="是否发布" prop="isPublish" :hidden="isPublishDisabled">
                                                 <el-switch
                                                     v-model.trim="process.isPublish"
-                                                    :active-value=1 :inactive-value=2>
+                                                    :active-value=1 :inactive-value=0>
                                                 </el-switch>
                                             </el-form-item>
                                         </el-col>
@@ -433,16 +374,18 @@
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                         <span v-else slot="footer" class="dialog-footer">
-                            <el-button v-if="btnEnable.acceptance && this.record.flag == 1" type="primary" @click="btnProcess(1)" :size="btnSize">受理</el-button>
-                            <el-button v-if="btnEnable.acceptance && this.record.flag == 1" type="primary" @click="btnProcess(2)" :size="btnSize">不予受理</el-button>
-                            <el-button v-if="btnEnable.invalids && this.record.flag != 6" type="primary" @click="btnProcess(3)" :size="btnSize">置为无效</el-button>
-                            <!--<el-button v-if="btnEnable.delay && appealDelay == 0" type="primary" @click="btnProcess(4)" :size="btnSize">延期</el-button>-->
-                            <!--<el-button v-if="btnEnable.delay_sh && appealDelay == 1" type="primary" @click="btnProcess(5)" :size="btnSize">延期审核</el-button>-->
-                            <el-button v-if="btnEnable.transfer && deptTransfer == 1" type="primary" @click="btnProcess(6)" :size="btnSize">转办</el-button>
-                            <el-button v-if="btnEnable.reply" type="primary" @click="btnProcess(7)" :size="btnSize">回复</el-button>
-                            <el-button v-if="btnEnable.returns && this.record.flag != 8" type="primary" @click="btnProcess(8)" :size="btnSize">退回</el-button>
-                            <el-button v-if="btnEnable.release && this.record.isPublish != 1" type="primary" @click="btnProcess(9)" :size="btnSize">发布</el-button>
-                            <el-button v-if="btnEnable.repeat" type="primary" :size="btnSize">判重</el-button>
+                            <el-button v-if="competentDepartment || deptTransfer" type="primary" @click="btnProcess(1)" :size="btnSize">转办</el-button>
+                            <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
+                            <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
+                            <template v-if="competentDepartment">
+                                <!--<el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>-->
+                                <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
+                                <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
+                            </template>
+                            <template v-if="!competentDepartment">
+                                <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
+                                <!--<el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>-->
+                            </template>
                             <el-button type="primary" :size="btnSize">打印</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
@@ -527,102 +470,128 @@
                     label: '发布管理',
                     children: [{
                         label: '未发布',
-                        isPublish: 2,
+                        isPublish: 0,
                         sqFlag: 0,
-                        sqStatus: 0,
-                        isBack: 0,
-                        limitFlag: 0
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     },{
                         label: '已发布',
                         isPublish: 1,
                         sqFlag: 0,
-                        sqStatus: 0,
-                        isBack: 0,
-                        limitFlag: 0
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     }]
                 }, {
                     label: '信件管理',
                     children: [{
                         label: '待处理',
-                        isPublish: 0,
+                        isPublish: undefined,
                         sqFlag: 0,
                         sqStatus: 0,
                         isBack: 0,
-                        limitFlag: 0
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     },{
                         label: '退回件',
-                        isPublish: 0,
+                        isPublish: undefined,
                         sqFlag: 0,
-                        sqStatus: 0,
+                        sqStatus: undefined,
                         isBack: 1,
-                        limitFlag: 0
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     },{
                         label: '办理中',
-                        isPublish: 0,
+                        isPublish: undefined,
                         sqFlag: 0,
                         sqStatus: 1,
                         isBack: 0,
-                        limitFlag: 0
-                    }, {
-                        label: '待审核',
-                        isPublish: 0,
-                        sqFlag: 0,
-                        sqStatus: 2,
-                        isBack: 0,
-                        limitFlag: 0
-                    }, {
+                        limitFlag: undefined,
+                        alarmFlag: undefined
+                    },{
                         label: '已办结',
-                        isPublish: 0,
+                        isPublish: undefined,
                         sqFlag: 0,
                         sqStatus: 3,
                         isBack: 0,
-                        limitFlag: 0
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     }]
                 }, {
                     label: '督查督办',
                     children: [{
-                        flag: 0,
-                        isPublish: 0,
-                        timeFlag: 1,
-                        label: '预警件'
+                        label: '预警件',
+                        isPublish: undefined,
+                        sqFlag: 0,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: 1
                     }, {
-                        flag: 0,
-                        isPublish: 0,
-                        timeFlag: 2,
-                        label: '黄牌件'
+                        label: '黄牌件',
+                        isPublish: undefined,
+                        sqFlag: 0,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: 2
                     }, {
-                        flag: 0,
-                        isPublish: 0,
-                        timeFlag: 3,
-                        label: '红牌件'
+                        label: '红牌件',
+                        isPublish: undefined,
+                        sqFlag: 0,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: 3
                     }]
                 }, {
                     label: '已处理信件',
                     children: [{
-                        flag: 3,
-                        isPublish: 0,
-                        timeFlag: 0,
-                        label: '不予受理'
+                        label: '不予受理',
+                        isPublish: undefined,
+                        sqFlag: 2,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     }, {
-                        flag: 6,
-                        isPublish: 0,
-                        timeFlag: 0,
-                        label: '无效件'
+                        label: '无效件',
+                        isPublish: undefined,
+                        sqFlag: -1,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     }, {
-                        flag: 7,
-                        isPublish: 0,
-                        timeFlag: 0,
-                        label: '重复件'
+                        label: '重复件',
+                        isPublish: undefined,
+                        sqFlag: 1,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: undefined
                     }]
                 }, {
                     label: '延期审核',
                     children: [{
-                        label: '已审核'
+                        label: '已审核',
+                        isPublish: undefined,
+                        sqFlag: 0,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: 1,
+                        alarmFlag: undefined
                     }, {
-                        flag: 6,
-                        isPublish: 0,
-                        timeFlag: 0,
-                        label: '待审核'
+                        label: '待审核',
+                        isPublish: undefined,
+                        sqFlag: 0,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: 2,
+                        alarmFlag: undefined
                     }]
                 }],
                 recordList: undefined,
@@ -636,11 +605,12 @@
                     purId: undefined,
                     timeFrame: undefined,
                     userDepartmentId: this.$store.state.user.userInfo.departmentId,
-                    isPublish: 0,
+                    isPublish: undefined,
                     sqFlag: 0,
-                    sqStatus: 0,
-                    isBack: 0,
-                    limitFlag: 0
+                    sqStatus: undefined,
+                    isBack: undefined,
+                    limitFlag: undefined,
+                    alarmFlag: undefined
                 },
                 recordDepartment: [],
                 recordReplyDepartment: [],
@@ -659,16 +629,20 @@
                     queryCode: undefined,
                     deptId: undefined,
                     proDeptId: undefined,
-                    isOpen: 2,
+                    isOpen: 1,
                     content: undefined,
-                    isPublish: 2,
                     replyContent: undefined,
                     replyTime: undefined,
                     replyDeptId: undefined,
                     createTime: undefined,
-                    flag: 1,
                     treePosition: undefined,
-                    replyTreePosition: undefined
+                    replyTreePosition: undefined,
+                    isPublish: 0,
+                    sqFlag: 0,
+                    sqStatus: 0,
+                    isBack: 0,
+                    limitFlag: 0,
+                    alarmFlag: 0
                 },
                 recordRules: {
                     modelId: [
@@ -677,11 +651,11 @@
                     title: [
                         {required: true, message: this.$t("table.pleaseInput") + '标题'}
                     ],
+                    purId: [
+                        {required: true, message: this.$t("table.pleaseInput") + '诉求目的'}
+                    ],
                     userName: [
                         {required: true, message: this.$t("table.pleaseInput") + '来信人姓名'}
-                    ],
-                    deptId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '收件部门'}
                     ],
                     content: [
                         {required: true, message: this.$t("table.pleaseInput") + '来信内容'}
@@ -840,12 +814,13 @@
                 reasonsTimeDisabled: true,
                 reasonsStatusDisabled: true,
                 processRulesType: {},
-                deptTransfer: 0,
                 appealDelay: 0,
                 proCessListQuery: {
                     sqId: undefined,
                     proType: undefined
-                }
+                },
+                deptTransfer: false,
+                competentDepartment: false
             }
         },
         computed: {
@@ -862,14 +837,6 @@
                     create: this.permission.record_create,
                     update: this.permission.record_update,
                     delete: this.permission.record_delete,
-                    acceptance: this.permission.record_acceptance,
-                    repeat: this.permission.record_repeat,
-                    invalids: this.permission.record_invalids,
-                    delay: this.permission.record_delay,
-                    delay_sh: this.permission.record_delay_sh,
-                    transfer: this.permission.record_transfer,
-                    reply: this.permission.record_reply,
-                    returns: this.permission.record_returns,
                     release: this.permission.record_release
                 };
             }
@@ -882,9 +849,13 @@
         },
         methods: {
             handleNodeClick(data) {
-                this.listQuery.flag = data.flag;
                 this.listQuery.isPublish = data.isPublish;
+                this.listQuery.sqFlag = data.sqFlag;
+                this.listQuery.sqStatus = data.sqStatus;
+                this.listQuery.isBack = data.isBack;
                 this.listQuery.timeFlag = data.timeFlag;
+                this.listQuery.alarmFlag = data.alarmFlag;
+                this.listQuery.limitFlag = data.limitFlag;
                 this.reloadList();
             },
             modelChange(v){
@@ -897,12 +868,14 @@
                 })
             },
             getModelById(id){
-                this.deptTransfer = 0;
+                this.deptTransfer = false;
+                this.competentDepartment = false;
                 getModel(id).then(response => {
                     if(response.data.competentDept.indexOf(this.$store.state.user.userInfo.departmentId)>=0){
-                        this.deptTransfer = 1;
-                    }else if(response.data.deptTransfer == 1){
-                        this.deptTransfer = 1;
+                        this.competentDepartment = true;
+                    }
+                    if(response.data.deptTransfer == 1){
+                        this.deptTransfer = true;
                     }
                 })
             },
@@ -989,20 +962,6 @@
                     })
                 }
             },
-            recordDepartmentChange(v) {
-                if (v && v.length > 0) {
-                    this.record.deptId = v[v.length-1];
-                } else {
-                    this.record.deptId = undefined;
-                }
-            },
-            recordReplyDepartmentChange(v) {
-                if (v && v.length > 0) {
-                    this.record.replyDeptId = v[v.length-1];
-                } else {
-                    this.record.replyDeptId = undefined;
-                }
-            },
             doCreate(){
                 this.record.content = this.$refs['content'].getUeContent();
                 this.$refs['recordDialogForm'].validate(valid => {
@@ -1060,16 +1019,20 @@
                     queryCode: undefined,
                     deptId: undefined,
                     proDeptId: undefined,
-                    isOpen: 2,
+                    isOpen: 1,
                     content: undefined,
-                    isPublish: 2,
                     replyContent: undefined,
                     replyTime: undefined,
                     replyDeptId: undefined,
                     createTime: undefined,
-                    flag: 1,
                     treePosition: undefined,
-                    replyTreePosition: undefined
+                    replyTreePosition: undefined,
+                    isPublish: 0,
+                    sqFlag: 0,
+                    sqStatus: 0,
+                    isBack: 0,
+                    limitFlag: 0,
+                    alarmFlag: 0
                 };
             },
             resetRecordDialogAndList(){
@@ -1089,83 +1052,8 @@
                 this.resetProcess();
                 this.processDisabled = false;
                 this.activeName = '5';
+                this.process.proType = undefined;
                 if(proType == 1){
-                    this.processTitle = '受理信件';
-                    this.proTimeLabel = '受理时间';
-                    this.proContentLabel = '受理意见';
-                    this.proTimeDisabled = false;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_1;
-                }
-                if(proType == 2){
-                    this.processTitle = '不予受理';
-                    this.proTimeLabel = '处理时间';
-                    this.proContentLabel = '处理意见';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_2;
-                }
-                if(proType == 3){
-                    this.processTitle = '置为无效';
-                    this.proTimeLabel = '处理时间';
-                    this.proContentLabel = '处理意见';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_2;
-                }
-                if(proType == 4){
-                    this.processTitle = '信件延期';
-                    this.proTimeLabel = '处理时间';
-                    this.proContentLabel = '延期原因';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = false;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_3;
-                }
-                if(proType == 5){
-                    this.processTitle = '延期审核';
-                    this.proTimeLabel = '处理时间';
-                    this.proContentLabel = '处理意见';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = false;
-                    this.process.reasonsStatus = 2;
-                    this.processRulesType = this.processRules_3;
-                }
-                if(proType == 6){
                     this.processTitle = '信件转办';
                     this.proTimeLabel = '转办时间';
                     this.proContentLabel = '转办意见';
@@ -1179,29 +1067,13 @@
                     this.reasonsTimeDisabled = true;
                     this.reasonsStatusDisabled = true;
                     this.processRulesType = this.processRules_4;
+                    this.$refs['proContent'].setUeContent("");
                 }
-                if(proType == 7){
+                if(proType == 2){
                     this.processTitle = '回复信件';
                     this.proTimeLabel = '回复时间';
                     this.proContentLabel = '回复内容';
                     this.proTimeDisabled = false;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = false;
-                    this.isPublishDisabled = false;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_5;
-                    this.process.isOpen = this.record.isOpen;
-                    this.process.isPublish = this.record.isPublish;
-                }
-                if(proType == 8){
-                    this.processTitle = '退回信件';
-                    this.proTimeLabel = '退回时间';
-                    this.proContentLabel = '退回原因';
-                    this.proTimeDisabled = true;
                     this.toDeptIdDisabled = true;
                     this.isOpenDisabled = true;
                     this.isPublishDisabled = true;
@@ -1210,9 +1082,12 @@
                     this.contentDisabled = true;
                     this.reasonsTimeDisabled = true;
                     this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_6;
+                    this.processRulesType = this.processRules_5;
+                    this.process.isOpen = this.record.isOpen;
+                    this.process.isPublish = this.record.isPublish;
+                    this.$refs['proContent'].setUeContent("");
                 }
-                if(proType == 9){
+                if(proType == 3){
                     this.processTitle = '发布信件';
                     this.proTimeLabel = '回复时间';
                     this.proContentLabel = '回复内容';
@@ -1232,6 +1107,75 @@
                     this.process.content = this.record.content;
                     this.process.proTime = this.record.replyTime;
                     this.process.proContent = this.record.replyContent;
+                    this.$refs['processContent'].setUeContent(this.process.content);
+                    this.$refs['proContent'].setUeContent(this.process.proContent);
+                }
+                if(proType == 4){
+                    this.processTitle = '退回信件';
+                    this.proTimeLabel = '退回时间';
+                    this.proContentLabel = '退回原因';
+                    this.proTimeDisabled = true;
+                    this.toDeptIdDisabled = true;
+                    this.isOpenDisabled = true;
+                    this.isPublishDisabled = true;
+                    this.proContentDisabled = false;
+                    this.titleDisabled = true;
+                    this.contentDisabled = true;
+                    this.reasonsTimeDisabled = true;
+                    this.reasonsStatusDisabled = true;
+                    this.processRulesType = this.processRules_6;
+                    this.$refs['proContent'].setUeContent("");
+                }
+                if(proType == 5){
+                    //信件判重
+                }
+                if(proType == 6){
+                    this.processTitle = '置为无效';
+                    this.proTimeLabel = '处理时间';
+                    this.proContentLabel = '处理意见';
+                    this.proTimeDisabled = true;
+                    this.toDeptIdDisabled = true;
+                    this.isOpenDisabled = true;
+                    this.isPublishDisabled = true;
+                    this.proContentDisabled = false;
+                    this.titleDisabled = true;
+                    this.contentDisabled = true;
+                    this.reasonsTimeDisabled = true;
+                    this.reasonsStatusDisabled = true;
+                    this.processRulesType = this.processRules_2;
+                    this.$refs['proContent'].setUeContent("");
+                }
+                if(proType == 7){
+                    this.processTitle = '信件延期';
+                    this.proTimeLabel = '处理时间';
+                    this.proContentLabel = '延期原因';
+                    this.proTimeDisabled = true;
+                    this.toDeptIdDisabled = true;
+                    this.isOpenDisabled = true;
+                    this.isPublishDisabled = true;
+                    this.proContentDisabled = false;
+                    this.titleDisabled = true;
+                    this.contentDisabled = true;
+                    this.reasonsTimeDisabled = false;
+                    this.reasonsStatusDisabled = true;
+                    this.processRulesType = this.processRules_3;
+                    this.$refs['proContent'].setUeContent("");
+                }
+                if(proType == 8){
+                    this.processTitle = '不予受理';
+                    this.proTimeLabel = '处理时间';
+                    this.proContentLabel = '处理意见';
+                    this.proTimeDisabled = true;
+                    this.toDeptIdDisabled = true;
+                    this.isOpenDisabled = true;
+                    this.isPublishDisabled = true;
+                    this.proContentDisabled = false;
+                    this.titleDisabled = true;
+                    this.contentDisabled = true;
+                    this.reasonsTimeDisabled = true;
+                    this.reasonsStatusDisabled = true;
+                    this.processRulesType = this.processRules_2;
+                    this.$refs['proContent'].setUeContent("");
                 }
                 this.process.proType = proType;
                 this.process.sqId = this.record.id;
@@ -1278,6 +1222,7 @@
             },
             processAppeal(row){
                 this.resetRecord();
+                this.resetProcess();
                 if (row.id) {
                     this.record = deepClone(row);
                 } else {
@@ -1333,7 +1278,7 @@
                 this.closeProcessDialog();
                 this.submitLoading = false;
                 this.reloadList();
-            },
+            }
         }
     }
 </script>
