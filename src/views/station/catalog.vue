@@ -943,6 +943,10 @@
                         this.catalog.treePosition = undefined;
                     }
                 }
+                // 非根栏目，继承父栏目的模型
+                if (this.catalog.parentId != '0' && this.catalog.contentModelId) {
+                    this.selectContentModelIds = this.catalog.contentModelId.split(',');
+                }
                 if (this.catalog.treePosition) {
                     this.catalogTreePosition = this.catalog.treePosition.substring(1).split('&');
                 }
