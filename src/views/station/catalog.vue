@@ -108,12 +108,12 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="栏目别名" prop="aliasName">
-                                <el-input v-model.trim="catalog.aliasName"></el-input>
+                                <el-input v-model.trim="catalog.aliasName" maxlength="50"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="ename">
-                                <el-input v-model.trim="catalog.ename"></el-input>
+                                <el-input v-model.trim="catalog.ename" :disabled="catalog.id ? true : false"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -133,7 +133,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="栏目描述" prop="columnDescription">
-                                <el-input type="textarea" v-model.trim="catalog.columnDescription" :rows="3"></el-input>
+                                <el-input type="textarea" v-model.trim="catalog.columnDescription" :rows="3" maxlength="10000"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -437,7 +437,7 @@
     } from '@/api/station/model';
     import {validateURL,isEnglish} from '@/util/validate';
     import {getDepartmentCascader} from '@/api/admin/department';
-    import {getUserList} from '@/api/admin/user';
+    import {pageStationAssociationUser} from '@/api/resource/stationGroupRole';
     import {getTableHeadCatalogData, getCustomizationFunctionCatalog, saveOrUpdate, removeCatalogData} from '@/api/assembly/customizationFunction'
 
     export default {
@@ -485,6 +485,10 @@
                 })
             };
             const validateAliasName = (rule, value, callback) => {
+                if (!value) {
+                    callback();
+                    return;
+                }
                 const query = {
                     id: this.catalog.id,
                     parentId: this.catalog.parentId ? this.catalog.parentId : '0',
@@ -633,9 +637,9 @@
                     autoRelease: 0,
                     contectObjectId: undefined,
                     generateHome: 0,
-                    navigationShowAble: 0,
+                    navigationShowAble: 1,
                     participant: 2,
-                    treeShowAble: 0,
+                    treeShowAble: 1,
                     workflowEnable: 0,
                     pathName: undefined,
                     contentModelId: undefined,
@@ -667,8 +671,6 @@
                         {validator: validateName, trigger: 'blur'}
                     ],
                     aliasName: [
-                        {required: true, message: this.$t("table.pleaseInput") + '栏目别名'},
-                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
                         {validator: validateAliasName, trigger: 'blur'}
                     ],
                     ename: [
@@ -744,9 +746,6 @@
                     flagAggregation: [
                         {required: true, message: this.$t("table.pleaseSelect") + '是否设置聚合规则'}
                     ],
-                    columnDescription: [
-                        {max: 500, message: '长度最多 500 个字符', trigger: 'blur'}
-                    ],
                     columnKeywords: [
                         {max: 200, message: '长度最多 200 个字符', trigger: 'blur'}
                     ],
@@ -784,17 +783,6 @@
                 catalogAggregationRules: {
                     cmsCatalogId: [
                         {required: true, validator: validateCmsCatalogId, trigger: 'change'}
-                    ],
-                    publishOrganization: [
-                        {required: true, message: this.$t("table.pleaseInput") + '发布机构'},
-                        {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'},
-                    ],
-                    publishTime: [
-                        {required: true, validator: validatePublishTime, trigger: 'blur'}
-                    ],
-                    publisher: [
-                        {required: true, message: this.$t("table.pleaseInput") + '发布人'},
-                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
                     ]
                 },
                 submitLoading: false,
@@ -813,6 +801,7 @@
                 userListQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
+                    siteId: this.$store.state.common.siteId,
                     name: undefined,
                     departmentId: undefined
                 },
@@ -829,6 +818,8 @@
             this.loadHeadData();
             this.$store.state.common.selectSiteDisplay = true;
             if (this.$store.state.common.siteId != undefined) {
+                this.listQuery.siteId = this.$store.state.common.siteId;
+                this.userListQuery.siteId = this.$store.state.common.siteId;
                 this.reloadList();
                 this.getAllModel();
                 this.getCatalogCascader();
@@ -1191,9 +1182,9 @@
                     autoRelease: 0,
                     contectObjectId: undefined,
                     generateHome: 0,
-                    navigationShowAble: 0,
+                    navigationShowAble: 1,
                     participant: 2,
-                    treeShowAble: 0,
+                    treeShowAble: 1,
                     workflowEnable: 0,
                     pathName: undefined,
                     contentModelId: undefined,
@@ -1332,6 +1323,7 @@
                     this.catalogAggregation.publishOrganization = undefined;
                 }
             },
+
             // 选择发布人
             btnSelectPublisher() {
                 this.currentUser = undefined;
@@ -1353,7 +1345,7 @@
             loadUserList() {
                 this.userList = undefined;
                 this.publisherListLoading = true;
-                getUserList(this.userListQuery).then(response => {
+                pageStationAssociationUser(this.userListQuery).then(response => {
                     this.publisherListLoading = false;
                     this.userList = response.data.records;
                     this.userTotal = response.data.total;
