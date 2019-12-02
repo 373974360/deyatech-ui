@@ -1329,6 +1329,9 @@
                 this.currentUser = undefined;
                 this.dialogPublisherVisible = true;
                 this.userListQuery.page = 1;
+                this.userListQuery.name = undefined;
+                this.userListQuery.departmentId = undefined;
+                this.publisherDepartment = [];
                 this.loadUserList();
             },
             closePublisherDialog() {
