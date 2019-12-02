@@ -548,8 +548,15 @@
                         return;
                     }
                 }
+                console.dir(this.processTaskSetting);
                 createOrUpdateProcessTaskSetting(this.processTaskSetting).then(() => {
                     this.$message.success('保存成功');
+                    getProcessTaskSetting({actDefinitionId: this.processTaskSetting.actDefinitionId,
+                        actTaskDefinitionId: this.processTaskSetting.actTaskDefinitionId}).then(response => {
+                        if (response.data) {
+                            this.processTaskSetting = deepClone(response.data);
+                        }
+                    });
                 })
             },
             resetProcessDefinition(){
@@ -773,7 +780,7 @@
                         click: function (canvas, element, contextObject) {
 
                             let mouseEvent = this;
-                            console.log("[CLICK] mouseEvent: %o, canvas: %o, clicked element: %o, contextObject: %o", mouseEvent, canvas, element, contextObject);
+                            //console.log("[CLICK] mouseEvent: %o, canvas: %o, clicked element: %o, contextObject: %o", mouseEvent, canvas, element, contextObject);
                             _this.resetProcessTaskSetting();
 
                             // 如果点击的是连接线，显示连接线信息
@@ -803,7 +810,7 @@
                                 } else if (type == 'callActivity') {
                                     let processDefinitons = contextObject.getProperty("processDefinitons");
                                     let processDefiniton = processDefinitons[0];
-                                    console.log("Load callActivity '" + processDefiniton.processDefinitionKey + "', contextObject: ", contextObject);
+                                    //console.log("Load callActivity '" + processDefiniton.processDefinitionKey + "', contextObject: ", contextObject);
 
                                     // Load processDefinition
                                     ProcessDiagramGenerator.drawDiagram(processDefiniton.processDefinitionId);
@@ -812,7 +819,7 @@
                         },
                         rightClick: function (canvas, element, contextObject) {
                             var mouseEvent = this;
-                            console.log("[RIGHTCLICK] mouseEvent: %o, canvas: %o, clicked element: %o, contextObject: %o", mouseEvent, canvas, element, contextObject);
+                            //console.log("[RIGHTCLICK] mouseEvent: %o, canvas: %o, clicked element: %o, contextObject: %o", mouseEvent, canvas, element, contextObject);
                         },
                         over: function (canvas, element, contextObject) {
                             var mouseEvent = this;
