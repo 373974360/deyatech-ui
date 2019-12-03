@@ -55,3 +55,11 @@ export function setRoleCatalogs(roleId, catalogIds, siteId) {
         data: {roleId, catalogIds, siteId}
     })
 }
+export function delCatalogRoleByRoleIds(roleIds) {
+    const data = {roleIds};
+    return request({
+        url: '/manage/station/catalogRole/removeByRoleIds',
+        method: 'post',
+        data
+    })
+}

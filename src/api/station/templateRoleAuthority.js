@@ -62,3 +62,11 @@ export function getRoleViewCount(roleIds) {
         data
     });
 }
+export function delTemplateRoleAuthorityByRoleIds(roleIds) {
+    const data = {roleIds};
+    return request({
+        url: '/manage/station/templateRoleAuthority/removeByRoleIds',
+        method: 'post',
+        data
+    })
+}

@@ -70,7 +70,7 @@
         <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                    :close-on-click-modal="closeOnClickModal" @close="closeMenuDialog">
             <el-form ref="menuDialogForm" class="deyatech-form" :model="menu" label-position="right"
-                     label-width="80px" :rules="menuRules">
+                     label-width="100px" :rules="menuRules">
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="上级菜单">

@@ -8,6 +8,20 @@
         </div>
 
         <div v-show="showType == 0">
+            <div class="deyatech-container pull-auto" style="width: 100%;">
+                <div class="deyatech-header" style="width: 100%;">
+                    <el-form :inline="true" ref="searchForm">
+                        <el-form-item>
+                            <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="treeListQuery.name"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnTreeSearch">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetTreeSearch">{{$t('table.clear')}}</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </div>
+
             <el-row :span="24">
                 <el-col :span="4">
                     <div class="directoryTree">
@@ -41,7 +55,7 @@
         </div>
 
         <div v-show="showType == 1">
-            <div class="deyatech-container pull-auto">
+            <div class="deyatech-container pull-auto" style="width: 100%;">
                 <div class="deyatech-header" style="width: 100%;">
                     <el-form :inline="true" ref="searchForm">
                         <el-form-item>
@@ -80,7 +94,12 @@
 
                 <el-table-column align="center" label="URL" prop="url" width="260"/>
                 <el-table-column align="center" label="路径" prop="path"/>
-                <el-table-column class-name="status-col" :label="$t('table.operation')" align="center" width="60">
+                <el-table-column align="center" label="使用" prop="usePlace">
+                    <template slot-scope="scope">
+                        {{scope.row.usePlace | enums('MaterialUsePlaceEnum')}}
+                    </template>
+                </el-table-column>
+                <el-table-column class-name="status-col" :label="$t('table.operation')" align="center" width="80">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -122,6 +141,7 @@
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
+                    name: undefined,
                     path: undefined
                 },
                 total: 0,
@@ -192,9 +212,20 @@
                     }
                 });
             },
+            btnTreeSearch() {
+                this.treeListQuery.page = 1;
+                this.reloadTreeList();
+            },
+            resetTreeSearch() {
+                this.treeListQuery.name = undefined;
+            },
             reloadTreeList(){
                 if (!this.treeListQuery.siteId) {
                     this.$message.warning("请先选择站点");
+                    return
+                }
+                if (!this.treeListQuery.path) {
+                    this.$message.warning("请先选择目录");
                     return
                 }
                 getTreeMaterialList(this.treeListQuery).then(response => {
@@ -202,6 +233,7 @@
                     this.treeMaterialTotal = response.data.total;
                 })
             },
+
             btnSearch() {
                 this.listQuery.page = 1;
                 this.reloadList();

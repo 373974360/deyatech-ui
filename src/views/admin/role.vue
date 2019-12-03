@@ -277,10 +277,10 @@
     import {getAllRoleMenu, setRoleMenus} from "@/api/admin/roleMenu";
     import {isStartOrEndWithWhiteSpace} from '@/util/validate';
     import {getRoleStationCascader, getAllStationCascader} from '@/api/resource/stationGroup';
-    import {getAllRoleStationGroup, setRoleStationGroups} from "@/api/resource/stationGroupRole";
+    import {getAllRoleStationGroup, setRoleStationGroups, delStationGroupRoleByRoleIds} from "@/api/resource/stationGroupRole";
     import {getCatalogTreeBySiteIds} from '@/api/station/catalog';
-    import {getAllRoleCatalogs, setRoleCatalogs} from '@/api/station/catalogRole'
-    import {getRoleAuthority, setRoleAuthority, getRoleViewCount} from '@/api/station/templateRoleAuthority'
+    import {getAllRoleCatalogs, setRoleCatalogs, delCatalogRoleByRoleIds} from '@/api/station/catalogRole'
+    import {getRoleAuthority, setRoleAuthority, getRoleViewCount, delTemplateRoleAuthorityByRoleIds} from '@/api/station/templateRoleAuthority'
 
     export default {
         name: 'role',
@@ -650,6 +650,9 @@
                 this.listLoading = true;
                 delRoles(ids).then(() => {
                     this.reloadList();
+                    delStationGroupRoleByRoleIds(ids).then(()=>{});
+                    delCatalogRoleByRoleIds(ids).then(()=>{});
+                    delTemplateRoleAuthorityByRoleIds(ids).then(()=>{});
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },

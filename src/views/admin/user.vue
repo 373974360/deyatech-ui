@@ -88,7 +88,7 @@
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeUserDialog">
                 <el-form ref="userDialogForm" class="deyatech-form" :model="user" label-position="right"
-                         label-width="80px" :rules="userRules">
+                         label-width="100px" :rules="userRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="部门" prop="departmentId">

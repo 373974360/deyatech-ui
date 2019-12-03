@@ -61,3 +61,11 @@ export function pageStationAssociationUser(query) {
         params: query
     });
 }
+export function delStationGroupRoleByRoleIds(roleIds) {
+    const data = {roleIds};
+    return request({
+        url: '/manage/resource/stationGroupRole/removeByRoleIds',
+        method: 'post',
+        data
+    })
+}
