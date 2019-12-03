@@ -158,24 +158,56 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="20" :span="24">
+                    <el-row :gutter="20" :span="24" v-if="model.status == 1">
                         <el-col :span="24">
                             <el-form-item label="直播地址" prop="liveUrl">
                                 <el-input v-model.trim="model.liveUrl" maxlength="255" placeholder="请输入直播地址"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="20" :span="24">
+                    <el-row :gutter="20" :span="24" v-if="model.status != 1">
                         <el-col :span="24">
-                            <el-form-item label="视频地址" prop="videoUrl">
+                            <el-form-item label="视频地址" prop="videoUrl" :rules="model.status != 1 ? modelRules.videoUrl : []">
                                 <el-input v-model.trim="model.videoUrl" maxlength="255" placeholder="请输入视频地址"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="0" :span="24">
-                        <el-col :span="24" style="margin-bottom: 0;">
-                            <el-form-item label="" prop="images">
-                                <el-input v-model.trim="model.images" v-show="false"></el-input>
+
+                    <el-row :gutter="20" :span="24" v-if="model.status != 1">
+                        <el-col :span="24" class="modelImage">
+                            <el-form-item label="图片" prop="images" :rules="model.status != 1 ? modelRules.images : []">
+                                <el-form ref="modelImageForm"  :model="modelImage" label-width="0">
+                                    <div class="box" v-for="(item, index) in model.imageList" :key="item.key">
+                                        <div style="position: absolute; top: 65px; left: 60px;">
+                                            <el-button class="hidebtn" v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                                       @click.stop.safe="btnDeleteImage('img' + item.key)"></el-button>
+                                        </div>
+                                        <img :src="imageShowUrl + item.url" width="162" height="152"/>
+                                        <el-form-item label="" :prop="'img' + item.key" :rules="[{required: true, message: '请输入图片名称'}]" style="margin-top: 5px">
+                                            <el-input v-model="modelImage['img' + item.key]"
+                                                      :size="btnSize"
+                                                      @change="imageNameChange"
+                                                      maxlength="30" placeholder="请输入图片名称" style="width: 100%;"></el-input>
+                                        </el-form-item>
+                                    </div>
+
+                                    <div class="box">
+                                        <el-upload class="image-uploader" name="file"
+                                                   :action="$store.state.common.materialUploadUrl"
+                                                   :data="{siteId: $store.state.common.siteId}"
+                                                   :accept="$store.state.common.imageAccepts"
+                                                   :show-file-list="false"
+                                                   :on-success="handleNotLiveImageSuccess"
+                                                   :on-error="handlerImagesError"
+                                                   :before-upload="beforeImageUpload">
+                                            <i class="el-icon-plus image-uploader-icon"></i>
+                                        </el-upload>
+                                        <el-form-item label="" style="margin-top: 5px">
+                                            <el-input :size="btnSize" style="visibility: hidden;"></el-input>
+                                        </el-form-item>
+                                    </div>
+                                </el-form>
+                                <el-input v-model="model.images" v-show="false"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -194,7 +226,9 @@
                 </span>
             </el-dialog>
 
-
+            <el-dialog :visible.sync="dialogNotLiveImageVisible">
+                <img width="100%" :src="dialogNotLiveImageImageUrl" alt="">
+            </el-dialog>
 
             <el-dialog title="直播互动" :fullscreen="false" :visible.sync="liveDialogVisible" :close-on-click-modal="closeOnClickModal" @close="liveCloseModelDialog">
                 <el-row v-loading="liveDialogLoading">
@@ -429,13 +463,6 @@
                 <el-form ref="guestDialogForm" class="deyatech-form" :model="guest" label-position="right" label-width="80px" :rules="guestRules">
                     <el-row :span="24">
                         <el-col :span="12">
-                            <!--<el-row :span="24">
-                                <el-col :span="24">
-                                    <el-form-item label="访谈名称" prop="modelId">
-                                        <el-input :value="model.name" readonly disabled></el-input>
-                                    </el-form-item>
-                                </el-col>
-                            </el-row>-->
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
                                     <el-form-item label="姓名" prop="name">
@@ -679,8 +706,10 @@
                     images: undefined,
                     content: undefined,
                     status: undefined,
-                    isPublish: undefined
+                    isPublish: undefined,
+                    imageList: []
                 },
+                modelImage: {},
                 modelRules: {
                     categoryId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '分类'}
@@ -710,6 +739,9 @@
                     ],
                     isPublish: [
                         {required: true, message: this.$t("table.pleaseSelect") + '发布状态'}
+                    ],
+                    images: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '图片'}
                     ]
                 },
                 selectedRows: [],
@@ -807,7 +839,9 @@
                 departmentCascaderLength: 0,
                 inputDepartmentName: undefined,
                 departmentValue: undefined,
-                increment: 1
+                increment: 1,
+                dialogNotLiveImageImageUrl: '',
+                dialogNotLiveImageVisible: false
             }
         },
         computed: {
@@ -886,15 +920,25 @@
             },
             btnCreate(){
                 this.resetModel();
+                this.modelImage = {};
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
             btnUpdate(row){
                 this.resetModel();
+                this.modelImage = {};
                 if (row.id) {
                     this.model = deepClone(row);
                 } else {
                     this.model = deepClone(this.selectedRows[0]);
+                }
+                if (this.model.images) {
+                    this.$set(this.model, 'imageList', JSON.parse(this.model.images));
+                    if (this.model.imageList) {
+                        for (let item of this.model.imageList) {
+                            this.$set(this.modelImage, 'img' + item.key, item.name);
+                        }
+                    }
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -916,29 +960,59 @@
                 }
             },
             doCreate(){
-                this.$refs['modelDialogForm'].validate(valid => {
-                    if(valid) {
-                        this.submitLoading = true;
-                        createOrUpdateModel(this.model).then(() => {
-                            this.resetModelDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
-                        })
-                    } else {
-                        return false;
-                    }
+                let _this = this;
+                let formValidate = [];
+                formValidate.push(new Promise((resolve, reject)=>{
+                    _this.$refs['modelDialogForm'].validate(valid => {
+                        if(valid) {
+                            resolve();
+                        }
+                    });
+                }));
+                // 非直播
+                if (this.model.status != 1) {
+                    formValidate.push(new Promise((resolve, reject)=>{
+                        _this.$refs['modelImageForm'].validate(valid => {
+                            if(valid) {
+                                resolve();
+                            }
+                        });
+                    }));
+                }
+                Promise.all(formValidate).then(() => {
+                    this.submitLoading = true;
+                    createOrUpdateModel(this.model).then(() => {
+                        this.resetModelDialogAndList();
+                        this.$message.success(this.$t("table.createSuccess"));
+                    })
                 });
             },
             doUpdate(){
-                this.$refs['modelDialogForm'].validate(valid => {
-                    if(valid) {
-                        this.submitLoading = true;
-                        createOrUpdateModel(this.model).then(() => {
-                            this.resetModelDialogAndList();
-                            this.$message.success(this.$t("table.updateSuccess"));
-                        })
-                    } else {
-                        return false;
-                    }
+                let _this = this;
+                let formValidate = [];
+                formValidate.push(new Promise((resolve, reject)=>{
+                    _this.$refs['modelDialogForm'].validate(valid => {
+                        if(valid) {
+                            resolve();
+                        }
+                    });
+                }));
+                // 非直播
+                if (this.model.status != 1) {
+                    formValidate.push(new Promise((resolve, reject)=>{
+                        _this.$refs['modelImageForm'].validate(valid => {
+                            if(valid) {
+                                resolve();
+                            }
+                        });
+                    }));
+                }
+                Promise.all(formValidate).then(() => {
+                    this.submitLoading = true;
+                    createOrUpdateModel(this.model).then(() => {
+                        this.resetModelDialogAndList();
+                        this.$message.success(this.$t("table.updateSuccess"));
+                    })
                 })
             },
             doDelete(ids){
@@ -961,7 +1035,8 @@
                     images: undefined,
                     content: undefined,
                     status: undefined,
-                    isPublish: undefined
+                    isPublish: undefined,
+                    imageList: []
                 }
             },
             resetModelDialogAndList(){
@@ -1594,6 +1669,63 @@
             changeDepartment() {
                 this.getSelectDepartment();
                 this.$refs.guestDialogForm.validateField('departmentName', errorMsg => {});
+            },
+            handleNotLiveImageSuccess(res) {
+                if (res.status === 200 && res.data.state === 'SUCCESS') {
+                    let item = res.data.customData;
+                    console.dir(item);
+                    let newItem = {};
+                    newItem.name = item.name;
+                    newItem.url = item.url;
+                    newItem.modelId = this.model.id;
+                    newItem.key = this.generateKey();
+                    this.model.imageList.push(newItem);
+                    this.$set(this.modelImage, 'img' + newItem.key, newItem.name);
+                    this.$set(this.model, 'images', JSON.stringify(this.model.imageList));
+                    this.$message.success('上传成功！');
+                } else {
+                    console.error(res);
+                    this.$message.error('上传失败！');
+                }
+            },
+            generateKey() {
+                var s = [];
+                var hexDigits = "0123456789abcdef";
+                for (var i = 0; i < 36; i++) {
+                    s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+                }
+                s[14] = "4";
+                s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
+                s[8] = s[13] = s[18] = s[23] = "";
+
+                var uuid = s.join("");
+                return uuid;
+            },
+            imageNameChange() {
+                let keys = Object.getOwnPropertyNames(this.modelImage);
+                for (let key of keys) {
+                    if (key.startsWith("img")) {
+                        for (let i = 0; i < this.model.imageList.length; i++) {
+                            let item = this.model.imageList[i];
+                            if (key === 'img' + item.key) {
+                                item.name = this.modelImage[key];
+                                this.$set(this.model.imageList, i, item);
+                            }
+                        }
+                    }
+                }
+                this.model.images = JSON.stringify(this.model.imageList);
+            },
+            btnDeleteImage(key) {
+                let index = -1;
+                for (let item of this.model.imageList) {
+                    index += 1;
+                    if (key === 'img' + item.key) {
+                        this.model.imageList.splice(index, 1);
+                    }
+                }
+                this.model.images = JSON.stringify(this.model.imageList);
+                delete this.modelImage[key];
             }
         }
     }
@@ -1760,4 +1892,23 @@
         display: block;
     }
 
+    .modelImage {
+
+    }
+    .modelImage .el-form-item__content {
+        line-height: 0;
+    }
+    .modelImage .box {
+        display: inline-block;
+        margin-right:10px;
+        margin-top: 10px;
+        width: 160px;
+        position: relative;
+    }
+    .hidebtn {
+        visibility: hidden;
+    }
+    .box:hover button {
+        visibility: visible;
+    }
 </style>

@@ -94,7 +94,7 @@
 
                 <el-table-column align="center" label="URL" prop="url" width="260"/>
                 <el-table-column align="center" label="路径" prop="path"/>
-                <el-table-column align="center" label="使用" prop="usePlace">
+                <el-table-column align="center" label="使用" prop="usePlace" width="120">
                     <template slot-scope="scope">
                         {{scope.row.usePlace | enums('MaterialUsePlaceEnum')}}
                     </template>
