@@ -1053,9 +1053,8 @@
             },
             //预览
             btnPreview(row) {
-                let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '_content_info_' + row.id;
+                let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
                 this.$router.push({path: url});
-                //window.open('');
             },
             btnCreate(command){
                 if (command) {
