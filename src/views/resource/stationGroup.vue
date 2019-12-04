@@ -905,7 +905,11 @@
                     return;
                 }
                 this.listQuery.stationGroupClassificationId = data.value;
-                this.listQuery.stationGroupClassificationTreePosition = data.treePosition + '&' + data.value;
+                if (data.treePosition) {
+                    this.listQuery.stationGroupClassificationTreePosition = data.treePosition + '&' + data.value;
+                } else {
+                    this.listQuery.stationGroupClassificationTreePosition = '&' + data.value;
+                }
                 this.resetSearch();
                 this.handleCurrentChange(1);
             },
@@ -1257,7 +1261,6 @@
             },
             watermarkUrlUploadSuccess(response) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
-                    console.dir(response.data);
                     this.setting.watermarkUrl = response.data.url;
                     this.$message.success('上传成功！');
                 } else {
@@ -1298,7 +1301,6 @@
                 } else {
                     this.stationGroup = deepClone(this.selectedRows[0]);
                 }
-                console.dir(this.stationGroup);
                 this.domainReloadList();
                 this.titleDomain = this.stationGroup.name + ' - 域名管理';
                 this.dialogDomainVisible = true;

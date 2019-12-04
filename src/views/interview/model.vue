@@ -15,20 +15,20 @@
                         <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="listQuery.name"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList" :disabled="!this.listQuery.categoryId">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="!this.listQuery.categoryId">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnLiveUpdate" :disabled="selectedRows.length != 1 || selectedRows[0].status != 1">直播</el-button>
                 </div>
                 <div class="deyatech-menu_right">
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList" :disabled="!this.listQuery.categoryId"></el-button>
+                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
 
@@ -167,7 +167,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24" v-if="model.status != 1">
                         <el-col :span="24">
-                            <el-form-item label="视频地址" prop="videoUrl" :rules="model.status != 1 ? modelRules.videoUrl : []">
+                            <el-form-item label="视频地址" prop="videoUrl">
                                 <el-input v-model.trim="model.videoUrl" maxlength="255" placeholder="请输入视频地址"></el-input>
                             </el-form-item>
                         </el-col>
@@ -175,7 +175,7 @@
 
                     <el-row :gutter="20" :span="24" v-if="model.status != 1">
                         <el-col :span="24" class="modelImage">
-                            <el-form-item label="图片" prop="images" :rules="model.status != 1 ? modelRules.images : []">
+                            <el-form-item label="图片" prop="images"><!--:rules="model.status != 1 ? modelRules.images : []"-->
                                 <el-form ref="modelImageForm"  :model="modelImage" label-width="0">
                                     <div class="box" v-for="(item, index) in model.imageList" :key="item.key">
                                         <div style="position: absolute; top: 65px; left: 60px;">
@@ -569,6 +569,9 @@
         },
         data() {
             const validatorLiveUrl = (rule, value, callback) => {
+                if (!value) {
+                    callback();
+                }
                 if ( /(http|https|ftp):\/\/[^\s]+/.test(value) || /^\/[^\s]*/.test(value) ) {
                     callback();
                 } else {
@@ -576,6 +579,9 @@
                 }
             };
             const validatorVideoUrl = (rule, value, callback) => {
+                if (!value) {
+                    callback();
+                }
                 if ( /(http|https|ftp):\/\/[^\s]+/.test(value) || /^\/[^\s]*/.test(value) ) {
                     callback();
                 } else {
@@ -691,6 +697,7 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
+                    siteId: undefined,
                     name: undefined,
                     categoryId: undefined
                 },
@@ -727,11 +734,11 @@
                         {required: true, message: this.$t("table.pleaseInput") + '访谈简介'}
                     ],
                     liveUrl: [
-                        {required: true, message: this.$t("table.pleaseInput") + '直播地址'},
+                        /*{required: true, message: this.$t("table.pleaseInput") + '直播地址'},*/
                         {validator: validatorLiveUrl, trigger: 'blur'}
                     ],
                     videoUrl: [
-                        {required: true, message: this.$t("table.pleaseInput") + '视频地址'},
+                        /*{required: true, message: this.$t("table.pleaseInput") + '视频地址'},*/
                         {validator: validatorVideoUrl, trigger: 'blur'}
                     ],
                     status: [
@@ -739,10 +746,10 @@
                     ],
                     isPublish: [
                         {required: true, message: this.$t("table.pleaseSelect") + '发布状态'}
-                    ],
-                    images: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '图片'}
                     ]
+                    /*images: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '图片'}
+                    ]*/
                 },
                 selectedRows: [],
                 dialogVisible: false,
@@ -869,33 +876,29 @@
         created(){
             this.$store.state.common.selectSiteDisplay = true;
             if (this.$store.state.common.siteId) {
+                this.listQuery.siteId = this.$store.state.common.siteId;
                 this.imageShowUrl = this.$store.state.common.materialShowImageByUrl + "?siteId=" + this.$store.state.common.siteId + "&url=";
                 this.loadCategory();
+                this.reloadList();
             }
         },
         methods: {
             loadCategory() {
                 getAllCategoryList({siteId: this.$store.state.common.siteId}).then(response => {
                     this.categorys = response.data;
-                    if (this.categorys && this.categorys.length > 0) {
-                        this.listQuery.categoryId = this.categorys[0].id;
-                        this.reloadList();
-                    }
                 }).catch((error)=>{
                     this.$message.error(error);
                 });
             },
             resetSearch() {
                 this.listQuery.name = undefined;
+                this.listQuery.categoryId = undefined;
             },
             searchList() {
                 this.listQuery.page = 1;
                 this.reloadList();
             },
             reloadList(){
-                if (!this.listQuery.categoryId) {
-                    return;
-                }
                 this.listLoading = true;
                 this.modelList = undefined;
                 getModelListByCategoryAndName(this.listQuery).then(response => {

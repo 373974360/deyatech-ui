@@ -70,7 +70,10 @@
         <!-- 文件湘西内容 -->
         <el-dialog title="内容" :visible.sync="dialogContentVisible"
                    :close-on-click-modal="closeOnClickModal" @close="closeContentDialog" width="100%" :fullscreen="dialogWindow">
-            <codemirror :value="contentCode" :options="options" style="border:1px solid #cccccc;"></codemirror>
+            <codemirror :value="contentCode" :options="options" style="border:1px solid #cccccc;"
+                        v-if="mode === 'javascript' || mode === 'htmlmixed'"></codemirror>
+            <el-image :src="$store.state.common.materialShowImageByPath + imagePath"
+                      v-if="mode === 'jpg' || mode === 'jpeg' || mode === 'png' || mode === 'bmp' || mode === 'gif'"></el-image>
         </el-dialog>
     </basic-container>
 </template>
@@ -136,6 +139,8 @@
                 dialogContentVisible: false,
                 contentCode: undefined,
                 mode: undefined,
+                suffix: undefined,
+                imagePath: undefined,
                 dialogWindow: true,
                 uploadAction: this.$store.state.common.uploadUrl,
                 uploadTypes: 'application/zip, image/jpg, image/jpeg, image/png, image/bmp, image/gif,text/html,application/x-javascript,text/css',
@@ -186,18 +191,19 @@
                 })
             },
             getChildFiles (path) {
-                console.log(path);
                 this.filePath = path;
                 this.listTemplateFiles();
             },
             getFileContext (row) {
-                this.mode = row.filePath.substring(row.filePath.indexOf(".")+1,row.filePath.length);
-                if(this.mode == 'js'){
+                this.imagePath = row.filePath.replace(/\\/g,"/");
+                this.mode = row.filePath.substring(row.filePath.lastIndexOf(".") + 1);
+                if(this.mode === 'js'){
                     this.mode = 'javascript';
                 }
-                if(this.mode == 'html'){
+                if(this.mode === 'html' || this.mode === 'svg'){
                     this.mode = 'htmlmixed';
                 }
+                console.log(this.mode)
                 this.dialogContentVisible = true;
                 this.contentCode = undefined;
                 getFileContent(row.filePath).then(response => {

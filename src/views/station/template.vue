@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="listQuery.title"></el-input>
+                        <el-input :size="searchSize" placeholder="标题、来源、作者、权重、时间" v-model.trim="listQuery.title" style="width: 300px"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>

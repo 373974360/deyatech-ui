@@ -114,3 +114,11 @@ export function getNextSortNo() {
         params: {}
     });
 }
+export function clearWorkFlow(keys) {
+    const data = {keys};
+    return request({
+        url: '/manage/station/catalog/clearWorkFlow',
+        method: 'post',
+        data
+    });
+}

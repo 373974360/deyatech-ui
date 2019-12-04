@@ -101,7 +101,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="栏目名称" prop="name">
-                                <el-input v-model.trim="catalog.name"/>
+                                <el-input v-model.trim="catalog.name" @change="nameChange"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -121,7 +121,15 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="栏目类型" prop="columnType">
-                                <el-input v-model.trim="catalog.columnType"></el-input>
+                                <el-select filterable v-model.trim="catalog.columnType"
+                                           placeholder="请选择栏目类型" style="width: 100%;">
+                                    <el-option
+                                        v-for="s in resourceCategoryList"
+                                        :key="s.id"
+                                        :label="s.codeText"
+                                        :value="s.id">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -439,6 +447,7 @@
     import {getDepartmentCascader} from '@/api/admin/department';
     import {pageStationAssociationUser} from '@/api/resource/stationGroupRole';
     import {getTableHeadCatalogData, getCustomizationFunctionCatalog, saveOrUpdate, removeCatalogData} from '@/api/assembly/customizationFunction'
+    import {getDictionaryList} from '@/api/admin/dictionary';
 
     export default {
         name: 'catalog',
@@ -812,6 +821,7 @@
                 displaySettingVisible: false,
                 customizationFunction: undefined,
                 headList: [],
+                resourceCategoryList: []
             }
         },
         created() {
@@ -826,6 +836,8 @@
                 this.loadDepartmentCascader();
                 this.listTemplateAllFiles();
                 this.indexTemplateAllFiles();
+                this.getResourceCategoryList();
+                this.getWorkflowList();
             }
         },
         computed: {
@@ -984,6 +996,8 @@
                         this.catalog.sortNo = response.data;
                     });
                 });
+                this.catalog.navigationShowAble = 1;
+                this.catalog.treeShowAble = 1
                 this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'create';
@@ -1002,7 +1016,6 @@
                 if (this.catalog.treePosition) {
                     this.catalogTreePosition = this.catalog.treePosition.substring(1).split('&');
                 }
-                this.isWorkflowEnable(this.catalog.workflowEnable);
                 // 聚合栏目
                 if (this.catalog.flagAggregation) {
                     this.catalogAggregation = this.catalog.catalogAggregation;
@@ -1225,7 +1238,6 @@
                 this.dialogVisible = false;
                 this.selectIndexTemplate = undefined;
                 this.selectListTemplate = undefined;
-                this.workflowList = [];
                 this.resetCatalog();
                 this.resetCatalogAggregation();
                 this.$refs['catalogDialogForm'].resetFields();
@@ -1240,15 +1252,10 @@
             },
             isWorkflowEnable(value) {
                 if (value == 1) {
-                    if (this.workflowList.length == 0) {
-                        this.getWorkflowList();
-                    }
                     this.display = true;
                 } else {
                     this.display = false;
-                    if (this.catalog.workflowKey) {
-                        this.catalog.workflowKey = undefined;
-                    }
+                    this.catalog.workflowKey = undefined;
                 }
             },
             // 获取工作流
@@ -1478,7 +1485,23 @@
                     this.closeDisplaySettingDialog();
                     this.$message.success("重置成功");
                 });
+            },
+            // 资源分类
+            getResourceCategoryList() {
+                getDictionaryList({indexId: 'resource_category'}).then(response => {
+                    if (response.status == 200) {
+                        this.resourceCategoryList = response.data;
+                    } else {
+                        this.$message.error('获取字典项失败')
+                    }
+                })
+            },
+            nameChange(v) {
+                if (!this.catalog.aliasName) {
+                    this.catalog.aliasName = v;
+                }
             }
+
         }
     }
 </script>

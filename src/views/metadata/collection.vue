@@ -16,7 +16,7 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || countModel > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -491,7 +491,8 @@
                 sorted: [],
                 sortedRowsToMove: [],
                 maxPageNumber: 0,
-                collectionId: undefined
+                collectionId: undefined,
+                countModel: 0
             }
         },
         computed: {
@@ -613,6 +614,12 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.countModel = 0;
+                if (this.selectedRows) {
+                    for (let r of rows) {
+                        this.countModel += r.countModel;
+                    }
+                }
             },
             handleSelectionChangeRelated(rows) {
                 this.selectedRowsRelation = rows;

@@ -214,6 +214,9 @@
         getDepartmentCascader,
         findDepartmentByIds
     } from "../../api/admin/department";
+    import {
+        clearWorkFlow
+    } from "../../api/station/catalog";
 
     export default {
         name: 'processDefinition',
@@ -426,17 +429,20 @@
             },
             btnDelete(row){
                 let ids = [];
+                let keys = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push(row.id);
-                        this.doDelete(ids);
+                        keys.push(row.actDefinitionKey);
+                        this.doDelete(ids, keys);
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for(const deleteRow of this.selectedRows){
                             ids.push(deleteRow.id);
+                            keys.push(deleteRow.actDefinitionKey);
                         }
-                        this.doDelete(ids);
+                        this.doDelete(ids, keys);
                     })
                 }
             },
@@ -506,9 +512,13 @@
                     }
                 })
             },
-            doDelete(ids){
+            doDelete(ids, keys){
                 this.listLoading = true;
                 delProcessDefinitions(ids).then(() => {
+                    console.dir(keys);
+                    if (keys) {
+                        clearWorkFlow(keys).then(()=>{});
+                    }
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

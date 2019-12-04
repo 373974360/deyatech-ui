@@ -229,7 +229,8 @@
         name: 'dictionaryIndex',
         data() {
             const validateCode = (rule, value, callback) => {
-                if (!validateLowerCase(value)) {
+                const reg = /^[a-z_]+$/
+                if (!reg.test(value)) {
                     callback(new Error(''));
                 } else {
                     callback();
@@ -252,7 +253,7 @@
                 dictionaryIndexRules: {
                     key: [
                         {required: true, message: this.$t("table.pleaseInput") + '索引关键字'},
-                        {validator: validateCode,message:'索引必须为小写字母',trigger:'blur'}
+                        {validator: validateCode,message:'请输入小写英文字母(可用下划线分隔)',trigger:'blur'}
                     ],
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '索引名称'}
@@ -288,7 +289,7 @@
                     ],
                     code: [
                         {required: true, message: this.$t("table.pleaseInput") + '英文代码'},
-                        {validator: validateCode,message:'请输入英文字母',trigger:'blur'}
+                        {validator: validateCode,message:'请输入小写英文字母(可用下划线分隔)',trigger:'blur'}
                     ],
                     codeText: [
                         {required: true, message: this.$t("table.pleaseInput") + '中文名称'}

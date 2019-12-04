@@ -12,6 +12,11 @@
                 <div class="deyatech-header" style="width: 100%;">
                     <el-form :inline="true" ref="searchForm">
                         <el-form-item>
+                            <el-select v-model="treeListQuery.usePlace" :size="searchSize" placeholder="请选择使用">
+                                <el-option v-for="i in enums['MaterialUsePlaceEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item>
                             <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="treeListQuery.name"></el-input>
                         </el-form-item>
                         <el-form-item>
@@ -58,6 +63,11 @@
             <div class="deyatech-container pull-auto" style="width: 100%;">
                 <div class="deyatech-header" style="width: 100%;">
                     <el-form :inline="true" ref="searchForm">
+                        <el-form-item>
+                            <el-select v-model="listQuery.usePlace" :size="searchSize" placeholder="请选择使用">
+                                <el-option v-for="i in enums['MaterialUsePlaceEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                            </el-select>
+                        </el-form-item>
                         <el-form-item>
                             <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
                         </el-form-item>
@@ -135,14 +145,16 @@
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
-                    name: undefined
+                    name: undefined,
+                    usePlace: undefined
                 },
                 treeListQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
                     name: undefined,
-                    path: undefined
+                    path: undefined,
+                    usePlace: undefined
                 },
                 total: 0,
                 materialList: undefined,
@@ -218,6 +230,7 @@
             },
             resetTreeSearch() {
                 this.treeListQuery.name = undefined;
+                this.treeListQuery.usePlace = undefined;
             },
             reloadTreeList(){
                 if (!this.treeListQuery.siteId) {
@@ -240,6 +253,7 @@
             },
             resetSearch() {
                 this.listQuery.name = undefined;
+                this.listQuery.usePlace = undefined;
             },
             reloadList(){
                 if (!this.listQuery.siteId) {

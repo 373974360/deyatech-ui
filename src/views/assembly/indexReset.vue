@@ -29,6 +29,20 @@
     export default {
         name: 'indexCode',
         data() {
+            const checkStart = (rule, value, callback) => {
+                if (value && this.reset.end) {
+                    if (value > this.reset.end) {
+                        callback(new Error('开始日期必须小于等于结束日期'));
+                    }
+                }
+            };
+            const checkEnd = (rule, value, callback) => {
+                if (value && this.reset.start) {
+                    if (value < this.reset.start) {
+                        callback(new Error('结束日期必须大于等于开始日期'));
+                    }
+                }
+            };
             return {
                 submitLoading: undefined,
                 reset: {
@@ -41,10 +55,12 @@
                         {required: true, message: '请选择开始站点'}
                     ],
                     start: [
-                        {required: true, message: '请选择开始日期'}
+                        {required: true, message: '请选择开始日期'},
+                        {validator: checkStart, trigger: 'change'}
                     ],
                     end: [
-                        {required: true, message: '请选择结束日期'}
+                        {required: true, message: '请选择结束日期'},
+                        {validator: checkEnd, trigger: 'change'}
                     ]
                 },
             }
@@ -78,9 +94,13 @@
                 this.$refs['indexCodeDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        resetIndex(this.reset).then(() => {
+                        resetIndex(this.reset).then(response => {
                             this.submitLoading = false;
-                            this.$message.success("索引码重置成功");
+                            if (response.data) {
+                                this.$message.success("索引码重置成功");
+                            } else {
+                                this.$message.success("索引码重置失败");
+                            }
                         }).catch((error)=>{
                             this.$message.error(error);
                         });
