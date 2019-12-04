@@ -112,3 +112,11 @@ export function queryEvaluateRecordList(detailId) {
         params: {detailId}
     })
 }
+
+export function reformRevisit(detailVo) {
+    return request({
+        url: '/manage/evaluate/detail/reformRevisit',
+        method: 'post',
+        data: detailVo
+    })
+}

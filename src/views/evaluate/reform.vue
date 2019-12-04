@@ -126,6 +126,7 @@
                         <el-button v-if="[20, 222].includes(scope.row.reformStatus)" type="primary" :size="btnSize" @click="btnReformChanged(scope.row)">整改完成</el-button>
                         <el-button v-if="scope.row.reformStatus === 20" type="primary" :size="btnSize" @click="btnReformUnchanged(scope.row)">无法整改</el-button>
                         <el-button v-if="[20, 222].includes(scope.row.reformStatus) && scope.row.delayFlag === 0" type="primary" :size="btnSize" @click="btnReformDelay(scope.row)">申请延期</el-button>
+                        <el-button title="添加回访记录" type="primary" :size="btnSize" @click="btnRevisit(scope.row)">回访记录</el-button>
                         <el-button v-if="[10, 220].includes(scope.row.reformStatus)" type="text" @click="showDetails(scope.row)">审核中</el-button>
                         <el-tag v-if="checkOverdue(scope.row)">整改超期</el-tag>
                         <el-tag v-if="scope.row.reformStatus === 11" type="info" @click="showDetails(scope.row)">无效差评</el-tag>
@@ -181,17 +182,27 @@
                         <td class="column">操作记录</td>
                         <td colspan="3">
                             <el-table :data="recordsList">
-                                <el-table-column align="center" label="操作状态" prop="status">
+                                <el-table-column align="center" label="操作状态" prop="status" width="200">
                                     <template slot-scope="scope">
                                         {{scope.row.status | enums('EvaluationReformStatusEnum')}}
                                     </template>
                                 </el-table-column>
                                 <el-table-column align="center" label="操作说明" prop="content"/>
-                                <el-table-column align="center" label="整改/延期时间" prop="finishTime">
+                                <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="200">
                                     <template slot-scope="scope">
                                         {{scope.row.finishTime | date('YYYY-MM-DD')}}
                                     </template>
                                 </el-table-column>
+                                <el-table-column align="center" label="操作时间" prop="operateTime" width="200"/>
+                            </el-table>
+                        </td>
+                    </tr>
+                    <tr v-if="revisitRecordList && revisitRecordList.length > 0">
+                        <td class="column">回访记录</td>
+                        <td colspan="3">
+                            <el-table :data="revisitRecordList">
+                                <el-table-column align="center" label="回访内容" prop="content"/>
+                                <el-table-column align="center" label="回访时间" prop="operateTime" width="200"/>
                             </el-table>
                         </td>
                     </tr>
@@ -307,11 +318,21 @@
                             </el-col>
                         </el-row>
                     </template>
+                    <template v-if="opType === 999">
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="回访内容" prop="reformContent">
+                                    <el-input type="textarea" v-model="detail.reformContent" :rows="3"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </template>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
                     <el-button v-if="[0,12].includes(opType)" type="primary" :size="btnSize" @click="doReform" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-if="[20,222].includes(opType)" type="primary" :size="btnSize" @click="doReformChange" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-if="opType === 3" type="primary" :size="btnSize" @click="doDelay" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="opType === 999" type="primary" :size="btnSize" @click="doRevisit" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closeDetailDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
@@ -379,17 +400,27 @@
                         <td class="column">操作记录</td>
                         <td colspan="3">
                             <el-table :data="recordsList">
-                                <el-table-column align="center" label="操作状态" prop="status">
+                                <el-table-column align="center" label="操作状态" prop="status" width="200">
                                     <template slot-scope="scope">
                                         {{scope.row.status | enums('EvaluationReformStatusEnum')}}
                                     </template>
                                 </el-table-column>
                                 <el-table-column align="center" label="操作说明" prop="content"/>
-                                <el-table-column align="center" label="整改/延期时间" prop="finishTime">
+                                <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="200">
                                     <template slot-scope="scope">
                                         {{scope.row.finishTime | date('YYYY-MM-DD')}}
                                     </template>
                                 </el-table-column>
+                                <el-table-column align="center" label="操作时间" prop="operateTime" width="200"/>
+                            </el-table>
+                        </td>
+                    </tr>
+                    <tr v-if="revisitRecordList && revisitRecordList.length > 0">
+                        <td class="column">回访记录</td>
+                        <td colspan="3">
+                            <el-table :data="revisitRecordList">
+                                <el-table-column align="center" label="回访内容" prop="content"/>
+                                <el-table-column align="center" label="回访时间" prop="operateTime" width="200"/>
                             </el-table>
                         </td>
                     </tr>
@@ -409,7 +440,8 @@
         saveReply,
         reformChange,
         reformDelay,
-        queryEvaluateRecordList
+        queryEvaluateRecordList,
+        reformRevisit,
     } from '@/api/evaluate/detail';
 
     export default {
@@ -485,7 +517,7 @@
                         {required: true, message: this.$t("table.pleaseSelect") + '评价是否有效'}
                     ],
                     reformContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + '整改内容'},
+                        {required: true, message: this.$t("table.pleaseInput") + '内容'},
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
                     ],
                     reformDate: [
@@ -493,7 +525,7 @@
                     ],
                     delayDate: [
                         {required: true, message: this.$t("table.pleaseSelect") + '整改期限'}
-                    ]
+                    ],
                 },
                 selectedRows: [],
                 dialogVisible: false,
@@ -503,7 +535,8 @@
                 submitTimeRange: [],
                 dialogVisibleDetails: false,
                 recordsList: [],
-                opType: 0
+                opType: 0,
+                revisitRecordList: []
             }
         },
         computed: {
@@ -557,7 +590,8 @@
             },
             queryRecordList(detailId) {
                 queryEvaluateRecordList(detailId).then(response => {
-                    this.recordsList = response.data;
+                    this.recordsList = response.data.recordsList;
+                    this.revisitRecordList = response.data.revisitRecordList;
                 })
             },
             handleSizeChange(val){
@@ -735,7 +769,31 @@
                     return new Date(row.delayDate).getTime() < Date.now();
                 }
                 return new Date(row.reformDate).getTime() < Date.now();
-            }
+            },
+            btnRevisit(row) {
+                this.resetDetail();
+                this.detail = deepClone(row);
+                this.detail.reformContent = '';
+                this.detail.updateBy = this.userInfo.userId;
+                this.opType = 999;
+                this.queryRecordList(this.detail.id);
+                this.dialogVisible = true;
+            },
+            doRevisit() {
+                this.$refs['detailDialogForm'].validate(valid => {
+                    if(valid) {
+                        this.submitLoading = true;
+                        reformRevisit(this.detail).then(() => {
+                            this.resetDetailDialogAndList();
+                            this.$message.success(this.$t("table.submitSuccess"));
+                        }).catch(() => {
+                            this.submitLoading = false;
+                        })
+                    } else {
+                        return false;
+                    }
+                });
+            },
         }
     }
 </script>
@@ -768,23 +826,55 @@
     }
 
     /* 表格内背景颜色 */
-    .mailTable .el-table th, .mailTable .el-table tr, .mailTable .el-table td {
+    /deep/ .mailTable .el-table th, .mailTable .el-table tr, .mailTable .el-table td {
         border: 0;
         background-color: transparent;
     }
-    .mailTable .el-table th, .mailTable .el-table td {
+    /deep/ .mailTable .el-table th, .mailTable .el-table td {
         border-bottom: 1px solid #E6EAEE;
     }
     /* 删除表格下横线 */
-    .mailTable .el-table::before {
+    /deep/ .mailTable .el-table::before {
         left: 0;
         bottom: 0;
         width: 100%;
         height: 0px;
     }
+    /* 设置表头高度 */
+    /deep/ .mailTable .el-table th {
+        padding: 0;
+    }
 
     ul {
         padding-inline-start: 20px;
+    }
+
+    /* 弹框既能在视窗居中，又能在内容过多时防止弹框大小超出视窗，还能把滚动限制在body内部从而使得头和尾始终可见 */
+    /deep/ .el-dialog{
+        display: flex;
+        flex-direction: column;
+        margin:0 !important;
+        position:absolute;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        /*height:600px;*/
+        max-height:calc(100% - 30px);
+        max-width:calc(100% - 30px);
+    }
+    /deep/ .el-dialog .el-dialog__header {
+        padding: 10px 20px;
+    }
+    /deep/ .el-dialog .el-dialog__body{
+        flex:1;
+        overflow: auto;
+        padding: 10px 20px;
+    }
+    /* 弹窗底部按钮居中 */
+    /deep/ .el-dialog .el-dialog__footer {
+        padding: 10px 20px;
+        text-align: center;
+        box-sizing: border-box;
     }
 </style>
 
