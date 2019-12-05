@@ -481,6 +481,7 @@
                     resourceCategory: undefined,
                     keyword: undefined,
                     workflowKey: undefined,
+                    workflowId: undefined,
                     contentModelName: undefined,
                     contentMapStr: undefined,
                     content: {},
@@ -575,6 +576,7 @@
                 modelList: [],
                 modelTemplateList: [],
                 workflowKey: undefined,
+                workflowId: undefined,
                 metadataCollection: {
                     metadataList: []
                 },
@@ -930,6 +932,7 @@
                 // 获取内容列表
                 // 设置内容工作流id
                 this.workflowKey = data.workflowKey;
+                this.workflowId = data.workflowId;
                 this.listQuery.cmsCatalogId = data.id;
                 // 获取template
                 this.reloadList();
@@ -1068,6 +1071,7 @@
                     this.template.siteId = this.listQuery.siteId;
                     this.template.cmsCatalogId = this.listQuery.cmsCatalogId;
                     this.template.workflowKey = this.workflowKey;
+                    this.template.workflowId = this.workflowId;
                     this.dialogTitle = 'create';
                     this.dialogVisible = true;
                     this.stepsActive = 0;
@@ -1087,6 +1091,7 @@
                 }
                 console.dir(row);
                 this.template.workflowKey = this.workflowKey;
+                this.template.workflowId = this.workflowId;
                 this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -1291,6 +1296,7 @@
                     resourceCategory: undefined,
                     keyword: undefined,
                     workflowKey: undefined,
+                    workflowId: undefined,
                     contentModelName: undefined,
                     contentMapStr: undefined,
                     content: {}

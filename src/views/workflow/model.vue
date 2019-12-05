@@ -28,7 +28,8 @@
             <el-table :data="processModelList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <!--<el-table-column align="center" label="" prop="actModelId"/>-->
+                <!--<el-table-column align="center" label="模型编号" prop="id"/>-->
+                <!--<el-table-column align="center" label="模型编号" prop="actModelId"/>-->
                 <el-table-column align="center" label="模型名称" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
@@ -42,13 +43,13 @@
                         <span v-else>未发布</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                             {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
-                </el-table-column>
+                </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
@@ -116,12 +117,24 @@
         getProcessModelList,
         createOrUpdateProcessModel,
         delProcessModels,
-        modelDeploy
+        modelDeploy,
+        checkModelName
     } from '../../api/workflow/model';
-
+    import {
+        updateWorkFlow
+    } from "../../api/station/catalog";
     export default {
         name: 'processModel',
         data() {
+            const checkName = (rule, value, callback) => {
+                checkModelName({id: this.processModel.id, name: this.processModel.name}).then(response => {
+                    if (response.status == 200 && response.data > 0) {
+                        callback(new Error(response.message));
+                    } else {
+                        callback();
+                    }
+                }).catch(() => {});
+            };
             return {
                 processModelList: undefined,
                 total: undefined,
@@ -139,13 +152,16 @@
                 },
                 processModelRules: {
                     name: [
-                        {required: true, message: this.$t("table.pleaseInput") + ''}
+                        {required: true, message: this.$t("table.pleaseInput") + '模型名称'},
+                        {validator: checkName, trigger: 'blur'}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                windowObject: undefined,
+                loopObject: undefined
             }
         },
         computed: {
@@ -203,7 +219,16 @@
                 if (!row || !row.id) {
                     row = this.selectedRows[0].id
                 }
-                window.open(`${this.$store.state.common.activitiModelEditUrl}?modelId=${row.actModelId}`);
+                this.windowObject = window.open(`${this.$store.state.common.activitiModelEditUrl}?modelId=${row.actModelId}`);
+                this.loopObject = setInterval(this.waitWindowClose, 1000);
+            },
+            waitWindowClose() {
+                if(this.windowObject.closed) {
+                    clearInterval(this.loopObject);
+                    this.windowObject = undefined;
+                    this.loopObject = undefined;
+                    this.reloadList();
+                }
             },
             btnDelete(row){
                 let ids = [];
@@ -269,6 +294,8 @@
             },
             doPublish(ids) {
                 modelDeploy(ids).then(() => {
+                    // 模型发布后更新栏目工作流ID
+                    updateWorkFlow().then(()=>{});
                     this.$message.success('发布成功！');
                     this.reloadList();
                 })

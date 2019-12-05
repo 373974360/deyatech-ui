@@ -114,11 +114,18 @@ export function getNextSortNo() {
         params: {}
     });
 }
-export function clearWorkFlow(keys) {
-    const data = {keys};
+export function clearWorkFlow(actDefinitionIdList) {
+    const data = {actDefinitionIdList};
     return request({
         url: '/manage/station/catalog/clearWorkFlow',
         method: 'post',
         data
+    });
+}
+export function updateWorkFlow() {
+    return request({
+        url: '/manage/station/catalog/updateWorkFlow',
+        method: 'get',
+        params: {}
     });
 }

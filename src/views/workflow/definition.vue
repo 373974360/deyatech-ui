@@ -29,14 +29,17 @@
             <el-table :data="processDefinitionList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
+                <!--<el-table-column align="center" label="流程编号" prop="id"/>
+                <el-table-column align="center" label="模型编号" prop="processModelId"/>
+                <el-table-column align="center" label="流程ID" prop="actDefinitionId"/>
+                <el-table-column align="center" label="流程KEY" prop="actDefinitionKey"/>-->
                 <el-table-column align="center" label="流程名称" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="KEY" prop="actDefinitionKey"/>
-                <el-table-column align="center" label="发布时间" prop="deploymentTime"/>
                 <el-table-column align="center" label="版本" prop="ver"/>
+                <el-table-column align="center" label="发布时间" prop="deploymentTime"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -68,6 +71,7 @@
             <el-dialog title="流程节点设置" :visible.sync="dialogTaskSettingVisible" :close-on-click-modal="closeOnClickModal" width="80%">
                 <el-row class="setting-container">
                     <p>流程名称：{{processDefinition.name}}</p>
+                    <p>ID：{{processDefinition.actDefinitionId}}</p>
                     <p>KEY：{{processDefinition.actDefinitionKey}}</p>
                     <p>版本：{{processDefinition.ver}}</p>
                     <p>发布时间：{{processDefinition.deploymentTime | date('YYYY-MM-DD HH:mm:ss')}}</p>
@@ -429,48 +433,48 @@
             },
             btnDelete(row){
                 let ids = [];
-                let keys = [];
+                let actDefinitionIdList = [];
                 if (row.id) {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         ids.push(row.id);
-                        keys.push(row.actDefinitionKey);
-                        this.doDelete(ids, keys);
+                        actDefinitionIdList.push(row.actDefinitionId);
+                        this.doDelete(ids, actDefinitionIdList);
                     })
                 } else {
                     this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
                         for(const deleteRow of this.selectedRows){
                             ids.push(deleteRow.id);
-                            keys.push(deleteRow.actDefinitionKey);
+                            actDefinitionIdList.push(deleteRow.actDefinitionId);
                         }
-                        this.doDelete(ids, keys);
+                        this.doDelete(ids, actDefinitionIdList);
                     })
                 }
             },
             btnStatusEnable(row) {
-                let keys = [];
+                let ids = [];
                 if (row.id) {
-                    keys.push(row.actDefinitionKey);
+                    ids.push(row.actDefinitionId);
                 } else {
                     for (const item of this.selectedRows) {
-                        keys.push(item.actDefinitionKey);
+                        ids.push(item.actDefinitionId);
                     }
                 }
-                processActivate(keys).then(() => {
+                processActivate(ids).then(() => {
                     this.reloadList();
                     this.$message.success("流程已启用");
                 })
             },
             btnStatusDisable(row) {
                 this.$confirm("禁用后将无法发起该流程，是否继续？", this.$t("table.tip"), {type: 'warning'}).then(() => {
-                    let keys = [];
+                    let ids = [];
                     if (row.id) {
-                        keys.push(row.actDefinitionKey);
+                        ids.push(row.actDefinitionId);
                     } else {
                         for (const item of this.selectedRows) {
-                            keys.push(item.actDefinitionKey);
+                            ids.push(item.actDefinitionId);
                         }
                     }
-                    processSuspend(keys).then(() => {
+                    processSuspend(ids).then(() => {
                         this.reloadList();
                         this.$message.success("流程已禁用");
                     })
@@ -512,12 +516,12 @@
                     }
                 })
             },
-            doDelete(ids, keys){
+            doDelete(ids, actDefinitionIdList){
                 this.listLoading = true;
                 delProcessDefinitions(ids).then(() => {
-                    console.dir(keys);
-                    if (keys) {
-                        clearWorkFlow(keys).then(()=>{});
+                    if (actDefinitionIdList) {
+                        // 清除栏目中的工作流
+                        clearWorkFlow(actDefinitionIdList).then(()=>{});
                     }
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
@@ -558,7 +562,6 @@
                         return;
                     }
                 }
-                console.dir(this.processTaskSetting);
                 createOrUpdateProcessTaskSetting(this.processTaskSetting).then(() => {
                     this.$message.success('保存成功');
                     getProcessTaskSetting({actDefinitionId: this.processTaskSetting.actDefinitionId,
