@@ -1,6 +1,6 @@
 <template>
-    <el-cascader filterable ref="topSiteCascader" v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
-                 :options="this.$store.state.common.topSelectStatinoGroupList" v-model="this.$store.state.common.topSelectStationGroupTreePosition" @change="siteChange" size="small">
+    <el-cascader filterable ref="topSiteCascader" v-if="$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
+                 :options="$store.state.common.topSelectStatinoGroupList" v-model="$store.state.common.topSelectStationGroupTreePosition" @change="siteChange" size="small">
     </el-cascader><!--&& this.stationGroupList.length > 1-->
 </template>
 
