@@ -19,6 +19,9 @@
                         <el-button icon="el-icon-delete" :size="searchSize" @click="btnClear" type="danger">
                             {{$t('table.clear')}}缓存
                         </el-button>
+                        <el-button icon="el-icon-refresh" :size="searchSize" @click="btnReload" type="primary">
+                            刷新缓存
+                        </el-button>
                     </el-form-item>
                 </el-form>
             </div>
@@ -76,7 +79,8 @@
     import {
         getCacheList,
         delCacheKeys,
-        flushCache
+        flushCache,
+        reloadCache
     } from '@/api/admin/cache';
 
     export default {
@@ -140,6 +144,13 @@
             },
             handleSelectionChange(rows) {
                 this.selectedRows = rows;
+            },
+            btnReload() {
+                this.listLoading = true;
+                reloadCache().then(() => {
+                    this.reloadList();
+                    this.$message.success("刷新成功");
+                })
             },
             btnClear() {
                 this.listLoading = true;

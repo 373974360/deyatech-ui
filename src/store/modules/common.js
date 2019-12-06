@@ -55,6 +55,8 @@ const common = {
         website: website,
         siteId: undefined,
         siteName: undefined,
+        topSelectStatinoGroupList: undefined,
+        topSelectStationGroupTreePosition: undefined,
         selectSiteDisplay: false,
         activitiModelEditUrl: './modeler.html'
     },
