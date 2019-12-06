@@ -271,7 +271,7 @@
                     </tr>
                     <tr v-if="detail.words">
                         <td class="column">文字评价</td>
-                        <td class="reform" colspan="3">{{detail.words}}</td>
+                        <td class="reform" colspan="3">{{detail.words | convertBlank}}</td>
                     </tr>
                     <tr v-if="recordsList && recordsList.length > 0">
                         <td class="column">操作记录</td>
@@ -794,7 +794,7 @@
             closeDetailDialogDetails() {
                 this.dialogVisibleDetails = false;
                 this.resetDetail();
-            },
+            }
         }
     }
 </script>

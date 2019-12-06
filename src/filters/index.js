@@ -84,3 +84,7 @@ export function expressTypeFilter(type) {
     };
     return expressTypeMap[type];
 }
+
+export function convertBlank(value) {
+    return value.replace(/\s/g, '\xa0');
+}
