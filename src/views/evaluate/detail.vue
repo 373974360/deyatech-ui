@@ -211,7 +211,7 @@
             </el-pagination>
 
             <!--详情-->
-            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails" width="60%"
+            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails" width="80%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialogDetails">
                 <table class="mailTable">
                     <tr>
@@ -273,13 +273,45 @@
                         <td class="column">文字评价</td>
                         <td class="reform" colspan="3">{{detail.words}}</td>
                     </tr>
-                    <tr v-if="detail.reformContent">
-                        <td class="column">整改回复内容</td>
-                        <td class="reform" colspan="3">{{detail.reformContent}}</td>
+                    <tr v-if="recordsList && recordsList.length > 0">
+                        <td class="column">操作记录</td>
+                        <td colspan="3">
+                            <div class="inline-tb-container">
+                                <el-table :data="recordsList">
+                                    <el-table-column align="center" label="操作状态" prop="status" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.status | enums('EvaluationReformStatusEnum')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作说明" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.finishTime | date('YYYY-MM-DD')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作时间" prop="operateTime" width="180">
+                                        <template slot-scope="scope">
+                                            {{scope.row.operateTime | date('YYYY-MM-DD HH:mm:ss')}}
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
+                        </td>
                     </tr>
-                    <tr v-if="detail.reformDate">
-                        <td class="column">整改期限</td>
-                        <td colspan="3">{{detail.reformDate}}</td>
+                    <tr v-if="revisitRecordList && revisitRecordList.length > 0">
+                        <td class="column">回访记录</td>
+                        <td colspan="3">
+                            <div class="inline-tb-container">
+                                <el-table :data="revisitRecordList">
+                                    <el-table-column align="center" label="回访内容" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="回访时间" prop="operateTime" width="180">
+                                        <template slot-scope="scope">
+                                            {{scope.row.operateTime | date('YYYY-MM-DD HH:mm:ss')}}
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
+                        </td>
                     </tr>
                 </table>
             </el-dialog>
@@ -441,7 +473,8 @@
     import {
         getDetailList,
         createOrUpdateDetail,
-        delDetails
+        delDetails,
+        queryEvaluateRecordList
     } from '@/api/evaluate/detail';
 
     export default {
@@ -570,6 +603,8 @@
                 submitTimeRange: [],
                 levelParseInt: {},
                 dialogVisibleDetails: false,
+                recordsList: [],
+                revisitRecordList: []
             }
         },
         computed: {
@@ -747,7 +782,14 @@
             },
             showDetails(row){
                 this.detail = deepClone(row);
+                this.queryRecordList(this.detail.id);
                 this.dialogVisibleDetails = true;
+            },
+            queryRecordList(detailId) {
+                queryEvaluateRecordList(detailId).then(response => {
+                    this.recordsList = response.data.recordsList;
+                    this.revisitRecordList = response.data.revisitRecordList;
+                })
             },
             closeDetailDialogDetails() {
                 this.dialogVisibleDetails = false;
@@ -758,32 +800,5 @@
 </script>
 
 <style scoped>
-    .mailTable, .mailTable tr, .mailTable tr td {
-        border:1px solid #E6EAEE;
-    }
-    .mailTable {
-        font-size: 14px;
-        color: #71787E;
-        width: 100%;
-    }
-    .mailTable tr td {
-        border:1px solid #E6EAEE;
-        width: calc(50% - 110px);
-        line-height: 28px;
-        box-sizing: border-box;
-        padding: 6px 10px;
-        word-break: break-all;
-    }
-    .mailTable tr td.column {
-        width: 110px;
-        background-color: #EFF3F6;
-        color: #393C3E;
-    }
-    .mailTable tr td.reform {
-        height: auto;
-        line-height: 30px;
-    }
-    ul {
-        padding-inline-start: 20px;
-    }
+    @import "../../assets/css/evaluateReform.css";
 </style>

@@ -120,16 +120,28 @@
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="160">
+                <el-table-column prop="reformStatus" label="状态" align="center" width="120">
                     <template slot-scope="scope">
-                        <!--<el-button type="primary" :size="btnSize" @click.stop.safe="showDetails(scope.row)">详情</el-button>-->
+                        <el-tag v-if="[0, 12].includes(scope.row.reformStatus)">待整改</el-tag>
+                        <el-tag v-if="scope.row.reformStatus === 10">无效差评审核</el-tag>
+                        <el-tag v-if="scope.row.reformStatus === 220">无法整改审核</el-tag>
+                        <el-tag v-if="[20, 222].includes(scope.row.reformStatus)">整改中</el-tag>
+                        <el-tag v-if="scope.row.reformStatus === 11" type="info">无效差评</el-tag>
+                        <el-tag v-if="scope.row.reformStatus === 21" type="success">整改完成</el-tag>
+                        <el-tag v-if="scope.row.reformStatus === 221" type="info">无法整改</el-tag>
+                        <el-tag v-if="checkOverdue(scope.row)" type="danger">整改超期</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column :label="$t('table.operation')" align="center" width="120">
+                    <template slot-scope="scope">
                         <el-button v-if="scope.row.reformStatus === 10" type="primary" :size="btnSize" @click="btnPoorInvalidAudit(scope.row)">审核</el-button>
                         <el-button v-if="scope.row.reformStatus === 220" type="primary" :size="btnSize" @click="btnUnchangedAudit(scope.row)">审核</el-button>
+                        <el-button v-if="![10, 220].includes(scope.row.reformStatus)" type="primary" :size="btnSize" @click.stop.safe="showDetails(scope.row)">详情</el-button>
+                    </template>
+                </el-table-column>
+                <el-table-column label="备注" align="center" width="120">
+                    <template slot-scope="scope">
                         <el-button title="添加回访记录" type="primary" :size="btnSize" @click="btnRevisit(scope.row)">回访记录</el-button>
-                        <el-tag v-if="checkOverdue(scope.row)">整改超期</el-tag>
-                        <el-tag v-if="scope.row.reformStatus === 11" type="info">无效差评</el-tag>
-                        <el-tag v-if="scope.row.reformStatus === 21" type="success">已完成整改</el-tag>
-                        <el-tag v-if="scope.row.reformStatus === 221" type="info">无法整改</el-tag>
                     </template>
                 </el-table-column>
             </el-table>
@@ -139,7 +151,7 @@
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
 
-            <el-dialog title="评价整改回复" :visible.sync="dialogVisible" width="60%"
+            <el-dialog title="评价整改回复" :visible.sync="dialogVisible" width="80%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialog">
                 <table class="mailTable">
                     <tr>
@@ -179,34 +191,38 @@
                     <tr v-if="recordsList && recordsList.length > 0">
                         <td class="column">操作记录</td>
                         <td colspan="3">
-                            <el-table :data="recordsList">
-                                <el-table-column align="center" label="操作状态" prop="status" width="200">
-                                    <template slot-scope="scope">
-                                        {{scope.row.status | enums('EvaluationReformStatusEnum')}}
-                                    </template>
-                                </el-table-column>
-                                <el-table-column align="center" label="操作说明" prop="content"/>
-                                <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="200">
-                                    <template slot-scope="scope">
-                                        {{scope.row.finishTime | date('YYYY-MM-DD')}}
-                                    </template>
-                                </el-table-column>
-                                <el-table-column align="center" label="操作时间" prop="operateTime" width="200"/>
-                            </el-table>
+                            <div class="inline-tb-container">
+                                <el-table :data="recordsList">
+                                    <el-table-column align="center" label="操作状态" prop="status" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.status | enums('EvaluationReformStatusEnum')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作说明" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.finishTime | date('YYYY-MM-DD')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作时间" prop="operateTime" width="180"/>
+                                </el-table>
+                            </div>
                         </td>
                     </tr>
                     <tr v-if="revisitRecordList && revisitRecordList.length > 0">
                         <td class="column">回访记录</td>
                         <td colspan="3">
-                            <el-table :data="revisitRecordList">
-                                <el-table-column align="center" label="回访内容" prop="content"/>
-                                <el-table-column align="center" label="回访时间" prop="operateTime" width="200"/>
-                            </el-table>
+                            <div class="inline-tb-container">
+                                <el-table :data="revisitRecordList">
+                                    <el-table-column align="center" label="回访内容" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="回访时间" prop="operateTime" width="180"/>
+                                </el-table>
+                            </div>
                         </td>
                     </tr>
                 </table>
                 <el-form ref="detailDialogForm" class="deyatech-form" :model="detail" label-position="right"
-                         label-width="110px" :rules="detailRules" style="margin-top: 20px">
+                         label-width="110px" :rules="detailRules">
                     <template v-if="opType !== 999">
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
@@ -221,7 +237,8 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="说明" prop="reformContent">
-                                    <el-input type="textarea" v-model="detail.reformContent" :rows="3"/>
+                                    <el-input type="textarea" v-model="detail.reformContent" maxlength="300"
+                                              show-word-limit :autosize="{minRows: 3}"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -230,7 +247,8 @@
                         <el-row :gutter="20" :span="24">
                             <el-col :span="24">
                                 <el-form-item label="回访内容" prop="reformContent">
-                                    <el-input type="textarea" v-model="detail.reformContent" :rows="3"/>
+                                    <el-input type="textarea" v-model="detail.reformContent" maxlength="300"
+                                              show-word-limit :autosize="{minRows: 3}"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -244,9 +262,8 @@
                 </span>
             </el-dialog>
 
-
             <!--详情-->
-            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails" width="60%"
+            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails" width="80%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialogDetails">
                 <table class="mailTable">
                     <tr>
@@ -286,29 +303,41 @@
                     <tr v-if="recordsList && recordsList.length > 0">
                         <td class="column">操作记录</td>
                         <td colspan="3">
-                            <el-table :data="recordsList">
-                                <el-table-column align="center" label="操作状态" prop="status" width="200">
-                                    <template slot-scope="scope">
-                                        {{scope.row.status | enums('EvaluationReformStatusEnum')}}
-                                    </template>
-                                </el-table-column>
-                                <el-table-column align="center" label="操作说明" prop="content"/>
-                                <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="200">
-                                    <template slot-scope="scope">
-                                        {{scope.row.finishTime | date('YYYY-MM-DD')}}
-                                    </template>
-                                </el-table-column>
-                                <el-table-column align="center" label="操作时间" prop="operateTime" width="200"/>
-                            </el-table>
+                            <div class="inline-tb-container">
+                                <el-table :data="recordsList">
+                                    <el-table-column align="center" label="操作状态" prop="status" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.status | enums('EvaluationReformStatusEnum')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作说明" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.finishTime | date('YYYY-MM-DD')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作时间" prop="operateTime" width="180">
+                                        <template slot-scope="scope">
+                                            {{scope.row.operateTime | date('YYYY-MM-DD HH:mm:ss')}}
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
                         </td>
                     </tr>
                     <tr v-if="revisitRecordList && revisitRecordList.length > 0">
                         <td class="column">回访记录</td>
                         <td colspan="3">
-                            <el-table :data="revisitRecordList">
-                                <el-table-column align="center" label="回访内容" prop="content"/>
-                                <el-table-column align="center" label="回访时间" prop="operateTime" width="200"/>
-                            </el-table>
+                            <div class="inline-tb-container">
+                                <el-table :data="revisitRecordList">
+                                    <el-table-column align="center" label="回访内容" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="回访时间" prop="operateTime" width="180">
+                                        <template slot-scope="scope">
+                                            {{scope.row.operateTime | date('YYYY-MM-DD HH:mm:ss')}}
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
                         </td>
                     </tr>
                 </table>
@@ -397,7 +426,7 @@
                     ],
                     reformContent: [
                         {required: true, message: this.$t("table.pleaseInput") + '内容'},
-                        {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
+                        {min: 1, max: 300, message: '最多输入300个字符', trigger: 'blur'}
                     ]
                 },
                 selectedRows: [],
@@ -606,9 +635,12 @@
                     return false;
                 }
                 if (row.delayStatus === 1) {
-                    return new Date(row.delayDate).getTime() < Date.now();
+                    return new Date(row.delayDate).getTime() < Date.now() - 3600 * 1000 * 24;
                 }
-                return new Date(row.reformDate).getTime() < Date.now();
+                if (row.reformDate) {
+                    return new Date(row.reformDate).getTime() < Date.now() - 3600 * 1000 * 24;
+                }
+                return new Date(row.submitTime).getTime() < Date.now() - 3600 * 1000 * 24 * 16;
             },
             showDetails(row){
                 this.detail = deepClone(row);
@@ -650,82 +682,6 @@
 </script>
 
 <style scoped>
-    .mailTable, .mailTable tr, .mailTable tr td {
-        border:1px solid #E6EAEE;
-    }
-    .mailTable {
-        font-size: 14px;
-        color: #71787E;
-        width: 100%;
-    }
-    .mailTable tr td {
-        border:1px solid #E6EAEE;
-        width: calc(50% - 110px);
-        line-height: 28px;
-        box-sizing: border-box;
-        padding: 6px 10px;
-        word-break: break-all;
-    }
-    .mailTable tr td.column {
-        width: 110px;
-        background-color: #EFF3F6;
-        color: #393C3E;
-    }
-    .mailTable tr td.reform {
-        height: auto;
-        line-height: 30px;
-    }
-
-    /* 表格内背景颜色 */
-    /deep/ .mailTable .el-table th, .mailTable .el-table tr, .mailTable .el-table td {
-        border: 0;
-        background-color: transparent;
-    }
-    /deep/ .mailTable .el-table th, .mailTable .el-table td {
-        border-bottom: 1px solid #E6EAEE;
-    }
-    /* 删除表格下横线 */
-    /deep/ .mailTable .el-table::before {
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        height: 0px;
-    }
-    /* 设置表头高度 */
-    /deep/ .mailTable .el-table th {
-        padding: 0;
-    }
-
-    ul {
-        padding-inline-start: 20px;
-    }
-
-    /* 弹框既能在视窗居中，又能在内容过多时防止弹框大小超出视窗，还能把滚动限制在body内部从而使得头和尾始终可见 */
-    /deep/ .el-dialog{
-        display: flex;
-        flex-direction: column;
-        margin:0 !important;
-        position:absolute;
-        top:50%;
-        left:50%;
-        transform:translate(-50%,-50%);
-        /*height:600px;*/
-        max-height:calc(100% - 30px);
-        max-width:calc(100% - 30px);
-    }
-    /deep/ .el-dialog .el-dialog__header {
-        padding: 10px 20px;
-    }
-    /deep/ .el-dialog .el-dialog__body{
-        flex:1;
-        overflow: auto;
-        padding: 10px 20px;
-    }
-    /* 弹窗底部按钮居中 */
-    /deep/ .el-dialog .el-dialog__footer {
-        padding: 10px 20px;
-        text-align: center;
-        box-sizing: border-box;
-    }
+    @import "../../assets/css/evaluateReform.css";
 </style>
 

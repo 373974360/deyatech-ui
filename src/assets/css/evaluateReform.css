@@ -1,0 +1,88 @@
+.mailTable, .mailTable>tr, .mailTable>tr>td {
+    border:1px solid #E6EAEE;
+}
+.mailTable {
+    font-size: 14px;
+    color: #71787E;
+    width: 100%;
+    table-layout:fixed;
+}
+.mailTable>tr>td {
+    border:1px solid #E6EAEE;
+    line-height: 22px;
+    box-sizing: border-box;
+    padding: 4px 10px;
+    width: calc(50% - 110px);
+    word-break: break-all;
+}
+.mailTable tr td.column {
+    background-color: #EFF3F6;
+    color: #393C3E;
+    width: 110px;
+    text-align: right;
+}
+.mailTable tr td.reform {
+    height: auto;
+    line-height: 22px;
+}
+.mailTable .inline-tb-container {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    word-break: unset;
+}
+.mailTable .el-table {
+    width: 100%;
+    color: #71787E;
+}
+.mailTable .el-table thead {
+    color: #3E3E3E;
+}
+.mailTable .el-table th {
+    background-color: #EFF3F6;
+}
+.mailTable .el-table th, .mailTable .el-table td {
+    padding: 4px 0;
+    height: 22px;
+    line-height: 22px;
+}
+.mailTable .el-table .cell, .mailTable .el-table .cell {
+    line-height: 22px;
+}
+
+ul {
+    padding-inline-start: 20px;
+    margin: 0;
+}
+
+.el-dialog {
+    display: flex;
+    flex-direction: column;
+    margin:0 !important;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    max-height:calc(100% - 30px);
+    max-width:calc(100% - 30px);
+}
+.el-dialog .el-dialog__header {
+    padding: 10px 20px;
+}
+.el-dialog .el-dialog__body {
+    flex:1;
+    overflow: auto;
+    padding: 10px 20px;
+}
+.el-dialog .el-form {
+    margin-top: 10px;
+}
+.el-dialog .el-form .el-form-item {
+    margin: 0;
+}
+/* 弹窗底部按钮居中 */
+.el-dialog .el-dialog__footer {
+    padding: 10px 20px;
+    text-align: center;
+    box-sizing: border-box;
+}
