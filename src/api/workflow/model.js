@@ -48,3 +48,10 @@ export function modelDeploy(actModelIds) {
         data: {actModelIds}
     })
 }
+export function checkModelName(query) {
+    return request({
+        url: '/manage/workflow/processModel/checkModelName',
+        method: 'get',
+        params: query
+    });
+}

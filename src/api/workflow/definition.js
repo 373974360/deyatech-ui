@@ -41,18 +41,18 @@ export function getProcessDefinitionList(query) {
     });
 }
 
-export function processActivate(keys) {
+export function processActivate(actDefinitionIdList) {
     return request({
         url: '/manage/workflow/processDefinition/activate',
         method: 'post',
-        data: {keys}
+        data: {actDefinitionIdList}
     })
 }
 
-export function processSuspend(keys) {
+export function processSuspend(actDefinitionIdList) {
     return request({
         url: '/manage/workflow/processDefinition/suspend',
         method: 'post',
-        data: {keys}
+        data: {actDefinitionIdList}
     })
 }

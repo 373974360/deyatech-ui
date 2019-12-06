@@ -257,9 +257,9 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="工作流" prop="workflowKey" v-if="catalog.workflowEnable == 1">
-                                <el-select filterable v-model.trim="catalog.workflowKey" placeholder="请选择工作流">
-                                    <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionKey"></el-option>
+                            <el-form-item label="工作流" prop="workflowId" v-if="catalog.workflowEnable == 1">
+                                <el-select filterable v-model.trim="catalog.workflowId" placeholder="请选择工作流" @change="workflowChange">
+                                    <el-option v-for="item in workflowList" :label="item.name" :value="item.actDefinitionId"></el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -692,7 +692,7 @@
                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'},
                         {validator: validateUrl, trigger: 'blur'}
                     ],
-                    workflowKey: [
+                    workflowId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '工作流'}
                     ],
                     indexTemplate: [
@@ -1256,6 +1256,14 @@
                 } else {
                     this.display = false;
                     this.catalog.workflowKey = undefined;
+                    this.catalog.workflowId = undefined;
+                }
+            },
+            workflowChange(value) {
+                for (let item of this.workflowList) {
+                    if (value === item.actDefinitionId) {
+                        this.catalog.workflowKey = item.actDefinitionKey;
+                    }
                 }
             },
             // 获取工作流
