@@ -140,9 +140,9 @@
                         <el-button v-if="![0, 12, 20, 222].includes(scope.row.reformStatus)" type="primary" :size="btnSize" @click.stop.safe="showDetails(scope.row)">详情</el-button>
                     </template>
                 </el-table-column>
-                <el-table-column label="备注" align="center" width="120">
+                <el-table-column label="备注" align="center" width="160">
                     <template slot-scope="scope">
-                        <el-button title="添加回访记录" type="primary" :size="btnSize" @click="btnRevisit(scope.row)">回访记录</el-button>
+                        <el-button title="抽查回访记录" type="primary" :size="btnSize" @click="btnRevisit(scope.row)">抽查回访记录</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -536,7 +536,7 @@
             }
         },
         created(){
-            // this.listQuery.proDepartment = this.userInfo.orgName;
+            this.listQuery.proDepartment = this.userInfo.orgName;
             this.reloadList();
         },
         methods: {
