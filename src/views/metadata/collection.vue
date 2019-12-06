@@ -520,6 +520,7 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
             // 获取数据类型
             this.getDataType();
@@ -544,18 +545,20 @@
                         for (let m of this.metadataCollectionList) {
                             collectionIds.push(m.id);
                         }
-                        countModelByCollectionIds(collectionIds).then(res => {
-                            let count = res.data;
-                            if (count) {
-                                for (let m of this.metadataCollectionList) {
-                                    if (count[m.id]) {
-                                        this.$set(m, 'countModel', count[m.id]);
-                                    } else {
-                                        this.$set(m, 'countModel', 0);
+                        if(collectionIds.length>0){
+                            countModelByCollectionIds(collectionIds).then(res => {
+                                let count = res.data;
+                                if (count) {
+                                    for (let m of this.metadataCollectionList) {
+                                        if (count[m.id]) {
+                                            this.$set(m, 'countModel', count[m.id]);
+                                        } else {
+                                            this.$set(m, 'countModel', 0);
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 })
             },

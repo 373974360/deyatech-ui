@@ -477,6 +477,7 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = false;
             this.reloadTree().then(() => {
                 let node = getFirstFinalChild(this.metadataCategoryTree);
                 if (node) {
