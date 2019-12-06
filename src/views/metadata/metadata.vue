@@ -136,7 +136,7 @@
                     </el-row>
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1">
                         <el-col :span="12">
-                            <el-form-item label="校验方式" prop="checkModel">
+                            <el-form-item label="校验方式" prop="checkModel" :rules="(metadata.dataType === 'int' || metadata.dataType === 'float') ? [{required: true, message: '请选择校验方式'}] : []">
                                 <el-select filterable v-model.trim="metadata.checkModel" placeholder="请选择" style="width: 100%">
                                     <el-option v-for="item in checkModelOptions" :key="item.id" :label="item.name" :value="item.id">
                                     </el-option>
@@ -145,16 +145,15 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="数据长度" prop="dataLength">
-                                <el-input v-model.trim="metadata.dataLength" maxlength="10"></el-input>
+                                <el-input v-model.trim="metadata.dataLength" maxlength="10" :disabled="metadata.dataSource === 'dataItem'"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24" v-if="metadata.type === 1 && (metadata.controlType === 'selectElement' || metadata.controlType === 'radioElement' || metadata.controlType === 'checkboxElement')">
                         <el-col :span="12">
                             <el-form-item label="数据来源" prop="dataSource">
-                                <el-select filterable v-model.trim="metadata.dataSource" placeholder="请选择" style="width: 100%">
-                                    <el-option v-for="item in dataSourceOptions" :key="item.id" :label="item.name" :value="item.id">
-                                    </el-option>
+                                <el-select filterable v-model.trim="metadata.dataSource" placeholder="请选择" style="width: 100%" @change="dataSourceChange">
+                                    <el-option v-for="item in dataSourceOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -335,7 +334,11 @@
                 if (/[^\d]/g.test(value)) {
                     callback(new Error('请输入正整数'));
                 } else {
-                    callback();
+                    if (parseInt(value) <= 0) {
+                        callback(new Error('长度必须大于0'));
+                    } else {
+                        callback();
+                    }
                 }
             };
             return {
@@ -445,52 +448,61 @@
             }
         },
         watch: {
+            // 数据类型
             'metadata.dataType'(value) {
-                this.metadata.controlType = undefined;
+                console.log("dataType");
+                this.$set(this.metadata, 'controlType', undefined);
                 for (let item of this.dataTypeOptions) {
                     if (item.id === value) {
                         this.controlTypeOptions = item.dataShow
                     }
                 }
             },
+            // 空间类型
             'metadata.controlType'(value) {
+                console.log("controlType");
                 this.$set(this.metadata, 'dataSource', undefined);
-                this.metadata.checkModel = undefined;
-                this.metadata.dataLength = undefined;
+                this.$set(this.metadata, 'checkModel', undefined);
+                this.$set(this.metadata, 'dataLength', undefined);
                 for (let item of this.controlTypeOptions) {
                     if (item.id === value) {
                         this.dataSourceOptions = item.dataSource;
                         this.checkModelOptions = item.validate;
-                        if (item.dataLengths && item.dataLengths.length > 0) {
+                        if (item.dataLengths && item.dataLengths.length > 0 && !this.metadata.dataLength) {
                             this.metadata.dataLength = item.dataLengths[0].length
                         }
-                        if (item.controlLengths && item.controlLengths.length > 0) {
+                        if (item.controlLengths && item.controlLengths.length > 0 && !this.metadata.controlLength) {
                             this.metadata.controlLength = item.controlLengths[0].value;
                         }
                     }
                 }
             },
             'metadata.multiFlag'(value) {
+                console.log("multiFlag");
                 if (!value) {
                     this.metadata.annotationCount = 1
                 }
             }
         },
         created(){
-            this.reloadTree().then(() => {
-                let node = getFirstFinalChild(this.metadataCategoryTree);
-                if (node) {
-                    this.$refs['metadataCategoryTree'].setCurrentKey(node.id);
-                    this.listQuery.categoryId = node.id;
-                    this.reloadList();
-                } else {
+            if(this.$store.state.common.siteId != undefined){
+                this.reloadTree().then(() => {
+                    let node = getFirstFinalChild(this.metadataCategoryTree);
+                    if (node) {
+                        this.listQuery.categoryId = node.id;
+                        this.$nextTick(()=>{
+                            this.$refs['metadataCategoryTree'].setCurrentKey(node.id);
+                        });
+                        this.reloadList();
+                    } else {
 
-                }
-            });
-            // 获取数据类型
-            this.getDataType();
-            // 获取数据字典
-            this.getAllDicts();
+                    }
+                });
+                // 获取数据类型
+                this.getDataType();
+                // 获取数据字典
+                this.getAllDicts();
+            }
         },
         methods: {
             resetSearch(){
@@ -499,7 +511,6 @@
             reloadList(){
                 this.listLoading = true;
                 this.metadataList = undefined;
-                this.total = undefined;
                 getMetadataList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.metadataList = response.data.records;
@@ -602,6 +613,7 @@
                         this.metadata.dataLength = row.dataLength;
                     });
                 });
+                console.log(this.metadata.controlLength);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -658,6 +670,7 @@
                         if (this.metadata.type === 2) {
                             this.metadata.relationDataJson = JSON.stringify(this.relationData);
                         }
+                        console.log(this.metadata.controlLength);
                         createOrUpdateMetadata(this.metadata).then(() => {
                             this.resetMetadataDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -725,6 +738,11 @@
                 this.dialogRelationVisible = false;
                 this.$refs['candidateTable'].clearSelection();
                 this.selectedRowsCandidate = [];
+            },
+            dataSourceChange(v) {
+                if (v === 'dataItem') {
+                    this.metadata.dataLength = 30;
+                }
             }
         }
     }

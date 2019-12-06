@@ -396,7 +396,7 @@
             };
             const validateVersion = (rule, value, callback) => {
                 if (!validateversion(value)) {
-                    callback(new Error('格式错误，请输入形如：1.0或1.0.0的版本号'));
+                    callback(new Error('格式错误，请输入形如: 1.0.0 的版本号'));
                 } else {
                     let enName = this.metadataCollection.enName;
                     if (this.dialogTitle === 'create') {
@@ -539,7 +539,7 @@
                     this.listLoading = false;
                     this.metadataCollectionList = response.data.records;
                     this.total = response.data.total;
-                    if (this.metadataCollectionList) {
+                    if (this.metadataCollectionList && this.metadataCollectionList.length > 0) {
                         let collectionIds = [];
                         for (let m of this.metadataCollectionList) {
                             collectionIds.push(m.id);
@@ -692,6 +692,7 @@
                 }
             },
             btnAddVersion(row) {
+                console.log(row.id);
                 findMetadataCollectionAllData({id: row.id}).then(response => {
                     this.metadataCollection = deepClone(response.data[0]);
                     this.metadataCollection.id = undefined;
@@ -747,7 +748,8 @@
                             this.resetMetadataCollectionDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         }).catch(err=>{
-                            this.$message.error(err);
+                            this.submitLoading = false;
+                            //this.$message.error(err);
                         });
                     } else {
                         return false;
@@ -766,7 +768,10 @@
                         createOrUpdateMetadataCollection(this.metadataCollection).then(() => {
                             this.resetMetadataCollectionDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
-                        })
+                        }).catch(err=>{
+                            this.submitLoading = false;
+                            //this.$message.error(err);
+                        });
                     } else {
                         return false;
                     }

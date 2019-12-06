@@ -805,106 +805,117 @@
             },
             // 加载规则
             loadRules(item) {
-              let rules = [];
-              if (item.required && item.required == true) {
-                  let rule = {};
-                  rule.required = true;
-                  let please = "";
-                  if (item.controlType === "inputElement" || item.controlType === "textareaElement" || item.controlType === "richTextElement") {
-                      please = "请输入";
-                  } else {
-                      please = "请选择";
-                  }
-                  rule.message = please + item.name;
-                  rules.push(rule);
-              }
-              if (item.checkModel) {
-                  let rule = {};
-                  rule.trigger = ['blur','change'];
-                  if (item.checkModel === 'chinese') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          if (/^[\u4e00-\u9fa5]+$/.test(value)) {
-                              callback();
-                          } else {
-                              callback(new Error('请输入中文'));
-                          }
-                      }
-                  } else if (item.checkModel === 'mail') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          if (validateEmail(value)) {
-                              callback();
-                          } else {
-                              callback(new Error("请输入正确的邮箱地址"))
-                          }
-                      }
-                  } else if (item.checkModel === 'int') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          if (/^(\+|\-)?\d+$/.test(value)) {
-                              callback();
-                          } else {
-                              callback(new Error('请输入整数'));
-                          }
-                      };
-                  } else if (item.checkModel === 'positiveInteger') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          //除了数字
-                          if (/[^\d]/g.test(value)) {
-                              callback(new Error('请输入正整数'));
-                          } else {
-                              callback();
-                          }
-                      };
-                  } else if (item.checkModel === 'english') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          if (isEnglish(value)) {
-                              callback();
-                          } else {
-                              callback(new Error('请输入英文字母'));
-                          }
-                      };
-                  } else if (item.checkModel === 'float') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          if (/^(\-|\+)?\d+(\.\d+)?$/.test(value)) {
-                              callback();
-                          } else {
-                              callback(new Error('请输入浮点数'));
-                          }
-                      }
-                  } else if (item.checkModel === 'url') {
-                      rule.validator = (rule, value, callback) => {
-                          if (!value) {
-                              callback()
-                          }
-                          if (validateURL(value)) {
-                              callback();
-                          } else {
-                              callback(new Error('URL格式错误'))
-                          }
-                      }
-                  } else {
-                      rule.validator = (rule, value, callback) => callback();
-                  }
-                  rules.push(rule);
-              }
-              return rules;
+                let rules = [];
+                // 必须检查
+                if (item.required && item.required == true) {
+                    let rule = {};
+                    rule.required = true;
+                    let please = "";
+                    if (item.controlType === "inputElement" || item.controlType === "textareaElement" || item.controlType === "richTextElement") {
+                        please = "请输入";
+                    } else {
+                        please = "请选择";
+                    }
+                    rule.message = please + item.name;
+                    rules.push(rule);
+                }
+                // 长度检验
+                if (item.dataLength) {
+                    let rule = {};
+                    rule.min = 1;
+                    rule.max = item.dataLength;
+                    rule.trigger = ['blur','change'];
+                    rule.message = '长度在 1 到 ' + item.dataLength + ' 个字符';
+                    rules.push(rule);
+                }
+                // 类型校验
+                if (item.checkModel) {
+                    let rule = {};
+                    rule.trigger = ['blur','change'];
+                    if (item.checkModel === 'chinese') {
+                        rule.validator = (rule, value, callback) => {
+                            if (!value) {
+                                callback()
+                            }
+                            if (/^[\u4e00-\u9fa5]+$/.test(value)) {
+                                callback();
+                            } else {
+                                callback(new Error('请输入中文'));
+                            }
+                        }
+                    } else if (item.checkModel === 'mail') {
+                        rule.validator = (rule, value, callback) => {
+                            if (!value) {
+                                callback()
+                            }
+                            if (validateEmail(value)) {
+                                callback();
+                            } else {
+                                callback(new Error("请输入正确的邮箱地址"))
+                            }
+                        }
+                    } else if (item.checkModel === 'int') {
+                        rule.validator = (rule, value, callback) => {
+                            if (!value) {
+                                callback()
+                            }
+                            if (/^(\+|\-)?\d+$/.test(value)) {
+                                callback();
+                            } else {
+                                callback(new Error('请输入整数'));
+                            }
+                        };
+                    } else if (item.checkModel === 'positiveInteger') {
+                        rule.validator = (rule, value, callback) => {
+                            if (!value) {
+                                callback()
+                            }
+                            //除了数字
+                            if (/[^\d]/g.test(value)) {
+                                callback(new Error('请输入正整数'));
+                            } else {
+                                callback();
+                            }
+                        };
+                    } else if (item.checkModel === 'english') {
+                        rule.validator = (rule, value, callback) => {
+                            if (!value) {
+                                callback()
+                            }
+                            if (isEnglish(value)) {
+                                callback();
+                            } else {
+                                callback(new Error('请输入英文字母'));
+                            }
+                        };
+                    } else if (item.checkModel === 'float') {
+                        rule.validator = (rule, value, callback) => {
+                            if (!value) {
+                                callback()
+                            }
+                            if (/^(\-|\+)?\d+(\.\d+)?$/.test(value)) {
+                                callback();
+                            } else {
+                                callback(new Error('请输入浮点数'));
+                            }
+                        }
+                    } else if (item.checkModel === 'url') {
+                        rule.validator = (rule, value, callback) => {
+                            if (!value) {
+                                callback()
+                            }
+                            if (validateURL(value)) {
+                                callback();
+                            } else {
+                                callback(new Error('URL格式错误'))
+                            }
+                        }
+                    } else {
+                        rule.validator = (rule, value, callback) => callback();
+                    }
+                    rules.push(rule);
+                }
+                return rules;
             },
             // 加载动态表头
             loadHeadData() {

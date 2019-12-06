@@ -232,7 +232,7 @@ export function validatenum(num, type) {
  * @returns {boolean}
  */
 export function validateversion(str) {
-    const reg = /^(-?\d+)(\.\d+)+$/; // 多个小数点
+    const reg = /^\d+\.\d+\.\d+$/;
     return reg.test(str);
 }
 
