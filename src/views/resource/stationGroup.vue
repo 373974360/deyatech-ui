@@ -83,6 +83,8 @@
                                            @click.stop="btnSetting(scope.row)"></el-button>
                                 <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="iconcustoms-clearance" :size="btnSize" circle
                                            @click.stop="btnDomain(scope.row)"></el-button>
+                                <el-button title="关联角色" type="primary" icon="iconadd-account" :size="btnSize" circle
+                                           @click.stop="btnStationGroupRole(scope.row)"></el-button>
                                 </div>
                             </template>
                         </el-table-column>
@@ -455,6 +457,31 @@
                 </span>
             </el-dialog>
 
+            <!-- 关联角色 -->
+            <el-dialog :title="titleDomain" :visible.sync="dialogStationGroupRoleVisible" :close-on-click-modal="closeOnClickModal" @close="closeStationGroupRoleDialog">
+                <div v-loading="dialogStationGroupRoleLoading">
+                    <div class="dialog-search">
+                        <el-checkbox v-model.trim="showRelatedFlag" @change="handleShowRelated">只显示已关联角色</el-checkbox>
+                    </div>
+                    <div>
+                        <el-table ref="stationGroupRoleTable" :data="roleList" border @select="selectRowRole"
+                                  @select-all="selectAllRole" @selection-change="handleSelectionChangeStationGroupRole">
+                            <el-table-column type="selection" width="50" align="center"></el-table-column>
+                            <el-table-column prop="name" label="角色名称"></el-table-column>
+                        </el-table>
+                        <el-pagination class="deyatech-pagination pull-right" background
+                                       :current-page.sync="roleListQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                       :page-size="roleListQuery.size" :layout="this.$store.state.common.pageLayout" :total="roleTotal"
+                                       @size-change="handleSizeChangeStationGroupRole" @current-change="handleCurrentChangeStationGroupRole">
+                        </el-pagination>
+                    </div>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveStationGroupRole"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeStationGroupRoleDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -489,6 +516,7 @@
         runOrStopDomainById
     } from '@/api/resource/domain';
     import {getDepartmentCascader} from '@/api/admin/department';
+    import {getAllRoleStationGroup,getStationGroupRoleList,setStationGroupRoles} from "@/api/resource/stationGroupRole";
 
     export default {
         name: 'stationGroup',
@@ -774,7 +802,21 @@
                 domainFormDialogTitle: undefined,
                 imageShowUrl: undefined,
                 imageUploadUrl: undefined,
-                imageUploadData: undefined
+                imageUploadData: undefined,
+
+                // 站点关联角色
+                roleList: undefined,
+                roleTotal: undefined,
+                dialogStationGroupRoleVisible: false,
+                showRelatedFlag: false,
+                selectAllRoleId: [],
+                selectedRowsRole: undefined,
+                roleListQuery: {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    stationGroupId: undefined
+                },
+                dialogStationGroupRoleLoading: false
             }
         },
         computed: {
@@ -882,7 +924,7 @@
                             this.listQuery.stationGroupClassificationTreePosition = defaultSelect.treePosition + '&' + defaultSelect.value;
                             this.reloadList();
                             this.$nextTick(()=>{
-                                this.$refs.stationGroupClassificationTree.setCurrentKey(this.listQuery.stationGroupClassificationId);
+                                this.$refs['stationGroupClassificationTree'].setCurrentKey(this.listQuery.stationGroupClassificationId);
                             });
                         }
                     }
@@ -898,9 +940,9 @@
             handleStationGroupClassificationNodeClick(data) {
                 if (data.children && data.children.length > 0) {
                     if (this.listQuery.stationGroupClassificationId) {
-                        this.$refs.stationGroupClassificationTree.setCurrentKey(this.listQuery.stationGroupClassificationId);
+                        this.$refs['stationGroupClassificationTree'].setCurrentKey(this.listQuery.stationGroupClassificationId);
                     } else {
-                        this.$refs.stationGroupClassificationTree.setCurrentKey(null);
+                        this.$refs['stationGroupClassificationTree'].setCurrentKey(null);
                     }
                     return;
                 }
@@ -1479,6 +1521,122 @@
                 this.domainFormDialogVisible = false;
                 this.resetDomain();
                 this.$refs['domainDialogForm'].resetFields();
+            },
+
+            btnStationGroupRole(row){
+                this.titleDomain = row.name + ' - 关联角色';
+                this.dialogStationGroupRoleVisible = true;
+                this.currentRow = row;
+                this.loadStationGroupRole(row.id).then(res => {
+                    if (res && res.length > 0) {
+                        for (let stationGroupRole of res) {
+                            this.selectAllRoleId.push(stationGroupRole.roleId)
+                        }
+                        this.showRelatedFlag = true;
+                        this.handleShowRelated(true);
+                    } else {
+                        this.showRelatedFlag = false;
+                        this.handleShowRelated(false);
+                    }
+                })
+            },
+            loadStationGroupRole(stationGroupId) {
+                let query = {stationGroupId}
+                return new Promise((resolve, reject) => {
+                    getAllRoleStationGroup(query).then(response => {
+                        resolve(response.data)
+                    }).catch(err => {
+                        reject(err)
+                    })
+                });
+            },
+            loadRoleList() {
+                return new Promise((resolve, reject) => {
+                    this.dialogStationGroupRoleLoading = true;
+                    getStationGroupRoleList(this.roleListQuery).then(response => {
+                        this.dialogStationGroupRoleLoading = false;
+                        this.roleList = response.data.records;
+                        this.roleTotal = response.data.total;
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
+            },
+            handleShowRelated(checked) {
+                if (checked) {
+                    this.roleListQuery.stationGroupId = this.currentRow.id;
+                } else {
+                    this.roleListQuery.stationGroupId = undefined;
+                }
+                this.reloadRoleList();
+            },
+            handleSelectionChangeStationGroupRole(rows) {
+                this.selectedRowsRole = rows;
+            },
+            selectRowRole(selection, row) {
+                let i = this.selectAllRoleId.indexOf(row.roleId)
+                if (i < 0) {
+                    this.selectAllRoleId.push(row.roleId)
+                } else {
+                    this.selectAllRoleId.splice(i, 1)
+                }
+            },
+            handleSizeChangeStationGroupRole(val) {
+                this.roleListQuery.size = val;
+                this.loadRoleList().then(() => {
+                    this.checkRelatedRoleRows();
+                });
+            },
+            handleCurrentChangeStationGroupRole(val) {
+                this.roleListQuery.page = val;
+                this.loadRoleList().then(() => {
+                    this.checkRelatedRoleRows();
+                });
+            },
+            checkRelatedRoleRows() {
+                this.$nextTick(() => {
+                    if (this.selectAllRoleId && this.selectAllRoleId.length > 0) {
+                        for (let row of this.roleList) {
+                            if (this.selectAllRoleId.includes(row.roleId)) {
+                                this.$refs['stationGroupRoleTable'].toggleRowSelection(row, true)
+                            }
+                        }
+                    }
+                });
+            },
+            selectAllRole(selection) {
+                if (selection.length > 0) {
+                    for (let role of this.roleList) {
+                        if (this.selectAllRoleId.indexOf(role.roleId) < 0) {
+                            this.selectAllRoleId.push(role.roleId)
+                        }
+                    }
+                } else {
+                    for (let role of this.roleList) {
+                        let i = this.selectAllRoleId.indexOf(role.roleId)
+                        if (i >= 0) {
+                            this.selectAllRoleId.splice(i, 1)
+                        }
+                    }
+                }
+            },
+            doSaveStationGroupRole(){
+                this.submitLoading = true;
+                setStationGroupRoles(this.currentRow.id,this.selectAllRoleId).then(() => {
+                    this.closeStationGroupRoleDialog();
+                    this.reloadList();
+                    this.$message.success(this.$t("table.updateSuccess"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
+            },
+            reloadRoleList() {
+                this.handleCurrentChangeStationGroupRole(1)
+            },
+            closeStationGroupRoleDialog(){
+                this.dialogStationGroupRoleVisible = false;
+                this.submitLoading = false;
             }
         }
     }
