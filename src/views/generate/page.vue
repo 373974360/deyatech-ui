@@ -37,13 +37,13 @@
                     <el-table :data="pageList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="50" align="center"/>
-                        <el-table-column align="center" label="页面名称" prop="pageName"/>
-                        <el-table-column align="center" label="英文名称" prop="pageEnglishName"/>
-                        <el-table-column align="center" label="页面路径" prop="pagePath"/>
-                        <el-table-column align="center" label="模板地址" prop="templatePath"/>
-                        <el-table-column align="center" label="更新频率" prop="pageInterval"/>
-                        <el-table-column align="center" label="备注" prop="remark"/>
-                        <!--<el-table-column align="center" label="站点id" prop="siteId"/>
+                        <el-table-column align="left" label="页面名称" prop="pageName" width="150"/>
+                        <el-table-column align="left" label="英文名称" prop="pageEnglishName" width="100"/>
+                        <el-table-column align="left" label="页面路径" prop="pagePath" width="100"/>
+                        <el-table-column align="left" label="模板地址" prop="templatePath"/>
+                        <el-table-column align="center" label="频率" prop="pageInterval" width="50"/>
+                        <!--<el-table-column align="center" label="备注" prop="remark"/>
+                        <el-table-column align="center" label="站点id" prop="siteId"/>
                         <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
                                 <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -51,8 +51,10 @@
                                 </el-tag>
                             </template>
                         </el-table-column>-->
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="180">
                             <template slot-scope="scope">
+                                <el-button title="复制引用" type="primary" icon="el-icon-document-copy" :size="btnSize" circle
+                                           @click.stop.safe="btnCopyInclude(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop.safe="btnUpdate(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.replay" title="发布静态页" type="success" icon="el-icon-check" :size="btnSize" circle
@@ -147,6 +149,17 @@
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closePageDialog">{{$t('table.cancel')}}</el-button>
+                </span>
+            </el-dialog>
+            <el-dialog title="复制引用代码" :visible.sync="copyDialogVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeCopyDialog">
+                <el-input type="textarea" v-model.trim="includeHtml" :rows="5"></el-input>
+                <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize"
+                               v-clipboard:copy="this.includeHtml"
+                               v-clipboard:success="doCopySuccess"
+                               v-clipboard:error="doCopyError">复制</el-button>
+                    <el-button :size="btnSize" @click="closeCopyDialog">取消</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -256,7 +269,7 @@
                     templatePath: undefined,
                     siteId: undefined,
                     autoUpdate: 0,
-                    pageInterval: undefined,
+                    pageInterval: 60,
                     ids: undefined
                 },
                 pageRules: {
@@ -307,7 +320,9 @@
                 selectTemplatePath: undefined,
                 catalogList: undefined,
                 pageCatalogList: undefined,
-                treeLoading: false
+                treeLoading: false,
+                copyDialogVisible: false,
+                includeHtml: undefined
             }
         },
         computed: {
@@ -337,6 +352,21 @@
             }
         },
         methods: {
+            btnCopyInclude(row){
+                this.copyDialogVisible = true;
+                this.includeHtml = '<!-- '+row.pageName+' start -->\n' +
+                    '<!--#include virtual=\''+row.pagePath+row.pageEnglishName+'.html\'-->\n' +
+                    '<!-- '+row.pageName+' end -->';
+            },
+            doCopySuccess(){
+                this.$message.success("复制成功");
+            },
+            doCopyError(){
+                this.$message.error("复制失败");
+            },
+            closeCopyDialog(){
+                this.copyDialogVisible = false;
+            },
             triggerTreeNode(data) {
                 if (data.children && data.children.length > 0) {
                     this.$refs['pageTypeTree'].setCurrentKey(this.listQuery.typeId);
@@ -510,14 +540,13 @@
                 this.page = {
                     id: undefined,
                     typeId: undefined,
-                    pageTypeTreePosition: undefined,
                     pageName: undefined,
                     pageEnglishName: undefined,
                     pagePath: undefined,
                     templatePath: undefined,
                     siteId: undefined,
                     autoUpdate: 0,
-                    pageInterval: undefined,
+                    pageInterval: 60,
                     ids: undefined
                 }
                 this.pageCatalogList = undefined;
