@@ -14,7 +14,7 @@
             </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" title="新增元数据集">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || countModel > 0">{{$t('table.delete')}}</el-button>
                 </div>
@@ -45,10 +45,10 @@
                 </el-table-column>
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="230">
                     <template slot-scope="scope">
-                        <el-button title="新增版本" type="primary" icon="el-icon-plus" :size="btnSize" circle @click="btnAddVersion(scope.row)"></el-button>
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop="btnUpdate(scope.row)"></el-button>
                         <el-button title="设置主版本" type="primary" icon="iconwarehouse-delivery" :size="btnSize" circle @click="btnMainVersion(scope.row)"></el-button>
+                        <el-button title="新增版本" type="primary" icon="el-icon-circle-plus-outline" :size="btnSize" circle @click="btnAddVersion(scope.row)"></el-button>
                         <el-button title="表单排序" type="primary" icon="iconfilter" :size="btnSize" circle @click="btnSort(scope.row)"></el-button>
 
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
@@ -63,7 +63,7 @@
             </el-pagination>
 
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="80%"
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" :fullscreen="true"
                        :close-on-click-modal="closeOnClickModal" @close="closeMetadataCollectionDialog">
                 <el-form ref="metadataCollectionDialogForm" class="deyatech-form" :model="metadataCollection" label-position="right"
                          label-width="120px" :rules="metadataCollectionRules">
@@ -116,14 +116,53 @@
                         </div>
                         <el-table ref="relatedTable" :data="relationData" border @selection-change="handleSelectionChangeRelated">
                             <el-table-column type="selection" width="35" align="center"/>
-                            <el-table-column label="中文名称" prop="name"/>
-                            <el-table-column label="字段名" prop="fieldName"/>
-                            <el-table-column label="标签名称">
+                            <el-table-column label="元数据名称" prop="name"/>
+                            <el-table-column label="元数据字段" prop="nameField"/>
+                            <el-table-column label="元数据类型" prop="fieldDataType">
+                                <template slot-scope="scope">
+                                    <span v-text="filterDataType(scope.row.fieldDataType)"
+                                          :style="scope.row.fieldDataType != scope.row.dataType ? 'color: #ff0000' : '' "></span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="元数据长度" prop="fieldDataLength">
+                                <template slot-scope="scope">
+                                    <span v-text="scope.row.fieldDataLength"
+                                          :style="compareLength(scope.row.fieldDataLength, scope.row.dataLength) ? 'color: #ff4444' : '' "></span>
+                                </template>
+                            </el-table-column>
+
+                            <el-table-column label="元数据控件" prop="fieldControlType">
+                                <template slot-scope="scope">
+                                    <span v-text="filterControlType(scope.row.fieldControlType)"
+                                          :style="scope.row.fieldControlType != scope.row.controlType ? 'color: #ff00ff' : '' "></span>
+                                </template>
+                            </el-table-column>
+
+                            <el-table-column label="名称">
                                 <template slot-scope="scope">
                                     <el-input v-model.trim="relationDataReal[scope.$index].label" placeholder="请输入" maxlength="100"></el-input>
                                 </template>
                             </el-table-column>
-                            <!--<el-table-column label="数据类型" prop="dataType" :formatter="filterDataType"/>
+                            <el-table-column label="字段" prop="briefName"/>
+                            <el-table-column label="类型" prop="dataType">
+                                <template slot-scope="scope">
+                                    <span v-text="filterDataType(scope.row.dataType)"
+                                          :style="scope.row.fieldDataType != scope.row.dataType ? 'color: #ff0000' : '' "></span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="长度" prop="dataLength">
+                                <template slot-scope="scope">
+                                    <span v-text="scope.row.dataLength"
+                                          :style="compareLength(scope.row.fieldDataLength, scope.row.dataLength) ? 'color: #ff4444' : '' "></span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="控件" prop="controlType">
+                                <template slot-scope="scope">
+                                    <span v-text="filterControlType(scope.row.controlType)"
+                                          :style="scope.row.fieldControlType != scope.row.controlType ? 'color: #ff00ff' : '' "></span>
+                                </template>
+                            </el-table-column>
+                            <!--
                             <el-table-column label="控件类型">
                                 <template slot-scope="scope">
                                     <el-select filterable v-model.trim="relationDataReal[scope.$index].controlType" placeholder="请选择" @change="handleControlTypeChange(scope.$index)">
@@ -145,7 +184,7 @@
                                     </el-select>
                                 </template>
                             </el-table-column>-->
-                            <el-table-column label="校验方式">
+                            <el-table-column label="校验方式" width="200">
                                 <template slot-scope="scope">
                                     <el-select filterable v-model.trim="relationDataReal[scope.$index].checkModel" placeholder="请选择">
                                         <el-option v-for="item in relationDataReal[scope.$index].checkModelOptions" :key="item.id" :label="item.name" :value="item.id">
@@ -153,12 +192,12 @@
                                     </el-select>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="是否为列头">
+                            <el-table-column label="是否为列头" width="110">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model.trim="relationDataReal[scope.$index].tableHead"></el-checkbox>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="是否高级查询">
+                            <el-table-column label="是否高级查询" width="110">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model.trim="relationDataReal[scope.$index].advancedQuery"></el-checkbox>
                                 </template>
@@ -168,7 +207,7 @@
                                     <el-checkbox v-model.trim="relationDataReal[scope.$index].useIndex"></el-checkbox>
                                 </template>
                             </el-table-column>-->
-                            <el-table-column label="是否全文检索">
+                            <el-table-column label="是否全文检索" width="110">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model.trim="relationDataReal[scope.$index].useFullIndex"></el-checkbox>
                                 </template>
@@ -333,6 +372,7 @@
     } from "../../api/metadata/category";
     import {
         findDataType,
+        findControlType,
         getMetadataList
     } from "../../api/metadata/metadata";
     import {
@@ -463,6 +503,7 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 dataTypeOptions: [],
+                controlTypeOptions: [],
                 dictOptions: [],
                 relationData: [],
                 relationDataReal: [],
@@ -513,16 +554,17 @@
             }
         },
         watch: {
-            'metadataCollection.mdPrefix'(value) {
+            /*'metadataCollection.mdPrefix'(value) {
                 for (let item of this.relationData) {
                     item.fieldName = value + item.briefName;
                 }
-            }
+            }*/
         },
         created(){
             this.reloadList();
             // 获取数据类型
             this.getDataType();
+            this.getControlType();
             // 获取数据字典
             this.getAllDicts();
             this.getMetadataCategory();
@@ -562,6 +604,11 @@
             getDataType () {
                 findDataType().then(response => {
                     this.dataTypeOptions = response.data;
+                })
+            },
+            getControlType() {
+                findControlType().then(response => {
+                    this.controlTypeOptions = response.data;
                 })
             },
             getAllDicts() {
@@ -692,7 +739,6 @@
                 }
             },
             btnAddVersion(row) {
-                console.log(row.id);
                 findMetadataCollectionAllData({id: row.id}).then(response => {
                     this.metadataCollection = deepClone(response.data[0]);
                     this.metadataCollection.id = undefined;
@@ -923,35 +969,60 @@
             },
             mapMetadata(metadata, relation) {
                 let obj = deepClone(metadata);
-                obj.id = undefined;
-                obj.metadataId = metadata.id;
                 if (relation) {
                     obj.label = relation.label;
+                    obj.briefName = relation.briefName;
+                    obj.dataType = relation.dataType;
+                    obj.dataLength = relation.dataLength;
+                    obj.controlType = relation.controlType;
+                    obj.controlLength = metadata.controlLength;
+                    obj.checkModel = relation.checkModel;
+                    obj.dataSource = relation.dataSource;
+                    obj.dictionaryId = relation.dictionaryId;
+                    obj.required = relation.required;
+                    obj.mandatory = relation.mandatory;
                     obj.tableHead = relation.tableHead;
                     obj.advancedQuery = relation.advancedQuery;
                     obj.useFullIndex = relation.useFullIndex;
                     obj.useIndex = relation.useIndex;
-                    obj.fieldName = relation.fieldName;
                 } else {
                     obj.label = metadata.name;
+                    obj.briefName = metadata.briefName;
+                    obj.dataType = metadata.dataType;
+                    obj.dataLength = metadata.dataLength;
+                    obj.controlType = metadata.controlType;
+                    obj.controlLength = metadata.controlLength;
+                    obj.checkModel = metadata.checkModel;
+                    obj.dataSource = metadata.dataSource;
+                    obj.dictionaryId = metadata.dictionaryId;
+                    obj.required = metadata.required;
+                    obj.mandatory = metadata.mandatory;
                     obj.tableHead = false;
                     obj.advancedQuery = false;
                     obj.useFullIndex = false;
                     obj.useIndex = false;
-                    obj.fieldName = obj.briefName;
-                    if (this.metadataCollection.mdPrefix) {
-                        obj.fieldName = this.metadataCollection.mdPrefix + obj.fieldName;
-                    }
+                }
+                obj.id = undefined;
+                obj.metadataId = metadata.id;
+                obj.name = metadata.name; // 元数据名称
+                obj.nameField = metadata.briefName; // 元数据字段
+                obj.fieldName = metadata.briefName; // 元数据字段
+                obj.fieldDataType = metadata.dataType; // 元数据类型
+                obj.fieldDataLength = metadata.dataLength; // 元数据长度
+                obj.fieldControlType = metadata.controlType; // 元数据类型
+
+                if (this.metadataCollection.mdPrefix) {
+                    obj.fieldName = this.metadataCollection.mdPrefix + obj.fieldName;
                 }
                 if (metadata.type === 1) {
                     for (const item of this.dataTypeOptions) {
-                        if (item.id === metadata.dataType) {
+                        if (item.id === obj.dataType) {
                             obj.controlTypeOptions = item.dataShow;
                             break;
                         }
                     }
                     for (const item of obj.controlTypeOptions) {
-                        if (item.id === metadata.controlType) {
+                        if (item.id === obj.controlType) {
                             obj.dataSourceOptions = item.dataSource;
                             obj.checkModelOptions = item.validate;
                             break;
@@ -962,15 +1033,25 @@
                 }
                 return obj;
             },
-            filterDataType(row, column, cellValue) {
+            filterDataType(cellValue) {
                 for (let item of this.dataTypeOptions) {
                     if (item.id === cellValue) {
                         return item.name
                     }
                 }
             },
-
-
+            filterControlType(cellValue) {
+                for (let item of this.controlTypeOptions) {
+                    if (item.id === cellValue) {
+                        return item.name
+                    }
+                }
+            },
+            compareLength(mdLen, len) {
+                if (parseInt(mdLen) < parseInt(len))
+                    return true;
+                else false;
+            },
             // 表单排序
             btnSort(row) {
                 getCollectionList({enName: row.enName}).then(response => {

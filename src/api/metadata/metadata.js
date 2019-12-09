@@ -55,7 +55,12 @@ export function findDataType() {
         method: 'get'
     })
 }
-
+export function findControlType() {
+    return request({
+        url: '/manage/admin/metadata/controlType',
+        method: 'get'
+    })
+}
 export function findCandidateRelation(id, categoryId) {
     return request({
         url: '/manage/admin/metadata/findCandidateRelation',

@@ -149,7 +149,7 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="20" :span="24" v-if="metadata.type === 1 && (metadata.controlType === 'selectElement' || metadata.controlType === 'radioElement' || metadata.controlType === 'checkboxElement')">
+                    <el-row :gutter="20" :span="24" v-if="metadata.type === 1 && (metadata.controlType === 'selectElement' || metadata.controlType === 'radioElement' || metadata.controlType === 'checkboxElement')"><!---->
                         <el-col :span="12">
                             <el-form-item label="数据来源" prop="dataSource">
                                 <el-select filterable v-model.trim="metadata.dataSource" placeholder="请选择" style="width: 100%" @change="dataSourceChange">
@@ -450,7 +450,6 @@
         watch: {
             // 数据类型
             'metadata.dataType'(value) {
-                console.log("dataType");
                 this.$set(this.metadata, 'controlType', undefined);
                 for (let item of this.dataTypeOptions) {
                     if (item.id === value) {
@@ -460,7 +459,6 @@
             },
             // 空间类型
             'metadata.controlType'(value) {
-                console.log("controlType");
                 this.$set(this.metadata, 'dataSource', undefined);
                 this.$set(this.metadata, 'checkModel', undefined);
                 this.$set(this.metadata, 'dataLength', undefined);
@@ -478,7 +476,6 @@
                 }
             },
             'metadata.multiFlag'(value) {
-                console.log("multiFlag");
                 if (!value) {
                     this.metadata.annotationCount = 1
                 }
@@ -608,12 +605,18 @@
                 this.$nextTick(() => {
                     this.metadata.controlType = row.controlType;
                     this.$nextTick(() => {
-                        this.$set(this.metadata, 'dataSource', row.dataSource);
+                        if (this.metadata.controlType == 'selectElement' ||
+                            this.metadata.controlType == 'radioElement' ||
+                            this.metadata.controlType == 'checkboxElement' ||
+                            this.metadata.controlType == 'switchElement') {
+                            this.$set(this.metadata, 'dataSource', row.dataSource);
+                        } else {
+                            this.$set(this.metadata, 'dataSource', undefined);
+                        }
                         this.metadata.checkModel = row.checkModel;
                         this.metadata.dataLength = row.dataLength;
                     });
                 });
-                console.log(this.metadata.controlLength);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -670,7 +673,6 @@
                         if (this.metadata.type === 2) {
                             this.metadata.relationDataJson = JSON.stringify(this.relationData);
                         }
-                        console.log(this.metadata.controlLength);
                         createOrUpdateMetadata(this.metadata).then(() => {
                             this.resetMetadataDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));

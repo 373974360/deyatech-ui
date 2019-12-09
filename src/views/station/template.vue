@@ -383,7 +383,7 @@
         getModelByCatalogId
     } from '@/api/station/model';
     import {validateURL,validateEmail, isEnglish} from '@/util/validate';
-    import {findMetadataCollectionAllData} from '@/api/metadata/collection';
+    import {findMetadataCollectionAllData, getAllMetadataCollection} from '@/api/metadata/collection';
     import {getDictionaryList} from '@/api/admin/dictionary';
     import {getTableHeadContentData, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
 
@@ -702,6 +702,7 @@
                 displaySettingVisible: false,
                 customizationFunction: undefined,
                 headList: [],
+                metadataCollectionList: []
             }
         },
         watch: {
@@ -784,9 +785,19 @@
                 this.getAllModelBySiteId();
                 // 获取站点上传路径
                 this.getSiteUploadPath();
+                // 获取元数据集
+                this.getAllMetaDataCollection();
             }
         },
-        methods: {//ycx
+        methods: {
+            // 获取元数据集
+            getAllMetaDataCollection() {
+                getAllMetadataCollection().then(response => {
+                    if (response.status == 200 && response.data.length > 0) {
+                        this.metadataCollectionList = response.data;
+                    }
+                })
+            },
             // 加载图片地址
             loadShowImageUrl(url) {
                 if(!url) return undefined;
@@ -823,8 +834,8 @@
                 if (item.dataLength) {
                     let rule = {};
                     rule.min = 1;
-                    rule.max = item.dataLength;
-                    rule.trigger = ['blur','change'];
+                    rule.max = parseInt(item.dataLength);
+                    rule.trigger = 'blur';
                     rule.message = '长度在 1 到 ' + item.dataLength + ' 个字符';
                     rules.push(rule);
                 }
@@ -1071,6 +1082,24 @@
                 this.$router.push({path: url});
             },
             btnCreate(command){
+                console.dir(this.metadataCollectionList);
+                let has = false;
+                let mcId = '';
+                for (let m of this.modelList) {
+                    if (m.id === command) {
+                        mcId = m.metaDataCollectionId;
+                        break;
+                    }
+                }
+                for (let mc of this.metadataCollectionList) {
+                    if (mcId === mc.id) {
+                        has = true;
+                    }
+                }
+                if (!has) {
+                    this.$message.error('元数据集不存在')
+                    return
+                }
                 if (command) {
                     let catalogNode = this.$refs.catalogTree.getCurrentNode()
                     if (!catalogNode) {
