@@ -482,6 +482,14 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = false;
+            this.reloadTree().then(() => {
+                let node = getFirstFinalChild(this.metadataCategoryTree);
+                if (node) {
+                    this.$refs['metadataCategoryTree'].setCurrentKey(node.id);
+                    this.listQuery.categoryId = node.id;
+                    this.reloadList();
+                } else {
             if(this.$store.state.common.siteId != undefined){
                 this.reloadTree().then(() => {
                     let node = getFirstFinalChild(this.metadataCategoryTree);

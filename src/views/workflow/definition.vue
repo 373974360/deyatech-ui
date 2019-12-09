@@ -355,6 +355,7 @@
             }
         },
         created(){
+            this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
             this.init();
             this.getGroupOptions();

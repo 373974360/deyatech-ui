@@ -1,6 +1,6 @@
 <template>
-    <el-cascader filterable ref="topSiteCascader" v-if="this.$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
-                 :options="stationGroupList" v-model="stationGroupTreePosition" @change="siteChange" size="small">
+    <el-cascader filterable ref="topSiteCascader" v-if="$store.state.common.selectSiteDisplay" placeholder="请选择站点" style="margin-top:16px;width: 400px;"
+                 :options="$store.state.common.topSelectStatinoGroupList" v-model="$store.state.common.topSelectStationGroupTreePosition" @change="siteChange" size="small">
     </el-cascader><!--&& this.stationGroupList.length > 1-->
 </template>
 
@@ -24,13 +24,13 @@
         },
         methods: {
             getAllStationGroup(){
-                this.stationGroupList = [];
+                this.$store.state.common.topSelectStatinoGroupList = [];
                 getLoginUserStationCascader().then(response => {
-                    this.stationGroupList = response.data;
-                    if(this.stationGroupList.length > 0){
+                    this.$store.state.common.topSelectStatinoGroupList = response.data;
+                    if(this.$store.state.common.topSelectStatinoGroupList.length > 0){
                         let v = [];
-                        this.getDefault(v, this.stationGroupList);
-                        this.stationGroupTreePosition = v;
+                        this.getDefault(v, this.$store.state.common.topSelectStatinoGroupList);
+                        this.$store.state.common.topSelectStationGroupTreePosition = v;
                         if (v.length > 0) {
                             this.$store.state.common.siteId = v[v.length - 1];
                             this.$store.state.common.siteName = this.currentLabels(v);
@@ -55,7 +55,7 @@
                 // this.$router.history.current.meta.keepAlive = false
             },
             currentLabels(v) {
-                let options = this.stationGroupList;
+                let options = this.$store.state.common.topSelectStatinoGroupList;
                 let labels = [];
                 v.forEach(value => {
                     const targetOption = options && options.filter(option => option['value'] === value)[0];

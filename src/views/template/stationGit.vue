@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="stationGitForm" :model="stationGit" :rules="stationGitRules">
                     <el-form-item prop="gitUrl">
-                        <el-input :size="searchSize" placeholder="Git地址" v-model.trim="stationGit.gitUrl" :disabled="gitUrlInputDisabled"></el-input>
+                        <el-input :size="searchSize" placeholder="Git地址" v-model.trim="stationGit.gitUrl" :disabled="gitUrlInputDisabled" style="width:430px;"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button v-if="btnEnable.sync" type="primary" icon="el-icon-refresh" :size="searchSize" @click="doCreateOrUpdate" :loading="submitLoading">同步</el-button>

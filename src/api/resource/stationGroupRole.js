@@ -53,6 +53,13 @@ export function setRoleStationGroups(roleId, stationGroupIds){
         data: {roleId, stationGroupIds}
     })
 }
+export function setStationGroupRoles(stationGroupId,roleIds){
+    return request({
+        url: '/manage/resource/stationGroupRole/setStationGroupRoles',
+        method: 'post',
+        data: {stationGroupId, roleIds}
+    })
+}
 
 export function pageStationAssociationUser(query) {
     return request({

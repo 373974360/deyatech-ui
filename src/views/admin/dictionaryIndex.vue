@@ -326,6 +326,7 @@
             }
         },
         created() {
+            this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
         },
         methods: {

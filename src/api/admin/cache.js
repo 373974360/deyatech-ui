@@ -24,3 +24,10 @@ export function flushCache() {
     })
 }
 
+export function reloadCache() {
+    return request({
+        url: '/manage/station/cache/reload',
+        method: 'post'
+    })
+}
+

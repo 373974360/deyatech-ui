@@ -18,6 +18,9 @@ import basicContainer from './components/basicContainer'
 import iconSelect from './components/iconSelect'
 import messageTemplate from './components/messageTemplate'
 
+import VueClipboard from 'vue-clipboard2'
+
+Vue.use(VueClipboard)
 Vue.use(router)
 Vue.use(VueAxios, axios)
 Vue.use(Element, {
