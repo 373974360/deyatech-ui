@@ -24,39 +24,51 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="pageList" v-loading.body="listLoading" stripe border highlight-current-row
-                      @selection-change="handleSelectionChange">
-                <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="页面名称" prop="pageName"/>
-                <el-table-column align="center" label="英文名称" prop="pageEnglishName"/>
-                <el-table-column align="center" label="页面路径" prop="pagePath"/>
-                <el-table-column align="center" label="模板地址" prop="templatePath"/>
-                <el-table-column align="center" label="更新频率" prop="pageInterval"/>
-                <el-table-column align="center" label="备注" prop="remark"/>
-                <!--<el-table-column align="center" label="站点id" prop="siteId"/>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
-                    <template slot-scope="scope">
-                        <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                            {{scope.row.enable | enums('EnableEnum')}}
-                        </el-tag>
-                    </template>
-                </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
-                    <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.replay" title="发布静态页" type="success" icon="el-icon-check" :size="btnSize" circle
-                                   @click.stop.safe="btnReplay(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
-            <el-pagination class="deyatech-pagination pull-right" background
-                           :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
-                           @size-change="handleSizeChange" @current-change="handleCurrentChange">
-            </el-pagination>
+            <el-row :span="24">
+                <el-col :span="4">
+                    <div class="left-tree">
+                        <el-tree ref="pageTypeTree" :data="pageTypeTree" node-key="id" highlight-current
+                                 default-expand-all :expand-on-click-node="false"
+                                 @node-click="triggerTreeNode" v-loading="treeLoading">
+                        </el-tree>
+                    </div>
+                </el-col>
+                <el-col :span="20">
+                    <el-table :data="pageList" v-loading.body="listLoading" stripe border highlight-current-row
+                              @selection-change="handleSelectionChange">
+                        <el-table-column type="selection" width="50" align="center"/>
+                        <el-table-column align="center" label="页面名称" prop="pageName"/>
+                        <el-table-column align="center" label="英文名称" prop="pageEnglishName"/>
+                        <el-table-column align="center" label="页面路径" prop="pagePath"/>
+                        <el-table-column align="center" label="模板地址" prop="templatePath"/>
+                        <el-table-column align="center" label="更新频率" prop="pageInterval"/>
+                        <el-table-column align="center" label="备注" prop="remark"/>
+                        <!--<el-table-column align="center" label="站点id" prop="siteId"/>
+                        <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
+                                    {{scope.row.enable | enums('EnableEnum')}}
+                                </el-tag>
+                            </template>
+                        </el-table-column>-->
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+                            <template slot-scope="scope">
+                                <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                                           @click.stop.safe="btnUpdate(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.replay" title="发布静态页" type="success" icon="el-icon-check" :size="btnSize" circle
+                                           @click.stop.safe="btnReplay(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                           @click.stop.safe="btnDelete(scope.row)"></el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination class="deyatech-pagination pull-right" background
+                                   :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                                   :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
+                                   @size-change="handleSizeChange" @current-change="handleCurrentChange">
+                    </el-pagination>
+                </el-col>
+            </el-row>
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
@@ -157,6 +169,9 @@
     import {
         getCatalogTree,
     } from '@/api/station/catalog';
+    import {
+        getPageTypeTree
+    } from '@/api/generate/pageType';
     import {listTemplateAllFiles} from '@/api/template/template';
     import {getPageCatalogList} from '@/api/generate/pageCatalog';
 
@@ -221,6 +236,7 @@
                 });
             }
             return {
+                pageTypeTree: undefined,
                 pageList: undefined,
                 total: undefined,
                 listLoading: false,
@@ -228,10 +244,12 @@
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
+                    typeId: undefined,
                     pageName: undefined
                 },
                 page: {
                     id: undefined,
+                    typeId: undefined,
                     pageName: undefined,
                     pageEnglishName: undefined,
                     pagePath: undefined,
@@ -288,7 +306,8 @@
                 },
                 selectTemplatePath: undefined,
                 catalogList: undefined,
-                pageCatalogList: undefined
+                pageCatalogList: undefined,
+                treeLoading: false
             }
         },
         computed: {
@@ -312,11 +331,20 @@
         created(){
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
+                this.reloadPageTypeTree();
                 this.reloadList();
                 this.listTemplateAllFiles();
             }
         },
         methods: {
+            triggerTreeNode(data) {
+                if (data.children && data.children.length > 0) {
+                    this.$refs['pageTypeTree'].setCurrentKey(this.listQuery.typeId);
+                    return;
+                }
+                this.listQuery.typeId = data.id;
+                this.handleCurrentChange(1)
+            },
             resetSearch(){
                 this.listQuery.siteId = this.$store.state.common.siteId;
                 this.listQuery.pageName = undefined;
@@ -334,6 +362,18 @@
                     this.listLoading = false;
                     this.pageList = response.data.records;
                     this.total = response.data.total;
+                })
+            },
+            reloadPageTypeTree(){
+                this.treeLoading = true;
+                return new Promise((resolve, reject) => {
+                    getPageTypeTree().then(response => {
+                        this.pageTypeTree = response.data;
+                        this.treeLoading = false;
+                        resolve()
+                    }).catch(err => {
+                        reject(err)
+                    })
                 })
             },
             getCatalogTree(){
@@ -370,14 +410,15 @@
                 this.selectedRows = rows;
             },
             btnCreate(){
-                if (!this.listQuery.siteId) {
-                    this.$message.warning("请先选择站点");
-                    return
-                }
                 this.resetPage();
-                this.getCatalogTree();
-                this.dialogTitle = 'create';
-                this.dialogVisible = true;
+                if(!this.listQuery.typeId){
+                    this.$message.warning("请选择页面分类");
+                }else{
+                    this.page.typeId = this.listQuery.typeId;
+                    this.getCatalogTree();
+                    this.dialogTitle = 'create';
+                    this.dialogVisible = true;
+                }
             },
             btnUpdate(row){
                 this.resetPage();
@@ -468,12 +509,14 @@
             resetPage(){
                 this.page = {
                     id: undefined,
+                    typeId: undefined,
+                    pageTypeTreePosition: undefined,
                     pageName: undefined,
                     pageEnglishName: undefined,
                     pagePath: undefined,
                     templatePath: undefined,
-                    autoUpdate: 0,
                     siteId: undefined,
+                    autoUpdate: 0,
                     pageInterval: undefined,
                     ids: undefined
                 }
