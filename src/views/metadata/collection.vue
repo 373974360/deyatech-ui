@@ -16,9 +16,10 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" title="新增元数据集">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || countModel > 0">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || countModel > 0 || beUsed > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
+                    <span style="color: #fab6b6">表中有数据或被模型使用时不能删除</span>
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -52,7 +53,7 @@
                         <el-button title="表单排序" type="primary" icon="iconfilter" :size="btnSize" circle @click="btnSort(scope.row)"></el-button>
 
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop="btnDelete(scope.row)" :disabled="scope.row.countModel > 0"></el-button>
+                                   @click.stop="btnDelete(scope.row)" :disabled="scope.row.countModel > 0 || scope.row.beUsed > 0"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -113,6 +114,7 @@
                         <div class="deyatech-menu">
                             <el-button type="primary" :size="btnSize" @click="handleRelation">选择关联</el-button>
                             <el-button type="danger" :size="btnSize" :disabled="selectedRowsRelation.length < 1" @click="handleUnRelate">取消关联</el-button>
+                            <span style="color: #fab6b6; margin-left: 10px;" v-if="dialogTitle === 'update'">类型变更、控件变更、长度减小在有数据时不能保存</span>
                         </div>
                         <el-table ref="relatedTable" :data="relationData" border @selection-change="handleSelectionChangeRelated">
                             <el-table-column type="selection" width="35" align="center"/>
@@ -222,11 +224,12 @@
                     </el-row>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :disabled="disableSave" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :disabled="disableSave" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closeMetadataCollectionDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
 
             <el-dialog title="选择关联元数据" :visible.sync="dialogRelationVisible" :before-close="resetDialogRelation"
                        :close-on-click-modal="closeOnClickModal" @open="initCandidateTable" width="80%">
@@ -267,6 +270,7 @@
                 </span>
             </el-dialog>
 
+
             <el-dialog title="设置主版本" :visible.sync="dialogVersionVisible" :before-close="resetDialogVersion"
                        :close-on-click-modal="closeOnClickModal">
                 <div style="width: 90%; margin: 0 auto">
@@ -279,6 +283,7 @@
                     <el-button :size="btnSize" @click="resetDialogVersion">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
+
 
 
             <el-dialog title="表单排序" width="80%" :visible.sync="dialogSortVisible" :close-on-click-modal="closeOnClickModal" @close="closeSortDialog">
@@ -533,7 +538,9 @@
                 sortedRowsToMove: [],
                 maxPageNumber: 0,
                 collectionId: undefined,
-                countModel: 0
+                countModel: 0,
+                beUsed: 0,
+                disableSave: false
             }
         },
         computed: {
@@ -665,9 +672,11 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
                 this.countModel = 0;
+                this.beUsed = 0;
                 if (this.selectedRows) {
                     for (let r of rows) {
                         this.countModel += r.countModel;
+                        this.beUsed += r.beUsed;
                     }
                 }
             },
@@ -693,6 +702,7 @@
                 this.resetMetadataCollection();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                this.metadataCollection.beUsed = false;
             },
             btnUpdate(row){
                 this.resetMetadataCollection();
@@ -712,6 +722,7 @@
                     } else {
                         this.metadataCollection = deepClone(row);
                     }
+                    this.saveCalculation();
                 });
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -722,6 +733,7 @@
                         this.metadataCollection = deepClone(item);
                         this.relationData = this.mapRelatedList(item.metadataList);
                         this.relationDataReal = deepClone(this.relationData);
+                        this.saveCalculation();
                     }
                 }
             },
@@ -746,8 +758,9 @@
                     this.metadataCollection = deepClone(response.data[0]);
                     this.metadataCollection.id = undefined;
                     this.metadataCollection.mainVersion = false;
-                    this.relationData = this.mapRelatedList(response.data[0].metadataList);
+                    this.relationData = this.mapRelatedListAddVersion(response.data[0].metadataList);
                     this.relationDataReal = deepClone(this.relationData);
+                    this.metadataCollection.beUsed = false;
                 });
                 this.dialogTitle = 'addVersion';
                 this.dialogVisible = true;
@@ -882,6 +895,7 @@
                 this.dialogVisible = false;
                 this.resetMetadataCollection();
                 this.$refs['metadataCollectionDialogForm'].resetFields();
+                this.disableSave = false;
             },
             resetDialogRelation() {
                 this.dialogRelationVisible = false;
@@ -962,6 +976,14 @@
                     this.relationDataReal.splice(index + 1, 0, rowData);
                 }
             },
+            mapRelatedListAddVersion(metadataList) {
+                let objList = [];
+                for (const metadata of metadataList) {
+                    let obj = this.mapMetadata(metadata.metadata);
+                    objList.push(obj)
+                }
+                return objList;
+            },
             mapRelatedList(metadataList) {
                 let objList = [];
                 for (const metadata of metadataList) {
@@ -970,7 +992,7 @@
                 }
                 return objList;
             },
-            mapMetadata(metadata, relation) {
+            mapMetadata(metadata, relation, flag) {
                 let obj = deepClone(metadata);
                 if (relation) {
                     obj.label = relation.label;
@@ -988,6 +1010,7 @@
                     obj.advancedQuery = relation.advancedQuery;
                     obj.useFullIndex = relation.useFullIndex;
                     obj.useIndex = relation.useIndex;
+
                 } else {
                     obj.label = metadata.name;
                     obj.briefName = metadata.briefName;
@@ -1254,6 +1277,19 @@
                         this.$message.error("保存失败");
                     }
                 });
+            },
+            saveCalculation() {
+                if (this.metadataCollection.beUsed && this.relationData) {
+                    for (let item of this.relationData) {
+                        if (item.fieldDataType != item.dataType ||
+                            item.fieldControlType != item.controlType ||
+                            this.compareLength(item.fieldDataLength, item.dataLength)) {
+                            this.disableSave = true;
+                            return;
+                        }
+                    }
+                }
+                this.disableSave = false;
             }
         }
     }

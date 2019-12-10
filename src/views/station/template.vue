@@ -830,15 +830,6 @@
                     rule.message = please + item.name;
                     rules.push(rule);
                 }
-                // 长度检验
-                if (item.dataLength) {
-                    let rule = {};
-                    rule.min = 1;
-                    rule.max = parseInt(item.dataLength);
-                    rule.trigger = 'blur';
-                    rule.message = '长度在 1 到 ' + item.dataLength + ' 个字符';
-                    rules.push(rule);
-                }
                 // 类型校验
                 if (item.checkModel) {
                     let rule = {};
@@ -849,6 +840,12 @@
                                 callback()
                             }
                             if (/^[\u4e00-\u9fa5]+$/.test(value)) {
+                                // let msg = this.checkDataLength(rule.field, value);
+                                // if (msg) {
+                                //     callback(new Error(msg));
+                                // } else {
+                                //     callback();
+                                // }
                                 callback();
                             } else {
                                 callback(new Error('请输入中文'));
@@ -860,6 +857,12 @@
                                 callback()
                             }
                             if (validateEmail(value)) {
+                                // let msg = this.checkDataLength(rule.field, value);
+                                // if (msg) {
+                                //     callback(new Error(msg));
+                                // } else {
+                                //     callback();
+                                // }
                                 callback();
                             } else {
                                 callback(new Error("请输入正确的邮箱地址"))
@@ -871,6 +874,12 @@
                                 callback()
                             }
                             if (/^(\+|\-)?\d+$/.test(value)) {
+                                // let msg = this.checkDataLength(rule.field, value);
+                                // if (msg) {
+                                //     callback(new Error(msg));
+                                // } else {
+                                //     callback();
+                                // }
                                 callback();
                             } else {
                                 callback(new Error('请输入整数'));
@@ -885,6 +894,12 @@
                             if (/[^\d]/g.test(value)) {
                                 callback(new Error('请输入正整数'));
                             } else {
+                                // let msg = this.checkDataLength(rule.field, value);
+                                // if (msg) {
+                                //     callback(new Error(msg));
+                                // } else {
+                                //     callback();
+                                // }
                                 callback();
                             }
                         };
@@ -894,6 +909,12 @@
                                 callback()
                             }
                             if (isEnglish(value)) {
+                                // let msg = this.checkDataLength(rule.field, value);
+                                // if (msg) {
+                                //     callback(new Error(msg));
+                                // } else {
+                                //     callback();
+                                // }
                                 callback();
                             } else {
                                 callback(new Error('请输入英文字母'));
@@ -905,6 +926,12 @@
                                 callback()
                             }
                             if (/^(\-|\+)?\d+(\.\d+)?$/.test(value)) {
+                                // let msg = this.checkDataLength(rule.field, value);
+                                // if (msg) {
+                                //     callback(new Error(msg));
+                                // } else {
+                                //     callback();
+                                // }
                                 callback();
                             } else {
                                 callback(new Error('请输入浮点数'));
@@ -916,17 +943,57 @@
                                 callback()
                             }
                             if (validateURL(value)) {
+                                // let msg = this.checkDataLength(rule.field, value);
+                                // if (msg) {
+                                //     callback(new Error(msg));
+                                // } else {
+                                //     callback();
+                                // }
                                 callback();
                             } else {
                                 callback(new Error('URL格式错误'))
                             }
                         }
                     } else {
-                        rule.validator = (rule, value, callback) => callback();
+                        rule.validator = (rule, value, callback) => {
+                            // let msg = this.checkDataLength(rule.field, value);
+                            // if (msg) {
+                            //     callback(new Error(msg));
+                            // } else {
+                            //     callback();
+                            // }
+                            callback();
+                        };
                     }
                     rules.push(rule);
                 }
                 return rules;
+            },
+            checkDataLength(field, value) {
+                // if (this.formList.length > 0) {
+                //     for (let i = 0; i < this.formList.length; i++) {
+                //         let pageModel = this.formList[i].pageModel;
+                //         if (pageModel.hasOwnProperty(field)) {
+                //             let form = this.formList[i];
+                //             for (let row of form.rows) {
+                //                 for (let item of row) {
+                //                     if (item.briefName === field) {
+                //                         if (item.controlType === 'inputElement' ||
+                //                             item.controlType === 'textareaElement' ||
+                //                             item.controlType === 'richTextElement') {
+                //                             let dataLength = item.dataLength;
+                //                             let len = value.length;
+                //                             if (len > dataLength) {
+                //                                 return '长度小于' + dataLength + '个字符'
+                //                             }
+                //                         }
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+                return undefined;
             },
             // 加载动态表头
             loadHeadData() {
@@ -1074,6 +1141,8 @@
                         this.maxPage = 0;
                         this.flagExternalIndex = 0;
                     }
+                }).catch(err=>{
+                    this.$message.error(err);
                 });
             },
             //预览
@@ -1082,7 +1151,6 @@
                 this.$router.push({path: url});
             },
             btnCreate(command){
-                console.dir(this.metadataCollectionList);
                 let has = false;
                 let mcId = '';
                 for (let m of this.modelList) {

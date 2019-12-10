@@ -16,9 +16,10 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || beUsed > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
+                    <span style="color: #fab6b6">被元数据集使用时不能删除</span>
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -71,7 +72,7 @@
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop.safe="btnUpdate(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                           @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                           @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.beUsed"></el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -427,7 +428,8 @@
                 candidateList: [],
                 selectedRowsRelation: [],
                 selectedRowsCandidate: [],
-                dialogRelationVisible: false
+                dialogRelationVisible: false,
+                beUsed: 0
             }
         },
         computed: {
@@ -486,28 +488,17 @@
             this.reloadTree().then(() => {
                 let node = getFirstFinalChild(this.metadataCategoryTree);
                 if (node) {
-                    this.$refs['metadataCategoryTree'].setCurrentKey(node.id);
                     this.listQuery.categoryId = node.id;
                     this.reloadList();
-                } else {
-            if(this.$store.state.common.siteId != undefined){
-                this.reloadTree().then(() => {
-                    let node = getFirstFinalChild(this.metadataCategoryTree);
-                    if (node) {
-                        this.listQuery.categoryId = node.id;
-                        this.$nextTick(()=>{
-                            this.$refs['metadataCategoryTree'].setCurrentKey(node.id);
-                        });
-                        this.reloadList();
-                    } else {
-
-                    }
-                });
-                // 获取数据类型
-                this.getDataType();
-                // 获取数据字典
-                this.getAllDicts();
-            }
+                    this.$nextTick(()=>{
+                        this.$refs['metadataCategoryTree'].setCurrentKey(node.id);
+                    });
+                }
+            });
+            // 获取数据类型
+            this.getDataType();
+            // 获取数据字典
+            this.getAllDicts();
         },
         methods: {
             resetSearch(){
@@ -579,6 +570,10 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.beUsed = 0;
+                for (let r of rows) {
+                    this.beUsed += r.beUsed;
+                }
             },
             handleSelectionChangeRelated(rows) {
                 this.selectedRowsRelation = rows;
@@ -695,7 +690,9 @@
                 delMetadatas(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
-                })
+                }).catch(err=>{
+                    this.listLoading = false;
+                });
             },
             doRelation() {
                 if (this.selectedRowsCandidate.length === 0) {
