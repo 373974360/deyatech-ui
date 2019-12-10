@@ -129,3 +129,9 @@ export function updateWorkFlow() {
         params: {}
     });
 }
+export function getAllCatalogWorkFlowId() {
+    return request({
+        url: '/manage/station/catalog/getAllCatalogWorkFlowId',
+        method: 'get'
+    });
+}

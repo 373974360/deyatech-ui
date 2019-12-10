@@ -26,7 +26,7 @@ export function isEmail(s) {
  * @param {*} s
  */
 export function isMobile(s) {
-    return /^1[0-9]{10}$/.test(s)
+    return /^1[3456789]\d{9}$/.test(s)
 }
 
 /**
@@ -183,7 +183,7 @@ export function isvalidatemobile(phone) {
     let result = true;
     let msg = '';
     // let isPhone = /^0\d{2,3}-?\d{7,8}$/;
-    let isPhone = /^[1][3,4,5,7,8][0-9]{9}$/;
+    let isPhone = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
     //增加134 减少|1349[0-9]{7}，增加181,增加145，增加17[678]
     if (!validatenull(phone)) {
         if (phone.length === 11) {

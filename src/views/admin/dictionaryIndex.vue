@@ -43,13 +43,13 @@
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.key}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                             {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
-                </el-table-column>
+                </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
                                  width="150">
                     <template slot-scope="scope">
@@ -136,13 +136,13 @@
                             <el-tag type="info" v-else-if="scope.row.editable==2">不可编辑</el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                    <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                         <template slot-scope="scope">
                             <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                                 {{scope.row.enable | enums('EnableEnum')}}
                             </el-tag>
                         </template>
-                    </el-table-column>
+                    </el-table-column>-->
                     <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="left"
                                      width="150">
                         <template slot-scope="scope">

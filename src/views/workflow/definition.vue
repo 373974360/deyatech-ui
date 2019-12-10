@@ -16,8 +16,8 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.enable" type="primary" :size="btnSize" @click="btnStatusEnable" :disabled="enableDisabled">启用</el-button>
-                    <el-button v-if="btnEnable.disable" type="warning" :size="btnSize" @click="btnStatusDisable" :disabled="disableDisabled">禁用</el-button>
+                    <!--<el-button v-if="btnEnable.enable" type="primary" :size="btnSize" @click="btnStatusEnable" :disabled="enableDisabled">启用</el-button>
+                    <el-button v-if="btnEnable.disable" type="warning" :size="btnSize" @click="btnStatusDisable" :disabled="disableDisabled">停用</el-button>-->
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
@@ -40,25 +40,25 @@
                 </el-table-column>
                 <el-table-column align="center" label="版本" prop="ver"/>
                 <el-table-column align="center" label="发布时间" prop="deploymentTime"/>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                             {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
-                </el-table-column>
+                </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.setting" type="primary" title="流程节点配置" icon="iconset" :size="btnSize" circle
                                    @click="btnTaskSetting(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.enable && scope.row.enable === 0" type="primary" title="启用" icon="iconsuccess" :size="btnSize" circle
+                        <!--<el-button v-if="btnEnable.enable && scope.row.enable === 0" type="primary" title="启用" icon="iconsuccess" :size="btnSize" circle
                                    @click="btnStatusEnable(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.disable && scope.row.enable === 1" type="warning" title="禁用" icon="iconwarning" :size="btnSize" circle
-                                   @click="btnStatusDisable(scope.row)"></el-button>
+                        <el-button v-if="btnEnable.disable && scope.row.enable === 1" type="warning" title="停用" icon="iconwarning" :size="btnSize" circle
+                                   @click="btnStatusDisable(scope.row)"></el-button>-->
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.beUsed"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -219,7 +219,8 @@
         findDepartmentByIds
     } from "../../api/admin/department";
     import {
-        clearWorkFlow
+        clearWorkFlow,
+        getAllCatalogWorkFlowId
     } from "../../api/station/catalog";
 
     export default {
@@ -368,11 +369,33 @@
             reloadList(){
                 this.listLoading = true;
                 this.processDefinitionList = undefined;
-                this.total = undefined;
                 getProcessDefinitionList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.processDefinitionList = response.data.records;
                     this.total = response.data.total;
+                    if (this.processDefinitionList) {
+                        getAllCatalogWorkFlowId().then(response => {
+                            let workflowIds = response.data;
+                            if (workflowIds) {
+                                console.dir(workflowIds);
+                                console.dir(this.processDefinitionList);
+
+                                for (let item of this.processDefinitionList) {
+                                    let has = false;
+                                    for (let id of workflowIds) {
+                                        if (item.actDefinitionId === id) {
+                                            has = true;
+                                        }
+                                    }
+                                    if (has) {
+                                        this.$set(item, 'beUsed', true);
+                                    } else {
+                                        this.$set(item, 'beUsed', false);
+                                    }
+                                }
+                            }
+                        });
+                    }
                 })
             },
             loadDepartment() {
@@ -678,18 +701,21 @@
                 }
             },
             doAddCandidateUser() {
+                let user = [];
                 for (const row of this.selectedAllUser) {
-                    let addFlag = true;
-                    for (const related of this.candidateUserList) {
-                        if (related.id === row.id) {
-                            addFlag = false;
-                            break;
-                        }
-                    }
-                    if (addFlag) {
-                        this.candidateUserList.push(deepClone(row));
-                    }
+                    user.push(deepClone(row));
+                    // let addFlag = true;
+                    // for (const related of this.candidateUserList) {
+                    //     if (related.id === row.id) {
+                    //         addFlag = false;
+                    //         break;
+                    //     }
+                    // }
+                    // if (addFlag) {
+                    //     this.candidateUserList.push(deepClone(row));
+                    // }
                 }
+                this.candidateUserList = user;
                 this.closeUserDialog();
             },
             closeUserDialog() {

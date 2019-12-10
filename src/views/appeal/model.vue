@@ -49,13 +49,13 @@
                         {{scope.row.deptTransfer | enums('YesNoEnum')}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                             {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
-                </el-table-column>
+                </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle

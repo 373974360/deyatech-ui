@@ -60,13 +60,13 @@
                         <!--<el-table-column align="center" label="出现次数" prop="annotationCount"/>-->
                         <!--<el-table-column align="center" label="分类id" prop="categoryId"/>-->
                         <!--<el-table-column align="center" label="复合元数据id" prop="relationId"/>-->
-                        <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                        <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
                                 <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                                     {{scope.row.enable | enums('EnableEnum')}}
                                 </el-tag>
                             </template>
-                        </el-table-column>
+                        </el-table-column>-->
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle

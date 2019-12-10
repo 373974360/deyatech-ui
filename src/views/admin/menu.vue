@@ -44,13 +44,13 @@
             <el-table-column align="center" label="后台地址" prop="request"/>
             <el-table-column align="center" label="权限标识" prop="permission"/>
             <el-table-column align="center" label="排序号" prop="sortNo"/>
-            <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+            <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                 <template slot-scope="scope">
                     <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                         {{scope.row.enable | enums('EnableEnum')}}
                     </el-tag>
                 </template>
-            </el-table-column>
+            </el-table-column>-->
             <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center"
                              width="150">
                 <template slot-scope="scope">

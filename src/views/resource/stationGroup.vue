@@ -1240,7 +1240,7 @@
                         this.submitLoading = true;
                         createOrUpdateSetting(this.setting).then(() => {
                             this.resetSettingDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
+                            this.$message.success('设置成功');
                         })
                     } else {
                         return false;
@@ -1276,7 +1276,7 @@
                         }
                         createOrUpdateSetting(this.setting).then(() => {
                             this.resetSettingDialogAndList();
-                            this.$message.success(this.$t("table.updateSuccess"));
+                            this.$message.success('设置成功');
                         })
                     } else {
                         return false;
@@ -1384,7 +1384,7 @@
                     this.stationGroup = deepClone(this.selectedRows[0]);
                 }
                 this.domainReloadList();
-                this.titleDomain = this.stationGroup.name + ' - 域名管理';
+                this.titleDomain = '域名管理';//this.stationGroup.name
                 this.dialogDomainVisible = true;
             },
             closeDomainDialog() {
