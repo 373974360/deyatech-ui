@@ -51,14 +51,14 @@
                               @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="50" align="center"/>
                         <!--<el-table-column align="center" label="所属分类" prop="stationGroupClassificationName"/>-->
-                        <el-table-column align="center" label="名称" prop="name">
+                        <el-table-column align="left" label="名称" prop="name">
                             <template slot-scope="scope">
                                 <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="英文名称" prop="englishName"/>
+                        <el-table-column align="center" label="英文名称" prop="englishName" width="120"/>
                         <!--<el-table-column align="center" label="简称" prop="abbreviation"/>-->
-                        <el-table-column align="center" label="部门" prop="departmentName"/>
+                        <!--<el-table-column align="center" label="部门" prop="departmentName"/>-->
                         <el-table-column align="center" label="排序号" prop="sortNo" width="90"/>
                         <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
