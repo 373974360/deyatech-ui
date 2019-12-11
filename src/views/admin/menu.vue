@@ -277,7 +277,7 @@
                         this.menu.parentId = this.selectedRows[0].id;
                     }
                 }
-                getNextSortNo().then(response=> {
+                getNextSortNo(this.menu.parentId).then(response=> {
                     this.$nextTick(()=>{
                         this.menu.sortNo = response.data;
                     });

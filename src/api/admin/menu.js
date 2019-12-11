@@ -51,11 +51,11 @@ export function getMenuCascader(query) {
     });
 }
 
-export function getNextSortNo() {
+export function getNextSortNo(id) {
     return request({
         url: '/manage/admin/menu/getNextSortNo',
         method: 'get',
-        params: {}
+        params: {id}
     });
 }
 

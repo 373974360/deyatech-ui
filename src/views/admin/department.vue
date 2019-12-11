@@ -264,7 +264,7 @@
                         this.department.parentId = 0
                     }
                 }
-                getNextSortNo().then(response=> {
+                getNextSortNo(this.department.parentId).then(response=> {
                     this.$nextTick(()=>{
                         this.department.sortNo = response.data;
                     });

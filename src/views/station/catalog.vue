@@ -991,7 +991,7 @@
                         this.publishOrganizationArray = position.substring(1).split('&');
                     }
                 }
-                getNextSortNo().then(response=> {
+                getNextSortNo(this.catalog.parentId).then(response=> {
                     this.$nextTick(()=>{
                         this.catalog.sortNo = response.data;
                     });

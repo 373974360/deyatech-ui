@@ -252,7 +252,7 @@
                         this.metadataCategory.parentId = this.selectedRows[0].id;
                     }
                 }
-                getNextSortNo().then(response=> {
+                getNextSortNo(this.metadataCategory.parentId).then(response=> {
                     this.$nextTick(()=>{
                         this.metadataCategory.sortNo = response.data;
                     });

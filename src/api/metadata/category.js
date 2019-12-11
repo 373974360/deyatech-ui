@@ -57,10 +57,10 @@ export function checkMetadataExist(id) {
     })
 }
 
-export function getNextSortNo() {
+export function getNextSortNo(id) {
     return request({
         url: '/manage/admin/metadataCategory/getNextSortNo',
         method: 'get',
-        params: {}
+        params: {id}
     });
 }

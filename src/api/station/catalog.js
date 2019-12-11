@@ -107,11 +107,11 @@ export function updatePlaceOnFileById(query) {
         params: query
     });
 }
-export function getNextSortNo() {
+export function getNextSortNo(id) {
     return request({
         url: '/manage/station/catalog/getNextSortNo',
         method: 'get',
-        params: {}
+        params: {id}
     });
 }
 export function clearWorkFlow(actDefinitionIdList) {

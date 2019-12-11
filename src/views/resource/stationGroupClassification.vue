@@ -284,7 +284,7 @@
                         this.stationGroupClassification.parentId = 0
                     }
                 }
-                getNextSortNo().then(response=> {
+                getNextSortNo(this.stationGroupClassification.parentId).then(response=> {
                     this.$nextTick(()=>{
                         this.stationGroupClassification.sortNo = response.data;
                     });

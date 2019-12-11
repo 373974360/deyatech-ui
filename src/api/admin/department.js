@@ -67,10 +67,10 @@ export function findDepartmentByIds(ids) {
     })
 }
 
-export function getNextSortNo() {
+export function getNextSortNo(id) {
     return request({
         url: '/manage/admin/department/getNextSortNo',
         method: 'get',
-        params: {}
+        params: {id}
     });
 }
