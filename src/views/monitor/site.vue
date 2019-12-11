@@ -4,10 +4,10 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
+                        <el-input :size="searchSize" placeholder="关键字" v-model.trim="listQuery.siteName" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -38,12 +38,17 @@
                 </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.manager" title="关联人员" type="primary" icon="iconcaidan1"
-                                   :size="btnSize" circle @click.stop.safe="btnSiteUser(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        <div style="padding-top: 8px;">
+                            <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                                       @click.stop.safe="btnUpdate(scope.row)" style="margin-right:10px"></el-button>
+                            <el-badge :hidden="scope.row.managerNum <= 0 || !btnEnable.manager" :value="scope.row.managerNum"
+                                      :max="99" style="margin-right:20px">
+                                <el-button v-if="btnEnable.manager" title="关联人员" type="primary" icon="iconcaidan1"
+                                           :size="btnSize" circle @click.stop.safe="btnSiteUser(scope.row)"></el-button>
+                            </el-badge>
+                            <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                       @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        </div>
                     </template>
                 </el-table-column>
             </el-table>
@@ -143,7 +148,7 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    siteName: undefined
                 },
                 site: {
                     id: undefined,
@@ -192,13 +197,16 @@
             this.reloadList();
         },
         methods: {
+            btnSearch(){
+                this.listQuery.page = 1;
+                this.reloadList();
+            },
             resetSearch(){
-                this.listQuery.name = undefined;
+                this.listQuery.siteName = undefined;
             },
             reloadList(){
                 this.listLoading = true;
                 this.siteList = undefined;
-                this.total = undefined;
                 getSiteList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.siteList = response.data.records;
@@ -373,6 +381,7 @@
                 this.submitLoading = true;
                 setSiteUsers(this.currentRow.id, this.selectAllUserId).then(() => {
                     this.closeSiteUserDialog();
+                    this.reloadList();
                     this.$message.success(this.$t("关联成功"));
                 }).catch(() => {
                     this.submitLoading = false;

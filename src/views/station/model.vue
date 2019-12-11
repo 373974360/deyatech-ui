@@ -26,7 +26,7 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || catalogNum > 0">{{$t('table.delete')}}</el-button>
                     <el-button v-if="btnEnable.index" :size="btnSize" @click="btnIndex">索引</el-button>
                 </div>
                 <div class="deyatech-menu_right">
@@ -61,7 +61,7 @@
                         <el-button title="内容模型模板设置" type="success" icon="el-icon-setting" :size="btnSize" circle
                                    @click.stop.safe="btnModelTemplate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.catalogNum > 0"></el-button>
                         <el-button v-if="btnEnable.index" title="索引" icon="el-icon-document" :size="btnSize" circle
                                    @click.stop.safe="btnIndex(scope.row)"></el-button>
                     </template>
@@ -436,6 +436,7 @@
                     size: this.$store.state.common.size,
                     contentModelId: undefined
                 },
+                catalogNum: 0
             }
         },
         watch: {
@@ -505,6 +506,12 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.catalogNum = 0;
+                if (rows) {
+                    for (let r of rows) {
+                        this.catalogNum += r.catalogNum;
+                    }
+                }
             },
             btnCreate(){
                 this.resetModel();

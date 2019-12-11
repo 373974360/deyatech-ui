@@ -4,10 +4,22 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
+                        <el-input :size="searchSize" placeholder="关键字" v-model.trim="listQuery.groupName" maxlength="100"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                        <el-select :size="searchSize" placeholder="请选择触发模式" v-model.trim="listQuery.triggerType">
+                            <el-option label="固定时刻" value="1">固定时刻</el-option>
+                            <el-option label="日历周期" value="2">日历周期</el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select :size="searchSize" placeholder="请选择任务状态" v-model.trim="listQuery.runType">
+                            <el-option label="运行中" value="1">运行中</el-option>
+                            <el-option label="空闲" value="2">空闲</el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
@@ -48,7 +60,11 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="运行时间" prop="lastDtime"/>
+                <el-table-column align="center" label="运行时间" prop="lastDtime">
+                    <template slot-scope="scope">
+                        {{scope.row.lastDtime ? scope.row.lastDtime.substr(0, 16) : ''}}
+                    </template>
+                </el-table-column>
                 <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -58,12 +74,17 @@
                 </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.manager" title="关联站点" type="primary" icon="iconcaidan1"
-                                   :size="btnSize" circle @click.stop.safe="btnGroupSite(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        <div style="padding-top: 8px;">
+                            <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                                       @click.stop.safe="btnUpdate(scope.row)" style="margin-right:10px"></el-button>
+                            <el-badge :hidden="scope.row.siteNum <= 0 || !btnEnable.manager" :value="scope.row.siteNum"
+                                      :max="99" style="margin-right:20px">
+                                <el-button v-if="btnEnable.manager" title="关联站点" type="primary" icon="iconcaidan1"
+                                           :size="btnSize" circle @click.stop.safe="btnGroupSite(scope.row)"></el-button>
+                            </el-badge>
+                            <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                       @click.stop.safe="btnDelete(scope.row)"></el-button>
+                        </div>
                     </template>
                 </el-table-column>
             </el-table>
@@ -88,7 +109,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="触发模式" prop="triggerType">
-                                <el-radio-group v-model.trim="group.triggerType" @change="changeTriggerType(group.triggerType)">
+                                <el-radio-group v-model.trim="group.triggerType" @change="changeTriggerType">
                                     <el-radio :label="1" border>固定时刻</el-radio>
                                     <el-radio :label="2" border>日历周期</el-radio>
                                 </el-radio-group>
@@ -96,7 +117,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="触发类型" prop="calendarType">
-                                <el-radio-group v-model.trim="group.calendarType" @change="changeCalendarType(group.calendarType)" :disabled="calendarTypeDisabled">
+                                <el-radio-group v-model.trim="group.calendarType" @change="changeCalendarType" :disabled="calendarTypeDisabled">
                                     <el-radio :label="1" border>每日</el-radio>
                                     <el-radio :label="2" border>每周</el-radio>
                                 </el-radio-group>
@@ -226,7 +247,9 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
+                    groupName: undefined,
+                    triggerType: undefined,
+                    runType: undefined
                 },
                 group: {
                     id: undefined,
@@ -289,16 +312,17 @@
                     this.calendarTimeDisabled = true;
                     this.calendarWorkdayDisabled = true;
                 }
-                if(e==2){
+                else if(e==2){
                     this.incrementSecondsDisabled = true;
                     this.calendarTypeDisabled = false;
                     this.calendarTimeDisabled = false;
                     this.calendarWorkdayDisabled = true;
                 }
+                this.$set(this.group, 'incrementSeconds', undefined);
                 this.group.calendarTime = '00:00';
                 this.group.calendarType = 1;
                 this.group.calendarWorkday = [];
-                this.group.incrementSeconds = undefined;
+                console.dir(this.group);
             },
             changeCalendarType(e){
                 if(e==1){
@@ -309,13 +333,18 @@
                 }
                 this.group.calendarWorkday = [];
             },
+            btnSearch(){
+                this.listQuery.page = 1;
+                this.reloadList();
+            },
             resetSearch(){
-                this.listQuery.name = undefined;
+                this.listQuery.groupName = undefined;
+                this.listQuery.triggerType = undefined;
+                this.listQuery.runType = undefined;
             },
             reloadList(){
                 this.listLoading = true;
                 this.groupList = undefined;
-                this.total = undefined;
                 getGroupList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.groupList = response.data.records;
@@ -355,7 +384,7 @@
                     this.calendarTimeDisabled = true;
                     this.calendarWorkdayDisabled = true;
                 }
-                if(this.group.triggerType==2){
+                else if(this.group.triggerType==2){
                     this.incrementSecondsDisabled = true;
                     this.calendarTypeDisabled = false;
                     this.calendarTimeDisabled = false;
@@ -363,10 +392,11 @@
                 }
                 if(this.group.calendarType==1){
                     this.calendarWorkdayDisabled = true;
+                    this.group.calendarWorkday = [];
                 }
-                if(this.group.calendarType==2){
+                else if(this.group.calendarType==2){
                     this.calendarWorkdayDisabled = false;
-                    if(this.group.calendarWorkday!=undefined){
+                    if(this.group.calendarWorkday){
                         this.group.calendarWorkday = this.group.calendarWorkday.split(",");
                     }else{
                         this.group.calendarWorkday = [];
@@ -408,13 +438,16 @@
                 });
             },
             doUpdate(){
+                console.dir(this.group);
                 this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        if(this.group.calendarWorkday!=undefined&&this.group.calendarWorkday!=""){
+
+                        if(this.group.calendarWorkday){
                             this.group.calendarWorkday = this.group.calendarWorkday.join(",");
                         }
                         this.group.nextDtime = moment(new Date()).format("YYYY-MM-DD HH:mm:ss").toString();
+
                         createOrUpdateGroup(this.group).then(() => {
                             this.resetGroupDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
@@ -530,6 +563,7 @@
                 this.submitLoading = true;
                 setGroupSites(this.currentRow.id, this.selectAllSiteId).then(() => {
                     this.closeGroupSiteDialog();
+                    this.reloadList();
                     this.$message.success(this.$t("关联成功"));
                 }).catch(() => {
                     this.submitLoading = false;

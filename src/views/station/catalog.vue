@@ -1420,11 +1420,12 @@
             parentIdChange(v) {
                 if (v && v.length > 0) {
                     this.catalog.parentId = v[v.length - 1];
-                    this.catalog.treePosition = "&" + v.join('&') + "&" + this.catalog.parentId;
+                    this.catalog.treePosition = "&" + v.join('&');// + "&" + this.catalog.parentId;
                 } else {
                     this.catalog.parentId = '0';
                     this.catalog.treePosition = undefined;
                 }
+                console.dir(this.catalog.treePosition);
             },
             allowHiddenChange(row) {
                 if (row) {

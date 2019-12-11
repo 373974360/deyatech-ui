@@ -919,7 +919,7 @@
                     this.submitLoading = false;
                     this.stationGroupClassificationCascader = response.data;
                     if (this.stationGroupClassificationCascader && this.stationGroupClassificationCascader.length > 0) {
-                        let defaultSelect = this.getDefault(this.stationGroupClassificationCascader[0]);
+                        let defaultSelect = this.getDefaultClassificationNode(this.stationGroupClassificationCascader[0]);
                         if (defaultSelect) {
                             this.listQuery.stationGroupClassificationId = defaultSelect.value;
                             this.listQuery.stationGroupClassificationTreePosition = defaultSelect.treePosition + '&' + defaultSelect.value;
@@ -931,9 +931,9 @@
                     }
                 });
             },
-            getDefault(v) {
+            getDefaultClassificationNode(v) {
                 if (v.children && v.children.length > 0) {
-                    return this.getDefault(v.children[0]);
+                    return this.getDefaultClassificationNode(v.children[0]);
                 } else {
                     return v;
                 }
@@ -1017,7 +1017,12 @@
                 } else {
                     this.stationGroup = deepClone(this.selectedRows[0]);
                 }
-                this.stationGroup.stationGroupClassificationTreePosition += '&' + this.stationGroup.stationGroupClassificationId;
+                if (this.stationGroup.stationGroupClassificationTreePosition) {
+                    this.stationGroup.stationGroupClassificationTreePosition += '&' + this.stationGroup.stationGroupClassificationId;
+                } else {
+                    this.stationGroup.stationGroupClassificationTreePosition = '&' + this.stationGroup.stationGroupClassificationId;
+                }
+                console.log(this.stationGroup.stationGroupClassificationTreePosition);
                 this.stationGroup.departmentTreePosition += '&' + this.stationGroup.departmentId;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
