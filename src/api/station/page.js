@@ -19,7 +19,7 @@ export function createOrUpdatePage(pageVo){
 export function delPage(id) {
     const data = {id};
     return request({
-        url: '/manage/generate/page/removeByPage',
+        url: '/manage/station/page/removeByPage',
         method: 'post',
         data
     })
@@ -27,28 +27,28 @@ export function delPage(id) {
 export function delPages(ids) {
     const data = {ids};
     return request({
-        url: '/manage/generate/page/removeByIds',
+        url: '/manage/station/page/removeByIds',
         method: 'post',
         data
     })
 }
 export function getPageList(query) {
     return request({
-        url: '/manage/generate/page/pageByPage',
+        url: '/manage/station/page/pageByPage',
         method: 'get',
         params: query
     });
 }
 export function existsPagePath(query) {
     return request({
-        url: '/manage/generate/page/existsPagePath',
+        url: '/manage/station/page/existsPagePath',
         method: 'get',
         params: query
     })
 }
 export function existsTemplatePath(query) {
     return request({
-        url: '/manage/generate/page/existsTemplatePath',
+        url: '/manage/station/page/existsTemplatePath',
         method: 'get',
         params: query
     })
@@ -56,7 +56,7 @@ export function existsTemplatePath(query) {
 export function replay(pageVo){
     const data = pageVo;
     return request({
-        url: '/manage/generate/page/replay',
+        url: '/manage/station/page/replay',
         method: 'post',
         data
     })

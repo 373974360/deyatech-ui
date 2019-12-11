@@ -178,15 +178,15 @@
         existsPagePath,
         existsTemplatePath,
         replay
-    } from '@/api/generate/page';
+    } from '@/api/station/page';
     import {
         getCatalogTree,
     } from '@/api/station/catalog';
     import {
         getPageTypeTree
-    } from '@/api/generate/pageType';
+    } from '@/api/station/pageType';
     import {listTemplateAllFiles} from '@/api/template/template';
-    import {getPageCatalogList} from '@/api/generate/pageCatalog';
+    import {getPageCatalogList} from '@/api/station/pageCatalog';
 
     export default {
         name: 'page',

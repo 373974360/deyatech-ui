@@ -92,7 +92,7 @@
         createOrUpdatePageType,
         delPageTypes,
         getNextSortNo,
-        checkPageExist} from '@/api/generate/pageType';
+        checkPageExist} from '@/api/station/pageType';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
 

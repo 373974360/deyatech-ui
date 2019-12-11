@@ -48,7 +48,7 @@
     } from '@/api/station/catalog';
     import {
         createHtml
-    } from '@/api/generate/generate';
+    } from '@/api/station/generate';
 
     export default {
         name: 'createHtml',
