@@ -272,22 +272,22 @@
                         {min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur'},
                         {validator: validateName, trigger: 'blur'}
                     ],
-                    gender: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '性别'}
-                    ],
-                    phone: [
-                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '手机号码'},
-                        {min: 11, max: 11, message: '长度11个数字', trigger: 'blur'},
-                        {validator: validateMobile, trigger: 'blur'}
-                    ],
-                    avatar: [
-                        {required: true, message: this.$t("table.pleaseInput") + '头像'}
-                    ],
-                    empNo: [
-                        {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '工号'},
-                        {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'},
-                        {validator: validateEmpNo, trigger: 'blur'}
-                    ],
+                    // gender: [
+                    //     {required: true, message: this.$t("table.pleaseSelect") + '性别'}
+                    // ],
+                    // phone: [
+                    //     {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '手机号码'},
+                    //     {min: 11, max: 11, message: '长度11个数字', trigger: 'blur'},
+                    //     {validator: validateMobile, trigger: 'blur'}
+                    // ],
+                    // avatar: [
+                    //     {required: true, message: this.$t("table.pleaseInput") + '头像'}
+                    // ],
+                    // empNo: [
+                    //     {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '工号'},
+                    //     {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'},
+                    //     {validator: validateEmpNo, trigger: 'blur'}
+                    // ],
                     account: [
                         {required: true, whitespace: true, message: this.$t("table.pleaseInput") + '登录帐户'},
                         {min: 1, max: 64, message: '长度在 1 到 64 个字符', trigger: 'blur'},
