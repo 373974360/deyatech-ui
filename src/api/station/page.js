@@ -1,7 +1,7 @@
 import request from '@/router/axios';
 export function getPage(id) {
     return request({
-        url: '/manage/generate/page/getByPage',
+        url: '/manage/station/page/getByPage',
         method: 'get',
         params: {id}
     })
@@ -10,7 +10,7 @@ export function getPage(id) {
 export function createOrUpdatePage(pageVo){
     const data = pageVo;
     return request({
-        url: '/manage/generate/page/saveOrUpdate',
+        url: '/manage/station/page/saveOrUpdate',
         method: 'post',
         data
     })
