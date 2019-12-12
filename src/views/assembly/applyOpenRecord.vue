@@ -80,6 +80,11 @@
                                 {{scope.row.isPublish | enums('YesNoEnum')}}
                             </template>
                         </el-table-column>
+                        <el-table-column align="center" label="办理状态" prop="applyStatus" >
+                            <template slot-scope="scope">
+                                {{scope.row.applyStatus | enums('AppealStatusEnum')}}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
                                 <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
