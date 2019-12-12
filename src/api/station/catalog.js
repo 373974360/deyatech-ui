@@ -135,3 +135,12 @@ export function getAllCatalogWorkFlowId() {
         method: 'get'
     });
 }
+
+export function copyChildrenCatalog(data){
+    return request({
+        url: '/manage/station/catalog/copyChildrenCatalog',
+        method: 'post',
+        data
+    })
+}
+

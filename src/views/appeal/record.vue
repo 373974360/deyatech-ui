@@ -86,6 +86,11 @@
                                 {{scope.row.isOpen | enums('YesNoEnum')}}
                             </template>
                         </el-table-column>
+                        <el-table-column align="center" label="办理状态" prop="sqStatus" >
+                            <template slot-scope="scope">
+                                {{scope.row.sqStatus | enums('AppealStatusEnum')}}
+                            </template>
+                        </el-table-column>
                         <el-table-column align="center" label="发布状态" prop="isPublish" >
                             <template slot-scope="scope">
                                 {{scope.row.isPublish | enums('YesNoEnum')}}
