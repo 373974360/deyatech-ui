@@ -397,7 +397,7 @@
             reloadPageTypeTree(){
                 this.treeLoading = true;
                 return new Promise((resolve, reject) => {
-                    getPageTypeTree().then(response => {
+                    getPageTypeTree({siteId: this.listQuery.siteId}).then(response => {
                         this.pageTypeTree = response.data;
                         this.treeLoading = false;
                         resolve()

@@ -48,8 +48,10 @@
             </el-table-column>
 
 
-            <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
+            <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="180">
                 <template slot-scope="scope">
+                    <el-button v-if="btnEnable.copy" title="复制子节点" type="primary" icon="el-icon-document-copy" :size="btnSize" circle
+                               @click.stop.safe="btnCopyCatalog(scope.row)"></el-button>
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
                                @click.stop.safe="btnCreate(scope.row)" :disabled="scope.row.templateCount > 0"></el-button>
                     <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
@@ -417,6 +419,26 @@
                 </span>
         </el-dialog>
 
+        <el-dialog title="复制子节点" width="30%" :visible.sync="copyCatalogDialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCopyCatalogDialogDialog">
+            <el-form ref="copyCatalogDialogForm" class="deyatech-form" label-position="right"
+                     label-width="100px">
+                <el-row :gutter="20" :span="24">
+                    <el-col :span="24">
+                        <el-form-item label="目标节点" prop="toCatId">
+                            <el-cascader filterable :options="catalogCascader"
+                                         v-model.trim="copyCatalogToCatId"
+                                         :props="{ checkStrictly: true }"
+                                         clearable style="width: 100%"></el-cascader>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="doCopyCatalog" :size="btnSize">提交</el-button>
+                <el-button :size="btnSize" @click="closeCopyCatalogDialogDialog">{{$t('table.cancel')}}</el-button>
+            </span>
+        </el-dialog>
+
     </basic-container>
 </template>
 
@@ -432,7 +454,8 @@
         existsEname,
         hasTemplate,
         updateAllowHiddenById,
-        updatePlaceOnFileById
+        updatePlaceOnFileById,
+        copyChildrenCatalog
     } from '@/api/station/catalog';
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
@@ -821,7 +844,11 @@
                 displaySettingVisible: false,
                 customizationFunction: undefined,
                 headList: [],
-                resourceCategoryList: []
+                resourceCategoryList: [],
+
+                copyCatalogDialogVisible: false,
+                copyCatalogSourceCatId: undefined,
+                copyCatalogToCatId: []
             }
         },
         created() {
@@ -853,7 +880,8 @@
                 return {
                     create: this.permission.catalog_create,
                     update: this.permission.catalog_update,
-                    delete: this.permission.catalog_delete
+                    delete: this.permission.catalog_delete,
+                    copy: this.permission.catalog_copy
                 };
             }
         },
@@ -1509,6 +1537,42 @@
                 if (!this.catalog.aliasName) {
                     this.catalog.aliasName = v;
                 }
+            },
+            btnCopyCatalog(row){
+                this.copyCatalogDialogVisible = true;
+                this.copyCatalogSourceCatId = row.id;
+            },
+            doCopyCatalog(){
+                let toCatId;
+                if(this.copyCatalogToCatId.length>0){
+                    toCatId = this.copyCatalogToCatId[this.copyCatalogToCatId.length-1];
+                }
+                if(toCatId === this.copyCatalogSourceCatId){
+                    this.$message.warning('目标节点和源节点相同');
+                }else{
+                    copyChildrenCatalog({sourceCatId: this.copyCatalogSourceCatId,toCatId:toCatId}).then(response => {
+                        if (response.status == 200) {
+                            this.$message.success('复制成功')
+                            this.copyCatalogDialogVisible = false;
+                            this.copyCatalogSourceCatId = undefined;
+                            this.resetCopyCatalogDialogDialog();
+                        } else {
+                            this.$message.error('复制失败')
+                        }
+                    })
+                }
+            },
+            resetCopyCatalogDialogDialog(){
+                this.reloadList();
+                this.getCatalogCascader();
+                this.copyCatalogSourceCatId = undefined;
+                this.copyCatalogToCatId = [];
+                this.copyCatalogDialogVisible = false;
+            },
+            closeCopyCatalogDialogDialog(){
+                this.copyCatalogSourceCatId = undefined;
+                this.copyCatalogToCatId = [];
+                this.copyCatalogDialogVisible = false;
             }
 
         }
