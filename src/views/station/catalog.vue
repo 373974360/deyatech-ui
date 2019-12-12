@@ -39,7 +39,8 @@
             <el-table-column align="center"
                              v-for="item in afterTreeHeadData"
                              :label="item.label"
-                             :prop="item.prop">
+                             :prop="item.prop"
+                             :width="getHeadWidth(item.prop)">
                 <template slot-scope="scope">
                     <el-checkbox v-if="item.prop == 'allowHidden'" v-model="scope.row.allowHidden" :true-label="1" :false-label="0" @change="allowHiddenChange(scope.row)"/>
                     <el-checkbox v-else-if="item.prop == 'placeOnFile'" v-model="scope.row.placeOnFile" :true-label="1" :false-label="0" @change="placeOnFileChange(scope.row)"/>
@@ -48,8 +49,12 @@
             </el-table-column>
 
 
-            <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="180">
+            <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="230">
                 <template slot-scope="scope">
+                    <el-button title="复制ID" type="primary" icon="el-icon-document-copy" :size="btnSize" circle
+                               v-clipboard:copy="scope.row.id"
+                               v-clipboard:success="doCopySuccess"
+                               v-clipboard:error="doCopyError"></el-button>
                     <el-button v-if="btnEnable.copy" title="复制子节点" type="primary" icon="el-icon-document-copy" :size="btnSize" circle
                                @click.stop.safe="btnCopyCatalog(scope.row)"></el-button>
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
@@ -1573,8 +1578,21 @@
                 this.copyCatalogSourceCatId = undefined;
                 this.copyCatalogToCatId = [];
                 this.copyCatalogDialogVisible = false;
+            },
+            doCopySuccess(){
+                this.$message.success("复制成功");
+            },
+            doCopyError(){
+                this.$message.error("复制失败");
+            },
+            getHeadWidth(prop) {
+                if (prop === 'name')
+                    return 'auto';
+                else if (prop === 'aliasName' || prop === 'ename')
+                    return '150';
+                else if (prop === 'allowHidden' || prop === 'placeOnFile' || prop === 'sortNo')
+                    return '60';
             }
-
         }
     }
 </script>

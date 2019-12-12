@@ -40,8 +40,12 @@
                         </el-tag>
                     </template>
                 </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
+                        <el-button title="复制ID" type="primary" icon="el-icon-document-copy" :size="btnSize" circle
+                                   v-clipboard:copy="scope.row.id"
+                                   v-clipboard:success="doCopySuccess"
+                                   v-clipboard:error="doCopyError"></el-button>
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
@@ -336,6 +340,12 @@
                 this.dialogVisible = false;
                 this.resetCategory();
                 this.$refs['categoryDialogForm'].resetFields();
+            },
+            doCopySuccess(){
+                this.$message.success("复制成功");
+            },
+            doCopyError(){
+                this.$message.error("复制失败");
             }
         }
     }
