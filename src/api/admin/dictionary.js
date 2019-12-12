@@ -43,4 +43,11 @@ export function getDictionaryList(query) {
     });
 }
 
+export function getNextSortNo(indexId) {
+    return request({
+        url: '/manage/admin/dictionary/getNextSortNo',
+        method: 'get',
+        params: {indexId}
+    });
+}
 

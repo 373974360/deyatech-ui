@@ -37,12 +37,12 @@
             <el-table :data="dictionaryIndexList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="名称" prop="name"/>
-                <el-table-column align="center" label="索引" prop="key">
+                <el-table-column align="center" label="名称" prop="name">
                     <template slot-scope="scope">
-                        <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.key}}</span>
+                        <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
+                <el-table-column align="center" label="索引" prop="key"/>
                 <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -222,7 +222,8 @@
     import {
         getDictionaryList,
         createOrUpdateDictionary,
-        delDictionarys
+        delDictionarys,
+        getNextSortNo
     } from '@/api/admin/dictionary';
 
     export default {
@@ -454,6 +455,9 @@
             },
             btnDictionaryCreate() {
                 this.resetDictionary();
+                getNextSortNo(this.dictionaryIndexValues).then(response=>{
+                    this.dictionary.sortNo = response.data;
+                });
                 this.dictionaryCreateDialogTitle = '新增';
                 this.dictionaryCreateDialogVisible = true;
             },

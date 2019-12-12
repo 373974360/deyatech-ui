@@ -189,10 +189,16 @@
                         <el-col :span="24">
                             <el-form-item label="允许上传的附件类型" prop="uploadFileType">
                                 <el-select filterable v-model.trim="uploadFileTypeArray" @change="uploadFileTypeChange" clearable multiple style="width: 100%">
-                                    <el-option v-for="item in enums['UploadFileTypeEnum']"
+                                    <!--<el-option v-for="item in enums['UploadFileTypeEnum']"
                                                :key="item.code"
                                                :label="item.value"
-                                               :value="item.code"></el-option>
+                                               :value="item.code"></el-option>-->
+                                    <el-option
+                                        v-for="s in uploadFileTypeList"
+                                        :key="s.id"
+                                        :label="s.codeText"
+                                        :value="s.codeText">
+                                    </el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -518,6 +524,7 @@
     } from '@/api/resource/domain';
     import {getDepartmentCascader} from '@/api/admin/department';
     import {getAllRoleStationGroup,getStationGroupRoleList,setStationGroupRoles} from "@/api/resource/stationGroupRole";
+    import {getDictionaryList} from '@/api/admin/dictionary';
 
     export default {
         name: 'stationGroup',
@@ -817,7 +824,8 @@
                     size: this.$store.state.common.size,
                     stationGroupId: undefined
                 },
-                dialogStationGroupRoleLoading: false
+                dialogStationGroupRoleLoading: false,
+                uploadFileTypeList: []
             }
         },
         computed: {
@@ -896,6 +904,7 @@
             this.$store.state.common.selectSiteDisplay = false;
             this.getStationGroupClassificationCascader(null);
             this.getDepartmentCascader();
+            this.getUploadFileType();
         },
         methods: {
             getDepartmentCascader() {
@@ -1682,6 +1691,16 @@
             closeStationGroupRoleDialog(){
                 this.dialogStationGroupRoleVisible = false;
                 this.submitLoading = false;
+            },
+            // 允许上传的附件类型
+            getUploadFileType() {
+                getDictionaryList({indexId: 'upload_file_type'}).then(response => {
+                    if (response.status == 200) {
+                        this.uploadFileTypeList = response.data;
+                    } else {
+                        this.$message.error('获取字典项失败')
+                    }
+                })
             }
         }
     }

@@ -83,7 +83,7 @@
                         <el-table-column type="selection" width="50" align="center"/>
 
                         <el-table-column :align="getAlign(item.prop)"
-                                         :show-overflow-tooltip="true"
+                                         :show-overflow-tooltip="item.prop === 'thumbnail' ? false : true"
                                          v-for="item in headData"
                                          :label="item.label"
                                          :prop="item.prop"
@@ -101,8 +101,8 @@
                             <div v-else-if="item.prop == 'thumbnail'">
                                 <el-image v-if="scope.row.thumbnail"
                                           style="width: 80px; height: 60px"
-                                          :src="loadShowImageUrl(scope.row.thumbnail)"
-                                          :preview-src-list="[loadShowImageUrl(scope.row.thumbnail)]">
+                                          :src="getOneFromArray(loadShowImageUrl(scope.row.thumbnail))"
+                                          :preview-src-list="[getOneFromArray(loadShowImageUrl(scope.row.thumbnail))]">
                                 </el-image>
                             </div>
                             <span v-else>{{scope.row[item.prop]}}</span>
@@ -203,6 +203,7 @@
 
                                     <!-- 附件 multiple -->
                                     <el-upload v-else-if="item.controlType === 'fileElement'"
+                                               accept="image/*,application/*,audio/*,video/*,text/*"
                                                :action="$store.state.common.materialUploadUrl"
                                                :data="{siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
                                                :file-list="form.pageModel['file_' + item.briefName]"
@@ -217,7 +218,7 @@
                                     <!-- 图片  -->
                                     <template v-else-if="item.controlType === 'imageElement'">
                                         <el-upload class="avatar-uploader"
-                                                   :class="{hide: form.pageModel['image_' + item.briefName].length > 0}"
+                                                   :class="{hide: form.pageModel['image_' + item.briefName].length >= 3}"
                                                    :action="$store.state.common.materialUploadUrl"
                                                    :data="{siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
                                                    :accept="$store.state.common.imageAccepts"
@@ -386,6 +387,7 @@
     import {findMetadataCollectionAllData, getAllMetadataCollection} from '@/api/metadata/collection';
     import {getDictionaryList} from '@/api/admin/dictionary';
     import {getTableHeadContentData, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
+    import {getUploadFileTypeAndSize} from '@/api/resource/setting';
 
     export default {
         name: 'template',
@@ -702,7 +704,9 @@
                 displaySettingVisible: false,
                 customizationFunction: undefined,
                 headList: [],
-                metadataCollectionList: []
+                metadataCollectionList: [],
+                uploadFileTypeList: [],
+                uploadFileSize: 0
             }
         },
         watch: {
@@ -787,6 +791,8 @@
                 this.getSiteUploadPath();
                 // 获取元数据集
                 this.getAllMetaDataCollection();
+                // 上传文件类型大小
+                this.getUploadFileTypeAndSizeObject(this.$store.state.common.siteId);
             }
         },
         methods: {
@@ -797,6 +803,12 @@
                         this.metadataCollectionList = response.data;
                     }
                 })
+            },
+            getOneFromArray(value) {
+                if (value) {
+                    let arr = value.split(',');
+                    return arr[0];
+                }
             },
             // 加载图片地址
             loadShowImageUrl(url) {
@@ -954,6 +966,15 @@
                                 callback(new Error('URL格式错误'))
                             }
                         }
+                    } else if (item.checkModel === 'lessThanNow') {
+                        rule.validator = (rule, value, callback) => {
+                            let now = this.getNowString(value.length);
+                            if (value > now) {
+                                callback(new Error('必须小于当前时间'))
+                            } else {
+                                callback();
+                            }
+                        };
                     } else {
                         rule.validator = (rule, value, callback) => {
                             // let msg = this.checkDataLength(rule.field, value);
@@ -968,6 +989,28 @@
                     rules.push(rule);
                 }
                 return rules;
+            },
+            getNowString(len) {
+                if (1 <= len && len <= 19) {
+                    let date = new Date();
+                    let value = date.getFullYear().toString();
+                    value += '-';
+                    value += this.fillZero((date.getMonth() + 1).toString());
+                    value += '-';
+                    value += this.fillZero(date.getDate().toString());
+                    value += ' ';
+                    value += this.fillZero(date.getHours().toString());
+                    value += ':';
+                    value += this.fillZero(date.getMinutes().toString());
+                    value += ':';
+                    value += this.fillZero(date.getSeconds().toString());
+                    return value.substr(0, len);
+                } else {
+                    return '';
+                }
+            },
+            fillZero(v) {
+                return v.length == 1 ? '0' + v : v;
             },
             checkDataLength(field, value) {
                 // if (this.formList.length > 0) {
@@ -1132,10 +1175,10 @@
                             if (pageModel.hasOwnProperty("flag_external")) {
                                 this.flagExternalIndex = i;
                             }
-                            if (!templateId && pageModel.hasOwnProperty("sort_no")) {
-                                // 默认权重
-                                pageModel['sort_no'] = 18;
-                            }
+                            // if (!templateId && pageModel.hasOwnProperty("sort_no")) {
+                            //     // 默认权重
+                            //     pageModel['sort_no'] = 1;
+                            // }
                         }
                     } else {
                         this.maxPage = 0;
@@ -1696,7 +1739,7 @@
                     this.$message.error('上传图片格式不正确!');
                 }
                 if (!isLt2M) {
-                    this.$message.error('上传图片大小不能超过 2MB!');
+                    this.$message.error('上传图片大小不能超过 2M');
                 }
                 return isJPG && isLt2M;
             },
@@ -1724,11 +1767,27 @@
                 this.$message.error('网络不稳定，上传失败！')
             },
             beforeFileUpload(file) {
-                const isLt2M = file.size / 1024 / 1024 < 2;
-                if (!isLt2M) {
-                    this.$message.error('上传文件大小不能超过 2MB!');
+                let isOK = false;
+                if ((file.size / 1024 / 1024) > this.uploadFileSize) {
+                    this.$message.error('上传文件大小不能超过 ' + this.uploadFileSize + 'M');
+                } else {
+                    let index = file.name.lastIndexOf('.');
+                    if (index < 0) {
+                        this.$message.error('不支持该类型的文件');
+                    } else {
+                        let suffix = file.name.substring(index + 1);
+                        for (let sf of this.uploadFileTypeList) {
+                            if (sf === suffix) {
+                                isOK = true;
+                                break;
+                            }
+                        }
+                        if (!isOK) {
+                            this.$message.error('不支持该类型的文件');
+                        }
+                    }
                 }
-                return isLt2M;
+                return isOK;
             },
             handleFilePreview(file) {
                 window.location.href = file.url;
@@ -1953,6 +2012,18 @@
                     return '160';
                 else if (prop === 'createUserDepartmentName' || prop === 'updateUserDepartmentName')
                     return '160';
+            },
+            // 允许上传的附件类型
+            getUploadFileTypeAndSizeObject(siteId) {
+                getUploadFileTypeAndSize(siteId).then(response => {
+                    if (response.status == 200) {
+                        let data = response.data;
+                        this.uploadFileTypeList = data.types;
+                        this.uploadFileSize = data.size
+                    } else {
+                        this.$message.error('获取字典项失败')
+                    }
+                })
             }
         }
     }

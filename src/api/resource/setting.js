@@ -46,3 +46,10 @@ export function getSettingByStationGroupId(query) {
         params: query
     });
 }
+export function getUploadFileTypeAndSize(siteId) {
+    return request({
+        url: '/manage/resource/setting/getUploadFileTypeAndSize',
+        method: 'get',
+        params: {siteId}
+    });
+}
