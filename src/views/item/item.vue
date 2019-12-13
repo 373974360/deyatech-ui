@@ -791,7 +791,7 @@
         name: 'item',
         data() {
             const validateSiteNum = (rule, value, callback) => {
-                if (!/^[1-9][0-9]*$/.test(value)) {
+                if (value && !/^[1-9][0-9]*$/.test(value)) {
                     callback(new Error('请输入 1 到 99 的数字'));
                     return;
                 }
@@ -969,20 +969,20 @@
                     name: [
                         {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '事项名称'},
                         {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
-                        {validator: validateWhiteSpace, trigger: 'blur'}
+                        // {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     shortName: [
                         {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '事项简称'},
                         {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
-                        {validator: validateWhiteSpace, trigger: 'blur'}
+                        // {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     code: [
-                        {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '事项编码'},
+                        // {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '事项编码'},
                         {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
-                        {validator: validateWhiteSpace, trigger: 'blur'}
+                        // {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     remoteEnable: [
-                        {required: true, message: this.$t("table.pleaseInput") + '是否第三方'}
+                        // {required: true, message: this.$t("table.pleaseInput") + '是否第三方'}
                     ],
                     remoteId: [
                         {required: false, whiteSpace: true, message: this.$t("table.pleaseInput") + '第三方事项'},
@@ -995,20 +995,20 @@
                         {validator: validateTel, trigger: 'change'}
                     ],
                     siteNum: [
-                        {required: true, message: this.$t("table.pleaseInput") + '到现场次数'},
+                        // {required: true, message: this.$t("table.pleaseInput") + '到现场次数'},
                         {validator: validateSiteNum, trigger: 'change'}
                     ],
                     isCharge: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '是否收费'}
+                        // {required: true, message: this.$t("table.pleaseSelect") + '是否收费'}
                     ],
                     isOnlineApply: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '是否可以在线申报'}
+                        // {required: true, message: this.$t("table.pleaseSelect") + '是否可以在线申报'}
                     ],
                     isInterService: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '是否有中介服务'}
+                        // {required: true, message: this.$t("table.pleaseSelect") + '是否有中介服务'}
                     ],
                     serviceObject: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '实施对象'}
+                        // {required: true, message: this.$t("table.pleaseSelect") + '实施对象'}
                     ],
                     remark: [
                         {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'}

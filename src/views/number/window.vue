@@ -662,10 +662,24 @@
             closeWindowUserDialog() {
                 this.dialogWindowUserVisible = false;
                 this.submitLoading = false;
+                this.userListQuery = {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    departmentId: undefined,
+                    userName: undefined,
+                    windowId: undefined
+                }
             },
             closeWindowItemDialog() {
                 this.dialogWindowItemVisible = false;
                 this.submitLoading = false;
+                this.itemListQuery = {
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
+                    categoryId: undefined,
+                    itemName: undefined,
+                    windowId: undefined
+                }
             }
         }
     }
