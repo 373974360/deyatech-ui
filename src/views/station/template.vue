@@ -289,9 +289,7 @@
                                 <el-form-item style="margin-bottom: 0"><el-button @click="extractKeyword" :size="btnSize">提取关键字</el-button></el-form-item>
                             </el-col>
                         </el-row>
-
                     </template>
-
                 </el-form>
                 <span v-if="stepsActive == form.pageNumber - 1" v-for="form in formList" slot="footer" class="dialog-footer"><!--ycx-->
                     <el-button v-if="form.pageNumber > 1" type="primary" :size="btnSize"
@@ -583,6 +581,8 @@
                     metadataList: []
                 },
                 editorConfig: {
+                    serverUrl: "/manage/station/material/uploadFile?siteId="+this.$store.state.common.siteId,
+                    imageUrlPrefix: this.$store.state.common.materialShowImageByUrl+"?siteId="+this.$store.state.common.siteId+"&url=",
                     initialFrameWidth: '100%',
                     initialFrameHeight: 350,
                     zIndex: 3999,
@@ -706,7 +706,11 @@
                 headList: [],
                 metadataCollectionList: [],
                 uploadFileTypeList: [],
-                uploadFileSize: 0
+                uploadFileSize: 0,
+
+                // 提取内容图片
+                picArray: [],
+                picValue: undefined
             }
         },
         watch: {

@@ -8831,12 +8831,10 @@ var fillCharReg = new RegExp(domUtils.fillChar, "g");
       } else {
         return "";
       } */
-
       if (serverUrl) {
-        serverUrl = serverUrl + "?";
         return utils.formatUrl(serverUrl);
       } else {
-        return "";
+          return '/manage/common/upload?editor=editor';
       }
     }
   };
