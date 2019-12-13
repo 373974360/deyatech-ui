@@ -57,8 +57,10 @@
                                v-clipboard:error="doCopyError"></el-button>
                     <el-button v-if="btnEnable.copy" title="复制子节点" type="primary" icon="el-icon-document-copy" :size="btnSize" circle
                                @click.stop.safe="btnCopyCatalog(scope.row)"></el-button>
+                    <!--<el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle-->
+                               <!--@click.stop.safe="btnCreate(scope.row)" :disabled="scope.row.templateCount > 0"></el-button>-->
                     <el-button v-if="btnEnable.create" :title="$t('table.create')" type="primary" icon="el-icon-plus" :size="btnSize" circle
-                               @click.stop.safe="btnCreate(scope.row)" :disabled="scope.row.templateCount > 0"></el-button>
+                               @click.stop.safe="btnCreate(scope.row)"></el-button>
                     <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                @click.stop.safe="btnUpdate(scope.row)"></el-button>
                     <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
@@ -120,7 +122,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="ename">
-                                <el-input v-model.trim="catalog.ename" :disabled="catalog.id ? true : false"></el-input>
+                                <el-input v-model.trim="catalog.ename"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -485,15 +487,16 @@
                     callback(new Error('不能添加自己'));
                     return;
                 }
-                if ("0" !== value) {
-                    hasTemplate({id: value}).then(response => {
-                        if (response.data) {
-                            callback(new Error('当前栏目下已存在内容，不能添加栏目'))
-                        } else {
-                            callback()
-                        }
-                    })
-                } else {
+                // if ("0" !== value) {
+                //     hasTemplate({id: value}).then(response => {
+                //         if (response.data) {
+                //             callback(new Error('当前栏目下已存在内容，不能添加栏目'))
+                //         } else {
+                //             callback()
+                //         }
+                //     })
+                // }
+                else {
                     callback()
                 }
             };
