@@ -4,18 +4,18 @@
  * @param {String} action 匹配neditor.config.js中配置的xxxActionName
  * @returns 返回自定义的上传接口
  */
-UE.Editor.prototype._bkGetActionUrl = UE.Editor.prototype.getActionUrl;
-UE.Editor.prototype.getActionUrl = function(action) {
-    /* 按config中的xxxActionName返回对应的接口地址 */
-    if (action == 'uploadimage' || action == 'uploadscrawl') {
-        return '/manage/common/upload?editor=editor';
-    } else if (action == 'uploadvideo') {
-        return '/manage/common/upload?editor=editor';
-    } else {
-        return '/manage/common/upload?editor=editor';
-        // return this._bkGetActionUrl.call(this, action);
-    }
-}
+// UE.Editor.prototype._bkGetActionUrl = UE.Editor.prototype.getActionUrl;
+// UE.Editor.prototype.getActionUrl = function(action) {
+//     /* 按config中的xxxActionName返回对应的接口地址 */
+//     if (action == 'uploadimage' || action == 'uploadscrawl') {
+//         return '/manage/common/upload?editor=editor';
+//     } else if (action == 'uploadvideo') {
+//         return '/manage/common/upload?editor=editor';
+//     } else {
+//         return '/manage/common/upload?editor=editor';
+//         // return this._bkGetActionUrl.call(this, action);
+//     }
+// }
 
 /**
  * 图片上传service
