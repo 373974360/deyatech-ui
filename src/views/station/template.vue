@@ -105,6 +105,7 @@
                                           :preview-src-list="[getOneFromArray(loadShowImageUrl(scope.row.thumbnail))]">
                                 </el-image>
                             </div>
+                            <span v-else-if="item.prop == 'source'">{{scope.row.sourceName ? scope.row.sourceName : ''}}</span>
                             <span v-else>{{scope.row[item.prop]}}</span>
                         </template>
                     </el-table-column>
@@ -151,6 +152,10 @@
                                               v-model.trim="form.pageModel[item.briefName]"
                                               :maxlength="item.dataLength"
                                               :placeholder="'请输入' + item.name"></el-input>
+
+                                    <!--可输入可选择部门级联器-->
+                                    <inputDepartment v-else-if="item.controlType === 'inputDepartmentCascader'"
+                                                     v-model.trim="form.pageModel[item.briefName]"></inputDepartment>
 
                                     <!-- 文本域 -->
                                     <el-input v-else-if="item.controlType === 'textareaElement'"
@@ -353,6 +358,7 @@
 
 <script>
     import editor from '@/components/editor/index.vue'
+    import inputDepartment from '@/components/inputDepartmentCascader/index.vue'
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {getStore} from '@/util/store'
@@ -392,7 +398,8 @@
     export default {
         name: 'template',
         components: {
-            editor
+            editor,
+            inputDepartment
         },
         data() {
             const validateTitle = (rule, value, callback) => {
