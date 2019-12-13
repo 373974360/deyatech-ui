@@ -211,12 +211,12 @@
                     name: [
                         {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '分类名称'},
                         {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
-                        {validator: validateWhiteSpace, trigger: 'blur'}
+                        // {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     shortName: [
                         {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '分类简称'},
                         {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'},
-                        {validator: validateWhiteSpace, trigger: 'blur'}
+                        // {validator: validateWhiteSpace, trigger: 'blur'}
                     ],
                     parentId: [
                         {required: true, message: this.$t("table.pleaseInput") + '上级分类编号'}
