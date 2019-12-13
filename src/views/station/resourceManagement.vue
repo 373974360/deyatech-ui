@@ -89,7 +89,7 @@
                             <el-form-item label="标题:" style="margin: 0;">{{template.title}}</el-form-item>
                         </el-col>
                         <el-col :span="8" style="margin: 0;">
-                            <el-form-item label="来源:" style="margin: 0;">{{template.source}}</el-form-item>
+                            <el-form-item label="来源:" style="margin: 0;">{{template.sourceName}}</el-form-item>
                         </el-col>
                         <el-col :span="8" style="margin: 0;">
                             <el-form-item label="作者:" style="margin: 0;">{{template.author}}</el-form-item>
@@ -153,10 +153,10 @@
                     <el-row :span="24">
                         <el-col :span="12" style="margin: 0;">
                             <el-form-item label="缩略图:" style="margin: 0;">
-                                <el-image v-if="template.thumbnail"
-                                          style="width: 60px; height: 60px"
-                                          :src="loadImageSrc(template.thumbnail)"
-                                          :preview-src-list="[loadImageSrc(template.thumbnail)]">
+                                <el-image v-if="template.thumbnail" v-for="rul in loadImageArray(template.thumbnail)"
+                                          style="width: 60px; height: 60px; margin-right: 10px;"
+                                          :src="loadImageSrc(rul)"
+                                          :preview-src-list="[loadImageSrc(rul)]">
                                 </el-image>
                             </el-form-item>
                         </el-col>
@@ -290,9 +290,18 @@
             }
         },
         methods: {
+            loadImageArray(value) {
+                if (!value) {
+                    return [];
+                }
+                return value.split(',');
+            },
             // 加载图片地址
             loadImageSrc(url) {
-                return "/manage/station/material/showPicImg?filePath=" + url + '&basePath=' + this.siteUploadPath.replace(/\\/g, '/')
+                if (!url) {
+                    return '';
+                }
+                return '/manage/station/material/showImageBySiteIdAndUrl?siteId=' + this.$store.state.common.siteId + '&url=' + url;
             },
             loadSiteUploadPath() {
                 getSiteUploadPath(this.listQuery).then(response => {
@@ -336,7 +345,6 @@
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
-                console.dir(this.template);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },

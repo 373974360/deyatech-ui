@@ -74,3 +74,11 @@ export function getNextSortNo(id) {
         params: {id}
     });
 }
+
+export function getCascaderAttach(query) {
+    return request({
+        url: '/manage/admin/department/getCascaderAttach',
+        method: 'get',
+        params: query
+    });
+}
