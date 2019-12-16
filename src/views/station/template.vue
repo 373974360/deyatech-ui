@@ -1261,7 +1261,6 @@
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
-                console.dir(row);
                 this.template.workflowKey = this.workflowKey;
                 this.template.workflowId = this.workflowId;
                 this.contentPicArray = [];
@@ -1360,7 +1359,6 @@
                     let content = {};
                     for (let form of _this.formList) {
                         let pageModel = form.pageModel;
-                        console.dir(pageModel);
                         let checkboxFields = [];
                         let pageModelFields = Object.getOwnPropertyNames(pageModel);
                         for (let f of pageModelFields) {
@@ -1368,7 +1366,6 @@
                                 checkboxFields.push(f.substring(f.indexOf('_') + 1));
                             }
                         }
-                        console.dir(_this.baseFields);
                         // 保存基础字段
                         for (let base of _this.baseFields) {
                             // 当前页没有 base 属性
@@ -1413,7 +1410,6 @@
                     _this.template.contentMapStr = JSON.stringify(content);
                     _this.template.metadataCollectionVo = undefined;
                     _this.template.content = undefined;
-                    console.dir(_this.template);
                     _this.submitLoading = true;
                     if (_this.template.id) {
                         createOrUpdateTemplate(_this.template).then(() => {
@@ -1917,7 +1913,7 @@
                 let value = attach.split(',');
                 let formIndex = parseInt(value[0]);
                 let briefName = value[1];
-                this.formList[formIndex].pageModel[briefName + '_PlainTxt'] = content;
+                this.formList[formIndex].pageModel[briefName + '_PlainTxt'] = content.replace(/<[\s\S]*>/g, '');
             },
             extractSummary() {
                 let titleFormIndex = -1
