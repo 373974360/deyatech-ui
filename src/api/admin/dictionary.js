@@ -51,3 +51,18 @@ export function getNextSortNo(indexId) {
     });
 }
 
+export function getDictionaryTree(query) {
+    return request({
+        url: '/manage/admin/dictionary/getTree',
+        method: 'get',
+        params: query
+    });
+}
+
+export function getDictionaryCascader(query) {
+    return request({
+        url: '/manage/admin/dictionary/getCascader',
+        method: 'get',
+        params: query
+    });
+}

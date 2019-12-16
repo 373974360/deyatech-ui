@@ -37,12 +37,12 @@
             <el-table :data="dictionaryIndexList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="名称" prop="name">
+                <el-table-column align="left" label="名称" prop="name">
                     <template slot-scope="scope">
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="索引" prop="key"/>
+                <el-table-column align="left" label="索引" prop="key"/>
                 <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -56,7 +56,8 @@
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
                                    icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.dictionarymanager" title="子项目" type="success" icon="el-icon-share" :size="btnSize" @click.stop.safe="btnDictionarye(scope.row)" circle></el-button>
+                        <el-button v-if="btnEnable.dictionarymanager" title="子项目" type="success" icon="el-icon-share" :size="btnSize"
+                                   @click.stop.safe="btnDictionaryTree(scope.row)" circle></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                    icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -125,11 +126,17 @@
                     </div>
                 </div>
                 <el-table :data="dictionaryList" v-loading.body="dictionaryListLoading" stripe border highlight-current-row
-                          @selection-change="handleDictionarySelectionChange">
+                          @selection-change="handleDictionarySelectionChange" v-if="tableReset">
                     <el-table-column type="selection" width="50" align="center"/>
-                    <el-table-column align="center" label="索引" prop="indexId"/>
-                    <el-table-column align="center" label="英文代码" prop="code"/>
-                    <el-table-column align="center" label="中文名称" prop="codeText"/>
+                    <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20" align="left"
+                                          parentKey="parentId" prop="codeText" label="中文名称">
+                        <template slot-scope="scope">
+                            <span class="link-type">{{scope.row.codeText}}</span>
+                        </template>
+                    </el-table-tree-column>
+                    <!--<el-table-column align="center" label="中文名称" prop="codeText"/>-->
+                    <el-table-column align="left" label="英文代码" prop="code"/>
+                    <el-table-column align="left" label="索引" prop="indexId"/>
                     <el-table-column align="center" label="是否可编辑" prop="editable">
                         <template slot-scope="scope">
                             <el-tag v-if="scope.row.editable==1">可编辑</el-tag>
@@ -146,9 +153,14 @@
                     <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="left"
                                      width="150">
                         <template slot-scope="scope">
+                            <el-button v-if="btnEnable.create_d" :title="$t('table.create')" type="primary"
+                                       icon="el-icon-plus" :size="btnSize" circle
+                                       @click.stop.safe="btnDictionaryCreate(scope.row)"></el-button>
+
                             <el-button v-if="btnEnable.update_d && scope.row.editable==1" :title="$t('table.update')" type="primary"
                                        icon="el-icon-edit" :size="btnSize" circle
                                        @click.stop.safe="btnDictionaryUpdate(scope.row)"></el-button>
+
                             <el-button v-if="btnEnable.delete_d" :title="$t('table.delete')" type="danger"
                                        icon="el-icon-delete" :size="btnSize" circle
                                        @click.stop.safe="btnDictionaryDelete(scope.row)"></el-button>
@@ -164,14 +176,24 @@
                          label-position="right"
                          label-width="80px" :rules="dictionaryRules">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="英文代码" prop="code">
-                                <el-input v-model.trim="dictionary.code"></el-input>
-                            </el-form-item>
-                        </el-col>
+                        <el-row :gutter="20" :span="24">
+                            <el-col :span="24">
+                                <el-form-item label="上级字典" prop="parentId">
+                                    <el-cascader filterable :options="dictionaryCascader"
+                                                 v-model.trim="dictionaryTreePosition"
+                                                 :props="{ checkStrictly: true }"
+                                                 clearable style="width: 100%;" ></el-cascader>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
                         <el-col :span="12">
                             <el-form-item label="中文名称" prop="codeText">
                                 <el-input v-model.trim="dictionary.codeText"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="英文代码" prop="code">
+                                <el-input v-model.trim="dictionary.code"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -212,7 +234,7 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import {deepClone} from '@/util/util';
+    import {deepClone, setExpanded} from '@/util/util';
     import {validateLowerCase} from '@/util/validate';
     import {
         getDictionaryIndexList,
@@ -223,7 +245,9 @@
         getDictionaryList,
         createOrUpdateDictionary,
         delDictionarys,
-        getNextSortNo
+        getNextSortNo,
+        getDictionaryTree,
+        getDictionaryCascader
     } from '@/api/admin/dictionary';
 
     export default {
@@ -238,6 +262,9 @@
                 }
             };
             return {
+                dictionaryCascader: [],
+                tableReset: false,
+                lastExpanded: undefined,
                 dictionaryIndexList: undefined,
                 total: undefined,
                 listLoading: true,
@@ -278,7 +305,9 @@
                     code: undefined,
                     codeText: undefined,
                     sortNo: 1,
-                    editable: 1
+                    editable: 1,
+                    parentId: 0,
+                    treePosition: '&'
                 },
                 dictionarySelectedRows: [],
                 dictionaryDialogVisible: false,
@@ -324,6 +353,22 @@
                     update_d: this.permission.dictionary_update,
                     delete_d: this.permission.dictionary_delete,
                 };
+            },
+            dictionaryTreePosition: {
+                get() {
+                    if (this.dictionary.treePosition) {
+                        return this.dictionary.treePosition.substr(1).split('&')
+                    }
+                },
+                set(v) {
+                    if (v && v.length > 0) {
+                        this.dictionary.parentId = v[v.length - 1];
+                        this.dictionary.treePosition = '&' + v.join('&');
+                    } else {
+                        this.dictionary.parentId = '0';
+                        this.dictionary.treePosition = '&';
+                    }
+                }
             }
         },
         created() {
@@ -337,7 +382,6 @@
             reloadList() {
                 this.listLoading = true;
                 this.dictionaryIndexList = undefined;
-                this.total = undefined;
                 getDictionaryIndexList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.dictionaryIndexList = response.data.records;
@@ -435,7 +479,7 @@
 
 
             //字典子项目管理开始
-            btnDictionarye(row) {
+            btnDictionaryTree(row) {
                 this.dictionaryDialogTitle = 'dictionary';
                 this.dictionaryDialogVisible = true;
                 this.dictionaryReloadList();
@@ -445,19 +489,59 @@
             dictionaryReloadList() {
                 this.dictionaryListLoading = true;
                 this.dictionaryList = undefined;
-                getDictionaryList(this.dictionaryListQuery).then(response => {
+                /*getDictionaryList(this.dictionaryListQuery).then(response => {
                     this.dictionaryListLoading = false;
                     this.dictionaryList = response.data;
+                })*/
+                getDictionaryTree(this.dictionaryListQuery).then(response => {
+                    this.tableReset = false;
+                    this.dictionaryList = response.data;
+                    if (this.lastExpanded) {
+                        this.dictionaryList = setExpanded(this.dictionaryIndexList, this.lastExpanded);
+                    }
+                    this.$nextTick(() => {
+                        this.tableReset = true
+                    });
+                    this.dictionaryListLoading = false;
+                })
+            },
+            loadDictionaryCascader(id){
+                this.submitLoading = true;
+                getDictionaryCascader(id).then(response => {
+                    this.submitLoading = false;
+                    this.dictionaryCascader = response.data;
+                    console.dir(this.dictionaryCascader);
                 })
             },
             handleDictionarySelectionChange(rows) {
                 this.dictionarySelectedRows = rows;
             },
-            btnDictionaryCreate() {
+            btnDictionaryCreate(row) {
                 this.resetDictionary();
+
+                if (row.id) {
+                    if (row.treePosition != '&') {
+                        this.dictionary.treePosition = row.treePosition + "&" + row.id;
+                    } else {
+                        this.dictionary.treePosition = row.treePosition + row.id;
+                    }
+                    this.dictionary.parentId = row.id;
+                } else {
+                    if (this.selectedRows.length == 1) {
+                        if (this.selectedRows[0].treePosition != '&') {
+                            this.dictionary.treePosition = this.selectedRows[0].treePosition + "&" + this.selectedRows[0].id;
+                        } else {
+                            this.dictionary.treePosition = this.selectedRows[0].treePosition + this.selectedRows[0].id;
+                        }
+                        this.dictionary.parentId = this.selectedRows[0].id;
+                    }
+                }
                 getNextSortNo(this.dictionaryIndexValues).then(response=>{
                     this.dictionary.sortNo = response.data;
                 });
+                this.dictionary.children = undefined;
+                console.dir(this.dictionary);
+                this.loadDictionaryCascader(this.dictionaryListQuery);
                 this.dictionaryCreateDialogTitle = '新增';
                 this.dictionaryCreateDialogVisible = true;
             },
@@ -468,6 +552,8 @@
                 } else {
                     this.dictionary = deepClone(this.dictionarySelectedRows[0]);
                 }
+                this.dictionary.children = undefined;
+                this.loadDictionaryCascader(this.dictionary.id);
                 this.dictionaryCreateDialogTitle = '编辑';
                 this.dictionaryCreateDialogVisible = true;
             },
@@ -527,7 +613,9 @@
                     code: undefined,
                     codeText: undefined,
                     sortNo: 1,
-                    editable: 1
+                    editable: 1,
+                    parentId: 0,
+                    treePosition: '&'
                 }
             },
             resetDictionaryDialogAndList() {
