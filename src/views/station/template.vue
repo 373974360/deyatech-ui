@@ -294,6 +294,16 @@
                                 <el-form-item style="margin-bottom: 0"><el-button @click="extractKeyword" :size="btnSize">提取关键字</el-button></el-form-item>
                             </el-col>
                         </el-row>
+                        <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
+                            <el-col :span="24">
+                                <el-form-item style="margin-bottom: 0"><el-image style="width: 100px; height: 100px; cursor: pointer;" v-for="url in contentPicArray" :key="url" :src="url" @click="selectImg"></el-image></el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
+                            <el-col :span="24">
+                                <el-form-item style="margin-bottom: 0"><el-button @click="getContentThumb" :size="btnSize">提取正文图片</el-button></el-form-item>
+                            </el-col>
+                        </el-row>
                     </template>
                 </el-form>
                 <span v-if="stepsActive == form.pageNumber - 1" v-for="form in formList" slot="footer" class="dialog-footer"><!--ycx-->
@@ -716,8 +726,7 @@
                 uploadFileSize: 0,
 
                 // 提取内容图片
-                picArray: [],
-                picValue: undefined
+                contentPicArray: []
             }
         },
         watch: {
@@ -1240,6 +1249,7 @@
                     this.maxPage = 0;
                     this.formList = [];
                     this.formFileTemp = [];
+                    this.contentPicArray = [];
                     this.loadForm(command, undefined);
                 }
 
@@ -1254,6 +1264,7 @@
                 console.dir(row);
                 this.template.workflowKey = this.workflowKey;
                 this.template.workflowId = this.workflowId;
+                this.contentPicArray = [];
                 this.loadForm(this.template.contentModelId, this.template.id);
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -2035,6 +2046,62 @@
                         this.$message.error('获取字典项失败')
                     }
                 })
+            },
+            getContentThumb(){
+                this.contentPicArray = [];
+                let content;
+                if (this.formList.length > 0) {
+                    for (let i = 0; i < this.formList.length; i++) {
+                        let form = this.formList[i];
+                        let itemRows = form.rows;
+                        for(let j = 0; j < itemRows.length; j++){
+                            let items = itemRows[j];
+                            for(let k = 0; k < items.length; k++) {
+                                let item = items[k];
+                                if (item.controlType == 'richTextElement') {
+                                    content += form.pageModel[item.briefName];
+                                }
+                            }
+                        }
+                    }
+                }
+                let re = new RegExp(/<img.*?src.*?=.*?(.*?)>/ig);
+                let r = content.match(re);
+                if (r != null && r.length > 0) {
+                    for (let i = 0; i < r.length; i++) {
+                        let src = r[i].replace(/<img[\s]*.*?src=\"(.*?)[\"](.*)/ig, "$1");
+                        this.contentPicArray.push(src);
+                    }
+                }
+            },
+            selectImg(e){
+                let url = e.srcElement.currentSrc;
+                let value = url.substring(url.indexOf("/upload/"));
+                let pic = {url: url,value: value}
+                if (this.formList.length > 0) {
+                    for (let i = 0; i < this.formList.length; i++) {
+                        let form = this.formList[i];
+                        let itemRows = form.rows;
+                        for(let j = 0; j < itemRows.length; j++){
+                            let items = itemRows[j];
+                            for(let k = 0; k < items.length; k++) {
+                                let item = items[k];
+                                if (item.briefName == 'thumbnail_') {
+                                    let thumbnail = form.pageModel['image_' + item.briefName];
+                                    if(thumbnail && thumbnail.length < 3){
+                                        thumbnail.push(pic);
+                                    }
+                                    let tmp = [];
+                                    for (let thum of thumbnail) {
+                                        tmp.push(thum.value);
+                                    }
+                                    // 表单值
+                                    form.pageModel[item.briefName] = tmp.length > 0 ? tmp.join(',') : '';
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
