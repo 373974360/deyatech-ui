@@ -505,12 +505,9 @@
                     this.dictionaryListLoading = false;
                 })
             },
-            loadDictionaryCascader(id){
-                this.submitLoading = true;
-                getDictionaryCascader(id).then(response => {
-                    this.submitLoading = false;
+            loadDictionaryCascader(query){
+                getDictionaryCascader(query).then(response => {
                     this.dictionaryCascader = response.data;
-                    console.dir(this.dictionaryCascader);
                 })
             },
             handleDictionarySelectionChange(rows) {
@@ -540,7 +537,6 @@
                     this.dictionary.sortNo = response.data;
                 });
                 this.dictionary.children = undefined;
-                console.dir(this.dictionary);
                 this.loadDictionaryCascader(this.dictionaryListQuery);
                 this.dictionaryCreateDialogTitle = '新增';
                 this.dictionaryCreateDialogVisible = true;
@@ -553,7 +549,7 @@
                     this.dictionary = deepClone(this.dictionarySelectedRows[0]);
                 }
                 this.dictionary.children = undefined;
-                this.loadDictionaryCascader(this.dictionary.id);
+                this.loadDictionaryCascader(this.dictionaryListQuery);
                 this.dictionaryCreateDialogTitle = '编辑';
                 this.dictionaryCreateDialogVisible = true;
             },

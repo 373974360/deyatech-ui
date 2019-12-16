@@ -130,15 +130,12 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="栏目类型" prop="columnType">
-                                <el-select filterable v-model.trim="catalog.columnType"
-                                           placeholder="请选择栏目类型" style="width: 100%;">
-                                    <el-option
-                                        v-for="s in resourceCategoryList"
-                                        :key="s.id"
-                                        :label="s.codeText"
-                                        :value="s.id">
-                                    </el-option>
-                                </el-select>
+                                <el-cascader filterable :options="dictionaryCascader"
+                                             v-model.trim="columnTypeArray"
+                                             :props="{ checkStrictly: true }"
+                                             :show-all-levels="false"
+                                             @change="columnTypeChange"
+                                             clearable style="width: 100%;"></el-cascader>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -477,7 +474,7 @@
     import {getDepartmentCascader} from '@/api/admin/department';
     import {pageStationAssociationUser} from '@/api/resource/stationGroupRole';
     import {getTableHeadCatalogData, getCustomizationFunctionCatalog, saveOrUpdate, removeCatalogData} from '@/api/assembly/customizationFunction'
-    import {getDictionaryList} from '@/api/admin/dictionary';
+    import {getDictionaryList, getDictionaryCascader} from '@/api/admin/dictionary';
 
     export default {
         name: 'catalog',
@@ -693,7 +690,9 @@
                     columnDescription: undefined,
                     columnKeywords: undefined,
                     columnType: undefined,
+                    columnTypeTreePosition: undefined
                 },
+                columnTypeArray: [],
                 catalogCascader: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
@@ -856,7 +855,9 @@
 
                 copyCatalogDialogVisible: false,
                 copyCatalogSourceCatId: undefined,
-                copyCatalogToCatId: []
+                copyCatalogToCatId: [],
+
+                dictionaryCascader: [],
             }
         },
         created() {
@@ -873,6 +874,7 @@
                 this.indexTemplateAllFiles();
                 this.getResourceCategoryList();
                 this.getWorkflowList();
+                this.loadDictionaryCascader();
             }
         },
         computed: {
@@ -894,6 +896,11 @@
             }
         },
         methods: {
+            loadDictionaryCascader(){
+                getDictionaryCascader({indexId: 'column_type'}).then(response => {
+                    this.dictionaryCascader = response.data;
+                })
+            },
             loadHeadData() {
                 this.frontTreeHeadData = [];
                 this.afterTreeHeadData = [];
@@ -1036,6 +1043,7 @@
                 this.catalog.treeShowAble = 1
                 this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
+                this.columnTypeArray = [];
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
@@ -1069,7 +1077,16 @@
                         this.publishOrganizationArray = position.substring(1).split('&');
                     }
                 }
-
+                if (this.catalog.columnType) {
+                    if (this.catalog.columnTypeTreePosition != '&') {
+                        let value = this.catalog.columnTypeTreePosition + '&' + this.catalog.columnType;
+                        this.columnTypeArray = value.substr(1).split('&');
+                    } else {
+                        this.columnTypeArray = [this.catalog.columnType];
+                    }
+                } else {
+                    this.columnTypeArray = [];
+                }
                 this.selectIndexTemplate = this.catalog.indexTemplate ? this.catalog.indexTemplate.split('/').slice(1) : [];
                 this.selectListTemplate = this.catalog.listTemplate ? this.catalog.listTemplate.split('/').slice(1) : [];
                 this.dialogTitle = 'update';
@@ -1250,6 +1267,7 @@
                     columnDescription: undefined,
                     columnKeywords: undefined,
                     columnType: undefined,
+                    columnTypeTreePosition: undefined
                 }
             },
             resetCatalogAggregation() {
@@ -1285,6 +1303,7 @@
                 this.selectCatalogIds = [];
                 this.selectPublishTime = [];
                 this.dynamicTags = [];
+                this.columnTypeArray = [];
             },
             isWorkflowEnable(value) {
                 if (value == 1) {
@@ -1595,6 +1614,13 @@
                     return '150';
                 else if (prop === 'allowHidden' || prop === 'placeOnFile' || prop === 'sortNo')
                     return '60';
+            },
+            columnTypeChange(v) {
+                if (v && v.length > 0) {
+                    this.catalog.columnType = v[v.length-1];
+                } else {
+                    this.catalog.columnType = '';
+                }
             }
         }
     }
