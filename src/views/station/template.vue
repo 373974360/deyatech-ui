@@ -1301,7 +1301,6 @@
                 } else {
                     this.template = deepClone(this.selectedRows[0]);
                 }
-                console.dir(row);
                 this.template.workflowKey = this.workflowKey;
                 this.template.workflowId = this.workflowId;
                 this.contentPicArray = [];
@@ -1476,7 +1475,6 @@
                     _this.template.contentMapStr = JSON.stringify(content);
                     _this.template.metadataCollectionVo = undefined;
                     _this.template.content = undefined;
-                    console.dir(_this.template);
                     _this.submitLoading = true;
                     if (_this.template.id) {
                         createOrUpdateTemplate(_this.template).then(() => {
@@ -2059,7 +2057,7 @@
                 let value = attach.split(',');
                 let formIndex = parseInt(value[0]);
                 let briefName = value[1];
-                this.formList[formIndex].pageModel[briefName + '_PlainTxt'] = content;
+                this.formList[formIndex].pageModel[briefName + '_PlainTxt'] = content.replace(/<[\s\S]*>/g, '');
             },
             extractSummary() {
                 let titleFormIndex = -1
