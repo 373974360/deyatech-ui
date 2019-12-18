@@ -226,11 +226,11 @@
                                 <el-input v-model.trim="setting.thumbnailWidth" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+                        <!--<el-col :span="12">
                             <el-form-item label="缩略图高度(px)" prop="thumbnailHeight" ref="thumbnailHeightField" v-show="setting.thumbnailEnable == 1" :rules="setting.thumbnailEnable == 0 ? [] : settingRules.thumbnailHeight">
                                 <el-input v-model.trim="setting.thumbnailHeight" maxlength="4"></el-input>
                             </el-form-item>
-                        </el-col>
+                        </el-col>-->
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
@@ -256,20 +256,20 @@
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="水印宽度(px)" prop="watermarkWidth" ref="watermarkWidthField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkWidth">
+                            <el-form-item label="水印宽度(px)" prop="watermarkWidth" ref="watermarkWidthField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 1" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 2 ? [] : settingRules.watermarkWidth">
                                 <el-input v-model.trim="setting.watermarkWidth" maxlength="4"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+                        <!--<el-col :span="12">
                             <el-form-item label="水印高度(px)" prop="watermarkHeight" ref="watermarkHeightField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkHeight">
                                 <el-input v-model.trim="setting.watermarkHeight" maxlength="4"></el-input>
                             </el-form-item>
-                        </el-col>
+                        </el-col>-->
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
-                            <el-form-item label="水印透明度(px)" prop="watermarkTransparency" ref="watermarkTransparencyField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkTransparency">
-                                <el-slider v-model.trim="setting.watermarkTransparency" :min="1" :max="100" :step="1" show-input/>
+                            <el-form-item label="水印透明度(px)" prop="watermarkTransparency" ref="watermarkTransparencyField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 1" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 2 ? [] : settingRules.watermarkTransparency">
+                                <el-slider v-model.trim="setting.watermarkTransparency" :min="0" :max="100" :step="1" show-input/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -280,7 +280,7 @@
                                            class="avatar-uploader"
                                            :action="imageUploadUrl"
                                            :data="imageUploadData"
-                                           accept="image/jpg,image/jpeg,image/png"
+                                           accept="image/jpg,image/jpeg,image/png,image/bpm"
                                            :show-file-list="false"
                                            :on-success="watermarkUrlUploadSuccess"
                                            :on-error="handlerImagesError"
@@ -292,9 +292,21 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
+                        <el-col :span="12">
                             <el-form-item label="水印文字" prop="watermarkWord" ref="watermarkWordField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 2" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 1 ? [] : settingRules.watermarkWord">
                                 <el-input v-model.trim="setting.watermarkWord" maxlength="50"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="文字大小" prop="watermarkPointSize" ref="watermarkPointSizeField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 2" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 1 ? [] : settingRules.watermarkPointSize">
+                                <el-input v-model.trim="setting.watermarkPointSize" maxlength="2"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="文字颜色" prop="watermarkFillColor" ref="watermarkFillColorField" v-show="setting.watermarkEnable == 1 && setting.watermarkType == 2" :rules="setting.watermarkEnable == 0 || setting.watermarkType == 1 ? [] : settingRules.watermarkFillColor">
+                                <el-color-picker v-model="setting.watermarkFillColor"></el-color-picker>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -302,19 +314,19 @@
                         <el-col :span="24">
                             <el-form-item label="水印位置" prop="watermarkPosition" ref="watermarkPositionField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkPosition">
                                 <div>
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="1" border>左上</el-radio>
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="2" border>上边</el-radio>
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="3" border>右上</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="northwest" border>左上</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="north" border>上边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="northeast" border>右上</el-radio>
                                 </div>
                                 <div style="margin-top: 10px">
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="4" border>左边</el-radio>
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="5" border>中间</el-radio>
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="6" border>右边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="west" border>左边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="center" border>中间</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="east" border>右边</el-radio>
                                 </div>
                                 <div style="margin-top: 10px">
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="7" border>左下</el-radio>
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="8" border>下边</el-radio>
-                                    <el-radio v-model.trim="setting.watermarkPosition" :label="9" border>右下</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="southwest" border>左下</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="south" border>下边</el-radio>
+                                    <el-radio v-model.trim="setting.watermarkPosition" label="southeast" border>右下</el-radio>
                                 </div>
                             </el-form-item>
                         </el-col>
@@ -707,6 +719,8 @@
                     watermarkTransparency: undefined,
                     watermarkUrl: undefined,
                     watermarkWord: undefined,
+                    watermarkPointSize: undefined,
+                    watermarkFillColor: '#409EFF',
                     watermarkPosition: undefined,
                     icoUrl: undefined
                 },
@@ -754,6 +768,13 @@
                     ],
                     watermarkWord: [
                         {required: true, message: this.$t("table.pleaseInput") + '水印文字'}
+                    ],
+                    watermarkPointSize: [
+                        {required: true, message: this.$t("table.pleaseInput") + '文字大小'},
+                        {validator: checkNumber, trigger: ['blur','change']}
+                    ],
+                    watermarkFillColor: [
+                        {required: true, message: this.$t("table.pleaseInput") + '文字颜色'}
                     ],
                     watermarkPosition: [
                         {required: true, message: this.$t("table.pleaseSelect") + '水印位置'}
@@ -1199,6 +1220,7 @@
                     watermarkTransparency: undefined,
                     watermarkUrl: undefined,
                     watermarkWord: undefined,
+                    watermarkFillColor: '#409EFF',
                     watermarkPosition: undefined,
                     icoUrl: undefined
                 };
@@ -1206,14 +1228,14 @@
             },
             btnGlobalSetting(){
                 this.titleSetting = "站点全局设置";
-                this.imageUploadUrl = this.$store.state.common.uploadUrl;
-                this.imageUploadData = undefined;
-                this.imageShowUrl = this.$store.state.common.showPicImgUrl;
+                this.imageUploadUrl = this.$store.state.common.materialUploadUrl;
+                this.imageUploadData = {siteId: '0', deal: 'no'};
+                this.imageShowUrl = this.$store.state.common.materialShowImageByUrl + "?siteId=0&url=";
                 this.getSetting(undefined);
             },
             btnSetting(row) {
                 this.imageUploadUrl = this.$store.state.common.materialUploadUrl;
-                this.imageUploadData = {siteId: row.id};
+                this.imageUploadData = {siteId: row.id, deal: 'no'};
                 this.imageShowUrl = this.$store.state.common.materialShowImageByUrl + "?siteId=" + row.id + "&url=";
                 let stationGroupId = undefined;
                 if (row.id) {
@@ -1241,6 +1263,8 @@
                         if (typeof(this.setting.watermarkTransparency) === 'undefined') this.$set(this.setting, 'watermarkTransparency', undefined);
                         if (typeof(this.setting.watermarkUrl) === 'undefined') this.$set(this.setting, 'watermarkUrl', undefined);
                         if (typeof(this.setting.watermarkWord) === 'undefined') this.$set(this.setting, 'watermarkWord', undefined);
+                        if (typeof(this.setting.watermarkPointSize) === 'undefined') this.$set(this.setting, 'watermarkPointSize', undefined);
+                        if (typeof(this.setting.watermarkFillColor) === 'undefined') this.$set(this.setting, 'watermarkFillColor', '#409EFF');
                         if (typeof(this.setting.watermarkPosition) === 'undefined') this.$set(this.setting, 'watermarkPosition', undefined);
                     }
                     this.dialogSettingVisible = true;
@@ -1278,14 +1302,19 @@
                             this.setting.watermarkTransparency = undefined;
                             this.setting.watermarkUrl = undefined;
                             this.setting.watermarkWord = undefined;
+                            this.setting.watermarkPointSize = undefined;
+                            this.setting.watermarkFillColor = undefined;
                             this.setting.watermarkPosition = undefined;
                         } else {
                             // 图片
                             if (this.setting.watermarkType == 1) {
                                 this.setting.watermarkWord = undefined;
+                                this.setting.watermarkPointSize = undefined;
+                                this.setting.watermarkFillColor = undefined;
                                 // 文字
                             } else if (this.setting.watermarkType == 2) {
                                 this.setting.watermarkUrl = undefined;
+                                this.setting.watermarkTransparency = undefined;
                             }
                         }
                         createOrUpdateSetting(this.setting).then(() => {
@@ -1317,7 +1346,7 @@
             thumbnailEnableChange() {
                 if (this.setting.thumbnailEnable == 0) {
                     this.$refs['thumbnailWidthField'].clearValidate();
-                    this.$refs['thumbnailHeightField'].clearValidate();
+                    //this.$refs['thumbnailHeightField'].clearValidate();
                     this.setting.thumbnailWidth = undefined;
                     this.setting.thumbnailHeight = undefined;
                 }
@@ -1326,10 +1355,12 @@
                 if (this.setting.watermarkEnable == 0) {
                     this.$refs['watermarkTypeField'].clearValidate();
                     this.$refs['watermarkWidthField'].clearValidate();
-                    this.$refs['watermarkHeightField'].clearValidate();
+                    //this.$refs['watermarkHeightField'].clearValidate();
                     this.$refs['watermarkTransparencyField'].clearValidate();
                     this.$refs['watermarkUrlField'].clearValidate();
                     this.$refs['watermarkWordField'].clearValidate();
+                    this.$refs['watermarkPointSizeField'].clearValidate();
+                    this.$refs['watermarkFillColorField'].clearValidate();
                     this.$refs['watermarkPositionField'].clearValidate();
                     this.setting.watermarkType = undefined;
                     this.setting.watermarkWidth = undefined;
@@ -1337,6 +1368,8 @@
                     this.setting.watermarkTransparency = undefined;
                     this.setting.watermarkUrl = undefined;
                     this.setting.watermarkWord = undefined;
+                    this.setting.watermarkPointSize = undefined;
+                    this.setting.watermarkFillColor = undefined;
                     this.setting.watermarkPosition = undefined;
                 } else if (this.setting.watermarkEnable == 1) {
                     if (!this.setting.watermarkType) {
@@ -1348,11 +1381,21 @@
                 // 图片
                 if (this.setting.watermarkType == 1) {
                     this.$refs['watermarkWordField'].clearValidate();
+                    this.$refs['watermarkPointSizeField'].clearValidate();
+                    this.$refs['watermarkFillColorField'].clearValidate();
                     this.setting.watermarkWord = undefined;
+                    this.setting.watermarkPointSize = undefined;
+                    this.setting.watermarkFillColor = undefined;
                     // 文字
                 } else if (this.setting.watermarkType == 2) {
                     this.$refs['watermarkUrlField'].clearValidate();
+                    this.$refs['watermarkTransparencyField'].clearValidate();
+                    this.$refs['watermarkWidthField'].clearValidate();
+                    //this.$refs['watermarkHeightField'].clearValidate();
                     this.setting.watermarkUrl = undefined;
+                    this.setting.watermarkWidth = undefined;
+                    this.setting.watermarkHeight = undefined;
+                    this.setting.watermarkTransparency = undefined;
                 }
             },
             watermarkUrlUploadSuccess(response) {
