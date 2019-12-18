@@ -241,6 +241,45 @@
                                         </el-dialog>
                                     </template>
 
+                                    <!-- 组图  -->
+                                    <template v-else-if="item.controlType === 'imageArrayElement'">
+                                        <div class="img-li-box" v-for="(item1,key) in form.pageModel['imagearray_' + item.briefName]" :key="key" style="width:100%">
+                                            <el-row :span="24">
+                                                <el-col :span="6">
+                                                    <img class="img-li-b--url" :src="item1.url" style="width:100%;height:130px;">
+                                                </el-col>
+                                                <el-col :span="1">
+                                                </el-col>
+                                                <el-col :span="17">
+                                                    <div class="img-li-b--bottom" style="width:100%;">
+                                                        <el-input
+                                                            type="textarea"
+                                                            :rows="4"
+                                                            placeholder="图片描述"
+                                                            v-model.trim="item1.name">
+                                                        </el-input>
+                                                    </div>
+                                                    <!-- 删除icon -->
+                                                    <div class="img-li-b--delete">
+                                                        <i @click="handleImageArrayRemove(item1,key)" class="el-icon-delete" style="cursor:pointer;"></i>
+                                                    </div>
+                                                </el-col>
+                                            </el-row>
+                                        </div>
+                                        <el-upload :action="$store.state.common.materialUploadUrl"
+                                                   :data="{siteId: template.siteId, attach: formIndex + ',' + item.briefName}"
+                                                   :accept="$store.state.common.imageAccepts"
+                                                   :show-file-list="false"
+                                                   :on-success="handleImageArraySuccess"
+                                                   :on-error="handleImageError"
+                                                   :before-upload="beforeImageUpload"
+                                                   :on-preview="handleImageCardPreview"
+                                                   :on-remove="handleImageArrayRemove"
+                                                   :multiple = "true">
+                                            <el-button size="small" type="primary">点击上传</el-button>
+                                        </el-upload>
+                                    </template>
+
                                     <!-- 日期 -->
                                     <el-date-picker v-else-if="item.controlType === 'dateElement'"
                                                     v-model.trim="form.pageModel[item.briefName]"
@@ -726,7 +765,8 @@
                 uploadFileSize: 0,
 
                 // 提取内容图片
-                contentPicArray: []
+                contentPicArray: [],
+                picArray:[]
             }
         },
         watch: {
@@ -1360,10 +1400,14 @@
                     for (let form of _this.formList) {
                         let pageModel = form.pageModel;
                         let checkboxFields = [];
+                        let imageArrayFields = [];
                         let pageModelFields = Object.getOwnPropertyNames(pageModel);
                         for (let f of pageModelFields) {
                             if (f.startsWith('checkbox_')) {
                                 checkboxFields.push(f.substring(f.indexOf('_') + 1));
+                            }
+                            if (f.startsWith('imagearray_')) {
+                                imageArrayFields.push(f.substring(f.indexOf('_') + 1));
                             }
                         }
                         // 保存基础字段
@@ -1386,9 +1430,16 @@
                                 continue;
                             }
                             let isCheckbox = false;
+                            let isImageArray = false;
                             for(let ckb of checkboxFields) {
                                 if (ckb === meta) {
                                     isCheckbox = true;
+                                    break;
+                                }
+                            }
+                            for(let imgarr of imageArrayFields) {
+                                if (imgarr === meta) {
+                                    isImageArray = true;
                                     break;
                                 }
                             }
@@ -1398,6 +1449,20 @@
                                 let arr = pageModel['checkbox_' + meta];
                                 if (arr instanceof Array && arr.length > 0) {
                                     content[meta] = arr.join(',');
+                                }
+                            } else {
+                                content[meta] = pageModel[meta];
+                            }
+
+                            // 有组图字段
+                            if (isImageArray) {
+                                let arr = pageModel['imagearray_' + meta];
+                                if (arr instanceof Array && arr.length > 0) {
+                                    let tmp = [];
+                                    for (let item of arr) {
+                                        tmp.push("{\"url\":\""+item.value+"\",\"remark\":\""+item.name+"\"}");
+                                    }
+                                    content[meta] = tmp.length > 0 ? "["+tmp.join(',')+"]" : '';
                                 }
                             } else {
                                 content[meta] = pageModel[meta];
@@ -1767,6 +1832,85 @@
             },
             handleImageRemove(file, fileList) {
                 this.handleRemove(file, 'image_');
+            },
+
+            // 组图处理
+            handleArraySuccess(data, prefix) {
+                console.log(data);
+                let attach = data.attach.split(',');
+                // 页索引
+                let formIndex = attach[0];
+                // 页字段
+                let briefName = attach[1];
+                // 上传返回的材料对象
+                let customData = data.customData;
+                if ('imagearray_' === prefix) {
+                    // 显示地址
+                    customData.url = this.loadShowImageUrl(customData.url);
+                } else {
+                    return
+                }
+                // 绑定数组
+                let dataList = this.formList[formIndex].pageModel[prefix + briefName];
+                // 追加新对象
+                dataList.push(customData);
+                let tmp = [];
+                for (let item of dataList) {
+                    tmp.push("{\"url\":\""+item.value+"\",\"remark\":\""+item.name+"\"}");
+                }
+                // 表单值
+                this.formList[formIndex].pageModel[briefName] = tmp.length > 0 ? "["+tmp.join(',')+"]" : '';
+            },
+            handleImageArraySuccess(response, file, fileList) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    console.log(response.data);
+                    this.handleArraySuccess(response.data, 'imagearray_');
+                    this.$message.success('上传成功！');
+                } else {
+                    console.error(response);
+                    this.$message.error('上传失败！');
+                }
+            },
+            handleImageArrayRemove(file, fileList) {
+                let value = '';
+                let prefix = 'imagearray_';
+                // 新上传的
+                if (file.hasOwnProperty("response")) {
+                    value = file.response.data.customData.value;
+                }
+                // 后端返回的
+                else if (file.hasOwnProperty("value")) {
+                    value = file.value;
+                }
+                if (!value) {
+                    return;
+                }
+                for(let i = 0; i < this.formList.length; i++) {
+                    let pageModel = this.formList[i].pageModel;
+                    let fields = Object.getOwnPropertyNames(pageModel);
+                    for (let field of fields) {
+                        if (field.startsWith(prefix)) {
+                            let index = -1;
+                            // 绑定数组中寻找要删除的url
+                            let list = pageModel[field];
+                            for(let j = 0; j < list.length; j++) {
+                                if (value === list[j].value) {
+                                    index = j;
+                                    break;
+                                }
+                            }
+                            if (index > -1) {
+                                list.splice(index, 1);
+                                index = -1;
+                                let tmp = [];
+                                for (let item of list) {
+                                    tmp.push("{\"url\":\""+item.value+"\",\"remark\":\""+item.name+"\"}");
+                                }
+                                pageModel[field.substring(prefix.length)] = tmp.length > 0 ? "["+tmp.join(',')+"]" : '';
+                            }
+                        }
+                    }
+                }
             },
 
 
@@ -2273,5 +2417,6 @@
     .appeal_table {
         width:100%;
     }
+
 </style>
 
