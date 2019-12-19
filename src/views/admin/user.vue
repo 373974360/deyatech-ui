@@ -355,7 +355,6 @@
             this.$store.state.common.selectSiteDisplay = false;
             this.reloadList();
             this.getDepartmentCascader();
-            this.getAllStationGroup();
         },
         methods: {
             btnSearch() {

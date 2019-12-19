@@ -183,7 +183,7 @@
                 <!--核心属性设置-->
                 <div v-if="stepsActive == 1">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
+                        <el-col :span="24">
                             <el-form-item label="频道页模板" prop="indexTemplate">
                                 <el-cascader filterable
                                     style="width: 100%"
@@ -196,7 +196,9 @@
                                 </el-cascader>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
                             <el-form-item label="列表页模板" prop="listTemplate">
                                 <el-cascader filterable
                                     style="width: 100%"
