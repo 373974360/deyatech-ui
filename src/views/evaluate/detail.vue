@@ -150,9 +150,9 @@
                     </template>
                 </el-table-column>
                 <el-table-column align="center" label="评价人姓名" prop="userName">
-                    <template slot-scope="scope">
-                        {{scope.row.anonymityFlag == 1 ? '匿名用户' : scope.row.userName}}
-                    </template>
+                    <!--<template slot-scope="scope">
+                        {{(scope.row.anonymityFlag == 1 || !scope.row.userName) ? '匿名用户' : scope.row.userName}}
+                    </template>-->
                 </el-table-column>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
 <!--                <el-table-column align="center" label="审核状态" prop="status" width="90px">
@@ -215,23 +215,17 @@
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialogDetails">
                 <table class="mailTable">
                     <tr>
-                        <td class="column">事项编码</td>
-                        <td>{{detail.itemCode}}</td>
-                        <td class="column">事项名称</td>
-                        <td>{{detail.itemName}}</td>
+                        <td class="column">事项编码</td><td>{{detail.itemCode}}</td>
+                        <td class="column">事项名称</td><td>{{detail.itemName}}</td>
                     </tr>
                     <tr>
-                        <td class="column">办件编号</td>
-                        <td>{{detail.processNumber}}</td>
-                        <td class="column">受理部门</td>
-                        <td>{{detail.proDepartment}}</td>
+                        <td class="column">办件编号</td><td>{{detail.processNumber}}</td>
+                        <td class="column">受理部门</td><td>{{detail.proDepartment}}</td>
                     </tr>
-                    <tr>
-                        <td class="column">经办人</td>
-                        <td>{{detail.proManager}}</td>
-                        <td class="column">审核状态</td>
-                        <td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
-                    </tr>
+                    <!--<tr>
+                        <td class="column">经办人</td><td>{{detail.proManager}}</td>
+                        <td class="column">审核状态</td><td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
+                    </tr>-->
                     <!--<tr>
                         <td class="column">是否匿名</td>
                         <td>{{detail.anonymityFlag | enums('EvaluationAnonymityEnum')}}</td>
@@ -239,8 +233,15 @@
                         <td>{{detail.publicFlag | enums('EvaluationPublicEnum')}}</td>
                     </tr>-->
                     <tr>
-                        <td class="column">评价渠道</td>
-                        <td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
+                        <td class="column">办件来源</td><td>{{detail.proSource | enums('EvaluationProSourceEnum')}}</td>
+                        <td class="column">评价渠道</td><td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
+                    </tr>
+                    <tr>
+                        <!--<td class="column">评价人姓名</td><td>{{(detail.anonymityFlag == 1 || !detail.userName) ? '匿名用户' : detail.userName}}</td>-->
+                        <td class="column">评价人姓名</td><td>{{detail.userName}}</td>
+                        <td class="column">联系号码</td><td>{{detail.userTel}}</td>
+                    </tr>
+                    <tr>
                         <td class="column">整体满意度</td>
                         <td>
                             <!--<el-rate
@@ -252,12 +253,7 @@
                             </el-rate>-->
                             {{detail.levelCode | enums('EvaluationLevelEnum')}}
                         </td>
-                    </tr>
-                    <tr>
-                        <td class="column">评价人姓名</td>
-                        <td>{{detail.anonymityFlag == 1 ? '匿名用户' : detail.userName}}</td>
-                        <td class="column">评价时间</td>
-                        <td>{{detail.submitTime}}</td>
+                        <td class="column">评价时间</td><td>{{detail.submitTime}}</td>
                     </tr>
                     <tr v-if="detail.content">
                         <td class="column">评价详情</td>
@@ -512,6 +508,7 @@
                     itemName: undefined,
                     subMatter: undefined,
                     processNumber: undefined,
+                    proSource: undefined,
                     proStatus: undefined,
                     proDepartment: undefined,
                     proManager: undefined,
@@ -519,6 +516,7 @@
                     userId: undefined,
                     userName: undefined,
                     userProp: undefined,
+                    userTel: undefined,
                     anonymityFlag: undefined,
                     levelCode: undefined,
                     contentCode: undefined,
@@ -739,6 +737,7 @@
                     itemName: undefined,
                     subMatter: undefined,
                     processNumber: undefined,
+                    proSource: undefined,
                     proStatus: undefined,
                     proDepartment: undefined,
                     proManager: undefined,
@@ -746,6 +745,7 @@
                     userId: undefined,
                     userName: undefined,
                     userProp: undefined,
+                    userTel: undefined,
                     anonymityFlag: undefined,
                     levelCode: undefined,
                     contentCode: undefined,

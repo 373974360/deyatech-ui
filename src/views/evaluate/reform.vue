@@ -164,16 +164,21 @@
                         <td class="column">办件编号</td><td>{{detail.processNumber}}</td>
                         <td class="column">受理部门</td><td>{{detail.proDepartment}}</td>
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <td class="column">经办人</td><td>{{detail.proManager}}</td>
                         <td class="column">审核状态</td><td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
-                    </tr>
+                    </tr>-->
                     <tr>
+                        <td class="column">办件来源</td><td>{{detail.proSource | enums('EvaluationProSourceEnum')}}</td>
                         <td class="column">评价渠道</td><td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
-                        <td class="column">整体满意度</td><td>{{detail.levelCode | enums('EvaluationLevelEnum')}}</td>
                     </tr>
                     <tr>
-                        <td class="column">评价人姓名</td><td>{{detail.anonymityFlag == 1 ? '匿名用户' : detail.userName}}</td>
+                        <!--<td class="column">评价人姓名</td><td>{{(detail.anonymityFlag == 1 || !detail.userName) ? '匿名用户' : detail.userName}}</td>-->
+                        <td class="column">评价人姓名</td><td>{{detail.userName}}</td>
+                        <td class="column">联系号码</td><td>{{detail.userTel}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">整体满意度</td><td>{{detail.levelCode | enums('EvaluationLevelEnum')}}</td>
                         <td class="column">评价时间</td><td>{{detail.submitTime}}</td>
                     </tr>
                     <tr v-if="detail.content">
@@ -336,16 +341,21 @@
                         <td class="column">办件编号</td><td>{{detail.processNumber}}</td>
                         <td class="column">受理部门</td><td>{{detail.proDepartment}}</td>
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <td class="column">经办人</td><td>{{detail.proManager}}</td>
                         <td class="column">审核状态</td><td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
-                    </tr>
+                    </tr>-->
                     <tr>
+                        <td class="column">办件来源</td><td>{{detail.proSource | enums('EvaluationProSourceEnum')}}</td>
                         <td class="column">评价渠道</td><td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
-                        <td class="column">整体满意度</td><td>{{detail.levelCode | enums('EvaluationLevelEnum')}}</td>
                     </tr>
                     <tr>
-                        <td class="column">评价人姓名</td><td>{{detail.anonymityFlag == 1 ? '匿名用户' : detail.userName}}</td>
+                        <!--<td class="column">评价人姓名</td><td>{{(detail.anonymityFlag == 1 || !detail.userName) ? '匿名用户' : detail.userName}}</td>-->
+                        <td class="column">评价人姓名</td><td>{{detail.userName}}</td>
+                        <td class="column">联系号码</td><td>{{detail.userTel}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">整体满意度</td><td>{{detail.levelCode | enums('EvaluationLevelEnum')}}</td>
                         <td class="column">评价时间</td><td>{{detail.submitTime}}</td>
                     </tr>
                     <tr v-if="detail.content">
@@ -421,6 +431,9 @@
         queryEvaluateRecordList,
         reformRevisit,
     } from '@/api/evaluate/detail';
+    import {
+        getOrgDetail
+    } from "../../api/evaluate/sso";
 
     export default {
         name: 'detail',
@@ -452,6 +465,7 @@
                     itemCode: undefined,
                     itemName: undefined,
                     subMatter: undefined,
+                    organizationalCode: undefined,
                     proDepartment: undefined,
                     userName: undefined,
                     anonymityFlag: undefined,
@@ -467,6 +481,7 @@
                     itemName: undefined,
                     subMatter: undefined,
                     processNumber: undefined,
+                    proSource: undefined,
                     proStatus: undefined,
                     proDepartment: undefined,
                     proManager: undefined,
@@ -474,6 +489,7 @@
                     userId: undefined,
                     userName: undefined,
                     userProp: undefined,
+                    userTel: undefined,
                     anonymityFlag: undefined,
                     levelCode: undefined,
                     contentCode: undefined,
@@ -536,8 +552,11 @@
             }
         },
         created(){
-            this.listQuery.proDepartment = this.userInfo.orgName;
-            this.reloadList();
+            // this.listQuery.proDepartment = this.userInfo.orgName;
+            getOrgDetail(this.userInfo.orgId).then(res => {
+                this.listQuery.organizationalCode = res.data.regionCode;
+                this.reloadList();
+            });
         },
         methods: {
             handleDialogPosition(id) {
@@ -619,6 +638,7 @@
                     itemName: undefined,
                     subMatter: undefined,
                     processNumber: undefined,
+                    proSource: undefined,
                     proStatus: undefined,
                     proDepartment: undefined,
                     proManager: undefined,
@@ -626,6 +646,7 @@
                     userId: undefined,
                     userName: undefined,
                     userProp: undefined,
+                    userTel: undefined,
                     anonymityFlag: undefined,
                     levelCode: undefined,
                     contentCode: undefined,

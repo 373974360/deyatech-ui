@@ -6,3 +6,11 @@ export function getUserInfo() {
         method: 'get'
     })
 }
+
+export function getOrgDetail(orgId) {
+    return request({
+        url: '/manage/evaluate/sso/getOrgDetail',
+        method: 'get',
+        params: {orgId}
+    })
+}
