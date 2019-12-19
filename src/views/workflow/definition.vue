@@ -585,6 +585,9 @@
                         this.$message.error('请选择部门');
                         return;
                     }
+                } else {
+                    this.$message.error('请选人员安排设置');
+                    return;
                 }
                 createOrUpdateProcessTaskSetting(this.processTaskSetting).then(() => {
                     this.$message.success('保存成功');
