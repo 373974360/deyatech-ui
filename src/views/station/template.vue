@@ -637,8 +637,9 @@
                     metadataList: []
                 },
                 editorConfig: {
-                    serverUrl: "/manage/station/material/uploadFile?siteId="+this.$store.state.common.siteId,
+                    serverUrl: this.$store.state.common.materialUploadUrl+"?siteId="+this.$store.state.common.siteId,
                     imageUrlPrefix: this.$store.state.common.materialShowImageByUrl+"?siteId="+this.$store.state.common.siteId+"&url=",
+                    fileUrlPrefix: this.$store.state.common.materialDownloadUrl+"?siteId="+this.$store.state.common.siteId+"&url=",
                     initialFrameWidth: '100%',
                     initialFrameHeight: 350,
                     zIndex: 3999,
