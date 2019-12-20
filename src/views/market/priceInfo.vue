@@ -4,6 +4,20 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
+                        <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '产品分类'" v-model.trim="listQuery.typeId">
+                            <el-option
+                                ref="productTypeQuery"
+                                v-for="item in productTypeQuery"
+                                :key="item.id"
+                                :label="item.typeName"
+                                :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input :size="searchSize" :placeholder="$t('table.pleaseInput') + '产品名称'" v-model.trim="listQuery.productName"></el-input>
+                    </el-form-item>
+                    <el-form-item>
                         <el-date-picker
                             :size="searchSize"
                             v-model.trim="addTimeRange"
@@ -37,10 +51,10 @@
                         :data="{importType: importType}"
                         :on-success="importSuccess"
                         :on-error="importError">
-                        <el-button type="primary" :size="btnSize" @click="importExcel1">批发数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
-                        <el-button type="primary" :size="btnSize" @click="importExcel2">零售数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
-                        <el-button type="primary" :size="btnSize" @click="importExcel3">产地数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
-                        <el-button type="primary" :size="btnSize" @click="importExcel4">农资数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                        <el-button v-if="btnEnable.wholesaleImport" type="primary" :size="btnSize" @click="importExcel1">批发数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                        <el-button v-if="btnEnable.retailImport" type="primary" :size="btnSize" @click="importExcel2">零售数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                        <el-button v-if="btnEnable.locationImport" type="primary" :size="btnSize" @click="importExcel3">产地数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
+                        <el-button v-if="btnEnable.agriculturalImport" type="primary" :size="btnSize" @click="importExcel4">农资数据导入<i class="el-icon-upload el-icon--right"></i></el-button>
                     </el-upload>
                 </div>
                 <div class="deyatech-menu_right">
@@ -50,16 +64,25 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
+            <template v-if="allMarketType && allMarketType.length > 0">
+                <el-tabs class="table-tab" v-model="listQuery.marketId" type="card" @tab-click="handleTabClick">
+                    <el-tab-pane v-for="item in allMarketType" :label="item.marketName" :name="item.id"></el-tab-pane>
+                </el-tabs>
+            </template>
             <el-table :data="priceInfoList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="center" label="产品名称" prop="productName"/>
                 <el-table-column align="center" label="产品分类" prop="typeName"/>
-                <el-table-column align="center" label="市场分类" prop="marketName"/>
+<!--                <el-table-column align="center" label="市场分类" prop="marketName"/>-->
                 <el-table-column align="center" label="价格" prop="price"/>
                 <el-table-column align="center" label="单位" prop="unit"/>
-                <el-table-column align="center" label="部门名称" prop="scName"/>
-<!--                <el-table-column align="center" label="批发/零售" prop="isSell"/>-->
+                <el-table-column align="center" label="市场名称" prop="scName"/>
+                <el-table-column align="center" label="批发/零售" prop="isSell">
+                    <template slot-scope="scope">
+                        {{scope.row.isSell | isSell}}
+                    </template>
+                </el-table-column>
 <!--                <el-table-column align="center" label="产地" prop="location"/>-->
 <!--                <el-table-column align="center" label="产品等级" prop="productLevel"/>-->
 <!--                <el-table-column align="center" label="上市量" prop="landings"/>-->
@@ -241,8 +264,8 @@
                 }
             };
             return {
-                priceInfoList: undefined,
-                total: undefined,
+                priceInfoList: [],
+                total: 0,
                 listLoading: true,
                 addTimeRange: undefined,
                 listQuery: {
@@ -250,6 +273,9 @@
                     size: this.$store.state.common.size,
                     addStartTime: undefined,
                     addEndTime: undefined,
+                    productName: undefined,
+                    marketId: undefined,
+                    typeId: undefined,
                 },
                 priceInfo: {
                     id: undefined,
@@ -319,6 +345,17 @@
                 productForm: [],
                 initHeaders: {"Deyatech-Token": getToken()},
                 importType: undefined,
+                productTypeQuery: [],
+            }
+        },
+        filters: {
+            isSell: function (code) {
+                var value = '';
+                switch (code) {
+                    case 0: value = "批发"; break;
+                    case 1: value = "零售"; break;
+                }
+                return value;
             }
         },
         computed: {
@@ -334,21 +371,31 @@
                 return {
                     create: this.permission.priceInfo_create,
                     update: this.permission.priceInfo_update,
-                    delete: this.permission.priceInfo_delete
+                    delete: this.permission.priceInfo_delete,
+                    wholesaleImport: this.permission.wholesale_import,
+                    retailImport: this.permission.retail_import,
+                    locationImport: this.permission.location_import,
+                    agriculturalImport: this.permission.agricultural_import,
                 };
             }
         },
         created(){
-            this.getAllMarketType();
-            this.getAllProductType();
+            const flag = this.getAllMarketType().then(() => {
+                this.reloadList();
+            });
+            Promise.all([flag, this.getAllProductType()]).then(() => {
+                this.productTypeQueryFilter(this.listQuery.marketId);
+            });
             this.getAllProduct();
-            this.reloadList();
         },
         methods: {
             resetSearch(){
                 this.addTimeRange = undefined;
                 this.listQuery.addStartTime = undefined;
                 this.listQuery.addEndTime = undefined;
+                this.listQuery.productName = undefined;
+                this.listQuery.typeId = undefined;
+                this.productTypeQuery = [];
             },
             searchReloadList() {
                 if (this.addTimeRange) {
@@ -494,14 +541,27 @@
                 this.$refs['priceInfoDialogForm'].resetFields();
             },
             getAllMarketType(){
-                getAllMarketType().then(response => {
-                    this.allMarketType = response.data;
-                })
+                return new Promise((resolve, reject) => {
+                    getAllMarketType().then(response => {
+                        this.allMarketType = response.data;
+                        if (this.allMarketType && this.allMarketType.length > 0) {
+                            this.listQuery.marketId = this.allMarketType[0].id;
+                        }
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
             },
             getAllProductType(){
-                getAllProductType().then(response => {
-                    this.allProductType = response.data;
-                })
+                return new Promise((resolve, reject) => {
+                    getAllProductType().then(response => {
+                        this.allProductType = response.data;
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
             },
             getAllProduct(){
                 getAllProduct().then(response => {
@@ -548,11 +608,11 @@
                     require.ensure([], () => {
                         const Export2excel = require('@/excel/Export2excel');
                         //对应表格输出的title
-                        const tHeader = ['序号', '部门名称', '分类名称', '产品名称', '价格', '单位', "产地",
-                            '产品级别', '上市量', '交易量', '来源', '备注', '导入时间', '添加用户'];
+                        const tHeader = ['序号', '市场分类', '产品分类', '产品名称', '价格', '单位', '市场名称', '批发/零售',
+                            '产地', '产品级别', '上市量', '交易量', '来源', '备注', '导入时间', '添加用户'];
                         // 对应表格输出的数据
-                        const filterVal = ['rowNumber', 'scName', 'typeName', 'productName', 'price', 'unit', 'location',
-                            'productLevel', 'landings', 'tradings', 'sourceFrom', 'remark', 'addTime', 'addUser'];
+                        const filterVal = ['rowNumber', 'marketName', 'typeName', 'productName', 'price', 'unit', 'scName', 'isSell',
+                            'location', 'productLevel', 'landings', 'tradings', 'sourceFrom', 'remark', 'addTime', 'addUser'];
                         const excelData = this.formatJson(filterVal, response.data);
                         //对应下载文件的名字
                         Export2excel.export2Excel(tHeader, excelData, '价格信息excel' + new Date().toLocaleDateString().replace(/\//g,'-'));
@@ -560,7 +620,20 @@
                 })
             },
             formatJson(filterVal, jsonData) {
-                return jsonData.map(v => filterVal.map(j => v[j]))
+                return jsonData.map(v => filterVal.map(
+                    function (c) {
+                        let result = ''
+                        if (c == 'isSell') {
+                            switch (v[c]) {
+                                case 0: result = '批发'; break;
+                                case 1: result = '零售'; break;
+                            }
+                        } else {
+                            result = v[c];
+                        }
+                        return result;
+                    }
+                ))
             },
             beforeUpload(file) {
                 const suffix = file.name.substring(file.name.lastIndexOf('.')+1);
@@ -605,8 +678,28 @@
             importExcel2() {this.importType = '2';},
             importExcel3() {this.importType = '3';},
             importExcel4() {this.importType = '4';},
+            productTypeQueryFilter(marketId) {
+                this.listQuery.typeId = undefined;
+                this.productTypeQuery = [];
+                for (let productType of this.allProductType) {
+                    if (marketId == productType.marketId) {
+                        this.productTypeQuery.unshift(productType);
+                    }
+                }
+            },
+            handleTabClick() {
+                this.productTypeQueryFilter(this.listQuery.marketId);
+                this.reloadList();
+            }
         }
     }
 </script>
 
-
+<style>
+    .table-tab > .el-tabs__header {
+        border-bottom: none;
+    }
+    .table-tab .el-tabs__header {
+        margin: 0;
+    }
+</style>

@@ -49,3 +49,18 @@ export function doExamine(data) {
     })
 }
 
+export function getInformationStatusEnum(query) {
+    return request({
+        url: '/manage/market/information/getInformationStatusEnum',
+        method: 'get',
+        params: query
+    });
+}
+
+export function getStatisticsInfo(query) {
+    return request({
+        url: '/manage/market/information/getStatisticsInfo',
+        method: 'get',
+        params: query
+    });
+}

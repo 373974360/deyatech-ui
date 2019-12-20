@@ -3,7 +3,7 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
+                    <!--<el-form-item>
                         <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '市场分类'" v-model.trim="listQuery.marketId" @change="productTypeQueryFilter">
                             <el-option
                                 v-for="item in allMarketType"
@@ -12,7 +12,7 @@
                                 :value="item.id">
                             </el-option>
                         </el-select>
-                    </el-form-item>
+                    </el-form-item>-->
                     <el-form-item>
                         <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '产品分类'" v-model.trim="listQuery.typeId">
                             <el-option
@@ -45,12 +45,17 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
+            <template v-if="allMarketType && allMarketType.length > 0">
+                <el-tabs class="table-tab" v-model="listQuery.marketId" type="card" @tab-click="handleTabClick">
+                    <el-tab-pane v-for="item in allMarketType" :label="item.marketName" :name="item.id"></el-tab-pane>
+                </el-tabs>
+            </template>
             <el-table :data="productList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="center" label="产品名称" prop="productName"/>
                 <el-table-column align="center" label="产品分类" prop="typeName"/>
-                <el-table-column align="center" label="市场分类" prop="marketName"/>
+<!--                <el-table-column align="center" label="市场分类" prop="marketName"/>-->
                 <el-table-column align="center" label="添加时间" prop="createTime"/>
                 <el-table-column align="center" label="备注" prop="remark"/>
                 <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
@@ -147,8 +152,8 @@
         name: 'product',
         data() {
             return {
-                productList: undefined,
-                total: undefined,
+                productList: [],
+                total: 0,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
@@ -207,14 +212,16 @@
             }
         },
         created(){
-            this.getAllMarketType();
-            this.getAllProductType();
-            this.reloadList();
+            const flag = this.getAllMarketType().then(() => {
+                this.reloadList();
+            });
+            Promise.all([flag, this.getAllProductType()]).then(() => {
+                this.productTypeQueryFilter(this.listQuery.marketId);
+            });
         },
         methods: {
             resetSearch(){
                 this.listQuery.productName = undefined;
-                this.listQuery.marketId = undefined;
                 this.listQuery.typeId = undefined;
                 this.productTypeQuery = [];
             },
@@ -331,21 +338,34 @@
                 this.$refs['productDialogForm'].resetFields();
             },
             getAllMarketType(){
-                getAllMarketType().then(response => {
-                    this.allMarketType = response.data;
-                })
+                return new Promise((resolve, reject) => {
+                    getAllMarketType().then(response => {
+                        this.allMarketType = response.data;
+                        if (this.allMarketType && this.allMarketType.length > 0) {
+                            this.listQuery.marketId = this.allMarketType[0].id;
+                        }
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
             },
             getAllProductType(){
-                getAllProductType().then(response => {
-                    this.allProductType = response.data;
-                })
+                return new Promise((resolve, reject) => {
+                    getAllProductType().then(response => {
+                        this.allProductType = response.data;
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
             },
             productTypeFormFilter(marketId) {
                 this.product.typeId = undefined;
                 this.productTypeForm = [];
                 for (let productType of this.allProductType) {
                     if (marketId == productType.marketId) {
-                        this.productTypeForm.push(productType);
+                        this.productTypeForm.unshift(productType);
                     }
                 }
             },
@@ -354,12 +374,23 @@
                 this.productTypeQuery = [];
                 for (let productType of this.allProductType) {
                     if (marketId == productType.marketId) {
-                        this.productTypeQuery.push(productType);
+                        this.productTypeQuery.unshift(productType);
                     }
                 }
             },
+            handleTabClick() {
+                this.productTypeQueryFilter(this.listQuery.marketId);
+                this.reloadList();
+            }
         }
     }
 </script>
 
-
+<style>
+    .table-tab > .el-tabs__header {
+        border-bottom: none;
+    }
+    .table-tab .el-tabs__header {
+        margin: 0;
+    }
+</style>

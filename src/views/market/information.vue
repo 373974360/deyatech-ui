@@ -3,7 +3,7 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
+                    <!--<el-form-item>
                         <el-select :size="searchSize" v-model.trim="listQuery.categoryId" :placeholder="$t('table.pleaseSelect') + '分类'" clearable style="width: 100%">
                             <el-option
                                 v-for="item in allCategory"
@@ -12,7 +12,7 @@
                                 :value="item.id">
                             </el-option>
                         </el-select>
-                    </el-form-item>
+                    </el-form-item>-->
                     <el-form-item>
                         <el-input :size="searchSize" :placeholder="$t('table.pleaseSelect') + '标题'" v-model.trim="listQuery.title"></el-input>
                     </el-form-item>
@@ -37,22 +37,27 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
+            <template v-if="informationStatusEnum && informationStatusEnum.length > 0">
+                <el-tabs class="table-tab" v-model="listQuery.status" type="card" @tab-click="handleTabClick">
+                    <el-tab-pane v-for="item in informationStatusEnum" :label="item.value" :name="'' + item.code"></el-tab-pane>
+                </el-tabs>
+            </template>
             <el-table :data="informationList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="分类" prop="categoryName"/>
+                <!--                <el-table-column align="center" label="分类" prop="categoryName"/>-->
                 <el-table-column align="center" label="标题" prop="title"/>
-<!--                <el-table-column align="center" label="内容" prop="content"/>-->
+                <!--                <el-table-column align="center" label="内容" prop="content"/>-->
                 <el-table-column align="center" label="作者" prop="author"/>
-<!--                <el-table-column align="center" label="来源" prop="source"/>-->
-                <el-table-column align="center" label="发布状态" prop="status">
-                    <template slot-scope="scope">
-                        {{scope.row.status | releaseStatusFilter}}
-                    </template>
-                </el-table-column>
-                <el-table-column align="center" label="发布时间" prop="releaseTime"/>
+                <!--                <el-table-column align="center" label="来源" prop="source"/>-->
+                <!--                <el-table-column align="center" label="发布状态" prop="status">
+                                    <template slot-scope="scope">
+                                        {{scope.row.status | releaseStatusFilter}}
+                                    </template>
+                                </el-table-column>-->
+                <el-table-column v-if="listQuery.status == '1'" align="center" label="发布时间" prop="releaseTime"/>
                 <el-table-column align="center" label="添加时间" prop="createTime"/>
-<!--                <el-table-column align="center" label="点击数" prop="clicks"/>-->
+                <!--                <el-table-column align="center" label="点击数" prop="clicks"/>-->
                 <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
@@ -62,7 +67,9 @@
                 </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="150">
                     <template slot-scope="scope">
-                        <el-button title="审核" type="success" icon="el-icon-check" :size="btnSize" circle
+                        <el-button v-if="btnEnable.examine && scope.row.status == 0" title="审核" type="success" icon="el-icon-check" :size="btnSize" circle
+                                   @click.stop.safe="btnExamine(scope.row)"></el-button>
+                        <el-button v-if="scope.row.status != 0" title="查看" type="success" icon="el-icon-view" :size="btnSize" circle
                                    @click.stop.safe="btnExamine(scope.row)"></el-button>
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
@@ -85,7 +92,7 @@
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="分类" prop="categoryId">
-                                <el-select v-model.trim="information.categoryId" :placeholder="$t('table.pleaseSelect') + '分类'" style="width: 100%">
+                                <el-select v-model.trim="information.categoryId" :placeholder="$t('table.pleaseSelect') + '分类'" style="width: 100%" disabled>
                                     <el-option
                                         v-for="item in allCategory"
                                         :key="item.id"
@@ -154,7 +161,7 @@
                     </tr>
                     <tr>
                         <td class="column">内容</td>
-                        <td class="reform" colspan="3">{{information.content}}</td>
+                        <td class="reform" colspan="3"><!--{{information.content}}--><div v-html="information.content"></div></td>
                     </tr>
                     <tr v-if="information.status != 0">
                         <td class="column">审核状态</td>
@@ -190,7 +197,7 @@
                     </el-row>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" :size="btnSize" @click="doExamine" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button v-if="information.status == 0" type="primary" :size="btnSize" @click="doExamine" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closeExamineDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
@@ -206,12 +213,19 @@
         getInformationList,
         createOrUpdateInformation,
         delInformations,
-        doExamine
+        doExamine,
+        getInformationStatusEnum
     } from '@/api/market/information';
     import {getAllCategory} from '@/api/market/informationCategory';
 
+    var before;
     export default {
         name: 'information',
+        props: {
+            tagLabel: {
+                type: String
+            },
+        },
         data() {
             return {
                 informationList: undefined,
@@ -223,6 +237,7 @@
                     categoryId: undefined,
                     title: undefined,
                     author: undefined,
+                    status: undefined,
                 },
                 information: {
                     id: undefined,
@@ -282,21 +297,22 @@
                         {required: true, message: this.$t("table.pleaseInput") + '退稿说明'},
                         {min: 1, max: 500, message: '长度在 1 到 500 个字符', trigger: 'blur'},
                     ]
-                }
+                },
+                informationStatusEnum: [],
             }
+        },
+        beforeCreate: function () {
+            before = this;
         },
         filters: {
             releaseStatusFilter: function (status) {
                 var value = '';
-                if (status == 0) {
-                    value = '待审核';
-                } else if (status == 1) {
-                    value = '已发布';
-                } else {
-                    value = '已退稿';
+                for (let e of before.informationStatusEnum) {
+                    if (status == e.code) {
+                        value = e.value;
+                    }
                 }
-
-                return value
+                return value;
             }
         },
         computed: {
@@ -312,17 +328,29 @@
                 return {
                     create: this.permission.information_create,
                     update: this.permission.information_update,
-                    delete: this.permission.information_delete
+                    delete: this.permission.information_delete,
+                    examine: this.permission.information_examine,
                 };
             }
         },
         created(){
-            this.getAllCategory();
-            this.reloadList();
+            Promise.all([this.getInformationStatusEnum(), this.getAllCategory()]).then(() => {
+                this.reloadList();
+            });
         },
         methods: {
+            getInformationStatusEnum() {
+                return new Promise((resolve, reject) => {
+                    getInformationStatusEnum().then(response => {
+                        this.informationStatusEnum = response.data;
+                        this.listQuery.status = '0';
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
+            },
             resetSearch(){
-                this.listQuery.categoryId = undefined;
                 this.listQuery.title = undefined;
                 this.listQuery.author = undefined;
             },
@@ -354,6 +382,7 @@
                 this.resetInformation();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
+                this.information.categoryId = this.listQuery.categoryId;
             },
             btnUpdate(row){
                 this.resetInformation();
@@ -439,9 +468,19 @@
                 this.$refs['informationDialogForm'].resetFields();
             },
             getAllCategory(){
-                getAllCategory().then(response => {
-                    this.allCategory = response.data;
-                })
+                return new Promise((resolve, reject) => {
+                    getAllCategory().then(response => {
+                        this.allCategory = response.data;
+                        for (let category of this.allCategory) {
+                            if (category.name == this.tagLabel) {
+                                this.listQuery.categoryId = category.id;
+                            }
+                        }
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    })
+                });
             },
             btnExamine(row) {
                 this.resetInformation();
@@ -482,6 +521,9 @@
                 this.submitLoading = false;
                 this.reloadList();
             },
+            handleTabClick() {
+                this.reloadList();
+            }
         }
     }
 </script>
@@ -513,5 +555,13 @@
     }
     ul {
         padding-inline-start: 20px;
+    }
+
+
+    .table-tab > .el-tabs__header {
+        border-bottom: none;
+    }
+    .table-tab .el-tabs__header {
+        margin: 0;
     }
 </style>
