@@ -1137,6 +1137,7 @@
                 if (this.catalogList.length > 0) {
                     this.$nextTick(function(){
                         this.$refs['catalogTree'].setCurrentKey(this.catalogList[0].id);
+                        this.$refs['catalogTree'].store.currentNode.expanded = true;
                     })
                     this.handleNoteClick(this.catalogList[0])
                 }
@@ -1271,8 +1272,10 @@
             },
             //预览
             btnPreview(row) {
-                let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
-                this.$router.push({path: url});
+                //let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
+                let url = window.location.origin + '/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
+                //this.$router.push({path: url});
+                window.open(url);
             },
             btnCreate(command){
                 let has = false;
