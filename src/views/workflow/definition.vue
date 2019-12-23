@@ -18,7 +18,7 @@
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <!--<el-button v-if="btnEnable.enable" type="primary" :size="btnSize" @click="btnStatusEnable" :disabled="enableDisabled">启用</el-button>
                     <el-button v-if="btnEnable.disable" type="warning" :size="btnSize" @click="btnStatusDisable" :disabled="disableDisabled">停用</el-button>-->
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || beUsed">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -284,7 +284,8 @@
                 selectedUser: undefined,
                 candidateUserList: [],
                 candidateGroupList: [],
-                candidateDepartmentTreePosition: []
+                candidateDepartmentTreePosition: [],
+                beUsed: false
             }
         },
         computed: {
@@ -377,9 +378,6 @@
                         getAllCatalogWorkFlowId().then(response => {
                             let workflowIds = response.data;
                             if (workflowIds) {
-                                console.dir(workflowIds);
-                                console.dir(this.processDefinitionList);
-
                                 for (let item of this.processDefinitionList) {
                                     let has = false;
                                     for (let id of workflowIds) {
@@ -424,6 +422,15 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.beUsed = false;
+                if (this.selectedRows) {
+                    for (let item of this.selectedRows) {
+                        if (item.beUsed) {
+                            this.beUsed = true;
+                            break;
+                        }
+                    }
+                }
             },
             handleSizeChangeUser(val) {
                 this.userListQuery.size = val;

@@ -51,7 +51,7 @@
                                 </el-tag>
                             </template>
                         </el-table-column>-->
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="180">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200">
                             <template slot-scope="scope">
                                 <el-button title="复制引用" type="primary" icon="el-icon-document-copy" :size="btnSize" circle
                                            @click.stop.safe="btnCopyInclude(scope.row)"></el-button>

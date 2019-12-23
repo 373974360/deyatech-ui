@@ -2152,16 +2152,16 @@
                 }
                 if (titleFormIndex != -1 && summaryFormIndex != -1 && contentIndex != -1) {
                     let title = this.formList[titleFormIndex].pageModel['title_'];
-                    let content = this.formList[contentIndex].pageModel['resource_content_PlainTxt'];
-                    if (content) {
-                        summary({title: title, content: content}).then(response=>{
-                            if (response && response.status == 200) {
-                                this.formList[summaryFormIndex].pageModel['resource_summary'] = response.data;
-                            }
-                        });
-                    } else {
+                    let content = this.formList[contentIndex].pageModel['resource_content_PlainTxt'].trim();
+                    if (!content || content.length == 0) {
                         this.$message.error("请输入正文");
+                        return;
                     }
+                    summary({title: title, content: content}).then(response=>{
+                        if (response && response.status == 200) {
+                            this.formList[summaryFormIndex].pageModel['resource_summary'] = response.data;
+                        }
+                    });
                 } else {
                     this.$message.error("摘要提取错误");
                 }
@@ -2186,13 +2186,13 @@
                     }
                 }
                 if (titleFormIndex != -1 && keywordFormIndex != -1 && contentIndex != -1) {
-                    let title = this.formList[titleFormIndex].pageModel['title_'];
-                    let content = this.formList[contentIndex].pageModel['resource_content_PlainTxt'];
-                    if (!title) {
+                    let title = this.formList[titleFormIndex].pageModel['title_'].trim();
+                    let content = this.formList[contentIndex].pageModel['resource_content_PlainTxt'].trim();
+                    if (!title || title.length == 0) {
                         this.$message.error("请输入标题");
                         return;
                     }
-                    if (!content) {
+                    if (!content || content.length == 0) {
                         this.$message.error("请输入正文");
                         return;
                     }

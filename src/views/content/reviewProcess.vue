@@ -60,8 +60,8 @@
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.complete" title="通过" type="success" icon="el-icon-check" :size="btnSize" circle
                                    @click.stop.safe="completeTask(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.rollBack" title="回退" type="warning" icon="el-icon-back" :size="btnSize" circle
-                                   @click.stop.safe="rollBackTask(scope.row)"></el-button>
+                        <!--<el-button v-if="btnEnable.rollBack" title="回退" type="warning" icon="el-icon-back" :size="btnSize" circle
+                                   @click.stop.safe="rollBackTask(scope.row)"></el-button>-->
                         <el-button v-if="btnEnable.reject" title="拒绝" type="danger" icon="el-icon-close" :size="btnSize" circle
                                    @click.stop.safe="rejectTask(scope.row)"></el-button>
                     </template>
