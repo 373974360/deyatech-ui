@@ -1,6 +1,6 @@
 export default {
     tip: '提示',
-    title: 'Deyatech企业级开发平台',
+    title: 'Deyatech集约化管理平台',
     logoutTip: '退出系统, 是否继续?',
     submitText: '确定',
     cancelText: '取消',

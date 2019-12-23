@@ -261,7 +261,10 @@
                                                     </div>
                                                     <!-- 删除icon -->
                                                     <div class="img-li-b--delete">
-                                                        <i @click="handleImageArrayRemove(item1,key)" class="el-icon-delete" style="cursor:pointer;"></i>
+                                                        <el-button @click="handleImageArrayRemove(item1,key)" class="el-icon-delete" size="mini">移除</el-button>
+                                                        <el-button @click="selectImg(item1.url)" class="el-icon-picture-outline" size="mini">设为标题图</el-button>
+                                                        <el-button v-if="key > 0" @click="handleImageArraySort(key,'up')" class="el-icon-top" size="mini">上移</el-button>
+                                                        <el-button v-if="key < form.pageModel['imagearray_' + item.briefName].length-1" @click="handleImageArraySort(key,'down')" class="el-icon-bottom" size="mini">下移</el-button>
                                                     </div>
                                                 </el-col>
                                             </el-row>
@@ -335,7 +338,7 @@
                         </el-row>
                         <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
                             <el-col :span="24">
-                                <el-form-item style="margin-bottom: 0"><el-image style="width: 100px; height: 100px; cursor: pointer;" v-for="url in contentPicArray" :key="url" :src="url" @click="selectImg"></el-image></el-form-item>
+                                <el-form-item style="margin-bottom: 0"><el-image style="width: 100px; height: 100px; cursor: pointer;" v-for="url in contentPicArray" :key="url" :src="url" @click="selectImg(url)"></el-image></el-form-item>
                             </el-col>
                         </el-row>
                         <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
@@ -427,8 +430,9 @@
     } from '@/api/station/template';
     import {
         getSiteUploadPath,
-        getMaterial
-    } from "../../api/station/material";
+        getMaterial,
+        setSortNoMaterial
+    } from "@/api/station/material";
     import {
         getUserCatalogTree
     } from '@/api/station/catalog';
@@ -1872,6 +1876,34 @@
                     this.$message.error('上传失败！');
                 }
             },
+            handleImageArraySort(key,type){
+                let prefix = 'imagearray_';
+                for(let i = 0; i < this.formList.length; i++) {
+                    let pageModel = this.formList[i].pageModel;
+                    let fields = Object.getOwnPropertyNames(pageModel);
+                    for (let field of fields) {
+                        if (field.startsWith(prefix)) {
+                            let list = pageModel[field];
+                            let cur = list[key];
+                            let curs;
+                            if(type === 'up'){
+                                curs = list[key-1];
+                                list.splice(key-1,1,cur);
+                            }
+                            if(type === 'down'){
+                                curs = list[key+1];
+                                list.splice(key+1,1,cur);
+                            }
+                            list.splice(key,1,curs);
+                            let tmp = [];
+                            for (let item of list) {
+                                tmp.push("{\"url\":\""+item.value+"\",\"remark\":\""+item.name+"\"}");
+                            }
+                            pageModel[field.substring(prefix.length)] = tmp.length > 0 ? "["+tmp.join(',')+"]" : '';
+                        }
+                    }
+                }
+            },
             handleImageArrayRemove(file, fileList) {
                 let value = '';
                 let prefix = 'imagearray_';
@@ -2215,10 +2247,9 @@
                     }
                 }
             },
-            selectImg(e){
-                let url = e.srcElement.currentSrc;
-                let value = url.substring(url.indexOf("/upload/"));
-                let pic = {url: url,value: value}
+            selectImg(src){
+                let value = src.substring(src.indexOf("/upload/"));
+                let pic = {url: src,value: value}
                 if (this.formList.length > 0) {
                     for (let i = 0; i < this.formList.length; i++) {
                         let form = this.formList[i];
