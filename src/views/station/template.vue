@@ -217,6 +217,25 @@
                                         <el-button size="small" type="primary">点击上传</el-button>
                                     </el-upload>
 
+                                    <!-- 附件 带输入框 multiple -->
+                                    <template v-else-if="item.controlType === 'fileInputElement'">
+                                        <el-input v-model.trim="form.pageModel[item.briefName]"
+                                                  :maxlength="item.dataLength"
+                                                  :placeholder="'请输入' + item.name"></el-input>
+                                        <el-upload
+                                                   accept="image/*,application/*,audio/*,video/*,text/*"
+                                                   :action="$store.state.common.materialUploadUrl"
+                                                   :data="{siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
+                                                   :show-file-list="false"
+                                                   :on-success="handleFileInputSuccess"
+                                                   :on-error="handleFileError"
+                                                   :before-upload="beforeFileUpload"
+                                                   :on-preview="handleFilePreview"
+                                                   :on-remove="handleFileRemove">
+                                            <el-button size="small" type="primary">点击上传</el-button>
+                                        </el-upload>
+                                    </template>
+
                                     <!-- 图片  -->
                                     <template v-else-if="item.controlType === 'imageElement'">
                                         <el-upload class="avatar-uploader"
@@ -258,7 +277,10 @@
                                                     </div>
                                                     <!-- 删除icon -->
                                                     <div class="img-li-b--delete">
-                                                        <i @click="handleImageArrayRemove(item1,key)" class="el-icon-delete" style="cursor:pointer;"></i>
+                                                        <el-button @click="handleImageArrayRemove(item1,key)" class="el-icon-delete" size="mini">移除</el-button>
+                                                        <el-button @click="selectImg(item1.url)" class="el-icon-picture-outline" size="mini">设为标题图</el-button>
+                                                        <el-button v-if="key > 0" @click="handleImageArraySort(key,'up')" class="el-icon-top" size="mini">上移</el-button>
+                                                        <el-button v-if="key < form.pageModel['imagearray_' + item.briefName].length-1" @click="handleImageArraySort(key,'down')" class="el-icon-bottom" size="mini">下移</el-button>
                                                     </div>
                                                 </el-col>
                                             </el-row>
@@ -332,7 +354,7 @@
                         </el-row>
                         <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
                             <el-col :span="24">
-                                <el-form-item style="margin-bottom: 0"><el-image style="width: 100px; height: 100px; cursor: pointer;" v-for="url in contentPicArray" :key="url" :src="url" @click="selectImg"></el-image></el-form-item>
+                                <el-form-item style="margin-bottom: 0"><el-image style="width: 100px; height: 100px; cursor: pointer;" v-for="url in contentPicArray" :key="url" :src="url" @click="selectImg(url)"></el-image></el-form-item>
                             </el-col>
                         </el-row>
                         <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
@@ -424,8 +446,9 @@
     } from '@/api/station/template';
     import {
         getSiteUploadPath,
-        getMaterial
-    } from "../../api/station/material";
+        getMaterial,
+        setSortNoMaterial
+    } from "@/api/station/material";
     import {
         getUserCatalogTree
     } from '@/api/station/catalog';
@@ -1834,7 +1857,6 @@
 
             // 组图处理
             handleArraySuccess(data, prefix) {
-                console.log(data);
                 let attach = data.attach.split(',');
                 // 页索引
                 let formIndex = attach[0];
@@ -1867,6 +1889,34 @@
                 } else {
                     console.error(response);
                     this.$message.error('上传失败！');
+                }
+            },
+            handleImageArraySort(key,type){
+                let prefix = 'imagearray_';
+                for(let i = 0; i < this.formList.length; i++) {
+                    let pageModel = this.formList[i].pageModel;
+                    let fields = Object.getOwnPropertyNames(pageModel);
+                    for (let field of fields) {
+                        if (field.startsWith(prefix)) {
+                            let list = pageModel[field];
+                            let cur = list[key];
+                            let curs;
+                            if(type === 'up'){
+                                curs = list[key-1];
+                                list.splice(key-1,1,cur);
+                            }
+                            if(type === 'down'){
+                                curs = list[key+1];
+                                list.splice(key+1,1,cur);
+                            }
+                            list.splice(key,1,curs);
+                            let tmp = [];
+                            for (let item of list) {
+                                tmp.push("{\"url\":\""+item.value+"\",\"remark\":\""+item.name+"\"}");
+                            }
+                            pageModel[field.substring(prefix.length)] = tmp.length > 0 ? "["+tmp.join(',')+"]" : '';
+                        }
+                    }
                 }
             },
             handleImageArrayRemove(file, fileList) {
@@ -1912,6 +1962,27 @@
             },
 
 
+            // 文件处理 带输入框
+            handleFileInputSuccess(response, file, fileList) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    this.handleInputSuccess(response.data, 'file_');
+                    this.$message.success('上传成功！');
+                } else {
+                    console.error(response);
+                    this.$message.error('上传失败！');
+                }
+            },
+            handleInputSuccess(data, prefix) {
+                let attach = data.attach.split(',');
+                // 页索引
+                let formIndex = attach[0];
+                // 页字段
+                let briefName = attach[1];
+                // 上传返回的材料对象
+                let customData = data.customData;
+                // 表单值
+                this.formList[formIndex].pageModel[briefName] = customData.url;
+            },
             // 文件处理
             handleFileSuccess(response, file, fileList) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
@@ -2212,10 +2283,9 @@
                     }
                 }
             },
-            selectImg(e){
-                let url = e.srcElement.currentSrc;
-                let value = url.substring(url.indexOf("/upload/"));
-                let pic = {url: url,value: value}
+            selectImg(src){
+                let value = src.substring(src.indexOf("/upload/"));
+                let pic = {url: src,value: value}
                 if (this.formList.length > 0) {
                     for (let i = 0; i < this.formList.length; i++) {
                         let form = this.formList[i];
