@@ -1,60 +1,6 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" placeholder="标题、来源、作者、权重、时间" v-model.trim="listQuery.title" style="width: 300px"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
-            <div class="deyatech-menu">
-                <div class="deyatech-menu_left">
-                    <el-dropdown v-if="btnEnable.create && isAddTemplate" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
-                        <el-button type="primary" :size="btnSize">
-                            {{$t('table.create')}}<i class="el-icon-arrow-down el-icon--right"></i>
-                        </el-button>
-                        <el-dropdown-menu slot="dropdown">
-                            <div v-if="modelList.length > 0">
-                                <el-dropdown-item v-for="m in modelList" :command="m.id">请选择内容模型：{{m.name}}</el-dropdown-item>
-                            </div>
-                            <div v-else>
-                                <el-dropdown-item>
-                                    该站点未配置内容模型
-                                </el-dropdown-item>
-                            </div>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-
-                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">彻底删除</el-button>
-                    <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" type="danger" :size="btnSize" @click="btnCancel" :disabled="selectedRows.length < 1">撤销</el-button>
-                    <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" type="warning" :size="btnSize" @click="btnRecycle" :disabled="selectedRows.length < 1">删除</el-button>
-
-                    <el-dropdown style="margin-left: 10px" placement="bottom" @command="handleCommand">
-                        <el-button type="warning" :size="btnSize">
-                            生成内容页或索引<i class="el-icon-arrow-down el-icon--right"></i>
-                        </el-button>
-                        <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item command="handleCheckedStaticContent">生成勾选的内容页</el-dropdown-item>
-                            <el-dropdown-item command="handleCatalogStaticContent">生成当前栏目内容页</el-dropdown-item>
-                            <el-dropdown-item command="handleSiteStaticContent">生成站点所有内容页</el-dropdown-item>
-                            <el-dropdown-item command="handleCheckedReindex" divided>生成勾选的索引</el-dropdown-item>
-                            <el-dropdown-item command="handleCatalogReindex">生成当前栏目索引</el-dropdown-item>
-                            <!--<el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>-->
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                </div>
-                <div class="deyatech-menu_right">
-                    显示设置<el-button type="primary" :size="btnSize" icon="el-icon-setting" circle @click="displaySetting"></el-button>
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
-                </div>
-            </div>
-
             <el-row :span="24">
                 <el-col :span="4">
                     <div class="classificationTree">
@@ -64,18 +10,69 @@
                             :props="defaultTreeProps"
                             node-key="id"
                             highlight-current
-                            :default-expand-all="true"
+                            :default-expand-all="false"
                             :expand-on-click-node="false"
                             @node-click="handleNoteClick">
                         </el-tree>
                     </div>
                 </el-col>
                 <el-col :span="20">
+                    <div class="deyatech-menu">
+                        <div class="deyatech-menu_left">
+                            <el-dropdown v-if="btnEnable.create && isAddTemplate" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
+                                <el-button type="primary" :size="btnSize">
+                                    {{$t('table.create')}}<i class="el-icon-arrow-down el-icon--right"></i>
+                                </el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <div v-if="modelList.length > 0">
+                                        <el-dropdown-item v-for="m in modelList" :command="m.id">请选择内容模型：{{m.name}}</el-dropdown-item>
+                                    </div>
+                                    <div v-else>
+                                        <el-dropdown-item>
+                                            该站点未配置内容模型
+                                        </el-dropdown-item>
+                                    </div>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+
+                            <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
+                            <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">彻底删除</el-button>
+                            <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" type="danger" :size="btnSize" @click="btnCancel" :disabled="selectedRows.length < 1">撤销</el-button>
+                            <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" type="warning" :size="btnSize" @click="btnRecycle" :disabled="selectedRows.length < 1">删除</el-button>
+
+                            <el-dropdown style="margin-left: 10px" placement="bottom" @command="handleCommand">
+                                <el-button type="warning" :size="btnSize">
+                                    生成内容页或索引<i class="el-icon-arrow-down el-icon--right"></i>
+                                </el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item command="handleCheckedStaticContent">生成勾选的内容页</el-dropdown-item>
+                                    <el-dropdown-item command="handleCatalogStaticContent">生成当前栏目内容页</el-dropdown-item>
+                                    <el-dropdown-item command="handleSiteStaticContent">生成站点所有内容页</el-dropdown-item>
+                                    <el-dropdown-item command="handleCheckedReindex" divided>生成勾选的索引</el-dropdown-item>
+                                    <el-dropdown-item command="handleCatalogReindex">生成当前栏目索引</el-dropdown-item>
+                                    <!--<el-dropdown-item command="handleSiteReindex">生成站点所有索引</el-dropdown-item>-->
+                                </el-dropdown-menu>
+                            </el-dropdown>
+
+                            <el-input :size="searchSize" placeholder="标题、来源、作者、权重、时间" v-model.trim="listQuery.title" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                        </div>
+
+                    </div>
+
+
+
+
                     <div class="my-tabls">
                         <!--需要string类型的数据-->
                         <el-tabs v-model.trim="listQuery.status" type="card" @tab-click="handleTabClick">
                             <el-tab-pane v-for="item in enums['ContentStatusEnum']" :label="item.value" :key="item.code" :name="item.code.toString()"></el-tab-pane>
                         </el-tabs>
+                        <div style="position:absolute;top: 0; right: 0;">
+                            显示设置<el-button type="primary" :size="btnSize" icon="el-icon-setting" circle @click="displaySetting"></el-button>
+                            <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
+                        </div>
                     </div>
                     <!-- 内容表格 -->
                     <el-table :data="templateList" v-loading.body="listLoading" stripe border highlight-current-row
@@ -2404,6 +2401,9 @@
         width: 320px;
         margin-right: 10px;
         vertical-align: bottom;
+    }
+    .my-tabls {
+        position: relative;
     }
     .my-tabls>.el-tabs--card>.el-tabs__header .el-tabs__item.is-active {
         background-color: #F0F0F0;

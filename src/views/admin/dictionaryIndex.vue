@@ -56,7 +56,7 @@
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
                                    icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.dictionarymanager" title="子项目" type="success" icon="el-icon-share" :size="btnSize"
+                        <el-button v-if="btnEnable.dictionarymanager" title="子项目" type="success" icon="el-icon-plus" :size="btnSize"
                                    @click.stop.safe="btnDictionaryTree(scope.row)" circle></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                    icon="el-icon-delete" :size="btnSize" circle

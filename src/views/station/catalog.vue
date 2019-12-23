@@ -425,7 +425,7 @@
                 </span>
         </el-dialog>
 
-        <el-dialog title="复制子节点" width="30%" :visible.sync="copyCatalogDialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCopyCatalogDialogDialog">
+        <el-dialog title="复制子节点" width="60%" :visible.sync="copyCatalogDialogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCopyCatalogDialogDialog">
             <el-form ref="copyCatalogDialogForm" class="deyatech-form" label-position="right"
                      label-width="100px">
                 <el-row :gutter="20" :span="24">

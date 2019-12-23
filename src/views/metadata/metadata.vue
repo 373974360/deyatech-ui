@@ -1,40 +1,32 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
-            <div class="deyatech-menu">
-                <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
-                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || beUsed > 0">{{$t('table.delete')}}</el-button>
-                </div>
-                <div class="deyatech-menu_right">
-                    <span style="color: #fab6b6">被元数据集使用时不能删除</span>
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
-                </div>
-            </div>
             <el-row :span="24">
                 <el-col :span="4">
                     <div class="left-tree">
                         <el-tree ref="metadataCategoryTree" :data="metadataCategoryTree" node-key="id" highlight-current
-                                 default-expand-all :expand-on-click-node="false"
+                                 :default-expand-all="false" :expand-on-click-node="false"
                                  @node-click="triggerTreeNode" v-loading="treeLoading">
                         </el-tree>
                     </div>
                 </el-col>
                 <el-col :span="20">
+                    <div class="deyatech-menu">
+                        <div style="position: relative; vertical-align: center;">
+                            <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100" style="width:300px;margin-right:10px;"></el-input>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                            <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
+                            <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
+                            <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || beUsed > 0">{{$t('table.delete')}}</el-button>
+
+                            <div style="position: absolute; top: 0; right: 0;">
+                                <span style="color: #fab6b6">被元数据集使用时不能删除</span>
+                                <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
+                            </div>
+                        </div>
+                    </div>
+
                     <el-table :data="metadataList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="50" align="center"/>
@@ -757,6 +749,13 @@
 
 
 <style>
+    .left-tree {
+        border:1px solid #eceef5;
+        overflow-x: scroll;
+        margin-right:10px;
+        padding: 10px;
+        height: 100%;
+    }
     .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
         background-color: #a6d1ff;
     }
