@@ -95,16 +95,20 @@
                 getStatisticsInfo(this.listQuery).then(response => {
                     if (response.status === 200) {
                         this.statisticsInfo = response.data;
+                        // 获取echarts series数据
                         this.getSeriesData();
                         for (let info of this.statisticsInfo) {
+                            // 设置堆叠条分类legend
                             if (this.categoryName.indexOf(info.categoryName) == -1) {
                                 this.categoryName.push(info.categoryName);
                             }
+                            // 设置X轴xAxis
                             if (this.memberCategoryName.indexOf(info.memberCategoryName) == -1) {
                                 this.memberCategoryName.push(info.memberCategoryName);
                             }
                         }
-                        const e = echarts.init(document.getElementById('informationStatistics'));
+                        // 初始化echarts
+                        var e = echarts.init(document.getElementById('informationStatistics'));
                         e.setOption({
                             title: {
                                 text: '市场供求信息统计'
@@ -125,8 +129,8 @@
                                     saveAsImage: {show: true}
                                 }
                             },
-                            calculable: true,
-                            dataZoom: [
+                            // calculable: true,
+/*                            dataZoom: [
                                 {
                                     show: true,
                                     start: 0,
@@ -145,7 +149,7 @@
                                     showDataShadow: false,
                                     left: '6%'
                                 }
-                            ],
+                            ],*/
                             xAxis: [
                                 {
                                     type: 'category',
@@ -162,6 +166,45 @@
                                 }
                             ],
                             series: this.seriesData
+                        })
+                        // 添加点击监听事件，重新计算总数
+                        e.on("legendselectchanged", function (obj) {
+                            const option = e._model.option;
+                            const series = option.series;
+                            const b = obj.selected, d = [];
+                            for (let key in b) {
+                                if (b[key]) {
+                                    for (let i = 0; i < series.length; i++) {
+                                        const changeName = series[i].name;
+                                        if (changeName == key) {
+                                            d.push(i);
+                                        }
+                                    }
+                                }
+                            }
+                            var fun = function (params) {
+                                var value = 0;
+                                for (let i = 0; i < d.length; i++) {
+                                    for (let j = 0; j < series.length; j++) {
+                                        if (d[i] == j) {
+                                            value += series[j].data[params.dataIndex]
+                                        }
+                                    }
+                                }
+                                return value
+                            }
+                            for (let i = 0; i < series.length; i++) {
+                                series[i].label.show = false;
+                            }
+                            for (let i = series.length - 1; i >= 0; i--) {
+                                var name = series[i].name;
+                                if (obj["selected"][name]) {
+                                    series[i].label.formatter = fun
+                                    series[i].label.show = true
+                                    break;
+                                }
+                            }
+                            e.setOption(e.getOption);
                         })
                     } else {
                         this.$message.error('数据加载失败')
@@ -183,6 +226,20 @@
                         stack: '总数',
                         data: data
                     })
+                }
+                // 设置总数显示
+                var this_ = this;
+                this_.seriesData[this_.seriesData.length-1].label = {
+                    show: true,
+                    position: 'top',
+                    color: 'black',
+                    formatter: function (params){
+                        var value = 0;
+                        for (let i = 0; i < this_.seriesData.length; i++) {
+                            value += this_.seriesData[i].data[params.dataIndex]
+                        }
+                        return value;
+                    }
                 }
             },
 
