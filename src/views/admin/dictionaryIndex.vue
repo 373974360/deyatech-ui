@@ -106,14 +106,14 @@
 
             <!-- 字典子项管理开始 -->
             <el-dialog title="字典管理" :visible.sync="dictionaryDialogVisible"
-                       :close-on-click-modal="closeOnClickModal">
+                       :close-on-click-modal="closeOnClickModal" style="padding-bottom: 20px;">
                 <div class="deyatech-menu">
                     <div class="deyatech-menu_left">
                         <el-button v-if="btnEnable.create_d" type="primary" :size="btnSize" @click="btnDictionaryCreate">
                             {{$t('table.create')}}
                         </el-button>
                         <el-button v-if="btnEnable.update_d" type="primary" :size="btnSize" @click="btnDictionaryUpdate"
-                                   :disabled="dictionarySelectedRows.length != 1">{{$t('table.update')}}
+                                   :disabled="dictionarySelectedRows.length != 1 || !canEditable">{{$t('table.update')}}
                         </el-button>
                         <el-button v-if="btnEnable.delete_d" type="danger" :size="btnSize" @click="btnDictionaryDelete"
                                    :disabled="dictionarySelectedRows.length < 1">{{$t('table.delete')}}
@@ -157,8 +157,8 @@
                                        icon="el-icon-plus" :size="btnSize" circle
                                        @click.stop.safe="btnDictionaryCreate(scope.row)"></el-button>
 
-                            <el-button v-if="btnEnable.update_d && scope.row.editable==1" :title="$t('table.update')" type="primary"
-                                       icon="el-icon-edit" :size="btnSize" circle
+                            <el-button v-if="btnEnable.update_d" :title="$t('table.update')" type="primary"
+                                       icon="el-icon-edit" :size="btnSize" circle :disabled="scope.row.editable==2"
                                        @click.stop.safe="btnDictionaryUpdate(scope.row)"></el-button>
 
                             <el-button v-if="btnEnable.delete_d" :title="$t('table.delete')" type="danger"
@@ -330,7 +330,8 @@
                 },
                 dictionaryCreateDialogVisible: false,
                 dictionaryCreateDialogTitle: undefined,
-                dictionarySubmitLoading: false
+                dictionarySubmitLoading: false,
+                canEditable: false
             }
         },
         computed: {
@@ -512,6 +513,15 @@
             },
             handleDictionarySelectionChange(rows) {
                 this.dictionarySelectedRows = rows;
+                if (this.dictionarySelectedRows) {
+                    this.canEditable = true;
+                    for (let item of this.dictionarySelectedRows) {
+                        if (item.editable == 2) {
+                            this.canEditable = false;
+                            break;
+                        }
+                    }
+                }
             },
             btnDictionaryCreate(row) {
                 this.resetDictionary();
@@ -628,4 +638,9 @@
     }
 </script>
 
+<style>
+    .el-dialog {
+        padding-bottom: 20px;
+    }
+</style>
 

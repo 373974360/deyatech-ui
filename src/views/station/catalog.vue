@@ -398,7 +398,7 @@
                 </div>
             </div>
             <div slot="footer" class="dialog-footer">
-                <el-button type="primary" :size="btnSize" @click="doSavePublisher" :disabled="!this.currentUser">选择</el-button>
+                <el-button type="primary" :size="btnSize" @click="doSavePublisher">选择</el-button>
                 <el-button :size="btnSize" @click="closePublisherDialog">{{$t('table.cancel')}}</el-button>
             </div>
         </el-dialog>
@@ -1403,6 +1403,12 @@
             // 选择发布人
             btnSelectPublisher() {
                 this.currentUser = undefined;
+                if (this.catalogAggregation.publisher) {
+                    this.currentUser = {
+                        id: this.catalogAggregation.publisher,
+                        name: this.catalogAggregation.publisherName
+                    }
+                }
                 this.dialogPublisherVisible = true;
                 this.userListQuery.page = 1;
                 this.userListQuery.name = undefined;
@@ -1470,8 +1476,13 @@
                 this.loadUserList();
             },
             doSavePublisher() {
-                this.catalogAggregation.publisher = this.currentUser.id;
-                this.catalogAggregation.publisherName = this.currentUser.name;
+                if (this.currentUser) {
+                    this.catalogAggregation.publisher = this.currentUser.id;
+                    this.catalogAggregation.publisherName = this.currentUser.name;
+                } else {
+                    this.catalogAggregation.publisher = '';
+                    this.catalogAggregation.publisherName = '';
+                }
                 this.closePublisherDialog();
             },
             parentIdChange(v) {

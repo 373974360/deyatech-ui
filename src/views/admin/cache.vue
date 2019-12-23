@@ -120,6 +120,7 @@
         },
         methods: {
             resetSearch() {
+                this.listQuery.key = undefined;
                 this.listQuery.size = undefined;
             },
             reloadList() {
