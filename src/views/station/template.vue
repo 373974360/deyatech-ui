@@ -220,6 +220,25 @@
                                         <el-button size="small" type="primary">点击上传</el-button>
                                     </el-upload>
 
+                                    <!-- 附件 带输入框 multiple -->
+                                    <template v-else-if="item.controlType === 'fileInputElement'">
+                                        <el-input v-model.trim="form.pageModel[item.briefName]"
+                                                  :maxlength="item.dataLength"
+                                                  :placeholder="'请输入' + item.name"></el-input>
+                                        <el-upload
+                                                   accept="image/*,application/*,audio/*,video/*,text/*"
+                                                   :action="$store.state.common.materialUploadUrl"
+                                                   :data="{siteId: $store.state.common.siteId, attach: formIndex + ',' + item.briefName}"
+                                                   :show-file-list="false"
+                                                   :on-success="handleFileInputSuccess"
+                                                   :on-error="handleFileError"
+                                                   :before-upload="beforeFileUpload"
+                                                   :on-preview="handleFilePreview"
+                                                   :on-remove="handleFileRemove">
+                                            <el-button size="small" type="primary">点击上传</el-button>
+                                        </el-upload>
+                                    </template>
+
                                     <!-- 图片  -->
                                     <template v-else-if="item.controlType === 'imageElement'">
                                         <el-upload class="avatar-uploader"
@@ -1841,7 +1860,6 @@
 
             // 组图处理
             handleArraySuccess(data, prefix) {
-                console.log(data);
                 let attach = data.attach.split(',');
                 // 页索引
                 let formIndex = attach[0];
@@ -1947,6 +1965,27 @@
             },
 
 
+            // 文件处理 带输入框
+            handleFileInputSuccess(response, file, fileList) {
+                if (response.status === 200 && response.data.state === 'SUCCESS') {
+                    this.handleInputSuccess(response.data, 'file_');
+                    this.$message.success('上传成功！');
+                } else {
+                    console.error(response);
+                    this.$message.error('上传失败！');
+                }
+            },
+            handleInputSuccess(data, prefix) {
+                let attach = data.attach.split(',');
+                // 页索引
+                let formIndex = attach[0];
+                // 页字段
+                let briefName = attach[1];
+                // 上传返回的材料对象
+                let customData = data.customData;
+                // 表单值
+                this.formList[formIndex].pageModel[briefName] = customData.url;
+            },
             // 文件处理
             handleFileSuccess(response, file, fileList) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
