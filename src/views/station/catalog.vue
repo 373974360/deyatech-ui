@@ -29,8 +29,10 @@
                 </template>
             </el-table-column>
 
-            <el-table-tree-column fixed :expand-all="false" child-key="children" levelKey="level" :indent-size="20"
-                                  parentKey="parentId" prop="name" label="栏目名称" align="left">
+            <el-table-tree-column fixed :expand-all="false" :indent-size="16" folder-icon=""
+                                  tree-key="id" child-num-key="childNum" parent-key="parentId" level-key="level" child-key="children"
+                                  prop="name" label="栏目名称" align="left"
+                                  :remote="getRemoteChildren">
                 <template slot-scope="scope">
                     <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                 </template>
@@ -451,7 +453,7 @@
 <script>
     import {
         getNextSortNo,
-        getCatalogTree,
+        getAsyncCatalogTree,
         getCatalogCascader,
         createOrUpdateCatalog,
         delCatalogs,
@@ -648,7 +650,8 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    siteId: this.$store.state.common.siteId
+                    siteId: this.$store.state.common.siteId,
+                    parentId: '0'
                 },
                 catalogList: undefined,
                 listLoading: false,
@@ -859,7 +862,8 @@
                 copyCatalogSourceCatId: undefined,
                 copyCatalogToCatId: [],
 
-                dictionaryCascader: [],
+                dictionaryCascader: []
+
             }
         },
         created() {
@@ -929,12 +933,13 @@
                 });
             },
             reloadList() {
-                if (!this.listQuery.siteId) {
-                    this.$message.warning("请先选择站点");
-                    return
-                }
+                // if (!this.listQuery.siteId) {
+                //     this.$message.warning("请先选择站点");
+                //     return
+                // }
                 this.listLoading = true;
-                getCatalogTree(this.listQuery).then(response => {
+                this.listQuery.parentId = '0';
+                getAsyncCatalogTree(this.listQuery).then(response => {
                     this.tableReset = false;
                     this.catalogList = response.data;
                     if (this.lastExpanded) {
@@ -944,6 +949,12 @@
                         this.tableReset = true
                     });
                     this.listLoading = false;
+                })
+            },
+            getRemoteChildren(row,callback) {
+                this.listQuery.parentId = row.id;
+                getAsyncCatalogTree(this.listQuery).then(response => {
+                    callback(response.data);
                 })
             },
             getCatalogCascader() {
