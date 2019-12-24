@@ -1169,7 +1169,8 @@
                 this.listQuery.cmsCatalogId = data.id;
                 // 获取template
                 this.reloadList();
-                if (!data.childNum) {
+                // 叶子栏目和非外链栏目可以添加内容
+                if (!data.childNum && data.flagExternal == 0) {
                     this.isAddTemplate = true;
                     this.getModelByCatalogId(data.id);
                 } else {
