@@ -695,7 +695,8 @@
                     columnDescription: undefined,
                     columnKeywords: undefined,
                     columnType: undefined,
-                    columnTypeTreePosition: undefined
+                    columnTypeTreePosition: undefined,
+                    childNum: undefined
                 },
                 columnTypeArray: [],
                 catalogCascader: [],
@@ -1198,7 +1199,7 @@
                 }
                 var confirm = true;
                 // 外链栏目、聚合栏目不覆盖子栏目
-                if (this.catalog.children) {
+                if (this.catalog.childNum) {
                     confirm = new Promise(function (resolve, reject) {
                         _this.$confirm('是否覆盖子栏目信息', _this.$t("table.tip"), {
                             confirmButtonText: '覆盖',
