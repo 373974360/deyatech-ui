@@ -225,15 +225,16 @@
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetCatalogSearch">{{$t('table.clear')}}</el-button>
                     </el-form-item>
                 </el-form>
-                <el-form style="width: 80%; margin-left:10%;" v-loading="treeLoading">
+                <div style="width: 80%; margin-left:10%;height: 500px; overflow-y: scroll;">
                     <el-tree ref="catalogTree"
                              :data="catalogTree"
                              show-checkbox
                              node-key="id"
+                             :props="defaultTreeProps"
                              :default-expand-all="true"
                              :expand-on-click-node="false"
                              @check="catalogTreeChecked" :check-strictly="true"></el-tree>
-                </el-form>
+                </div>
                 <div slot="footer" class="dialog-footer">
                     <el-button type="primary" :size="btnSize" @click="doSaveCatalogRole" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>
@@ -366,6 +367,11 @@
                 selectedRoleStationCascaderArray: [],
                 roleCatalogList: [],
                 catalogTree: [],
+                defaultTreeProps: {
+                    children: 'children',
+                    label: 'name',
+                    isLeaf: 'leaf'
+                },
                 siteId: undefined,
                 dialogContentVisible: false,
                 templateAuthority: undefined,

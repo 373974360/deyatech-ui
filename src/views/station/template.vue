@@ -7,11 +7,14 @@
                         <el-tree
                             ref="catalogTree"
                             :data="catalogList"
+                            :default-expanded-keys = "defaultExpandedKeys"
                             :props="defaultTreeProps"
                             node-key="id"
                             highlight-current
                             :default-expand-all="false"
                             :expand-on-click-node="false"
+                            lazy
+                            :load="getRemoteChildren"
                             @node-click="handleNoteClick">
                         </el-tree>
                     </div>
@@ -645,9 +648,11 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 catalogList: [],
+                defaultExpandedKeys: [],
                 defaultTreeProps: {
                     children: 'children',
-                    label: 'name'
+                    label: 'name',
+                    isLeaf: 'leaf'
                 },
                 modelList: [],
                 modelTemplateList: [],
@@ -1125,9 +1130,17 @@
                     this.headData = response.data;
                 });
             },
+            getRemoteChildren(node,resolve) {
+                if (!node.data.id) {
+                    return
+                }
+                getUserCatalogTree({siteId: this.$store.state.common.siteId, parentId: node.data.id}).then(response => {
+                    resolve(response.data);
+                })
+            },
             getCatalogTree(){
                 this.listLoading = true;
-                getUserCatalogTree({siteId: this.$store.state.common.siteId}).then(response => {
+                getUserCatalogTree({siteId: this.$store.state.common.siteId, parentId: '0'}).then(response => {
                     this.catalogList = response.data;
                     this.setDefaultCurrentNode()
                     this.listLoading = false;
@@ -1135,11 +1148,17 @@
             },
             setDefaultCurrentNode() {
                 if (this.catalogList.length > 0) {
+                    let data = this.catalogList[0];
+                    if (!data.leaf) {
+                        this.defaultExpandedKeys = [data.id];
+                        //this.$refs['catalogTree'].store.currentNode.expanded = true;
+                    } else {
+                        this.defaultExpandedKeys = [];
+                    }
+                    this.handleNoteClick(data);
                     this.$nextTick(function(){
-                        this.$refs['catalogTree'].setCurrentKey(this.catalogList[0].id);
-                        this.$refs['catalogTree'].store.currentNode.expanded = true;
+                        this.$refs['catalogTree'].setCurrentKey(data.id);
                     })
-                    this.handleNoteClick(this.catalogList[0])
                 }
             },
             handleNoteClick(data) {
@@ -1150,8 +1169,7 @@
                 this.listQuery.cmsCatalogId = data.id;
                 // 获取template
                 this.reloadList();
-                let children = data.children;
-                if (!children) {
+                if (!data.childNum) {
                     this.isAddTemplate = true;
                     this.getModelByCatalogId(data.id);
                 } else {
