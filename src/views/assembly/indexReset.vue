@@ -33,6 +33,8 @@
                 if (value && this.reset.end) {
                     if (value > this.reset.end) {
                         callback(new Error('开始日期必须小于等于结束日期'));
+                    } else {
+                        callback();
                     }
                 }
             };
@@ -40,6 +42,8 @@
                 if (value && this.reset.start) {
                     if (value < this.reset.start) {
                         callback(new Error('结束日期必须大于等于开始日期'));
+                    } else {
+                        callback();
                     }
                 }
             };

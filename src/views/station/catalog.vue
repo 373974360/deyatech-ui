@@ -3,7 +3,8 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || templateCount > 0">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1">{{$t('table.create')}}</el-button>
+                    <!--<el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || templateCount > 0">{{$t('table.create')}}</el-button>-->
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || templateCount > 0">{{$t('table.delete')}}</el-button>
                 </div>
@@ -1302,7 +1303,7 @@
             },
             closeCatalogDialog() {
                 this.catalogTreePosition = [];
-                this.selectedRows = [];
+                // this.selectedRows = [];
                 this.dialogVisible = false;
                 this.selectIndexTemplate = undefined;
                 this.selectListTemplate = undefined;
