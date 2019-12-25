@@ -231,7 +231,7 @@
                              show-checkbox
                              node-key="id"
                              :props="defaultTreeProps"
-                             :default-expand-all="true"
+                             :default-expand-all="false"
                              :expand-on-click-node="false"
                              @check="catalogTreeChecked" :check-strictly="true"></el-tree>
                 </div>
