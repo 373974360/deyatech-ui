@@ -130,7 +130,6 @@
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
                 this.getCatalogTree();
-                this.staticPathProgress();
             }
         },
         methods: {
@@ -142,28 +141,22 @@
                 })
             },
             createHtml(){
-                const data = {ids:this.$refs.catalogTree.getCheckedKeys(),timeFrame:this.timeFrame}
-                createHtml(data).then(response => {
-                    this.staticPathProgress();
-                })
-            },
-            checkDialogVisible(){
-                if(this.totle > 0 && this.percentage < 100){
+                if(this.percentage > 0 && this.percentage < 100){
                     this.dialogVisible = true;
-                }else if(this.totle > 0 && this.percentage == 100){
-                    this.$message.success("发布完成！");
-                    this.dialogVisible = false;
-                    this.totle = 0;
-                    this.percentage = 0;
                 }else{
-                    this.dialogVisible = false;
-                    this.totle = 0;
-                    this.percentage = 0;
+                    const data = {ids:this.$refs.catalogTree.getCheckedKeys(),timeFrame:this.timeFrame}
+                    createHtml(data).then(response => {
+                        this.staticPathProgress();
+                    })
                 }
             },
             staticPathProgress(){
-                this.dialogVisible = true;
                 let _this = this;
+                _this.totle = 0;
+                _this.curNo = 0;
+                _this.curTitle = '';
+                _this.percentage = 0;
+                this.dialogVisible = true;
                 let sockJS = new SockJS('/web/websocket-station/');
                 let stompClient = Stomp.over(sockJS)
                 stompClient.connect({}, function () {
@@ -174,13 +167,11 @@
                         _this.curNo = operate.currNo;
                         _this.curTitle = operate.currTitle;
                         _this.percentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
-                        _this.checkDialogVisible();
                     });
                 });
                 sockJS.onclose = function () {
                     console.log("连接已关闭 "+new Date());
                 }
-                _this.checkDialogVisible();
             }
         }
     }

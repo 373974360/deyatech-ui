@@ -420,6 +420,20 @@
                 </span>
             </el-dialog>
 
+            <el-dialog title="进度" :visible.sync="proGressDialogVisible" :close-on-click-modal="closeOnClickModal" >
+                <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressPercentage" status="success"></el-progress>
+                <el-row :gutter="20" :span="24" style="margin-top:20px;">
+                    <el-col :span="3">
+                        总数：{{proGressTotle}}
+                    </el-col>
+                    <el-col :span="3">
+                        当前：{{proGressCurNo}}
+                    </el-col>
+                    <el-col :span="18">
+                        标题： {{proGressCurTitle}}
+                    </el-col>
+                </el-row>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -792,7 +806,14 @@
 
                 // 提取内容图片
                 contentPicArray: [],
-                picArray:[]
+                picArray:[],
+
+                //进度条
+                proGressDialogVisible: false,
+                proGressPercentage: 0.00,
+                proGressTotle: 0,
+                proGressCurNo: 0,
+                proGressCurTitle: ''
             }
         },
         watch: {
@@ -1604,18 +1625,23 @@
             },
             // 选择菜单触发
             handleCommand(command) {
-                // 生成勾选的内容页
-                if (command == 'handleCheckedStaticContent') {
-                    this.handleCheckedStaticContent();
+                if(this.proGressPercentage > 0 && this.proGressPercentage < 100){
+                    this.proGressDialogVisible = true;
+                }else{
+                    // 生成勾选的内容页
+                    if (command == 'handleCheckedStaticContent') {
+                        this.handleCheckedStaticContent();
+                    }
+                    // 生成当前栏目的内容页
+                    if (command == 'handleCatalogStaticContent') {
+                        this.handleCatalogStaticContent();
+                    }
+                    // 生成整个站点的内容页
+                    if (command == 'handleSiteStaticContent') {
+                        this.handleSiteStaticContent();
+                    }
                 }
-                // 生成当前栏目的内容页
-                if (command == 'handleCatalogStaticContent') {
-                    this.handleCatalogStaticContent();
-                }
-                // 生成整个站点的内容页
-                if (command == 'handleSiteStaticContent') {
-                    this.handleSiteStaticContent();
-                }
+
                 // 生成勾选的索引页
                 if (command == 'handleCheckedReindex') {
                     this.handleCheckedReindex();
@@ -1649,8 +1675,7 @@
                 }
                 genStaticPage(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('操作成功！')
-                        this.reloadList()
+                        this.staticPathProgress();
                     } else {
                         this.$message.error('操作失败！')
                     }
@@ -1672,8 +1697,7 @@
                 }
                 genStaticPage(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('操作成功！')
-                        this.reloadList()
+                        this.staticPathProgress();
                     } else {
                         this.$message.error('操作失败！')
                     }
@@ -1687,8 +1711,7 @@
                 }
                 genStaticPage({siteId: this.listQuery.siteId}).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('操作成功！')
-                        this.reloadList()
+                        this.staticPathProgress();
                     } else {
                         this.$message.error('操作失败！')
                     }
@@ -2331,6 +2354,29 @@
                             }
                         }
                     }
+                }
+            },
+            staticPathProgress(){
+                let _this = this;
+                _this.proGressTotle = 0;
+                _this.proGressCurNo = 0;
+                _this.proGressCurTitle = '';
+                _this.proGressPercentage = 0;
+                _this.proGressDialogVisible = true;
+                let sockJS = new SockJS('/web/websocket-station/');
+                let stompClient = Stomp.over(sockJS)
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/staticPage/message/', function (response) {
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body);
+                        _this.proGressTotle = operate.totle;
+                        _this.proGressCurNo = operate.currNo;
+                        _this.proGressCurTitle = operate.currTitle;
+                        _this.proGressPercentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
+                    });
+                });
+                sockJS.onclose = function () {
+                    console.log("连接已关闭 "+new Date());
                 }
             }
         }
