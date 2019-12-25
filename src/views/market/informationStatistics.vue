@@ -199,8 +199,10 @@
                             for (let i = series.length - 1; i >= 0; i--) {
                                 var name = series[i].name;
                                 if (obj["selected"][name]) {
-                                    series[i].label.formatter = fun
-                                    series[i].label.show = true
+                                    series[i].label.formatter = fun;
+                                    series[i].label.show = true;
+                                    series[i].label.position = 'top';
+                                    series[i].label.color = 'black';
                                     break;
                                 }
                             }
