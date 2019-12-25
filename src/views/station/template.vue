@@ -1675,8 +1675,8 @@
                         this.handleSiteStaticContent();
                     }
                 }
-                if(this.proGressStaticPercentage > 0 && this.proGressStaticPercentage < 100){
-                    this.proGressStaticDialogVisible = true;
+                if(this.proGressIndexPercentage > 0 && this.proGressIndexPercentage < 100){
+                    this.proGressIndexDialogVisible = true;
                 }else{
                     // 生成勾选的索引页
                     if (command == 'handleCheckedReindex') {
