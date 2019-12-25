@@ -205,7 +205,7 @@
                                     <el-input placeholder="输入关键字进行过滤" v-model.trim="filterText"></el-input>
                                     <div class="content-template-catalog">
                                         <el-tree ref="catalogTree" :data="catalogList" :props="defaultTreeProps" node-key="id" highlight-current
-                                                 :default-expand-all="true" :expand-on-click-node="false" :filter-node-method="filterNode">
+                                                 :default-expand-all="false" :expand-on-click-node="false" :filter-node-method="filterNode">
                                             <div class="custom-tree-node" slot-scope="{ node, data }">
                                                 <span>{{ node.label }}</span>
                                                 <el-cascader filterable

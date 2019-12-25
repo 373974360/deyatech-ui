@@ -12,7 +12,7 @@
                         node-key="id"
                         highlight-current
                         show-checkbox
-                        :default-expand-all="true"
+                        :default-expand-all="false"
                         :expand-on-click-node="false">
                     </el-tree>
                 </div>
@@ -36,6 +36,20 @@
                         <el-button type="primary" :size="btnSize" @click="createHtml()">一键发布</el-button>
                     </el-row>
                 </el-form>
+                <el-dialog title="进度" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" >
+                    <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage" status="success"></el-progress>
+                    <el-row :gutter="20" :span="24" style="margin-top:20px;">
+                        <el-col :span="3">
+                                总数：{{totle}}
+                        </el-col>
+                        <el-col :span="3">
+                                当前：{{curNo}}
+                        </el-col>
+                        <el-col :span="18">
+                                标题： {{curTitle}}
+                        </el-col>
+                    </el-row>
+                </el-dialog>
             </div>
         </div>
     </basic-container>
@@ -62,7 +76,8 @@
                 catalogList: [],
                 defaultTreeProps: {
                     children: 'children',
-                    label: 'name'
+                    label: 'name',
+                    isLeaf: 'leaf'
                 },
                 pickerOptions: {
                     shortcuts: [{
@@ -91,7 +106,12 @@
                         }
                     }]
                 },
-                timeFrame: ''
+                timeFrame: '',
+                dialogVisible: false,
+                percentage: 0.00,
+                totle: 0,
+                curNo: 0,
+                curTitle: ''
             }
         },
         computed: {
@@ -110,14 +130,10 @@
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
                 this.getCatalogTree();
+                this.staticPathProgress();
             }
         },
         methods: {
-            changeHeight() {
-                let windowHeight = window.innerHeight;
-                this.$refs['leftTree'].style.height = windowHeight - 400 + 'px';
-                this.treeHeight = this.$refs['leftTree'].style.height
-            },
             getCatalogTree(){
                 this.listLoading = true;
                 getCatalogTree(this.listQuery).then(response => {
@@ -128,7 +144,43 @@
             createHtml(){
                 const data = {ids:this.$refs.catalogTree.getCheckedKeys(),timeFrame:this.timeFrame}
                 createHtml(data).then(response => {
+                    this.staticPathProgress();
                 })
+            },
+            checkDialogVisible(){
+                if(this.totle > 0 && this.percentage < 100){
+                    this.dialogVisible = true;
+                }else if(this.totle > 0 && this.percentage == 100){
+                    this.$message.success("发布完成！");
+                    this.dialogVisible = false;
+                    this.totle = 0;
+                    this.percentage = 0;
+                }else{
+                    this.dialogVisible = false;
+                    this.totle = 0;
+                    this.percentage = 0;
+                }
+            },
+            staticPathProgress(){
+                this.dialogVisible = true;
+                let _this = this;
+                let sockJS = new SockJS('/web/websocket-station/');
+                let stompClient = Stomp.over(sockJS)
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/staticPage/message/', function (response) {
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body);
+                        _this.totle = operate.totle;
+                        _this.curNo = operate.currNo;
+                        _this.curTitle = operate.currTitle;
+                        _this.percentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
+                        _this.checkDialogVisible();
+                    });
+                });
+                sockJS.onclose = function () {
+                    console.log("连接已关闭 "+new Date());
+                }
+                _this.checkDialogVisible();
             }
         }
     }
