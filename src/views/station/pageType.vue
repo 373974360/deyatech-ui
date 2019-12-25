@@ -3,9 +3,9 @@
         <div class="deyatech-container pull-auto">
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1">{{$t('table.create')}}</el-button>
+                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate" :disabled="selectedRows.length > 1 || rowCount > 0">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || rowCount > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -151,7 +151,8 @@
                     ]
                 },
                 lastExpanded: undefined,
-                tableReset: false
+                tableReset: false,
+                rowCount: 0
             }
         },
         created() {
@@ -217,6 +218,12 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.rowCount = 0;
+                if (this.selectedRows && this.selectedRows.length > 0) {
+                    for (let item of this.selectedRows) {
+                        this.rowCount += item.count;
+                    }
+                }
             },
             btnCreate(row){
                 this.resetPageType();

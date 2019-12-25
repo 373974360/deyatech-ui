@@ -814,6 +814,8 @@
                 proGressTotle: 0,
                 proGressCurNo: 0,
                 proGressCurTitle: ''
+                picArray:[],
+                domainName: ''
             }
         },
         watch: {
@@ -900,9 +902,16 @@
                 this.getAllMetaDataCollection();
                 // 上传文件类型大小
                 this.getUploadFileTypeAndSizeObject(this.$store.state.common.siteId);
+                // 获取站点域名
+                this.getDomainName(this.$store.state.common.siteId)
             }
         },
         methods: {
+            getDomainName(siteId) {
+                getDomainNameBySiteId({siteId: siteId}).then(response => {
+                    this.domainName = response.data;
+                });
+            },
             // 获取元数据集
             getAllMetaDataCollection() {
                 getAllMetadataCollection().then(response => {
@@ -1313,8 +1322,9 @@
             //预览
             btnPreview(row) {
                 //let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
-                let url = window.location.origin + '/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
                 //this.$router.push({path: url});
+                //let url = window.location.origin + '/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
+                let url = window.location.protocol + '//' + this.domainName + '/' + row.cmsCatalogPathName + '/details/info/' + row.id + '.html';
                 window.open(url);
             },
             btnCreate(command){

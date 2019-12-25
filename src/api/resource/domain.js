@@ -89,3 +89,10 @@ export function getDomainNextSortNo() {
         params: {}
     });
 }
+export function getDomainNameBySiteId(query) {
+    return request({
+        url: '/manage/resource/domain/getDomainNameBySiteId',
+        method: 'get',
+        params: query
+    });
+}
