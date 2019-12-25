@@ -50,6 +50,22 @@
                            :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
                            @size-change="handleSizeChange" @current-change="handleCurrentChange">
             </el-pagination>
+
+
+            <el-dialog title="进度" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" >
+                <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage" status="success"></el-progress>
+                <el-row :gutter="20" :span="24" style="margin-top:20px;">
+                    <el-col :span="3">
+                        总数：{{totle}}
+                    </el-col>
+                    <el-col :span="3">
+                        当前：{{curNo}}
+                    </el-col>
+                    <el-col :span="18">
+                        标题： {{curTitle}}
+                    </el-col>
+                </el-row>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -80,7 +96,12 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 stationGroupClassificationCascader: [],
-                stationGroupClassificationIds: []
+                stationGroupClassificationIds: [],
+                dialogVisible: false,
+                percentage: 0.00,
+                totle: 0,
+                curNo: 0,
+                curTitle: ''
             }
         },
         computed: {
@@ -155,13 +176,17 @@
                     this.$message.error('请先选择站点！')
                     return
                 }
-                reindex({siteId: row.id}).then(response => {
-                    if (response.status == 200) {
-                        this.$message.success('生成中，请稍后查看！')
-                    } else {
-                        this.$message.error('生成失败！')
-                    }
-                })
+                if(this.percentage > 0 && this.percentage < 100){
+                    this.dialogVisible = true;
+                }else{
+                    reindex({siteId: row.id}).then(response => {
+                        if (response.status == 200) {
+                            this.indexPathProgress();
+                        } else {
+                            this.$message.error('生成失败！')
+                        }
+                    })
+                }
             },
             // 批量删除整个站点的索引
             removeSiteIndex(row) {
@@ -170,10 +195,37 @@
                     return
                 }
                 this.$confirm('此操作将删除该站点索引, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
-                    removeIndexData({siteId: row.id}).then(() => {
-                        this.$message.success(this.$t("table.deleteSuccess"));
-                    })
+                    if(this.percentage > 0 && this.percentage < 100){
+                        this.dialogVisible = true;
+                    }else{
+                        removeIndexData({siteId: row.id}).then(() => {
+                            this.indexPathProgress();
+                        })
+                    }
                 })
+            },
+            indexPathProgress(){
+                let _this = this;
+                _this.totle = 0;
+                _this.curNo = 0;
+                _this.curTitle = '';
+                _this.percentage = 0;
+                this.dialogVisible = true;
+                let sockJS = new SockJS('/web/websocket-station/');
+                let stompClient = Stomp.over(sockJS)
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/reIndex/message/', function (response) {
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body);
+                        _this.totle = operate.totle;
+                        _this.curNo = operate.currNo;
+                        _this.curTitle = operate.currTitle;
+                        _this.percentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
+                    });
+                });
+                sockJS.onclose = function () {
+                    console.log("连接已关闭 "+new Date());
+                }
             }
         }
     }

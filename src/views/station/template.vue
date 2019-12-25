@@ -420,17 +420,32 @@
                 </span>
             </el-dialog>
 
-            <el-dialog title="进度" :visible.sync="proGressDialogVisible" :close-on-click-modal="closeOnClickModal" >
-                <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressPercentage" status="success"></el-progress>
+            <el-dialog title="发布静态页进度" :visible.sync="proGressStaticDialogVisible" :close-on-click-modal="closeOnClickModal" >
+                <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressStaticPercentage" status="success"></el-progress>
                 <el-row :gutter="20" :span="24" style="margin-top:20px;">
                     <el-col :span="3">
-                        总数：{{proGressTotle}}
+                        总数：{{proGressStaticTotle}}
                     </el-col>
                     <el-col :span="3">
-                        当前：{{proGressCurNo}}
+                        当前：{{proGressStaticCurNo}}
                     </el-col>
                     <el-col :span="18">
-                        标题： {{proGressCurTitle}}
+                        标题： {{proGressStaticCurTitle}}
+                    </el-col>
+                </el-row>
+            </el-dialog>
+
+            <el-dialog title="生成索引进度" :visible.sync="proGressIndexDialogVisible" :close-on-click-modal="closeOnClickModal" >
+                <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressIndexPercentage" status="success"></el-progress>
+                <el-row :gutter="20" :span="24" style="margin-top:20px;">
+                    <el-col :span="3">
+                        总数：{{proGressIndexTotle}}
+                    </el-col>
+                    <el-col :span="3">
+                        当前：{{proGressIndexCurNo}}
+                    </el-col>
+                    <el-col :span="18">
+                        标题： {{proGressIndexCurTitle}}
                     </el-col>
                 </el-row>
             </el-dialog>
@@ -478,6 +493,7 @@
     import {getDictionaryList} from '@/api/admin/dictionary';
     import {getTableHeadContentData, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
     import {getUploadFileTypeAndSize} from '@/api/resource/setting';
+    import {getDomainNameBySiteId} from '@/api/resource/domain';
 
     export default {
         name: 'template',
@@ -808,12 +824,20 @@
                 contentPicArray: [],
                 picArray:[],
 
-                //进度条
-                proGressDialogVisible: false,
-                proGressPercentage: 0.00,
-                proGressTotle: 0,
-                proGressCurNo: 0,
-                proGressCurTitle: ''
+                //进度条-静态页
+                proGressStaticDialogVisible: false,
+                proGressStaticPercentage: 0.00,
+                proGressStaticTotle: 0,
+                proGressStaticCurNo: 0,
+                proGressStaticCurTitle: '',
+
+                //进度条-索引
+                proGressIndexDialogVisible: false,
+                proGressIndexPercentage: 0.00,
+                proGressIndexTotle: 0,
+                proGressIndexCurNo: 0,
+                proGressIndexCurTitle: '',
+
                 picArray:[],
                 domainName: ''
             }
@@ -1635,8 +1659,8 @@
             },
             // 选择菜单触发
             handleCommand(command) {
-                if(this.proGressPercentage > 0 && this.proGressPercentage < 100){
-                    this.proGressDialogVisible = true;
+                if(this.proGressStaticPercentage > 0 && this.proGressStaticPercentage < 100){
+                    this.proGressStaticDialogVisible = true;
                 }else{
                     // 生成勾选的内容页
                     if (command == 'handleCheckedStaticContent') {
@@ -1651,14 +1675,17 @@
                         this.handleSiteStaticContent();
                     }
                 }
-
-                // 生成勾选的索引页
-                if (command == 'handleCheckedReindex') {
-                    this.handleCheckedReindex();
-                }
-                // 生成当前栏目的索引
-                if (command == 'handleCatalogReindex') {
-                    this.handleCatalogReindex();
+                if(this.proGressStaticPercentage > 0 && this.proGressStaticPercentage < 100){
+                    this.proGressStaticDialogVisible = true;
+                }else{
+                    // 生成勾选的索引页
+                    if (command == 'handleCheckedReindex') {
+                        this.handleCheckedReindex();
+                    }
+                    // 生成当前栏目的索引
+                    if (command == 'handleCatalogReindex') {
+                        this.handleCatalogReindex();
+                    }
                 }
                 // 生成整个站点的索引
                 /*if (command == 'handleSiteReindex') {
@@ -1748,8 +1775,7 @@
                 }
                 reindex(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('生成中，请稍后查看！')
-                        this.reloadList()
+                        this.indexPathProgress();
                     } else {
                         this.$message.error('生成失败！')
                     }
@@ -1771,8 +1797,7 @@
                 }
                 reindex(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('生成中，请稍后查看！')
-                        this.reloadList()
+                        this.indexPathProgress();
                     } else {
                         this.$message.error('生成失败！')
                     }
@@ -2368,21 +2393,44 @@
             },
             staticPathProgress(){
                 let _this = this;
-                _this.proGressTotle = 0;
-                _this.proGressCurNo = 0;
-                _this.proGressCurTitle = '';
-                _this.proGressPercentage = 0;
-                _this.proGressDialogVisible = true;
+                _this.proGressStaticTotle = 0;
+                _this.proGressStaticCurNo = 0;
+                _this.proGressStaticCurTitle = '';
+                _this.proGressStaticPercentage = 0;
+                _this.proGressStaticDialogVisible = true;
                 let sockJS = new SockJS('/web/websocket-station/');
                 let stompClient = Stomp.over(sockJS)
                 stompClient.connect({}, function () {
                     stompClient.subscribe('/topic/staticPage/message/', function (response) {
                         //append,modify,delete
                         let operate = JSON.parse(response.body);
-                        _this.proGressTotle = operate.totle;
-                        _this.proGressCurNo = operate.currNo;
-                        _this.proGressCurTitle = operate.currTitle;
-                        _this.proGressPercentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
+                        _this.proGressStaticTotle = operate.totle;
+                        _this.proGressStaticCurNo = operate.currNo;
+                        _this.proGressStaticCurTitle = operate.currTitle;
+                        _this.proGressStaticPercentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
+                    });
+                });
+                sockJS.onclose = function () {
+                    console.log("连接已关闭 "+new Date());
+                }
+            },
+            indexPathProgress(){
+                let _this = this;
+                _this.proGressIndexTotle = 0;
+                _this.proGressIndexCurNo = 0;
+                _this.proGressIndexCurTitle = '';
+                _this.proGressIndexPercentage = 0;
+                _this.proGressIndexDialogVisible = true;
+                let sockJS = new SockJS('/web/websocket-station/');
+                let stompClient = Stomp.over(sockJS)
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/reIndex/message/', function (response) {
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body);
+                        _this.proGressIndexTotle = operate.totle;
+                        _this.proGressIndexCurNo = operate.currNo;
+                        _this.proGressIndexCurTitle = operate.currTitle;
+                        _this.proGressIndexPercentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
                     });
                 });
                 sockJS.onclose = function () {
