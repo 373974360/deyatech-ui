@@ -420,6 +420,35 @@
                 </span>
             </el-dialog>
 
+            <el-dialog title="发布静态页进度" :visible.sync="proGressStaticDialogVisible" :close-on-click-modal="closeOnClickModal" >
+                <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressStaticPercentage" status="success"></el-progress>
+                <el-row :gutter="20" :span="24" style="margin-top:20px;">
+                    <el-col :span="3">
+                        总数：{{proGressStaticTotle}}
+                    </el-col>
+                    <el-col :span="3">
+                        当前：{{proGressStaticCurNo}}
+                    </el-col>
+                    <el-col :span="18">
+                        标题： {{proGressStaticCurTitle}}
+                    </el-col>
+                </el-row>
+            </el-dialog>
+
+            <el-dialog title="生成索引进度" :visible.sync="proGressIndexDialogVisible" :close-on-click-modal="closeOnClickModal" >
+                <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressIndexPercentage" status="success"></el-progress>
+                <el-row :gutter="20" :span="24" style="margin-top:20px;">
+                    <el-col :span="3">
+                        总数：{{proGressIndexTotle}}
+                    </el-col>
+                    <el-col :span="3">
+                        当前：{{proGressIndexCurNo}}
+                    </el-col>
+                    <el-col :span="18">
+                        标题： {{proGressIndexCurTitle}}
+                    </el-col>
+                </el-row>
+            </el-dialog>
         </div>
     </basic-container>
 </template>
@@ -793,6 +822,22 @@
 
                 // 提取内容图片
                 contentPicArray: [],
+                picArray:[],
+
+                //进度条-静态页
+                proGressStaticDialogVisible: false,
+                proGressStaticPercentage: 0.00,
+                proGressStaticTotle: 0,
+                proGressStaticCurNo: 0,
+                proGressStaticCurTitle: '',
+
+                //进度条-索引
+                proGressIndexDialogVisible: false,
+                proGressIndexPercentage: 0.00,
+                proGressIndexTotle: 0,
+                proGressIndexCurNo: 0,
+                proGressIndexCurTitle: '',
+
                 picArray:[],
                 domainName: ''
             }
@@ -1614,25 +1659,33 @@
             },
             // 选择菜单触发
             handleCommand(command) {
-                // 生成勾选的内容页
-                if (command == 'handleCheckedStaticContent') {
-                    this.handleCheckedStaticContent();
+                if(this.proGressStaticPercentage > 0 && this.proGressStaticPercentage < 100){
+                    this.proGressStaticDialogVisible = true;
+                }else{
+                    // 生成勾选的内容页
+                    if (command == 'handleCheckedStaticContent') {
+                        this.handleCheckedStaticContent();
+                    }
+                    // 生成当前栏目的内容页
+                    if (command == 'handleCatalogStaticContent') {
+                        this.handleCatalogStaticContent();
+                    }
+                    // 生成整个站点的内容页
+                    if (command == 'handleSiteStaticContent') {
+                        this.handleSiteStaticContent();
+                    }
                 }
-                // 生成当前栏目的内容页
-                if (command == 'handleCatalogStaticContent') {
-                    this.handleCatalogStaticContent();
-                }
-                // 生成整个站点的内容页
-                if (command == 'handleSiteStaticContent') {
-                    this.handleSiteStaticContent();
-                }
-                // 生成勾选的索引页
-                if (command == 'handleCheckedReindex') {
-                    this.handleCheckedReindex();
-                }
-                // 生成当前栏目的索引
-                if (command == 'handleCatalogReindex') {
-                    this.handleCatalogReindex();
+                if(this.proGressIndexPercentage > 0 && this.proGressIndexPercentage < 100){
+                    this.proGressIndexDialogVisible = true;
+                }else{
+                    // 生成勾选的索引页
+                    if (command == 'handleCheckedReindex') {
+                        this.handleCheckedReindex();
+                    }
+                    // 生成当前栏目的索引
+                    if (command == 'handleCatalogReindex') {
+                        this.handleCatalogReindex();
+                    }
                 }
                 // 生成整个站点的索引
                 /*if (command == 'handleSiteReindex') {
@@ -1659,8 +1712,7 @@
                 }
                 genStaticPage(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('操作成功！')
-                        this.reloadList()
+                        this.staticPathProgress();
                     } else {
                         this.$message.error('操作失败！')
                     }
@@ -1682,8 +1734,7 @@
                 }
                 genStaticPage(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('操作成功！')
-                        this.reloadList()
+                        this.staticPathProgress();
                     } else {
                         this.$message.error('操作失败！')
                     }
@@ -1697,8 +1748,7 @@
                 }
                 genStaticPage({siteId: this.listQuery.siteId}).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('操作成功！')
-                        this.reloadList()
+                        this.staticPathProgress();
                     } else {
                         this.$message.error('操作失败！')
                     }
@@ -1725,8 +1775,7 @@
                 }
                 reindex(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('生成中，请稍后查看！')
-                        this.reloadList()
+                        this.indexPathProgress();
                     } else {
                         this.$message.error('生成失败！')
                     }
@@ -1748,8 +1797,7 @@
                 }
                 reindex(params).then(response => {
                     if (response.status == 200) {
-                        this.$message.success('生成中，请稍后查看！')
-                        this.reloadList()
+                        this.indexPathProgress();
                     } else {
                         this.$message.error('生成失败！')
                     }
@@ -2341,6 +2389,52 @@
                             }
                         }
                     }
+                }
+            },
+            staticPathProgress(){
+                let _this = this;
+                _this.proGressStaticTotle = 0;
+                _this.proGressStaticCurNo = 0;
+                _this.proGressStaticCurTitle = '';
+                _this.proGressStaticPercentage = 0;
+                _this.proGressStaticDialogVisible = true;
+                let sockJS = new SockJS('/web/websocket-station/');
+                let stompClient = Stomp.over(sockJS)
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/staticPage/message/', function (response) {
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body);
+                        _this.proGressStaticTotle = operate.totle;
+                        _this.proGressStaticCurNo = operate.currNo;
+                        _this.proGressStaticCurTitle = operate.currTitle;
+                        _this.proGressStaticPercentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
+                    });
+                });
+                sockJS.onclose = function () {
+                    console.log("连接已关闭 "+new Date());
+                }
+            },
+            indexPathProgress(){
+                let _this = this;
+                _this.proGressIndexTotle = 0;
+                _this.proGressIndexCurNo = 0;
+                _this.proGressIndexCurTitle = '';
+                _this.proGressIndexPercentage = 0;
+                _this.proGressIndexDialogVisible = true;
+                let sockJS = new SockJS('/web/websocket-station/');
+                let stompClient = Stomp.over(sockJS)
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/reIndex/message/', function (response) {
+                        //append,modify,delete
+                        let operate = JSON.parse(response.body);
+                        _this.proGressIndexTotle = operate.totle;
+                        _this.proGressIndexCurNo = operate.currNo;
+                        _this.proGressIndexCurTitle = operate.currTitle;
+                        _this.proGressIndexPercentage = parseFloat(operate.currNo/operate.totle*100).toFixed(2)*1;
+                    });
+                });
+                sockJS.onclose = function () {
+                    console.log("连接已关闭 "+new Date());
                 }
             }
         }
