@@ -11,7 +11,10 @@
                             <el-date-picker type="date" placeholder="请选择结束日期" v-model="reset.end" format="yyyy年MM月dd日" value-format="yyyy-MM-dd"></el-date-picker>
                         </el-form-item>
                         <el-form-item>
-                            <el-button v-if="btnEnable.save" type="primary" @click="doSave" :loading="submitLoading">索引码重置</el-button>
+                            <el-button v-if="btnEnable.save" type="primary" @click="doSave" :loading="submitLoading" :disabled="showProgress">索引码重置</el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-progress v-if="btnEnable.save" :percentage="percentage" :text-inside="true" :stroke-width="20" v-show="showProgress" style="width: 200px; margin-top: 10px;"></el-progress>
                         </el-form-item>
                     </el-form>
                 </el-col>
@@ -67,6 +70,8 @@
                         {validator: checkEnd, trigger: 'change'}
                     ]
                 },
+                percentage: 0,
+                showProgress: false
             }
         },
         computed: {
@@ -86,26 +91,55 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = true;
+            this.showProgress = false;
             if(this.$store.state.common.siteId != undefined){
-
+                this.processingProgress(this.$store.state.common.siteId);
             }
         },
         methods: {
+            processingProgress(siteId) {
+                var _this = this;
+                let sockJS = new SockJS('/web/websocket-station/');
+                let stompClient = Stomp.over(sockJS);
+                stompClient.connect({}, function () {
+                    stompClient.subscribe('/topic/reset/index/code/' + siteId + '/', function (response) {
+                        if (response.body) {
+                            let data = response.body.split(',');
+                            let value = parseInt(data[0]);
+                            let total = parseInt(data[1]);
+                            _this.percentage = parseInt(value / total * 100);
+                            if (_this.percentage < 100) {
+                                _this.showProgress = true;
+                            } else {
+                                _this.showProgress = false;
+                                _this.$message.success("索引码重置完成");
+                            }
+                        }
+                    });
+                });
+                sockJS.onclose = function () {
+                    setTimeout(function () {_this.processingProgress();}, 5000);
+                }
+            },
             doSave() {
                 if (!this.reset.siteId) {
                     this.$message.error("请选择站点");
                 }
+                this.percentage = 0;
                 this.$refs['indexCodeDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
                         resetIndex(this.reset).then(response => {
                             this.submitLoading = false;
                             if (response.data) {
-                                this.$message.success("索引码重置成功");
+                                this.showProgress = true;
+                                this.$message.success("索引码重置开始，请耐心等待");
                             } else {
-                                this.$message.success("索引码重置失败");
+                                this.showProgress = false;
+                                this.$message.error("索引码重置失败");
                             }
                         }).catch((error)=>{
+                            this.showProgress = false;
                             this.$message.error(error);
                         });
                     }
