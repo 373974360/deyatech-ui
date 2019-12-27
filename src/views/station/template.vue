@@ -28,7 +28,7 @@
                                 </el-button>
                                 <el-dropdown-menu slot="dropdown">
                                     <div v-if="modelList.length > 0">
-                                        <el-dropdown-item v-for="m in modelList" :command="m.id">请选择内容模型：{{m.name}}</el-dropdown-item>
+                                        <el-dropdown-item v-for="m in modelList" :command="m.id">{{m.name}}</el-dropdown-item>
                                     </div>
                                     <div v-else>
                                         <el-dropdown-item>
@@ -57,7 +57,7 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
 
-                            <el-input :size="searchSize" placeholder="标题、来源、作者、权重、时间" v-model.trim="listQuery.title" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                            <el-input :size="searchSize" placeholder="标题、作者、权重、时间" v-model.trim="listQuery.title" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
                             <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
                             <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                         </div>
@@ -106,6 +106,7 @@
                                 </el-image>
                             </div>
                             <span v-else-if="item.prop == 'source'">{{scope.row.sourceName ? scope.row.sourceName : ''}}</span>
+                            <span v-else-if="item.prop == 'resourceCategory'">{{scope.row.resourceCategoryName ? scope.row.resourceCategoryName : ''}}</span>
                             <span v-else>{{scope.row[item.prop]}}</span>
                         </template>
                     </el-table-column>
@@ -934,6 +935,11 @@
             getDomainName(siteId) {
                 getDomainNameBySiteId({siteId: siteId}).then(response => {
                     this.domainName = response.data;
+                    if (!this.domainName) {
+                        this.$message.error("站点没有配置域名");
+                    }
+                }).catch(error=> {
+                    this.$message.error(error);
                 });
             },
             // 获取元数据集
@@ -1272,6 +1278,7 @@
                     this.listLoading = false;
                     this.templateList = response.data.records;
                     this.total = response.data.total;
+                    console.dir(response.data);
                 }).catch(() => {
                     this.listLoading = false;
                     this.total = 0;
@@ -1963,7 +1970,6 @@
             },
             handleImageArraySuccess(response, file, fileList) {
                 if (response.status === 200 && response.data.state === 'SUCCESS') {
-                    console.log(response.data);
                     this.handleArraySuccess(response.data, 'imagearray_');
                     this.$message.success('上传成功！');
                 } else {

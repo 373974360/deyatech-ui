@@ -99,8 +99,8 @@
         methods: {
             processingProgress(siteId) {
                 var _this = this;
-                let sockJS = new SockJS('/web/websocket-station/');
-                let stompClient = Stomp.over(sockJS);
+                var sockJS = new SockJS('/web/websocket-station/');
+                var stompClient = Stomp.over(sockJS);
                 stompClient.connect({}, function () {
                     stompClient.subscribe('/topic/reset/index/code/' + siteId + '/', function (response) {
                         if (response.body) {
@@ -119,7 +119,7 @@
                 });
                 sockJS.onclose = function () {
                     setTimeout(function () {_this.processingProgress();}, 5000);
-                }
+                };
             },
             doSave() {
                 if (!this.reset.siteId) {
@@ -139,6 +139,7 @@
                                 this.$message.error("索引码重置失败");
                             }
                         }).catch((error)=>{
+                            this.submitLoading = false;
                             this.showProgress = false;
                             this.$message.error(error);
                         });
