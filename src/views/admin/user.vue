@@ -51,7 +51,7 @@
                 <el-table-column align="center" label="手机号码" prop="phone"/>
                 <el-table-column align="center" label="头像" prop="avatar">
                     <template slot-scope="scope">
-                        <img v-if="scope.row.avatar" :src="scope.row.avatar"
+                        <img v-if="scope.row.avatar" :src="$store.state.common.showPicImgUrl + scope.row.avatar"
                              width="30" height="30px">
                     </template>
                 </el-table-column>
@@ -125,7 +125,7 @@
                                            :on-success="handleAvatarSuccess"
                                            :on-error="handlerAvatarError"
                                            :before-upload="beforeAvatarUpload">
-                                    <img v-if="user.avatar" :src="this.$store.state.common.showPicImgUrl + user.avatar" class="avatar">
+                                    <img v-if="user.avatar" :src="$store.state.common.showPicImgUrl + user.avatar" class="avatar">
                                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                                 </el-upload>
                             </el-form-item>

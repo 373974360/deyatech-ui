@@ -53,8 +53,8 @@
                         {{scope.row.category | categoryFilter}}
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="姓名" prop="name"/>
-                <!--<el-table-column align="center" label="性别" prop="gender">
+                <!--<el-table-column align="center" label="姓名" prop="name"/>
+                <el-table-column align="center" label="性别" prop="gender">
                     <template slot-scope="scope">
                         {{scope.row.gender | enums('GenderEnum')}}
                     </template>
@@ -66,8 +66,8 @@
                              width="30" height="30px">
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="文明班级" prop="civilizedClasses"/>-->
-                <el-table-column align="center" label="辅导员姓名" prop="instructorName"/>
+                <el-table-column align="center" label="文明班级" prop="civilizedClasses"/>
+                <el-table-column align="center" label="辅导员姓名" prop="instructorName"/>-->
                 <el-table-column align="center" label="资料" prop="fileUrl">
                     <template slot-scope="scope">
                         <el-button :size="btnSize" @click="downloadFile(scope.row)">点击下载</el-button>
