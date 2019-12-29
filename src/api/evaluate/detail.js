@@ -64,3 +64,62 @@ export function getStatistics(query) {
         params: query
     });
 }
+
+
+
+export function poorInvalidAudit(detailVo) {
+    return request({
+        url: '/manage/evaluate/detail/poorInvalidAudit',
+        method: 'post',
+        data: detailVo
+    })
+}
+
+export function reformChange(detailVo) {
+    return request({
+        url: '/manage/evaluate/detail/reformChange',
+        method: 'post',
+        data: detailVo
+    })
+}
+
+export function unchangedAudit(detailVo) {
+    return request({
+        url: '/manage/evaluate/detail/unchangedAudit',
+        method: 'post',
+        data: detailVo
+    })
+}
+
+export function reformDelay(detailVo) {
+    return request({
+        url: '/manage/evaluate/detail/reformDelay',
+        method: 'post',
+        data: detailVo
+    })
+}
+
+export function reformDelayAudit(detailVo) {
+    return request({
+        url: '/manage/evaluate/detail/reformDelayAudit',
+        method: 'post',
+        data: detailVo
+    })
+}
+
+export function queryEvaluateRecordList(detailId) {
+    return request({
+        url: '/manage/evaluate/detail/queryEvaluateRecordList',
+        method: 'get',
+        params: {detailId}
+    })
+}
+
+export function reformRevisit(detailVo) {
+    return request({
+        url: '/manage/evaluate/detail/reformRevisit',
+        method: 'post',
+        data: detailVo
+    })
+}
+

@@ -114,11 +114,11 @@
                 </el-form>
             </div>
             <div class="deyatech-menu">
-                <div class="deyatech-menu_left">
+<!--                <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
-                </div>
+                </div>-->
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
                     <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
@@ -192,10 +192,10 @@
                 </el-table-column>-->
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                     <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+<!--                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row)"></el-button>-->
                         <el-button type="primary" :size="btnSize" @click.stop.safe="showDetails(scope.row)">详情</el-button>
                     </template>
                 </el-table-column>
@@ -207,7 +207,7 @@
             </el-pagination>
 
             <!--详情-->
-            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails"
+            <el-dialog title="评价详情" :visible.sync="dialogVisibleDetails" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialogDetails">
                 <table class="mailTable">
                     <tr>
@@ -222,37 +222,41 @@
                         <td class="column">受理部门</td>
                         <td>{{detail.proDepartment}}</td>
                     </tr>
-                    <tr>
+<!--                    <tr>
                         <td class="column">经办人</td>
                         <td>{{detail.proManager}}</td>
                         <td class="column">审核状态</td>
                         <td>{{detail.status | enums('EvaluationStatusEnum')}}</td>
-                    </tr>
-                    <tr>
+                    </tr>-->
+<!--                    <tr>
                         <td class="column">是否匿名</td>
                         <td>{{detail.anonymityFlag | enums('EvaluationAnonymityEnum')}}</td>
                         <td class="column">是否公开</td>
                         <td>{{detail.publicFlag | enums('EvaluationPublicEnum')}}</td>
-                    </tr>
+                    </tr>-->
                     <tr>
+                        <td class="column">办件来源</td>
+                        <td>{{detail.proSource | enums('EvaluationProSourceEnum')}}</td>
                         <td class="column">评价渠道</td>
                         <td>{{detail.channel | enums('EvaluationChannelEnum')}}</td>
+                    </tr>
+                    <tr>
+                        <td class="column">评价人姓名</td><td>{{detail.userName}}</td>
+                        <td class="column">联系号码</td><td>{{detail.userTel}}</td>
+                    </tr>
+                    <tr>
                         <td class="column">整体满意度</td>
                         <td>
-                            <el-rate
+                            <!--<el-rate
                                 disabled
                                 v-model="detail.levelCode | levelParseInt"
                                 :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
                                 show-text
                                 :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
-                            </el-rate>
+                            </el-rate>-->
+                            {{detail.levelCode | enums('EvaluationLevelEnum')}}
                         </td>
-                    </tr>
-                    <tr>
-                        <td class="column">评价人姓名</td>
-                        <td>{{detail.userName}}</td>
-                        <td class="column">评价时间</td>
-                        <td>{{detail.submitTime}}</td>
+                        <td class="column">评价时间</td><td>{{detail.submitTime}}</td>
                     </tr>
                     <tr v-if="detail.content">
                         <td class="column">评价详情</td>
@@ -266,20 +270,52 @@
                     </tr>
                     <tr v-if="detail.words">
                         <td class="column">文字评价</td>
-                        <td class="reform" colspan="3">{{detail.words}}</td>
+                        <td class="reform" colspan="3">{{detail.words | convertBlank}}</td>
                     </tr>
-                    <tr v-if="detail.reformContent">
-                        <td class="column">整改回复内容</td>
-                        <td class="reform" colspan="3">{{detail.reformContent}}</td>
+                    <tr v-if="recordsList && recordsList.length > 0">
+                        <td class="column">操作记录</td>
+                        <td colspan="3">
+                            <div class="inline-tb-container">
+                                <el-table :data="recordsList">
+                                    <el-table-column align="center" label="操作状态" prop="status" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.status | enums('EvaluationReformStatusEnum')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作说明" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="整改/延期时间" prop="finishTime" width="160">
+                                        <template slot-scope="scope">
+                                            {{scope.row.finishTime | date('YYYY-MM-DD')}}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column align="center" label="操作时间" prop="operateTime" width="180">
+                                        <template slot-scope="scope">
+                                            {{scope.row.operateTime | date('YYYY-MM-DD HH:mm:ss')}}
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
+                        </td>
                     </tr>
-                    <tr v-if="detail.reformDate">
-                        <td class="column">整改期限</td>
-                        <td colspan="3">{{detail.reformDate}}</td>
+                    <tr v-if="revisitRecordList && revisitRecordList.length > 0">
+                        <td class="column">回访记录</td>
+                        <td colspan="3">
+                            <div class="inline-tb-container">
+                                <el-table :data="revisitRecordList">
+                                    <el-table-column align="center" label="回访内容" prop="content" min-width="260"/>
+                                    <el-table-column align="center" label="回访时间" prop="operateTime" width="180">
+                                        <template slot-scope="scope">
+                                            {{scope.row.operateTime | date('YYYY-MM-DD HH:mm:ss')}}
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
+                        </td>
                     </tr>
                 </table>
             </el-dialog>
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeDetailDialog">
                 <el-form ref="detailDialogForm" class="deyatech-form" :model="detail" label-position="right"
                          label-width="80px" :rules="detailRules">
@@ -436,7 +472,8 @@
     import {
         getDetailList,
         createOrUpdateDetail,
-        delDetails
+        delDetails,
+        queryEvaluateRecordList
     } from '@/api/evaluate/detail';
 
     export default {
@@ -474,6 +511,7 @@
                     itemName: undefined,
                     subMatter: undefined,
                     processNumber: undefined,
+                    proSource: undefined,
                     proStatus: undefined,
                     proDepartment: undefined,
                     proManager: undefined,
@@ -481,6 +519,7 @@
                     userId: undefined,
                     userName: undefined,
                     userProp: undefined,
+                    userTel: undefined,
                     anonymityFlag: undefined,
                     levelCode: undefined,
                     contentCode: undefined,
@@ -561,10 +600,12 @@
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
-                departmentList: [], //TODO  阿里提供接口查询
+                departmentList: [],
                 submitTimeRange: [],
                 levelParseInt: {},
                 dialogVisibleDetails: false,
+                recordsList: [],
+                revisitRecordList: [],
             }
         },
         computed: {
@@ -699,6 +740,7 @@
                     itemName: undefined,
                     subMatter: undefined,
                     processNumber: undefined,
+                    proSource: undefined,
                     proStatus: undefined,
                     proDepartment: undefined,
                     proManager: undefined,
@@ -706,6 +748,7 @@
                     userId: undefined,
                     userName: undefined,
                     userProp: undefined,
+                    userTel: undefined,
                     anonymityFlag: undefined,
                     levelCode: undefined,
                     contentCode: undefined,
@@ -742,7 +785,14 @@
             },
             showDetails(row){
                 this.detail = deepClone(row);
+                this.queryRecordList(this.detail.id);
                 this.dialogVisibleDetails = true;
+            },
+            queryRecordList(detailId) {
+                queryEvaluateRecordList(detailId).then(response => {
+                    this.recordsList = response.data.recordsList;
+                    this.revisitRecordList = response.data.revisitRecordList;
+                })
             },
             closeDetailDialogDetails() {
                 this.dialogVisibleDetails = false;
@@ -752,32 +802,6 @@
     }
 </script>
 
-<style>
-    .mailTable, .mailTable tr, .mailTable tr td {
-        border:1px solid #E6EAEE;
-    }
-    .mailTable {
-        font-size: 14px;
-        color: #71787E;
-    }
-    .mailTable tr td {
-        border:1px solid #E6EAEE;
-        width: 225px;
-        height: 40px;
-        line-height: 40px;
-        box-sizing: border-box;
-        padding: 0 10px;
-    }
-    .mailTable tr td.column {
-        width: 175px;
-        background-color: #EFF3F6;
-        color: #393C3E;
-    }
-    .mailTable tr td.reform {
-        height: auto;
-        line-height: 30px;
-    }
-    ul {
-        padding-inline-start: 20px;
-    }
+<style scoped>
+    @import "../../assets/css/evaluateReform.css";
 </style>

@@ -75,7 +75,7 @@
             </el-pagination>-->
 
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="60%"
                        :close-on-click-modal="closeOnClickModal" @close="closeConfigDialog">
                 <el-form ref="configDialogForm" class="deyatech-form" :model="config" label-position="right"
                          label-width="110px" :rules="configRules">
@@ -132,7 +132,7 @@
                                         {min: 1, max: 255, message: '长度在 1 到 255 个字符', trigger: 'blur'}
                                     ]"
                                 >
-                                    <el-input type="textarea" v-model="content.content" :rows="3"></el-input>
+                                    <el-input v-model="content.content"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -355,6 +355,7 @@
                         const contentInfo = JSON.stringify(this.config.contentList);
                         this.$set(this.config, 'contentInfo', contentInfo);
                         this.$delete(this.config, 'contentList');
+                        this.$delete(this.config, 'dimensionList');
 
                         this.submitLoading = true;
                         createOrUpdateConfig(this.config).then(() => {
