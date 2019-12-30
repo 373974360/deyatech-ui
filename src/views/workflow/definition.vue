@@ -38,7 +38,7 @@
                         <span class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.name}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="版本" prop="ver"/>
+                <!--<el-table-column align="center" label="版本" prop="ver"/>-->
                 <el-table-column align="center" label="发布时间" prop="deploymentTime"/>
                 <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
@@ -113,7 +113,7 @@
                                         <!--<el-button type="primary" :size="btnSize" style="margin-left: 10px" @click="addCandidateUser">添加</el-button>-->
                                         <div class="con-bank-20"></div>
                                         <el-table :data="candidateUserList" border>
-                                            <el-table-column prop="empNo" label="工号"/>
+                                            <!--<el-table-column prop="empNo" label="工号"/>-->
                                             <el-table-column prop="name" label="姓名"/>
                                             <el-table-column prop="account" label="帐号"/>
                                             <el-table-column label="操作" width="60">

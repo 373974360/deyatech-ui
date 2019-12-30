@@ -246,10 +246,11 @@
                         <el-col :span="12">
                             <el-form-item label="水印类型" prop="watermarkType" ref="watermarkTypeField" v-show="setting.watermarkEnable == 1" :rules="setting.watermarkEnable == 0 ? [] : settingRules.watermarkType">
                                 <el-select filterable v-model.trim="setting.watermarkType" style="width:100%" @change="watermarkTypeChange">
-                                    <el-option v-for="item in enums['WaterMarkTypeEnum']"
+                                    <el-option label="图片" :value="1"></el-option>
+                                    <!--<el-option v-for="item in enums['WaterMarkTypeEnum']"
                                                :key="item.code"
                                                :label="item.value"
-                                               :value="item.code"></el-option>
+                                               :value="item.code"></el-option>-->
                                 </el-select>
                             </el-form-item>
                         </el-col>
