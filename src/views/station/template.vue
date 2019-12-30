@@ -32,7 +32,7 @@
                                     </div>
                                     <div v-else>
                                         <el-dropdown-item>
-                                            该站点未配置内容模型
+                                            该栏目未配置内容模型
                                         </el-dropdown-item>
                                     </div>
                                 </el-dropdown-menu>
@@ -686,6 +686,7 @@
                     isLeaf: 'leaf'
                 },
                 modelList: [],
+                allModelList: [],
                 modelTemplateList: [],
                 workflowKey: undefined,
                 workflowId: undefined,
@@ -917,10 +918,12 @@
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
                 this.listQuery.siteId = this.$store.state.common.siteId;
-                // 获取栏目
-                this.getCatalogTree();
+                // 资源分类
+                this.getResourceCategoryList();
                 // 获取站点关联的内容模型
                 this.getAllModelBySiteId();
+                // 获取栏目
+                this.getCatalogTree();
                 // 获取站点上传路径
                 this.getSiteUploadPath();
                 // 获取元数据集
@@ -929,9 +932,20 @@
                 this.getUploadFileTypeAndSizeObject(this.$store.state.common.siteId);
                 // 获取站点域名
                 this.getDomainName(this.$store.state.common.siteId)
+
             }
         },
         methods: {
+            // 资源分类
+            getResourceCategoryList() {
+                getDictionaryList({indexId: 'resource_category'}).then(response => {
+                    if (response.status == 200) {
+                        this.resourceCategoryList = response.data;
+                    } else {
+                        this.$message.error('获取字典项失败')
+                    }
+                })
+            },
             getDomainName(siteId) {
                 getDomainNameBySiteId({siteId: siteId}).then(response => {
                     this.domainName = response.data;
@@ -1244,7 +1258,7 @@
             getAllModelBySiteId() {
                 this.listLoading = true;
                 getAllModelBySiteId(this.listQuery).then(response => {
-                    this.modelList = response.data;
+                    this.allModelList = response.data;
                     this.listLoading = false;
                 })
             },
@@ -1276,9 +1290,25 @@
                 // this.total = undefined;
                 getTemplateList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.templateList = response.data.records;
+                    let list = response.data.records;
+                    if (list && list.length > 0) {
+                        for (let t of list) {
+                            for (let m of this.allModelList) {
+                                if (t.contentModelId === m.id) {
+                                    t.contentModelName = m.name;
+                                    break;
+                                }
+                            }
+                            for (let d of this.resourceCategoryList) {
+                                if (t.resourceCategory === d.id) {
+                                    t.resourceCategoryName = d.codeText;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    this.templateList = list;
                     this.total = response.data.total;
-                    console.dir(response.data);
                 }).catch(() => {
                     this.listLoading = false;
                     this.total = 0;
