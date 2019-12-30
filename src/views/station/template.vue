@@ -491,8 +491,8 @@
     } from '@/api/station/model';
     import {validateURL,validateEmail, isEnglish} from '@/util/validate';
     import {findMetadataCollectionAllData, getAllMetadataCollection} from '@/api/metadata/collection';
-    import {getDictionaryList} from '@/api/admin/dictionary';
-    import {getTableHeadContentData, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
+    import {getDictionaryListAlias} from '@/api/admin/dictionary';
+    import {getTableHeadContentDataAlias, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
     import {getUploadFileTypeAndSize} from '@/api/resource/setting';
     import {getDomainNameBySiteId} from '@/api/resource/domain';
 
@@ -938,7 +938,7 @@
         methods: {
             // 资源分类
             getResourceCategoryList() {
-                getDictionaryList({indexId: 'resource_category'}).then(response => {
+                getDictionaryListAlias({indexId: 'resource_category'}).then(response => {
                     if (response.status == 200) {
                         this.resourceCategoryList = response.data;
                     } else {
@@ -1200,7 +1200,7 @@
             },
             // 加载动态表头
             loadHeadData() {
-                getTableHeadContentData().then(response=>{
+                getTableHeadContentDataAlias().then(response=>{
                     this.headData = response.data;
                 });
             },

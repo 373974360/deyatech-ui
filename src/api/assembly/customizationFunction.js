@@ -28,6 +28,13 @@ export function getTableHeadContentData() {
         params: {}
     });
 }
+export function getTableHeadContentDataAlias() {
+    return request({
+        url: '/manage/assembly/customizationFunction/getTableHeadContentDataAlias',
+        method: 'get',
+        params: {}
+    });
+}
 export function getAllCustomizationFunction() {
     return request({
         url: '/manage/assembly/customizationFunction/getAllCustomizationFunction',
