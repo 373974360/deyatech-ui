@@ -552,11 +552,24 @@
             }
         },
         created(){
-            // this.listQuery.proDepartment = this.userInfo.orgName;
-            getOrgDetail(this.userInfo.orgId).then(res => {
-                this.listQuery.organizationalCode = res.data.regionCode;
+            // 督查处所有数据，市级按部门，其他按区县
+            if (this.userInfo.loginName.includes('duchachu') || this.userInfo.loginName === 'hcp_admin') {
                 this.reloadList();
-            });
+            } else {
+                getOrgDetail(this.userInfo.orgId).then(res => {
+                    let areaCode = res.data.regionCode ? res.data.regionCode : res.data.autoCode;
+                    if (!areaCode) {
+                        this.listLoading = false;
+                        return false;
+                    }
+                    if (areaCode === '610100000000') {
+                        this.listQuery.proDepartment = this.userInfo.orgName;
+                    } else {
+                        this.listQuery.organizationalCode = areaCode;
+                    }
+                    this.reloadList();
+                });
+            }
         },
         methods: {
             handleDialogPosition(id) {
@@ -591,6 +604,7 @@
                 this.listQuery.itemCode = undefined;
                 this.listQuery.itemName = undefined;
                 this.listQuery.subMatter = undefined;
+                this.listQuery.organizationalCode = undefined;
                 this.listQuery.proDepartment = undefined;
                 this.listQuery.userName = undefined;
                 this.listQuery.anonymityFlag = undefined;
