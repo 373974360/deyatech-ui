@@ -649,7 +649,9 @@
             initUserTable() {
                 Promise.all([this.loadUserList(), this.$nextTick()]).then(() => {
                     this.selectedAllUserId = [];
+                    this.selectedAllUser = [];
                     for (let item of this.candidateUserList) {
+                        this.selectedAllUser.push(deepClone(item));
                         this.selectedAllUserId.push(item.id);
                     }
                     this.checkSelectedRowsUser();
