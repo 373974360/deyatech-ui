@@ -55,13 +55,13 @@
             <el-dialog title="进度" :visible.sync="dialogVisible" :close-on-click-modal="closeOnClickModal" >
                 <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage" status="success"></el-progress>
                 <el-row :gutter="20" :span="24" style="margin-top:20px;">
-                    <el-col :span="3">
+                    <el-col :span="4">
                         总数：{{totle}}
                     </el-col>
-                    <el-col :span="3">
+                    <el-col :span="4">
                         当前：{{curNo}}
                     </el-col>
-                    <el-col :span="18">
+                    <el-col :span="16">
                         标题： {{curTitle}}
                     </el-col>
                 </el-row>
@@ -181,7 +181,7 @@
                 }else{
                     reindex({siteId: row.id}).then(response => {
                         if (response.status == 200) {
-                            this.indexPathProgress();
+                            this.indexPathProgress(row);
                         } else {
                             this.$message.error('生成失败！')
                         }
@@ -199,12 +199,12 @@
                         this.dialogVisible = true;
                     }else{
                         removeIndexData({siteId: row.id}).then(() => {
-                            this.indexPathProgress();
+                            this.indexPathProgress(row);
                         })
                     }
                 })
             },
-            indexPathProgress(){
+            indexPathProgress(row){
                 let _this = this;
                 _this.totle = 0;
                 _this.curNo = 0;
@@ -214,7 +214,7 @@
                 let sockJS = new SockJS('/web/websocket-station/');
                 let stompClient = Stomp.over(sockJS)
                 stompClient.connect({}, function () {
-                    stompClient.subscribe('/topic/reIndex/message/', function (response) {
+                    stompClient.subscribe('/topic/reIndex/message/'+row.id+'/', function (response) {
                         //append,modify,delete
                         let operate = JSON.parse(response.body);
                         _this.totle = operate.totle;

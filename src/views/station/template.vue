@@ -424,13 +424,13 @@
             <el-dialog title="发布静态页进度" :visible.sync="proGressStaticDialogVisible" :close-on-click-modal="closeOnClickModal" >
                 <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressStaticPercentage" status="success"></el-progress>
                 <el-row :gutter="20" :span="24" style="margin-top:20px;">
-                    <el-col :span="3">
+                    <el-col :span="4">
                         总数：{{proGressStaticTotle}}
                     </el-col>
-                    <el-col :span="3">
+                    <el-col :span="4">
                         当前：{{proGressStaticCurNo}}
                     </el-col>
-                    <el-col :span="18">
+                    <el-col :span="16">
                         标题： {{proGressStaticCurTitle}}
                     </el-col>
                 </el-row>
@@ -439,13 +439,13 @@
             <el-dialog title="生成索引进度" :visible.sync="proGressIndexDialogVisible" :close-on-click-modal="closeOnClickModal" >
                 <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressIndexPercentage" status="success"></el-progress>
                 <el-row :gutter="20" :span="24" style="margin-top:20px;">
-                    <el-col :span="3">
+                    <el-col :span="4">
                         总数：{{proGressIndexTotle}}
                     </el-col>
-                    <el-col :span="3">
+                    <el-col :span="4">
                         当前：{{proGressIndexCurNo}}
                     </el-col>
-                    <el-col :span="18">
+                    <el-col :span="16">
                         标题： {{proGressIndexCurTitle}}
                     </el-col>
                 </el-row>
@@ -2437,7 +2437,7 @@
                 let sockJS = new SockJS('/web/websocket-station/');
                 let stompClient = Stomp.over(sockJS)
                 stompClient.connect({}, function () {
-                    stompClient.subscribe('/topic/staticPage/message/', function (response) {
+                    stompClient.subscribe('/topic/staticPage/message/'+_this.$store.state.common.siteId+'/', function (response) {
                         //append,modify,delete
                         let operate = JSON.parse(response.body);
                         _this.proGressStaticTotle = operate.totle;
@@ -2460,7 +2460,7 @@
                 let sockJS = new SockJS('/web/websocket-station/');
                 let stompClient = Stomp.over(sockJS)
                 stompClient.connect({}, function () {
-                    stompClient.subscribe('/topic/reIndex/message/', function (response) {
+                    stompClient.subscribe('/topic/reIndex/message/'+_this.$store.state.common.siteId+'/', function (response) {
                         //append,modify,delete
                         let operate = JSON.parse(response.body);
                         _this.proGressIndexTotle = operate.totle;
