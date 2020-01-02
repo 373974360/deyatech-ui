@@ -73,7 +73,7 @@
                             <el-tab-pane v-for="item in enums['ContentStatusEnum']" :label="item.value" :key="item.code" :name="item.code.toString()"></el-tab-pane>
                         </el-tabs>
                         <div style="position:absolute;top: 0; right: 0;">
-                            显示设置<el-button type="primary" :size="btnSize" icon="el-icon-setting" circle @click="displaySetting"></el-button>
+                            <span style="margin-right: 6px;">显示设置</span><el-button type="primary" :size="btnSize" icon="el-icon-setting" circle @click="displaySetting"></el-button>
                             <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                         </div>
                     </div>
@@ -2482,7 +2482,7 @@
         overflow-x: scroll;
         margin-right:10px;
         padding: 10px;
-        height: 100%;
+        height: 600px;
     }
     .el-textarea__inner {
         height: 100%;

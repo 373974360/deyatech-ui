@@ -19,7 +19,7 @@
                     <div class="deyatech-header">
                         <el-form :inline="true" ref="searchForm">
                             <el-form-item>
-                                <el-input :size="searchSize" placeholder="申请编码" v-model.trim="listQuery.ysqCode"></el-input>
+                                <el-input :size="searchSize" placeholder="申请编码" v-model.trim="listQuery.ysqCode" clearable></el-input>
                             </el-form-item>
                             <el-form-item>
                                 <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
@@ -461,7 +461,7 @@
                                 <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
                                 <!--<el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>-->
                             </template>
-                            <el-button type="primary" :size="btnSize">打印</el-button>
+                            <!--<el-button type="primary" :size="btnSize">打印</el-button>-->
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                     </el-dialog>
@@ -1112,10 +1112,14 @@
                     this.processRulesType = this.processRules_7;
                     this.process.isPublish = 1;
                     this.process.content = this.applyOpenRecord.content;
-                    this.process.proTime = this.applyOpenRecord.replyTime;
+                    if (this.applyOpenRecord.replyTime) {
+                        this.process.proTime = this.applyOpenRecord.replyTime;
+                    } else {
+                        this.process.proTime = undefined;
+                    }
                     this.process.proContent = this.applyOpenRecord.replyContent;
                     this.$refs['processContent'].setUeContent(this.process.content);
-                    this.$refs['proContent'].setUeContent(this.process.proContent);
+                    //this.$refs['proContent'].setUeContent(this.process.proContent);
                 }
                 if(proType == 4){
                     this.processTitle = '退回信件';
@@ -1188,6 +1192,7 @@
                 this.process.sqId = this.applyOpenRecord.id;
             },
             doCreateProcess(){
+                console.log(this.process.proTime);
                 this.process.proContent = this.$refs['proContent'].getUeContent();
                 this.process.content = this.$refs['processContent'].getUeContent();
                 this.$refs['processDialogForm'].validate(valid => {

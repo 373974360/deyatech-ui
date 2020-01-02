@@ -122,6 +122,7 @@
     import {deepClone, setExpanded} from '@/util/util';
     import {mapGetters} from 'vuex';
     import {isStartOrEndWithWhiteSpace} from '@/util/validate';
+    import {countModelByDepartmentId} from '@/api/appeal/model';
 
     export default {
         name: 'department',
@@ -335,11 +336,17 @@
                 })
             },
             doDelete(ids) {
-                this.listLoading = true;
-                delDepartments(ids).then(() => {
-                    this.reloadList();
-                    this.$message.success(this.$t("table.deleteSuccess"));
-                })
+                countModelByDepartmentId(ids).then(response => {
+                    if (response.data > 0) {
+                        this.$message.error("被诉求业务模型使用中不能删除");
+                    } else {
+                        this.listLoading = true;
+                        delDepartments(ids).then(() => {
+                            this.reloadList();
+                            this.$message.success(this.$t("table.deleteSuccess"));
+                        })
+                    }
+                });
             },
             resetDepartment() {
                 this.department = {

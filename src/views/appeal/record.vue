@@ -139,7 +139,7 @@
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="诉求目的" prop="purId">
-                                        <el-select filterable v-model.trim="record.purId" placeholder="请选择业务模型" style="width:100%">
+                                        <el-select filterable v-model.trim="record.purId" placeholder="请选择业务模型" style="width:100%" no-data-text="无数据">
                                             <el-option v-for="item in purposeList" :label="item.purposeName" :value="item.id"></el-option>
                                         </el-select>
                                     </el-form-item>
@@ -386,7 +386,7 @@
                                 <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
                                 <!--<el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>-->
                             </template>
-                            <el-button type="primary" :size="btnSize">打印</el-button>
+                            <!--<el-button type="primary" :size="btnSize">打印</el-button>-->
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                     </el-dialog>
@@ -1196,9 +1196,27 @@
                         if(Array.isArray(toDeptId)){
                             this.process.toDeptId = toDeptId[toDeptId.length-1];
                         }
+                        var msg = '成功';
+                        if (this.process.proType == 1) {
+                            msg = "转办" + msg;
+                        } else if (this.process.proType == 2) {
+                            msg = "回复" + msg;
+                        } else if (this.process.proType == 3) {
+                            msg = "发布" + msg;
+                        } else if (this.process.proType == 4) {
+                            msg = "退回" + msg;
+                        } else if (this.process.proType == 5) {
+                            msg = "判重" + msg;
+                        } else if (this.process.proType == 6) {
+                            msg = "置为无效" + msg;
+                        } else if (this.process.proType == 7) {
+                            msg = "延期" + msg;
+                        } else if (this.process.proType == 8) {
+                            msg = "不予受理" + msg;
+                        }
                         createOrUpdateProcess(this.process).then(() => {
                             this.resetProcessDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
+                            this.$message.success(msg);
                         })
                     } else {
                         return false;
