@@ -66,17 +66,17 @@
                     <el-table :data="recordList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="50" align="center"/>
-                        <el-table-column align="left" label="标题" prop="title" min-width="300px;">
+                        <el-table-column align="left" label="标题" prop="title" width="300px;">
                             <template slot-scope="scope">
                                 <nobr class="link-type" :title="scope.row.title" style="cursor:pointer" @click='processAppeal(scope.row)'>{{scope.row.title}}</nobr>
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="收件部门" prop="deptName" min-width="130px;">
+                        <el-table-column align="center" label="收件部门" prop="deptName" width="130px;">
                             <template slot-scope="scope">
                                 <nobr :title="scope.row.deptName">{{scope.row.deptName}}</nobr>
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="回复部门" prop="replyDeptName" min-width="130px;">
+                        <el-table-column align="center" label="回复部门" prop="replyDeptName" width="130px;">
                             <template slot-scope="scope">
                                 <nobr :title="scope.row.replyDeptName">{{scope.row.replyDeptName}}</nobr>
                             </template>
@@ -96,7 +96,7 @@
                                 {{scope.row.isPublish | enums('YesNoEnum')}}
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="来信时间" prop="createTime" min-width="170px;">
+                        <el-table-column align="center" label="来信时间" prop="createTime" width="170px;">
                             <template slot-scope="scope">
                                 <nobr :title="scope.row.createTime">{{scope.row.createTime}}</nobr>
                             </template>
@@ -1186,6 +1186,9 @@
                 }
                 this.process.proType = proType;
                 this.process.sqId = this.record.id;
+                this.$nextTick(() => {
+                    this.$refs['processDialogForm'].clearValidate();
+                })
             },
             doCreateProcess(){
                 this.process.proContent = this.$refs['proContent'].getUeContent();

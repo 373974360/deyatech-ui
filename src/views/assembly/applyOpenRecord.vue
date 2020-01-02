@@ -85,13 +85,13 @@
                                 {{scope.row.applyStatus | enums('AppealStatusEnum')}}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                       <!-- <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
                                 <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                                     {{scope.row.enable | enums('EnableEnum')}}
                                 </el-tag>
                             </template>
-                        </el-table-column>
+                        </el-table-column>-->
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" fixed="right" align="center" width="150">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
@@ -1119,7 +1119,7 @@
                     }
                     this.process.proContent = this.applyOpenRecord.replyContent;
                     this.$refs['processContent'].setUeContent(this.process.content);
-                    //this.$refs['proContent'].setUeContent(this.process.proContent);
+                    this.$refs['proContent'].setUeContent(this.process.proContent);
                 }
                 if(proType == 4){
                     this.processTitle = '退回信件';
@@ -1190,6 +1190,9 @@
                 }
                 this.process.proType = proType;
                 this.process.sqId = this.applyOpenRecord.id;
+                this.$nextTick(() => {
+                    this.$refs['processDialogForm'].clearValidate();
+                })
             },
             doCreateProcess(){
                 console.log(this.process.proTime);
