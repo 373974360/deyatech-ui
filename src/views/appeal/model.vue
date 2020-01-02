@@ -4,7 +4,25 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.modelName" maxlength="100"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select :size="searchSize" v-model="listQuery.autoPublish" placeholder="自动发布" clearable>
+                            <el-option :value="1" label="是"></el-option>
+                            <el-option :value="0" label="否"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select :size="searchSize" v-model="listQuery.busType" placeholder="业务模型" clearable>
+                            <el-option :value="1" label="转发"></el-option>
+                            <el-option :value="2" label="直投"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select :size="searchSize" v-model="listQuery.deptTransfer" placeholder="部门间转办" clearable>
+                            <el-option :value="1" label="是"></el-option>
+                            <el-option :value="0" label="否"></el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
@@ -321,8 +339,12 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined,
-                    siteId: this.$store.state.common.siteId
+                    siteId: this.$store.state.common.siteId,
+                    modelName: undefined,
+                    limitDay: undefined,
+                    autoPublish: undefined,
+                    busType: undefined,
+                    deptTransfer: undefined
                 },
                 model: {
                     id: undefined,
@@ -487,7 +509,10 @@
                 })
             },
             resetSearch(){
-                this.listQuery.name = undefined;
+                this.listQuery.modelName = undefined;
+                this.listQuery.autoPublish = undefined;
+                this.listQuery.busType = undefined;
+                this.listQuery.deptTransfer = undefined;
             },
             reloadList(){
                 this.listLoading = true;

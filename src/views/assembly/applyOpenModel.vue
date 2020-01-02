@@ -34,7 +34,7 @@
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || usageCount > 0">{{$t('table.delete')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -83,7 +83,7 @@
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                   @click.stop.safe="btnDelete(scope.row)" :disabled="scope.row.usageCount"></el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -340,7 +340,7 @@
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
-                    name: undefined,
+                    modelName: undefined,
                     limitDay: undefined,
                     autoPublish: undefined,
                     busType: undefined,
@@ -449,7 +449,8 @@
                 printTemplateTreeData: [],
                 listTemplateTreeData: [],
                 formTemplateTreeData: [],
-                detailsTemplateTreeData: []
+                detailsTemplateTreeData: [],
+                usageCount: 0
             }
         },
         computed: {
@@ -532,6 +533,12 @@
             },
             handleSelectionChange(rows){
                 this.selectedRows = rows;
+                this.usageCount = 0;
+                if (this.selectedRows) {
+                    for(let r of this.selectedRows) {
+                        this.usageCount += r.usageCount;
+                    }
+                }
             },
             btnCreate(){
                 this.resetModel();
