@@ -42,7 +42,13 @@ export function getDictionaryList(query) {
         params: query
     });
 }
-
+export function getDictionaryListAlias(query) {
+    return request({
+        url: '/manage/admin/dictionary/aliasListByDictionary',
+        method: 'get',
+        params: query
+    });
+}
 export function getNextSortNo(indexId) {
     return request({
         url: '/manage/admin/dictionary/getNextSortNo',

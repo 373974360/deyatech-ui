@@ -41,11 +41,11 @@
                     </template>
                 </el-table-column>-->
                 <!--<el-table-column type="selection" width="50" align="center"/>-->
-                <el-table-column align="center" label="内容编号" prop="variables.templateId"/>
+                <!--<el-table-column align="center" label="内容编号" prop="variables.templateId"/>-->
                 <el-table-column align="center" label="内容标题" prop="variables.title"/>
                 <el-table-column align="center" label="内容作者" prop="variables.author"/>
-                <el-table-column align="center" label="审核状态" prop="name"/>
-                <el-table-column align="center" label="创建时间" prop="startTime"/>
+                <!--<el-table-column align="center" label="审核状态" prop="name"/>-->
+                <!--<el-table-column align="center" label="创建时间" prop="startTime"/>-->
                 <!--<el-table-column align="center" label="内容id" prop="contentId"/>
                 <el-table-column align="center" label="工作流id" prop="workflowId"/>-->
 
@@ -198,7 +198,7 @@
             reloadList(){
                 this.listLoading = true;
                 this.reviewProcessList = undefined;
-                // this.total = undefined;
+                console.dir(this.listQuery);
                 getCurrentTaskList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.reviewProcessList = response.data.records;

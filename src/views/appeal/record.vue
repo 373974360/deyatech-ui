@@ -326,6 +326,7 @@
                                                     v-model.trim="process.proTime"
                                                     type="datetime"
                                                     value-format="yyyy-MM-dd HH:mm:ss"
+                                                    :picker-options="pickerOptionsTime"
                                                     placeholder="选择时间">
                                                 </el-date-picker>
                                             </el-form-item>
@@ -698,6 +699,11 @@
                         ]
                     ]
                 },
+                pickerOptionsTime: {
+                    disabledDate(time) {
+                        return time.getTime() < Date.now();
+                    },
+                },
                 pickerOptions: {
                     shortcuts: [{
                         text: '最近一周',
@@ -778,7 +784,8 @@
                 },
                 processRules_5: {
                     proTime: [
-                        {required: true, message: this.$t("table.pleaseSelect") + "回复时间"}
+                        {required: true, message: this.$t("table.pleaseSelect") + "回复时间"},
+                        {validator: validateReplyTime, trigger: 'change'}
                     ],
                     proContent: [
                         {required: true, message: this.$t("table.pleaseInput") + "回复内容"}
@@ -797,7 +804,8 @@
                         {required: true, message: this.$t("table.pleaseInput") + "来信内容"}
                     ],
                     proTime: [
-                        {required: true, message: this.$t("table.pleaseSelect") + "回复时间"}
+                        {required: true, message: this.$t("table.pleaseSelect") + "回复时间"},
+                        {validator: validateReplyTime, trigger: 'change'}
                     ],
                     proContent: [
                         {required: true, message: this.$t("table.pleaseInput") + "退回原因"}

@@ -125,7 +125,6 @@
                                     :options="catalogList"
                                     :props="catalogProps"
                                     v-model.trim="pageCatalogList"
-                                    collapse-tags
                                     clearable></el-cascader>
                             </el-form-item>
                         </el-col>
