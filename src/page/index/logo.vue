@@ -5,7 +5,7 @@
             class="avue-logo_subtitle"
             key="0">
         <img src="img/bg/logo.png"
-             width="30"/>
+             width="50"/>
       </span>
         </transition>
         <transition-group name="fade">
@@ -13,9 +13,9 @@
         <span class="avue-logo_title"
               key="1">
           <div>
-            <img src="img/bg/logo.png"
-                 width="30"
-                 alt="">{{userInfo.name}}</div>
+            <img src="img/bg/sd-logo.png"
+                 width="200"
+                 alt=""><!--{{userInfo.name}}--></div>
         </span>
             </template>
         </transition-group>
@@ -58,16 +58,17 @@
     .avue-logo {
         position: fixed;
         top: 0;
-        left: 15px;
+        left: 0;
         height: 64px;
         line-height: 64px;
-        background-color: #20222a;
+        background-color: #0f4c81;
         font-size: 20px;
         overflow: hidden;
         box-sizing: border-box;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+        //box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
         color: rgba(255, 255, 255, 0.8);
         z-index: 1024;
+        font-weight: bold;
 
         &_title {
             display: block;
@@ -82,7 +83,7 @@
                 width: 100%;
 
                 img {
-                    margin-right: 5px;
+                   // margin-right: 5px;
                 }
             }
         }

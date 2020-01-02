@@ -1,5 +1,5 @@
 <template>
-    <div class="login-container" style="background: url(img/bg/login-bg.jpg) 0 bottom repeat-x #2790ee;"
+    <div class="login-container" style="background: url(img/bg/login-bg.jpg) center center;background-size: 100% 100%;"
          @keyup.enter.native="handleLogin" >
         <top-color v-show="false"></top-color>
         <div class="login-weaper animated bounceInDown">

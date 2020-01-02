@@ -4,7 +4,7 @@
     padding-top: 74px;
     height: 100%;
     position: relative;
-    background-color: #20222a;
+    background-color: #0f4c81;
     transition: width .2s;
     box-sizing: border-box;
     box-shadow: 2px 0 6px rgba(0, 21, 41, .35);
@@ -29,8 +29,8 @@
     .el-menu-item,
     .el-submenu__title {
         font-size: 14px;
-        height: 56px;
-        line-height: 56px;
+        height: 48px;
+        line-height: 48px;
     }
 
     .el-menu-item {
@@ -49,7 +49,7 @@
         }
 
         &.is-active {
-            background-color: rgba(0, 0, 0, .8);
+            background-color: rgba(195, 126, 64, 1);
 
             span,
             i {
@@ -57,7 +57,7 @@
             }
 
             &:hover {
-                background-color: rgba(0, 0, 0, .8);
+                background-color: rgba(244, 132, 32, 1);
             }
 
             &::before {
@@ -66,7 +66,8 @@
                 left: 0;
                 bottom: 0;
                 width: 4px;
-                background: $mainBg;
+                //background: $mainBg;
+                background: #f48420;
                 position: absolute
             }
         }
@@ -96,7 +97,7 @@
         }
 
         &.is-active {
-            background-color: rgba(0, 0, 0, .8);
+            background-color: rgba(244, 132, 32, 1);
 
             span,
             i {
@@ -104,7 +105,7 @@
             }
 
             &:hover {
-                background-color: rgba(0, 0, 0, .8);
+                background-color: rgba(244, 132, 32, 1);
             }
         }
 
