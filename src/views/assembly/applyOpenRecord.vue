@@ -182,36 +182,36 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="联系电话" prop="tel">
-                                        <el-input v-model.trim="applyOpenRecord.tel"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.tel" maxlength="13"></el-input>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="联系传真" prop="fax">
-                                        <el-input v-model.trim="applyOpenRecord.fax"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.fax" maxlength="13"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="手机号码" prop="phone">
-                                        <el-input v-model.trim="applyOpenRecord.phone"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.phone" maxlength="11"></el-input>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="电子邮箱" prop="email">
-                                        <el-input v-model.trim="applyOpenRecord.email"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.email" maxlength="50"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="通讯地址" prop="address">
-                                        <el-input v-model.trim="applyOpenRecord.address"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.address" maxlength="100"></el-input>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="邮政编码" prop="postcode">
-                                        <el-input v-model.trim="applyOpenRecord.postcode"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.postcode" maxlength="6"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
@@ -410,7 +410,7 @@
                                                     v-model.trim="process.proTime"
                                                     type="datetime"
                                                     value-format="yyyy-MM-dd HH:mm:ss"
-                                                    placeholder="选择时间">
+                                                    placeholder="选择时间" onchange="proTimeChange">
                                                 </el-date-picker>
                                             </el-form-item>
                                         </el-col>
@@ -488,6 +488,7 @@
         createOrUpdateApplyOpenProcess
     } from '@/api/assembly/applyOpenProcess';
     import {getModelByCompetentDeptId,getModel} from '@/api/assembly/applyOpenModel';
+    import {isvalidatemobile, validateEmail, cardid, isZipCode, isTelephone, isFax} from '@/util/validate';
 
     export default {
         name: 'applyOpenRecord',
@@ -495,6 +496,57 @@
             editor
         },
         data() {
+            const validateMobile = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                let result = isvalidatemobile(value)
+                if (result[0]) {
+                    callback(new Error(result[1]))
+                } else {
+                    callback()
+                }
+            };
+            const validateMail = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (validateEmail(value)) {
+                    callback()
+                } else {
+                    callback(new Error("电子邮箱不正确"))
+                }
+            };
+            const validateTelephone = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (isTelephone(value)) {
+                    callback()
+                } else {
+                    callback(new Error("联系电话不正确"))
+                }
+            };
+            const validateFax = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (isFax(value)) {
+                    callback()
+                } else {
+                    callback(new Error("联系传真不正确"))
+                }
+            };
+            const validatePostCode = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (isZipCode(value)) {
+                    callback()
+                } else {
+                    callback(new Error("邮政编码不正确"))
+                }
+            };
             return {
                 treeData:[{
                     label: '发布管理',
@@ -726,6 +778,21 @@
                 applyOpenRecordRules:{
                     modelId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '业务模型'}
+                    ],
+                    phone: [
+                        {validator: validateMobile, trigger: 'change'}
+                    ],
+                    email: [
+                        {validator: validateMail, trigger: 'change'}
+                    ],
+                    tel: [
+                        {validator: validateTelephone, trigger: 'change'}
+                    ],
+                    fax: [
+                        {validator: validateFax, trigger: 'change'}
+                    ],
+                    postcode: [
+                        {validator: validatePostCode, trigger: 'change'}
                     ]
                 },
                 selectedRows: [],
@@ -1112,14 +1179,15 @@
                     this.processRulesType = this.processRules_7;
                     this.process.isPublish = 1;
                     this.process.content = this.applyOpenRecord.content;
-                    if (this.applyOpenRecord.replyTime) {
-                        this.process.proTime = this.applyOpenRecord.replyTime;
-                    } else {
-                        this.process.proTime = undefined;
-                    }
+                    this.process.proTime = this.applyOpenRecord.replyTime;
                     this.process.proContent = this.applyOpenRecord.replyContent;
-                    this.$refs['processContent'].setUeContent(this.process.content);
-                    this.$refs['proContent'].setUeContent(this.process.proContent);
+                    if (this.process.proContent) {
+                        this.$refs['processContent'].setUeContent(this.process.content);
+                        this.$refs['proContent'].setUeContent(this.process.proContent);
+                    } else {
+                        this.$refs['processContent'].setUeContent('');
+                        this.$refs['proContent'].setUeContent('');
+                    }
                 }
                 if(proType == 4){
                     this.processTitle = '退回信件';
@@ -1292,6 +1360,9 @@
                 this.closeProcessDialog();
                 this.submitLoading = false;
                 this.reloadList();
+            },
+            proTimeChange(v) {
+                console.log(v);
             }
         }
     }

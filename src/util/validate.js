@@ -345,3 +345,13 @@ export function isEnglishName(textval) {
     const reg = /^[a-z]+\w*$/
     return reg.test(textval)
 }
+// 手机或固话
+export function isTelephone(value) {
+    const reg1 = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+    const reg2 = /^(0\d{2,3})?-\d{7,8}$/;
+    return reg1.test(value) || reg2.test(value);
+}
+export function isFax(value) {
+    const reg = /^(0\d{2,3})?-\d{7,8}$/;
+    return reg.test(value);
+}

@@ -411,8 +411,7 @@
         getProcessAllList,
         createOrUpdateProcess
     } from '@/api/appeal/process';
-    import {validateEmail, isMobile, cardid} from '@/util/validate';
-
+    import {isvalidatemobile, validateEmail, isMobile, cardid, isTelephone} from '@/util/validate';
     export default {
         name: 'record',
         components: {
@@ -434,10 +433,11 @@
                 if (!value) {
                     callback()
                 }
-                if (isMobile(value)) {
-                    callback()
+                let result = isvalidatemobile(value)
+                if (result[0]) {
+                    callback(new Error(result[1]))
                 } else {
-                    callback(new Error("手机号码不正确"))
+                    callback()
                 }
             };
             const validateMail = (rule, value, callback) => {
@@ -1114,8 +1114,13 @@
                     this.process.content = this.record.content;
                     this.process.proTime = this.record.replyTime;
                     this.process.proContent = this.record.replyContent;
-                    this.$refs['processContent'].setUeContent(this.process.content);
-                    this.$refs['proContent'].setUeContent(this.process.proContent);
+                    if (this.process.content) {
+                        this.$refs['processContent'].setUeContent(this.process.content);
+                        this.$refs['proContent'].setUeContent(this.process.proContent);
+                    } else {
+                        this.$refs['processContent'].setUeContent('');
+                        this.$refs['proContent'].setUeContent('');
+                    }
                 }
                 if(proType == 4){
                     this.processTitle = '退回信件';
