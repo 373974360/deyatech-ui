@@ -48,7 +48,30 @@ const common = {
         themeName: getStore({name: 'themeName'}) || 'theme-default',
         lockPasswd: getStore({name: 'lockPasswd'}) || '',
         website: website,
-        callThirdPartyInterface: true // 是否调用第三方接口
+        callThirdPartyInterface: true, // 是否调用第三方接口
+        areas: [
+            {code: '610100000000', name: '西安市'},
+            {code: '610102000000', name: '新城区'},
+            {code: '610103000000', name: '碑林区'},
+            {code: '610104000000', name: '莲湖区'},
+            {code: '610113000000', name: '雁塔区'},
+            {code: '610111000000', name: '灞桥区'},
+            {code: '610112000000', name: '未央区'},
+            {code: '610114000000', name: '阎良区'},
+            {code: '610115000000', name: '临潼区'},
+            {code: '610116000000', name: '长安区'},
+            {code: '610117000000', name: '高陵区'},
+            {code: '610118000000', name: '鄠邑区'},
+            {code: '610122000000', name: '蓝田县'},
+            {code: '610124000000', name: '周至县'},
+            {code: '610135000000', name: '高新区'},
+            {code: '610134000000', name: '经开区'},
+            {code: '610133000000', name: '曲江新区'},
+            {code: '610154000000', name: '浐灞生态区'},
+            {code: '610156000000', name: '航空基地'},
+            {code: '610157000000', name: '航天基地'},
+            {code: '610155000000', name: '国际港务区'}
+        ]
     },
     actions: {
         // 获取后台的所有枚举json数据

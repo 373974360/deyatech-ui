@@ -1,8 +1,8 @@
 <template>
     <basic-container>
-        <div class="deyatech-container pull-auto">
-            <div style="width: 100%; margin-top: -504px;">
-                <iframe width="100%" height="1900" :src="host + '/pc/index.html'" scrolling="no" frameborder="0"></iframe>
+        <div class="deyatech-container pull-auto" style="overflow-x: auto">
+            <div style="width: 1200px; margin-top: -500px; overflow-x: auto">
+                <iframe width="100%" height="1740" :src="host + '/pc/index.html'" scrolling="no" frameborder="0"></iframe>
             </div>
         </div>
     </basic-container>
@@ -36,7 +36,7 @@
                 };
             },
             host() {
-                return window.location.host.includes('http') ? window.location.host : 'http://' + window.location.host;
+                return window.location.origin;
             }
         },
         created(){

@@ -106,7 +106,19 @@
                             @change="submitTimeRangeChange">
                         </el-date-picker>
                     </el-form-item>
-
+                    <el-form-item v-if="deptFilterVisible">
+                        <el-select :size="searchSize" v-model="listQuery.organizationalCode" filterable clearable :placeholder="$t('table.pleaseSelect') + '区县'">
+                            <el-option
+                                v-for="item in this.$store.state.common.areas"
+                                :key="item.code"
+                                :label="item.name"
+                                :value="item.code">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item v-if="deptFilterVisible">
+                        <el-input clearable :size="searchSize" :placeholder="$t('table.pleaseInput') + '部门名称'" v-model="listQuery.proDepartment" style="width: 187px"></el-input>
+                    </el-form-item>
 <!--                    <el-form-item >
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
@@ -144,7 +156,7 @@
                             disabled
                             v-model="scope.row.levelCode | levelParseInt"
                             :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                            show-text
+                            :show-text="false"
                             :texts="['非常不满意', '不满意', '基本满意', '满意', '非常满意']">
                         </el-rate>
                     </template>
@@ -155,6 +167,11 @@
                     </template>-->
                 </el-table-column>
                 <el-table-column align="center" label="评价时间" prop="submitTime"/>
+                <el-table-column align="center" label="文字评价">
+                    <template slot-scope="scope">
+                        {{scope.row.words ? (scope.row.words.length > 9 ? scope.row.words.substr(0, 8) + '...' : scope.row.words) : '无'}}
+                    </template>
+                </el-table-column>
 <!--                <el-table-column align="center" label="审核状态" prop="status" width="90px">
                     <template slot-scope="scope">
                         {{scope.row.status | enums('EvaluationStatusEnum')}}
@@ -172,10 +189,6 @@
                 </el-table-column>-->
 <!--                <el-table-column align="center" label="整改回复内容" prop="reformContent" width="120px"/>-->
 <!--                <el-table-column align="center" label="整改期限" prop="reformDate" width="120px"/>-->
-
-
-
-
 <!--                <el-table-column align="center" label="组织机构代码" prop="organizationalCode"/>
                 <el-table-column align="center" label="事项办理项编码" prop="processItemCode"/>
                 <el-table-column align="center" label="事项主题" prop="subMatter"/>
@@ -606,7 +619,8 @@
                 levelParseInt: {},
                 dialogVisibleDetails: false,
                 recordsList: [],
-                revisitRecordList: []
+                revisitRecordList: [],
+                deptFilterVisible: false
             }
         },
         computed: {
@@ -630,6 +644,7 @@
         created(){
             // 督查处所有数据，市级按部门，其他按区县
             if (this.userInfo.loginName.includes('duchachu') || this.userInfo.loginName === 'hcp_admin') {
+                this.deptFilterVisible = true;
                 this.reloadList();
             } else {
                 getOrgDetail(this.userInfo.orgId).then(res => {
