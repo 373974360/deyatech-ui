@@ -1,26 +1,26 @@
 import Layout from '@/page/index/'
 
 export default [{
-    path: '/login',
-    name: '登录页',
-    component: () =>
-        import( /* webpackChunkName: "page" */ '@/page/cas/index'),
-    meta: {
-        keepAlive: true,
-        isTab: false,
-        isAuth: false
-    }
-},{
-    path: '/cas',
-    name: 'CAS跳转',
-    component: () =>
-        import( /* webpackChunkName: "page" */ '@/page/cas/login'),
-    meta: {
-        keepAlive: true,
-        isTab: false,
-        isAuth: false
-    }
-},
+        path: '/login',
+        name: '登录页',
+        component: () =>
+            import( /* webpackChunkName: "page" */ '@/page/cas/index'),
+        meta: {
+            keepAlive: true,
+            isTab: false,
+            isAuth: false
+        }
+    },{
+        path: '/cas',
+        name: 'CAS跳转',
+        component: () =>
+            import( /* webpackChunkName: "page" */ '@/page/cas/login'),
+        meta: {
+            keepAlive: true,
+            isTab: false,
+            isAuth: false
+        }
+    },
     {
         path: '/lock',
         name: '锁屏页',
