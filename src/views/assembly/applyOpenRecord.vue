@@ -1,7 +1,7 @@
 <template>
     <basic-container>
         <el-row :span="24">
-            <el-col :span="4">
+            <el-col :span="3">
                 <div class="classificationTree">
                     <!--左侧树-->
                     <el-tree
@@ -14,43 +14,32 @@
                     </el-tree>
                 </div>
             </el-col>
-            <el-col :span="20">
+            <el-col :span="21">
                 <div class="deyatech-container pull-auto">
-                    <div class="deyatech-header">
-                        <el-form :inline="true" ref="searchForm">
-                            <el-form-item>
-                                <el-input :size="searchSize" placeholder="申请编码" v-model.trim="listQuery.ysqCode" clearable></el-input>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
-                                    <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
-                                </el-select>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-date-picker
-                                    :size="searchSize"
-                                    v-model.trim="timeFrame"
-                                    type="daterange"
-                                    align="right"
-                                    unlink-panels
-                                    range-separator="至"
-                                    start-placeholder="开始日期"
-                                    end-placeholder="结束日期"
-                                    value-format="yyyy-MM-dd"
-                                    :picker-options="pickerOptions">
-                                </el-date-picker>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                                <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                            </el-form-item>
-                        </el-form>
-                    </div>
                     <div class="deyatech-menu">
                         <div class="deyatech-menu_left">
                             <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                             <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                             <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+
+                            <el-input :size="searchSize" placeholder="申请编码" v-model.trim="listQuery.ysqCode" clearable style="width: 170px;margin-left: 10px;margin-right:10px;"></el-input>
+                            <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
+                                <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
+                            </el-select>
+                            <el-date-picker
+                                :size="searchSize"
+                                v-model.trim="timeFrame"
+                                type="daterange"
+                                align="right"
+                                unlink-panels
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                                value-format="yyyy-MM-dd"
+                                :picker-options="pickerOptions" style="width:250px; margin-left: 10px; margin-right: 10px;">
+                            </el-date-picker>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                         </div>
                         <div class="deyatech-menu_right">
                             <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>

@@ -18,14 +18,14 @@
             <div class="top-bar__item">
                 <top-site></top-site>
             </div>
-            <el-tooltip v-if="showColor"
+            <!--<el-tooltip v-if="showColor"
                         effect="dark"
                         :content="$t('navbar.color')"
                         placement="bottom">
                 <div class="top-bar__item">
                     <top-color></top-color>
                 </div>
-            </el-tooltip>
+            </el-tooltip>-->
             <el-tooltip v-if="showDebug"
                         effect="dark"
                         :content="logsFlag?$t('navbar.bug'):logsLen+$t('navbar.bugs')"
@@ -34,7 +34,7 @@
                     <top-logs></top-logs>
                 </div>
             </el-tooltip>
-            <el-tooltip v-if="showLock"
+            <!--<el-tooltip v-if="showLock"
                         effect="dark"
                         :content="$t('navbar.lock')"
                         placement="bottom">
@@ -56,7 +56,7 @@
                 <div class="top-bar__item top-bar__item--show">
                     <top-lang></top-lang>
                 </div>
-            </el-tooltip>
+            </el-tooltip>-->
             <el-tooltip v-if="showFullScren"
                         effect="dark"
                         :content="isFullScren?$t('navbar.screenfullF'):$t('navbar.screenfull')"
@@ -66,20 +66,20 @@
                        @click="handleScreen"></i>
                 </div>
             </el-tooltip>
-            <img class="top-bar__img"
-                 :src="userInfo.avatar">
+            <img class="top-bar__img" v-show="userInfo.avatar"
+                 :src="'/manage/common/showPicImg?filePath=' + userInfo.avatar">
             <el-dropdown>
                 <span class="el-dropdown-link">
-                  {{userInfo.userName}}
+                  {{this.userInfo.name}}
                   <i class="el-icon-arrow-down el-icon--right"></i>
                 </span>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item>
-                        <router-link to="/">{{$t('navbar.dashboard')}}</router-link>
+                        <router-link to="/wel/index">{{$t('navbar.dashboard')}}</router-link>
                     </el-dropdown-item>
-                    <el-dropdown-item>
+                    <!--<el-dropdown-item>
                         <router-link to="/info/index">{{$t('navbar.userinfo')}}</router-link>
-                    </el-dropdown-item>
+                    </el-dropdown-item>-->
                     <el-dropdown-item @click.native="logout"
                                       divided>{{$t('navbar.logOut')}}
                     </el-dropdown-item>
@@ -115,6 +115,7 @@
         },
         filters: {},
         created() {
+            console.dir(this.userInfo);
         },
         mounted() {
             listenfullscreen(this.setScreen);
@@ -129,7 +130,8 @@
                 showSearch: state => state.common.showSearch,
                 showMenu: state => state.common.showMenu,
                 showColor: state => state.common.showColor,
-                isFullScren: state => state.common.isFullScren
+                isFullScren: state => state.common.isFullScren,
+                userInfo: state => state.user.userInfo
             }),
             ...mapGetters([
                 "userInfo",

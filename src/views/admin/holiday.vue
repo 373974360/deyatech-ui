@@ -2,10 +2,9 @@
     <basic-container>
         <div class="deyatech-container pull-auto">
             <div class="deyatech-header">
-                <el-date-picker class="filter-item" v-model.trim="year" align="right" type="year" placeholder="选择年份" @change="handlerChange"
-                                style="width:252px">
+                <el-date-picker :size="btnSize" class="filter-item" v-model.trim="year" align="right" type="year" placeholder="选择年份" @change="handlerChange" style="width:252px">
                 </el-date-picker>
-                <el-button v-if="btnEnable.update" class="filter-item" style="margin-left: 10px;" type="primary" icon="circle-check" @click="save">保存</el-button>
+                <el-button v-if="btnEnable.update" :size="btnSize" class="filter-item" style="margin-left: 10px;" type="primary" icon="circle-check" @click="save">保存</el-button>
             </div>
             <div class="deyatech-menu" style="margin-top:20px;">
                 <div v-show="!listLoading">

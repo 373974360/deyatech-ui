@@ -1,40 +1,27 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.modelName" maxlength="100" clearable></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-select :size="searchSize" v-model="listQuery.autoPublish" placeholder="自动发布" clearable>
-                            <el-option :value="1" label="是"></el-option>
-                            <el-option :value="0" label="否"></el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-select :size="searchSize" v-model="listQuery.busType" placeholder="业务模型" clearable>
-                            <el-option :value="1" label="转发"></el-option>
-                            <el-option :value="2" label="直投"></el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-select :size="searchSize" v-model="listQuery.deptTransfer" placeholder="部门间转办" clearable>
-                            <el-option :value="1" label="是"></el-option>
-                            <el-option :value="0" label="否"></el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || usageCount > 0">{{$t('table.delete')}}</el-button>
+
+                    <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.modelName" maxlength="100" clearable style="width: 200px;margin-left: 10px;margin-right:10px;"></el-input>
+                    <el-select :size="searchSize" v-model="listQuery.autoPublish" placeholder="自动发布" clearable style="width: 100px;">
+                        <el-option :value="1" label="是"></el-option>
+                        <el-option :value="0" label="否"></el-option>
+                    </el-select>
+                    <el-select :size="searchSize" v-model="listQuery.busType" placeholder="业务模型" clearable style="width: 100px;margin-left: 10px;margin-right:10px;">
+                        <el-option :value="1" label="转发"></el-option>
+                        <el-option :value="2" label="直投"></el-option>
+                    </el-select>
+                    <el-select :size="searchSize" v-model="listQuery.deptTransfer" placeholder="部门间转办" clearable style="width: 100px;margin-right:10px;">
+                        <el-option :value="1" label="是"></el-option>
+                        <el-option :value="0" label="否"></el-option>
+                    </el-select>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>

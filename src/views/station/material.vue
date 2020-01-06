@@ -1,32 +1,39 @@
 <template>
     <basic-container>
-        <div style="margin-bottom: 10px">
-            <el-radio-group v-model="showType" @change="typeChange">
-                <el-radio-button :label="0">矩阵</el-radio-button>
-                <el-radio-button :label="1">列表</el-radio-button>
-            </el-radio-group>
+        <div class="deyatech-container pull-auto" style="width: 100%;">
+            <div class="deyatech-menu" >
+                <div class="deyatech-menu_left">
+                    <el-radio-group v-model="showType" @change="typeChange" :size="searchSize" style="margin-right: 10px;">
+                        <el-radio-button :label="0">矩阵</el-radio-button>
+                        <el-radio-button :label="1">列表</el-radio-button>
+                    </el-radio-group>
+
+                    <div v-show="showType == 0" style="display: inline-block">
+                        <el-select v-model="treeListQuery.usePlace" :size="searchSize" placeholder="请选择使用" style="margin-right: 10px;">
+                            <el-option v-for="i in enums['MaterialUsePlaceEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                        </el-select>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="treeListQuery.name" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnTreeSearch">{{$t('table.search')}}</el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetTreeSearch">{{$t('table.clear')}}</el-button>
+                    </div>
+
+                    <div v-show="showType == 1" style="display: inline-block">
+                        <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1" style="margin-right: 10px;">{{$t('table.delete')}}</el-button>
+                        <el-select v-model="listQuery.usePlace" :size="searchSize" placeholder="请选择使用">
+                            <el-option v-for="i in enums['MaterialUsePlaceEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                        </el-select>
+                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                    </div>
+                </div>
+                <div class="deyatech-menu_right" v-show="showType == 1">
+                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
+                </div>
+            </div>
         </div>
 
         <div v-show="showType == 0">
-            <div class="deyatech-container pull-auto" style="width: 100%;">
-                <div class="deyatech-header" style="width: 100%;">
-                    <el-form :inline="true" ref="searchForm">
-                        <el-form-item>
-                            <el-select v-model="treeListQuery.usePlace" :size="searchSize" placeholder="请选择使用">
-                                <el-option v-for="i in enums['MaterialUsePlaceEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="treeListQuery.name"></el-input>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnTreeSearch">{{$t('table.search')}}</el-button>
-                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetTreeSearch">{{$t('table.clear')}}</el-button>
-                        </el-form-item>
-                    </el-form>
-                </div>
-            </div>
-
             <el-row :span="24">
                 <el-col :span="4">
                     <div class="directoryTree">
@@ -60,33 +67,6 @@
         </div>
 
         <div v-show="showType == 1">
-            <div class="deyatech-container pull-auto" style="width: 100%;">
-                <div class="deyatech-header" style="width: 100%;">
-                    <el-form :inline="true" ref="searchForm">
-                        <el-form-item>
-                            <el-select v-model="listQuery.usePlace" :size="searchSize" placeholder="请选择使用">
-                                <el-option v-for="i in enums['MaterialUsePlaceEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
-                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                        </el-form-item>
-                    </el-form>
-                </div>
-                <div class="deyatech-menu">
-                    <div class="deyatech-menu_left">
-                        <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
-                    </div>
-                    <div class="deyatech-menu_right">
-                        <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
-                    </div>
-                </div>
-            </div>
-
             <el-table :data="materialList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="50" align="center"/>

@@ -4,15 +4,6 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" placeholder="redis key"
-                                  v-model.trim="listQuery.key"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
-                            {{$t('table.search')}}
-                        </el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
-                        </el-button>
                         <el-button icon="el-icon-delete" :size="searchSize" @click="btnDelete" type="danger"
                                    :disabled="selectedRows.length < 1">{{$t('table.delete')}}缓存
                         </el-button>
@@ -21,6 +12,17 @@
                         </el-button>
                         <el-button icon="el-icon-refresh" :size="searchSize" @click="btnReload" type="primary">
                             刷新缓存
+                        </el-button>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input :size="searchSize" placeholder="redis key"
+                                  v-model.trim="listQuery.key"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">
+                            {{$t('table.search')}}
+                        </el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}
                         </el-button>
                     </el-form-item>
                 </el-form>
