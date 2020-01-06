@@ -7,6 +7,12 @@ export function loginByUsername(userInfo) {
         params: userInfo
     });
 }
+export function getUser() {
+    return request({
+        url: '/manage/cas/sso/getUser',
+        method: 'get'
+    });
+}
 
 export function refreshToken() {
     return request({

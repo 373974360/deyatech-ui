@@ -159,7 +159,8 @@
                     type: "warning"
                 }).then(() => {
                     this.$store.dispatch("LogOut").then(() => {
-                        this.$router.push({path: "/login"});
+                        //this.$router.push({path: "/login"});
+                        window.location.href='/manage/cas/sso/logout';
                     });
                 });
             }
