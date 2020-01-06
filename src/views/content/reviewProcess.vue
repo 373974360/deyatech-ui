@@ -1,17 +1,6 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入标题或作者" v-model.trim="listQuery.titleOrAuthor"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <!--<el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
@@ -20,6 +9,10 @@
                     <!--<el-button type="success" icon="el-icon-check" :size="btnSize" @click="btnCompleteTask" :disabled="selectedRows.length < 1">批量通过</el-button>
                     <el-button type="warning" icon="el-icon-back" :size="btnSize" @click="btnRollBackTask" :disabled="selectedRows.length < 1">批量回退</el-button>
                     <el-button type="danger" icon="el-icon-close" :size="btnSize" @click="btnRejectTask" :disabled="selectedRows.length < 1">批量拒绝</el-button>-->
+
+                    <el-input :size="searchSize" placeholder="请输入标题或作者" v-model.trim="listQuery.titleOrAuthor" style="width: 300px;margin-right:10px;"></el-input>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
+                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>

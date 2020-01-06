@@ -1,22 +1,15 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.pageName"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+
+                    <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.pageName" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>

@@ -107,9 +107,14 @@
                             let data = response.body.split(',');
                             let value = parseInt(data[0]);
                             let total = parseInt(data[1]);
-                            _this.percentage = parseInt(value / total * 100);
-                            if (_this.percentage < 100) {
-                                _this.showProgress = true;
+                            if (total > 0) {
+                                _this.percentage = parseInt(value / total * 100);
+                                if (_this.percentage < 100) {
+                                    _this.showProgress = true;
+                                } else {
+                                    _this.showProgress = false;
+                                    _this.$message.success("索引码重置完成");
+                                }
                             } else {
                                 _this.showProgress = false;
                                 _this.$message.success("索引码重置完成");
@@ -133,7 +138,7 @@
                             this.submitLoading = false;
                             if (response.data) {
                                 this.showProgress = true;
-                                this.$message.success("索引码重置开始，请耐心等待");
+                                this.$message.success("索引码重置开始");
                             } else {
                                 this.showProgress = false;
                                 this.$message.error("索引码重置失败");

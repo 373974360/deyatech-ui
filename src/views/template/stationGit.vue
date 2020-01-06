@@ -30,11 +30,10 @@
                 <el-table-column type="selection" width="50" align="center"/>
                 <el-table-column align="left" label="文件名称" prop="fileName">
                     <template slot-scope="scope">
-                        <i v-if="scope.row.fileType=='file'" class="el-icon-tickets"></i>
-                        <i v-else-if="scope.row.fileType=='folder' &&scope.row.fileName=='...'" class="el-icon-back"></i>
-                        <i v-else class="el-icon-news"></i>
-                        <a href="javascript:void(0)"
-                           @click="scope.row.fileType=='folder' ? getChildFiles(scope.row.filePath) : getFileContext(scope.row)">
+                        <a href="javascript:void(0)" @click="scope.row.fileType=='folder' ? getChildFiles(scope.row.filePath) : getFileContext(scope.row)">
+                            <i v-if="scope.row.fileType=='file'" class="el-icon-tickets"></i>
+                            <i v-else-if="scope.row.fileType=='folder' &&scope.row.fileName=='...'" class="el-icon-back"></i>
+                            <i v-else class="el-icon-news"></i>
                             <span style="margin-left: 10px; font-size: 14px;">{{ scope.row.fileName }}</span>
                         </a>
                     </template>

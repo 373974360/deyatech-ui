@@ -1,31 +1,22 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-select filterable v-model.trim="listQuery.categoryId" :size="searchSize" placeholder="请选择分类">
-                            <el-option v-for="o in categorys"
-                                       :key="o.id"
-                                       :label="o.name"
-                                       :value="o.id"></el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="listQuery.name"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnLiveUpdate" :disabled="selectedRows.length != 1 || selectedRows[0].status != 1">直播</el-button>
+
+                    <el-select filterable v-model.trim="listQuery.categoryId" :size="searchSize" placeholder="请选择分类" style="margin-left: 10px;">
+                        <el-option v-for="o in categorys"
+                                   :key="o.id"
+                                   :label="o.name"
+                                   :value="o.id"></el-option>
+                    </el-select>
+                    <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="listQuery.name" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList">{{$t('table.search')}}</el-button>
+                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -387,28 +378,19 @@
 
 
             <!--嘉宾管理 列表 titleGuest-->
-            <el-dialog title="嘉宾管理" :visible.sync="guestDialogVisible" :fullscreen="false" :close-on-click-modal="closeOnClickModal" @close="guestCloseModelDialog">
-                <div class="deyatech-header">
-                    <el-form :inline="true" ref="guestSearchForm">
-                        <el-form-item>
-                            <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="guestListQuery.name"></el-input>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-select filterable :size="searchSize" v-model.trim="guestListQuery.type" placeholder="请选择类型">
-                                <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchGuestList">{{$t('table.search')}}</el-button>
-                            <el-button icon="el-icon-delete" :size="searchSize" @click="guestResetSearch">{{$t('table.clear')}}</el-button>
-                        </el-form-item>
-                    </el-form>
-                </div>
+            <el-dialog title="嘉宾管理" width="70%" :visible.sync="guestDialogVisible" :fullscreen="false" :close-on-click-modal="closeOnClickModal" @close="guestCloseModelDialog">
                 <div class="deyatech-menu">
                     <div class="deyatech-menu_left">
                         <el-button v-if="btnEnable.guestCreate" type="primary" :size="btnSize" @click="btnGuestCreate">{{$t('table.create')}}</el-button>
                         <el-button v-if="btnEnable.guestUpdate" type="primary" :size="btnSize" @click="btnGuestUpdate" :disabled="guestSelectedRows.length != 1">{{$t('table.update')}}</el-button>
                         <el-button v-if="btnEnable.guestDelete" type="danger" :size="btnSize" @click="btnGuestDelete" :disabled="guestSelectedRows.length < 1">{{$t('table.delete')}}</el-button>
+
+                        <el-input :size="searchSize" placeholder="请输入关键字" v-model.trim="guestListQuery.name" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                        <el-select filterable :size="searchSize" v-model.trim="guestListQuery.type" placeholder="请选择类型" style="margin-right:10px;">
+                            <el-option v-for="i in enums['InterviewGuestTypeEnum']" :key="i.code" :label="i.value" :value="i.code"></el-option>
+                        </el-select>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchGuestList">{{$t('table.search')}}</el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="guestResetSearch">{{$t('table.clear')}}</el-button>
                     </div>
                     <div class="deyatech-menu_right">
                         <el-button icon="el-icon-refresh" :size="btnSize" circle @click="guestReloadList"></el-button>

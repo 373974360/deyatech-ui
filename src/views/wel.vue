@@ -2,51 +2,40 @@
     <div>
         <div class="wel__header">
             <div class="wel__info">
-                <img :src="userInfo.avatar"
+                <img :src="'/manage/common/showPicImg?filePath=' + userInfo.avatar" v-show="userInfo.avatar"
                      alt=""
                      class="wel__info-img">
                 <div class="wel__info-content">
                     <div class="wel__info-title">
-                        {{$t('wel.info')}}
+                        {{userInfo.name}}
                     </div>
                     <div class="wel__info-subtitle">
-                        {{$t('wel.dept')}}
+                        {{userInfo.departmentName}}
                     </div>
                 </div>
             </div>
+
             <div class="wel__extra">
                 <div class="wel__extra-item">
-                    <p class="wel__extra-title">
-                        {{ $t('wel.count')}}
-                    </p>
+                    <p class="wel__extra-title">待办数</p>
                     <p class="wel__extra-subtitle">
                         56
                     </p>
                 </div>
                 <div class="wel__extra-item">
-                    <p class="wel__extra-title">
-                        {{ $t('wel.team')}}
-                    </p>
+                    <p class="wel__extra-title">合计数</p>
                     <p class="wel__extra-subtitle">
-                        8 <span>/ 24</span>
-                    </p>
-                </div>
-                <div class="wel__extra-item">
-                    <p class="wel__extra-title">
-
-                        {{ $t('wel.project')}}
-                    </p>
-                    <p class="wel__extra-subtitle">
-                        2,223
+                        14558
                     </p>
                 </div>
             </div>
         </div>
+
         <basic-container>
             <avue-data-box :option="option1"></avue-data-box>
         </basic-container>
 
-        <el-row :span="24">
+        <!--<el-row :span="24">
             <el-col :span="18">
                 <basic-container>
                     <avue-data-progress :option="option3"
@@ -59,12 +48,13 @@
                     <avue-data-icons :option="option2"></avue-data-icons>
                 </basic-container>
             </el-col>
-        </el-row>
-        <basic-container>
+        </el-row>-->
+
+        <!--<basic-container>
             <avue-crud :option="option4"
                        :data="data">
             </avue-crud>
-        </basic-container>
+        </basic-container>-->
     </div>
 </template>
 

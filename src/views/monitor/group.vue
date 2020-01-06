@@ -1,34 +1,23 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" placeholder="关键字" v-model.trim="listQuery.groupName" maxlength="100"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-select :size="searchSize" placeholder="请选择触发模式" v-model.trim="listQuery.triggerType">
-                            <el-option label="固定时刻" value="1">固定时刻</el-option>
-                            <el-option label="日历周期" value="2">日历周期</el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-select :size="searchSize" placeholder="请选择任务状态" v-model.trim="listQuery.runType">
-                            <el-option label="运行中" value="1">运行中</el-option>
-                            <el-option label="空闲" value="2">空闲</el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+
+                    <el-input :size="searchSize" placeholder="关键字" v-model.trim="listQuery.groupName" maxlength="100" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                    <el-select :size="searchSize" placeholder="请选择触发模式" v-model.trim="listQuery.triggerType">
+                        <el-option label="固定时刻" value="1">固定时刻</el-option>
+                        <el-option label="日历周期" value="2">日历周期</el-option>
+                    </el-select>
+                    <el-select :size="searchSize" placeholder="请选择任务状态" v-model.trim="listQuery.runType" style="margin-left: 10px;margin-right:10px;">
+                        <el-option label="运行中" value="1">运行中</el-option>
+                        <el-option label="空闲" value="2">空闲</el-option>
+                    </el-select>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="btnSearch">{{$t('table.search')}}</el-button>
+                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>

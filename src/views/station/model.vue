@@ -1,33 +1,24 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" placeholder="请输入内容模型或英文名称" v-model.trim="listQuery.name" style="width: 200px"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-select filterable v-model.trim="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize">
-                            <el-option
-                                v-for="m in metadataCollectionList"
-                                :key="m.id"
-                                :label="m.name"
-                                :value="m.id">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                     <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || catalogNum > 0">{{$t('table.delete')}}</el-button>
                     <el-button v-if="btnEnable.index" :size="btnSize" @click="btnIndex">索引</el-button>
+
+                    <el-input :size="searchSize" placeholder="请输入内容模型或英文名称" v-model.trim="listQuery.name" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                    <el-select filterable v-model.trim="listQuery.metaDataCollectionId" placeholder="请选择元数据集" :size="searchSize" style="margin-right: 10px;">
+                        <el-option
+                            v-for="m in metadataCollectionList"
+                            :key="m.id"
+                            :label="m.name"
+                            :value="m.id">
+                        </el-option>
+                    </el-select>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
+                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>

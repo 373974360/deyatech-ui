@@ -1,22 +1,6 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-cascader filterable :options="departmentCascader"
-                                     v-model.trim="listQueryDepartmentTreePosition"
-                                     placeholder="请选择部门" :size="btnSize" style="width:300px"></el-cascader>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
             <div class="deyatech-menu">
                 <div class="deyatech-menu_left">
                     <el-button v-show="btnEnable.create"  type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
@@ -25,6 +9,13 @@
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnSetting" :disabled="selectedRows.length != 1">设置</el-button>
                     <el-button v-show="btnEnable.setting" type="primary" :size="btnSize" @click="btnGlobalSetting">全局设置</el-button>
                     <el-button v-show="btnEnable.domain"  type="primary" :size="btnSize" @click="btnDomain" :disabled="selectedRows.length != 1">域名</el-button>
+
+                    <el-cascader filterable :options="departmentCascader"
+                                 v-model.trim="listQueryDepartmentTreePosition"
+                                 placeholder="请选择部门" :size="btnSize" style="width:300px;margin-left: 10px;"></el-cascader>
+                    <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name" maxlength="100" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                    <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchList">{{$t('table.search')}}</el-button>
+                    <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
                 <div class="deyatech-menu_right">
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
@@ -368,22 +359,15 @@
 
             <!--域名管理 列表-->
             <el-dialog :title="titleDomain" :visible.sync="dialogDomainVisible" :close-on-click-modal="closeOnClickModal" @close="closeDomainDialog">
-                <div class="deyatech-header">
-                    <el-form :inline="true" ref="searchForm">
-                        <el-form-item>
-                            <el-input :size="searchSize" placeholder="请输入域名" v-model.trim="domainListQuery.name" clearable></el-input>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchDomainList">{{$t('table.search')}}</el-button>
-                            <el-button icon="el-icon-delete" :size="searchSize" @click="domainResetSearch">{{$t('table.clear')}}</el-button>
-                        </el-form-item>
-                    </el-form>
-                </div>
                 <div class="deyatech-menu">
                     <div class="deyatech-menu_left">
                         <el-button v-if="btnEnable.domainCreate" type="primary" :size="btnSize" @click="btnDomainCreate">{{$t('table.create')}}</el-button>
                         <el-button v-if="btnEnable.domainUpdate" type="primary" :size="btnSize" @click="btnDomainUpdate" :disabled="domainSelectedRows.length != 1">{{$t('table.update')}}</el-button>
                         <el-button v-if="btnEnable.domainDelete" type="danger" :size="btnSize" @click="btnDomainDelete" :disabled="domainSelectedRows.length < 1 || domainDisableDelete">{{$t('table.delete')}}</el-button>
+
+                        <el-input :size="searchSize" placeholder="请输入域名" v-model.trim="domainListQuery.name" clearable style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
+                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchDomainList">{{$t('table.search')}}</el-button>
+                        <el-button icon="el-icon-delete" :size="searchSize" @click="domainResetSearch">{{$t('table.clear')}}</el-button>
                     </div>
                     <div class="deyatech-menu_right">
                         <el-button icon="el-icon-refresh" :size="btnSize" circle @click="domainReloadList"></el-button>

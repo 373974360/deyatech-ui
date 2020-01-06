@@ -1,7 +1,7 @@
 <template>
     <basic-container>
         <el-row :span="24">
-            <el-col :span="4">
+            <el-col :span="3">
                 <div class="classificationTree">
                     <!--左侧树-->
                     <el-tree
@@ -14,43 +14,32 @@
                     </el-tree>
                 </div>
             </el-col>
-            <el-col :span="20">
+            <el-col :span="21">
                 <div class="deyatech-container pull-auto">
-                    <div class="deyatech-header">
-                        <el-form :inline="true" ref="searchForm">
-                            <el-form-item>
-                                <el-input :size="searchSize" placeholder="申请编码" v-model.trim="listQuery.ysqCode"></el-input>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
-                                    <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
-                                </el-select>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-date-picker
-                                    :size="searchSize"
-                                    v-model.trim="timeFrame"
-                                    type="daterange"
-                                    align="right"
-                                    unlink-panels
-                                    range-separator="至"
-                                    start-placeholder="开始日期"
-                                    end-placeholder="结束日期"
-                                    value-format="yyyy-MM-dd"
-                                    :picker-options="pickerOptions">
-                                </el-date-picker>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                                <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                            </el-form-item>
-                        </el-form>
-                    </div>
                     <div class="deyatech-menu">
                         <div class="deyatech-menu_left">
                             <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
                             <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
                             <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
+
+                            <el-input :size="searchSize" placeholder="申请编码" v-model.trim="listQuery.ysqCode" clearable style="width: 170px;margin-left: 10px;margin-right:10px;"></el-input>
+                            <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
+                                <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
+                            </el-select>
+                            <el-date-picker
+                                :size="searchSize"
+                                v-model.trim="timeFrame"
+                                type="daterange"
+                                align="right"
+                                unlink-panels
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                                value-format="yyyy-MM-dd"
+                                :picker-options="pickerOptions" style="width:250px; margin-left: 10px; margin-right: 10px;">
+                            </el-date-picker>
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
+                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                         </div>
                         <div class="deyatech-menu_right">
                             <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
@@ -85,13 +74,13 @@
                                 {{scope.row.applyStatus | enums('AppealStatusEnum')}}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                       <!-- <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                             <template slot-scope="scope">
                                 <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                                     {{scope.row.enable | enums('EnableEnum')}}
                                 </el-tag>
                             </template>
-                        </el-table-column>
+                        </el-table-column>-->
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" fixed="right" align="center" width="150">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
@@ -182,36 +171,36 @@
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="联系电话" prop="tel">
-                                        <el-input v-model.trim="applyOpenRecord.tel"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.tel" maxlength="13"></el-input>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="联系传真" prop="fax">
-                                        <el-input v-model.trim="applyOpenRecord.fax"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.fax" maxlength="13"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="手机号码" prop="phone">
-                                        <el-input v-model.trim="applyOpenRecord.phone"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.phone" maxlength="11"></el-input>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="电子邮箱" prop="email">
-                                        <el-input v-model.trim="applyOpenRecord.email"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.email" maxlength="50"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="12">
                                     <el-form-item label="通讯地址" prop="address">
-                                        <el-input v-model.trim="applyOpenRecord.address"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.address" maxlength="100"></el-input>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="邮政编码" prop="postcode">
-                                        <el-input v-model.trim="applyOpenRecord.postcode"></el-input>
+                                        <el-input v-model.trim="applyOpenRecord.postcode" maxlength="6"></el-input>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
@@ -410,7 +399,7 @@
                                                     v-model.trim="process.proTime"
                                                     type="datetime"
                                                     value-format="yyyy-MM-dd HH:mm:ss"
-                                                    placeholder="选择时间">
+                                                    placeholder="选择时间" onchange="proTimeChange">
                                                 </el-date-picker>
                                             </el-form-item>
                                         </el-col>
@@ -461,7 +450,7 @@
                                 <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
                                 <!--<el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>-->
                             </template>
-                            <el-button type="primary" :size="btnSize">打印</el-button>
+                            <!--<el-button type="primary" :size="btnSize">打印</el-button>-->
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                     </el-dialog>
@@ -488,6 +477,7 @@
         createOrUpdateApplyOpenProcess
     } from '@/api/assembly/applyOpenProcess';
     import {getModelByCompetentDeptId,getModel} from '@/api/assembly/applyOpenModel';
+    import {isvalidatemobile, validateEmail, cardid, isZipCode, isTelephone, isFax} from '@/util/validate';
 
     export default {
         name: 'applyOpenRecord',
@@ -495,6 +485,57 @@
             editor
         },
         data() {
+            const validateMobile = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                let result = isvalidatemobile(value)
+                if (result[0]) {
+                    callback(new Error(result[1]))
+                } else {
+                    callback()
+                }
+            };
+            const validateMail = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (validateEmail(value)) {
+                    callback()
+                } else {
+                    callback(new Error("电子邮箱不正确"))
+                }
+            };
+            const validateTelephone = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (isTelephone(value)) {
+                    callback()
+                } else {
+                    callback(new Error("联系电话不正确"))
+                }
+            };
+            const validateFax = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (isFax(value)) {
+                    callback()
+                } else {
+                    callback(new Error("联系传真不正确"))
+                }
+            };
+            const validatePostCode = (rule, value, callback) => {
+                if (!value) {
+                    callback()
+                }
+                if (isZipCode(value)) {
+                    callback()
+                } else {
+                    callback(new Error("邮政编码不正确"))
+                }
+            };
             return {
                 treeData:[{
                     label: '发布管理',
@@ -726,6 +767,21 @@
                 applyOpenRecordRules:{
                     modelId: [
                         {required: true, message: this.$t("table.pleaseSelect") + '业务模型'}
+                    ],
+                    phone: [
+                        {validator: validateMobile, trigger: 'change'}
+                    ],
+                    email: [
+                        {validator: validateMail, trigger: 'change'}
+                    ],
+                    tel: [
+                        {validator: validateTelephone, trigger: 'change'}
+                    ],
+                    fax: [
+                        {validator: validateFax, trigger: 'change'}
+                    ],
+                    postcode: [
+                        {validator: validatePostCode, trigger: 'change'}
                     ]
                 },
                 selectedRows: [],
@@ -1114,8 +1170,13 @@
                     this.process.content = this.applyOpenRecord.content;
                     this.process.proTime = this.applyOpenRecord.replyTime;
                     this.process.proContent = this.applyOpenRecord.replyContent;
-                    this.$refs['processContent'].setUeContent(this.process.content);
-                    this.$refs['proContent'].setUeContent(this.process.proContent);
+                    if (this.process.proContent) {
+                        this.$refs['processContent'].setUeContent(this.process.content);
+                        this.$refs['proContent'].setUeContent(this.process.proContent);
+                    } else {
+                        this.$refs['processContent'].setUeContent('');
+                        this.$refs['proContent'].setUeContent('');
+                    }
                 }
                 if(proType == 4){
                     this.processTitle = '退回信件';
@@ -1186,8 +1247,12 @@
                 }
                 this.process.proType = proType;
                 this.process.sqId = this.applyOpenRecord.id;
+                this.$nextTick(() => {
+                    this.$refs['processDialogForm'].clearValidate();
+                })
             },
             doCreateProcess(){
+                console.log(this.process.proTime);
                 this.process.proContent = this.$refs['proContent'].getUeContent();
                 this.process.content = this.$refs['processContent'].getUeContent();
                 this.$refs['processDialogForm'].validate(valid => {
@@ -1284,6 +1349,9 @@
                 this.closeProcessDialog();
                 this.submitLoading = false;
                 this.reloadList();
+            },
+            proTimeChange(v) {
+                console.log(v);
             }
         }
     }
