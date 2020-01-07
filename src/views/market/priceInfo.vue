@@ -4,6 +4,12 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
+                        <el-cascader :options="departmentCascader" @change="handleDepartmentChange" v-model="selectedOptions"
+                                     class="dialog-search-item dialog-keywords" ref="mycascader"
+                                     :show-all-levels="false" expand-trigger="hover" clearable change-on-select
+                                     :size="searchSize" placeholder="根据市场筛选"></el-cascader>
+                    </el-form-item>
+                    <el-form-item>
                         <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '产品分类'" v-model.trim="listQuery.typeId">
                             <el-option
                                 ref="productTypeQuery"
@@ -65,8 +71,8 @@
                 </div>
             </div>
             <template v-if="allMarketType && allMarketType.length > 0">
-                <el-tabs class="table-tab" v-model="listQuery.marketId" type="card" @tab-click="handleTabClick">
-                    <el-tab-pane v-for="item in allMarketType" :label="item.marketName" :name="item.id"></el-tab-pane>
+                <el-tabs class="table-tab" type="card" @tab-click="handleTabClick">
+                    <el-tab-pane v-for="item in allMarketType" :label="item.marketName"></el-tab-pane>
                 </el-tabs>
             </template>
             <el-table :data="priceInfoList" v-loading.body="listLoading" stripe border highlight-current-row
@@ -242,7 +248,8 @@
     import {getAllMarketType}from '@/api/market/marketType';
     import {getAllProductType} from '@/api/market/productType';
     import {getAllProduct} from '@/api/market/product';
-    import {getToken} from '@/util/auth'
+    import {getToken} from '@/util/auth';
+    import {getDepartmentCascader} from "@/api/admin/department";
 
     export default {
         name: 'priceInfo',
@@ -276,6 +283,8 @@
                     productName: undefined,
                     marketId: undefined,
                     typeId: undefined,
+                    scName: undefined,
+                    isSell: undefined,
                 },
                 priceInfo: {
                     id: undefined,
@@ -346,6 +355,8 @@
                 initHeaders: {"Deyatech-Token": getToken()},
                 importType: undefined,
                 productTypeQuery: [],
+                departmentCascader: [],
+                selectedOptions: [],
             }
         },
         filters: {
@@ -380,22 +391,45 @@
             }
         },
         created(){
-            const flag = this.getAllMarketType().then(() => {
-                this.reloadList();
-            });
-            Promise.all([flag, this.getAllProductType()]).then(() => {
-                this.productTypeQueryFilter(this.listQuery.marketId);
+            this.loadDepartment();
+            Promise.all([this.getAllMarketType(), this.getAllProductType()]).then(() => {
+                this.handleTabClick();
             });
             this.getAllProduct();
         },
         methods: {
+            loadDepartment() {
+                getDepartmentCascader().then(response => {
+                    this.departmentCascader = response.data
+                })
+            },
+            handleDepartmentChange(val) {
+                if (val.length > 0) {
+                    const cascaderObj = this.getCascaderObj(val, this.departmentCascader);
+                    this.listQuery.scName = cascaderObj.label;
+                } else {
+                    this.listQuery.scName = undefined;
+                }
+            },
+            getCascaderObj(val, opt) {
+                const selectList = val.map(function (value, index, array) {
+                    for (var itm of opt) {
+                        if (itm.value == value) { opt = itm.children; return itm; }
+                    }
+                    return null;
+                });
+                return selectList.find((obj)=>{
+                    return obj.value === val[val.length - 1];
+                });
+            },
             resetSearch(){
                 this.addTimeRange = undefined;
                 this.listQuery.addStartTime = undefined;
                 this.listQuery.addEndTime = undefined;
                 this.listQuery.productName = undefined;
                 this.listQuery.typeId = undefined;
-                this.productTypeQuery = [];
+                this.listQuery.scName = undefined;
+                this.selectedOptions = [];
             },
             searchReloadList() {
                 if (this.addTimeRange) {
@@ -542,10 +576,21 @@
             },
             getAllMarketType(){
                 return new Promise((resolve, reject) => {
+                    this.allMarketType = [];
                     getAllMarketType().then(response => {
-                        this.allMarketType = response.data;
-                        if (this.allMarketType && this.allMarketType.length > 0) {
-                            this.listQuery.marketId = this.allMarketType[0].id;
+                        if (response.data && response.data.length > 0) {
+                            for(let marketType of response.data) {
+                                if (marketType.id == 1 || marketType.marketName.indexOf('批发零售') != -1) {
+                                    const wholesale = deepClone(marketType);
+                                    wholesale.marketName = '批发市场';
+                                    const retail = deepClone(marketType);
+                                    retail.marketName = '零售市场';
+                                    this.allMarketType.push(wholesale);
+                                    this.allMarketType.push(retail);
+                                } else {
+                                    this.allMarketType.push(marketType);
+                                }
+                            }
                         }
                         resolve();
                     }).catch(err => {
@@ -555,6 +600,7 @@
             },
             getAllProductType(){
                 return new Promise((resolve, reject) => {
+                    this.allProductType = [];
                     getAllProductType().then(response => {
                         this.allProductType = response.data;
                         resolve();
@@ -564,6 +610,7 @@
                 });
             },
             getAllProduct(){
+                this.allProduct = [];
                 getAllProduct().then(response => {
                     this.allProduct = response.data;
                 })
@@ -687,7 +734,24 @@
                     }
                 }
             },
-            handleTabClick() {
+            handleTabClick(tab) {
+                var label = ''
+                if (tab) {
+                    label = tab.label;
+                } else {
+                    label = this.allMarketType[0].marketName;
+                }
+                if (label == '批发市场') {
+                    this.listQuery.isSell = 0;
+                } else if (label == '零售市场') {
+                    this.listQuery.isSell = 1;
+                } else {
+                    this.listQuery.isSell = undefined;
+                }
+                const marketType = this.allMarketType.find((marketType)=>{
+                    return marketType.marketName === label;
+                });
+                this.listQuery.marketId = marketType.id;
                 this.productTypeQueryFilter(this.listQuery.marketId);
                 this.reloadList();
             }
