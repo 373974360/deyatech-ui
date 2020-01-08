@@ -23,8 +23,8 @@
             <el-table :data="reviewProcessList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
                 <!--<el-table-column type="selection" width="50" align="center"/>-->
-                <el-table-column align="center" label="任务ID" prop="taskId"/>
-                <el-table-column align="center" label="ID" prop="id"/>
+                <!--<el-table-column align="center" label="任务ID" prop="taskId"/>
+                <el-table-column align="center" label="ID" prop="id"/>-->
                 <el-table-column align="center" label="标题" prop="title"/>
                 <el-table-column align="center" label="作者" prop="author"/>
                 <!--<el-table-column align="center" label="来源" prop="source"/>-->
@@ -75,15 +75,13 @@
         completeTask,
         rollBackTask,
         rejectTask,
-        createOrUpdateReviewProcess,
-        delReviewProcesss
-    } from '@/api/content/reviewProcess';
+    } from '@/api/station/templateProcess';
     import {
         getLoginUserTaskList
     } from '@/api/station/template';
 
     export default {
-        name: 'reviewProcess',
+        name: 'templateProcess',
         data() {
             return {
                 reviewProcessList: undefined,
