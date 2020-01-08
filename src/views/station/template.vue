@@ -2,8 +2,8 @@
     <basic-container>
         <div class="deyatech-container pull-auto">
             <el-row :span="24">
-                <el-col :span="4">
-                    <div class="classificationTree">
+                <el-col :span="3">
+                    <div class="catalog-left-Tree">
                         <el-tree
                             ref="catalogTree"
                             :data="catalogList"
@@ -19,7 +19,7 @@
                         </el-tree>
                     </div>
                 </el-col>
-                <el-col :span="20">
+                <el-col :span="21">
                     <div class="deyatech-menu">
                         <div class="deyatech-menu_left">
                             <el-dropdown v-if="btnEnable.create && isAddTemplate" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
@@ -1287,7 +1287,10 @@
             reloadList(){
                 this.listLoading = true;
                 this.templateList = undefined;
-                // this.total = undefined;
+                if (!this.listQuery.cmsCatalogId) {
+                    this.$message.error('请先选择栏目！');
+                    return
+                }
                 getTemplateList(this.listQuery).then(response => {
                     this.listLoading = false;
                     let list = response.data.records;
@@ -2325,12 +2328,12 @@
 
             },
             getAlign(prop) {
-                if (prop === 'title' || prop === '')
+                if (prop === 'title' || prop === 'catalogLevelName')
                     return 'left';
-                else if (prop === '')
-                    return 'right'
+                else if (prop === 'right')
+                    return 'right';
                 else
-                    return 'center'
+                    return 'center';
             },
             getHeadWidth(prop) {
                 if (prop === 'title')
@@ -2351,8 +2354,8 @@
                     return '100';
                 else if (prop === 'resourceCategory')
                     return '160';
-                else if (prop === 'templatePath')
-                    return '200';
+                else if (prop === 'catalogLevelName')
+                    return '600';
                 else if (prop === 'indexCode')
                     return '230';
                 else if (prop === 'contentModelName')
@@ -2477,13 +2480,6 @@
     }
 </script>
 <style>
-    .classificationTree {
-        border:1px solid #eceef5;
-        overflow-x: scroll;
-        margin-right:10px;
-        padding: 10px;
-        height: 600px;
-    }
     .el-textarea__inner {
         height: 100%;
     }
@@ -2503,39 +2499,39 @@
     .el-tree {
         font-size: 14px;
         color: #535353;
+        overflow-x: scroll;
     }
     /*树编辑弹框*/
     .tree-edit .el-textarea{
         width: 434px;
     }
-    .left-tree
-    {
-        width: 210px;
+    .catalog-left-Tree {
+        border:1px solid #eceef5;
+        overflow: auto;
         margin-right:10px;
-        background:white;
-        border:1px solid #EBEEF5;
-        overflow-x: auto;
-        overflow-y: auto;
+        padding: 14px;
+        height: 600px;
     }
-    .left-tree .el-tree {
+    .catalog-left-Tree .el-tree {
         display: inline-block;
-        margin: 10px ;
-        min-width: 90%;
+        margin: 10px;
+        min-width: 50%;
     }
-    .left-tree::-webkit-scrollbar {/*滚动条整体样式*/
-        width: 4px;     /*高宽分别对应横竖滚动条的尺寸*/
-        height: 4px;
+    .catalog-left-Tree::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
     }
-    .left-tree::-webkit-scrollbar-thumb {/*滚动条里面小方块*/
-        border-radius: 5px;
+    /*
+    .catalog-left-Tree::-webkit-scrollbar-thumb {!*滚动条里面小方块*!
+        border-radius: 6px;
         -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
         background: #f0f7ff;
     }
-    .left-tree::-webkit-scrollbar-track {/*滚动条里面轨道*/
-        /*-webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);*/
+    .catalog-left-Tree::-webkit-scrollbar-track {!*滚动条里面轨道*!
+        !*-webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);*!
         border-radius: 0;
         background: #fff;
-    }
+    }*/
     /*设置根节点上编辑按钮*/
     .custom-tree-node {
         display: flex;

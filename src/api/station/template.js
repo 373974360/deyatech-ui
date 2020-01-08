@@ -64,22 +64,6 @@ export function reindex(params) {
     });
 }
 
-export function updateContentStatusPublish(id){
-    const data = {id};
-    return request({
-        url: '/manage/station/template/updateContentStatusPublish',
-        method: 'post',
-        data
-    })
-}
-export function updateContentStatusReject(id){
-    const data = {id};
-    return request({
-        url: '/manage/station/template/updateContentStatusReject',
-        method: 'post',
-        data
-    })
-}
 export function recycleByIds(ids) {
     const data = {ids};
     return request({
@@ -136,6 +120,13 @@ export function getDynamicForm(query) {
 export function getBaseAndMetaField(query) {
     return request({
         url: '/manage/station/template/getBaseAndMetaField',
+        method: 'get',
+        params: query
+    });
+}
+export function getLoginUserTaskList(query) {
+    return request({
+        url: '/manage/station/template/getLoginUserTaskList',
         method: 'get',
         params: query
     });
