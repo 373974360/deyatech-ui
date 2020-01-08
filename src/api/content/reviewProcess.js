@@ -40,13 +40,7 @@ export function getReviewProcessList(query) {
     });
 }
 
-export function getCurrentTaskList(query) {
-    return request({
-        url: '/manage/workflow/processTask/getCurrentTaskList',
-        method: 'get',
-        params: query
-    });
-}
+
 
 export function completeTask(actTaskId) {
     const data = {taskId: actTaskId}
@@ -66,8 +60,8 @@ export function rollBackTask(actTaskId) {
     })
 }
 
-export function rejectTask(actTaskId) {
-    const data = {taskId: actTaskId}
+export function rejectTask(actTaskId, reason) {
+    const data = {taskId: actTaskId, reason: reason}
     return request({
         url: '/manage/workflow/processTask/rejectTask',
         method: 'post',
