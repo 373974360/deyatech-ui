@@ -91,7 +91,7 @@
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeItemDialog">
                 <el-form ref="itemDialogForm" class="deyatech-form" :model="item" label-position="right"
-                         label-width="100px" :rules="itemRules">
+                         label-width="155px" :rules="itemRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="事项名称" prop="name" label-width="155px">
@@ -580,6 +580,14 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="排序号">
+                                <el-input-number v-model="item.sortNo" @change="sortNoChange" :min="0"
+                                                 :max="10000"></el-input-number>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item label="特殊环节" prop="specialSegment" label-width="155px">
                                 <el-input type="textarea" v-model.trim="item.specialSegment" :rows="3" maxlength="2000"/>
@@ -968,7 +976,8 @@
                     implementTreePosition: undefined,
                     dealTreePosition: undefined,
                     unionTreePosition: undefined,
-                    limitNumber:undefined
+                    limitNumber: undefined,
+                    sortNo: undefined,
                 },
                 itemTmp: undefined,
                 itemRules: {
@@ -1133,6 +1142,9 @@
         methods: {
             limitNumberChange(value) {
                 this.item.limitNumber = value
+            },
+            sortNoChange(value) {
+                this.item.sortNo = value
             },
             handleSizeChangeItemMaterials(val) {
                 this.materialsListQuery.size = val;
@@ -1618,7 +1630,8 @@
                     isOnlineApply: 0,
                     isInterService: 0,
                     isCharge: 0,
-                    limitNumber:undefined
+                    limitNumber: undefined,
+                    sortNo: undefined,
                 }
             },
             resetItemDialogAndList() {
