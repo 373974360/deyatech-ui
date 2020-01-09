@@ -62,10 +62,10 @@
             </el-pagination>
 
 
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible" width="55%"
+            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeAdmissionTemplateDialog">
                 <el-form ref="admissionTemplateDialogForm" class="deyatech-form" :model="admissionTemplate" label-position="right"
-                         label-width="100px" :rules="admissionTemplateRules">
+                         label-width="120px" :rules="admissionTemplateRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
                             <el-form-item label="分校" prop="schoolId">

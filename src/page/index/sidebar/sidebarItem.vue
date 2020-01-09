@@ -11,6 +11,7 @@
                       :alt="item[pathKey]">{{generateTitle(item)}}</span>
             </el-menu-item>
             <el-submenu v-else-if="!validatenull(item[childrenKey])&&vaildRoles(item)"
+                        v-show="permission[item.permission]"
                         :index="item[pathKey]"
                         :key="item[labelKey]">
                 <template slot="title">
@@ -23,6 +24,7 @@
                                   @click="open(child)"
                                   :class="{'is-active':vaildAvtive(child)}"
                                   v-if="validatenull(child[childrenKey])"
+                                  v-show="permission[child.permission]"
                                   :key="child[labelKey]">
                         <i :class="child[iconKey]"></i>
                         <span slot="title">{{generateTitle(child)}}</span>
@@ -76,7 +78,7 @@
         mounted() {
         },
         computed: {
-            ...mapGetters(["roles"]),
+            ...mapGetters(["roles", 'permission']),
             labelKey() {
                 return this.props.label || this.config.propsDefault.label;
             },

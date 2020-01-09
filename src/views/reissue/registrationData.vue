@@ -51,6 +51,7 @@
                 <el-table-column align="center" label="试卷名称" prop="examPaperName"/>
                 <el-table-column align="center" label="专业层次" prop="professionalLevel"/>
                 <el-table-column align="center" label="专业名称" prop="professionalName"/>
+                <el-table-column align="center" label="课程名称" prop="courseName"/>
                 <el-table-column align="center" label="学号" prop="studentId"/>
                 <el-table-column align="center" label="姓名" prop="name"/>
 <!--                <el-table-column align="center" label="学校代码" prop="schoolCode"/>-->
