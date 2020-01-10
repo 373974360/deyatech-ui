@@ -1,7 +1,7 @@
 // 配置编译环境和线上环境之间的切换
 
 let baseUrl = '';
-let iconfontVersion = ['font_1073104_rssy0gfzan'];
+let iconfontVersion = ['font_1606968_6kkqi2l3rau'];
 let iconfontCssUrl = `//at.alicdn.com/t/$key.css`;
 let iconfontJsUrl = `//at.alicdn.com/t/$key.js`;
 let codeUrl = `${baseUrl}/code`
