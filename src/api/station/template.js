@@ -63,7 +63,6 @@ export function reindex(params) {
         params: params
     });
 }
-
 export function recycleByIds(ids) {
     const data = {ids};
     return request({
@@ -72,10 +71,34 @@ export function recycleByIds(ids) {
         data
     })
 }
+export function backByIds(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/station/template/backByIds',
+        method: 'post',
+        data
+    })
+}
 export function cancelByIds(ids) {
     const data = {ids};
     return request({
         url: '/manage/station/template/cancelByIds',
+        method: 'post',
+        data
+    })
+}
+export function publishByIds(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/station/template/publishByIds',
+        method: 'post',
+        data
+    })
+}
+export function verifyByIds(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/station/template/verifyByIds',
         method: 'post',
         data
     })

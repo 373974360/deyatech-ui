@@ -23,8 +23,7 @@
                     <div class="deyatech-menu">
                         <div class="deyatech-menu_left">
                             <el-dropdown v-if="btnEnable.create && isAddTemplate" style="margin-right: 10px" placement="bottom-start" @command="btnCreate">
-                                <el-button type="primary" :size="btnSize">
-                                    {{$t('table.create')}}<i class="el-icon-arrow-down el-icon--right"></i>
+                                <el-button type="primary" :size="btnSize">新增<i class="el-icon-arrow-down el-icon--right"></i>
                                 </el-button>
                                 <el-dropdown-menu slot="dropdown">
                                     <div v-if="modelList.length > 0">
@@ -38,10 +37,15 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
 
-                            <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                            <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">彻底删除</el-button>
-                            <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" type="danger" :size="btnSize" @click="btnCancel" :disabled="selectedRows.length < 1">撤销</el-button>
-                            <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" type="warning" :size="btnSize" @click="btnRecycle" :disabled="selectedRows.length < 1">删除</el-button>
+                            <el-button v-if="btnEnable.update" type="primary" :size="btnSize"
+                                       @click="btnUpdate" :disabled="selectedRows.length != 1">编辑</el-button>
+
+                            <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" type="danger" :size="btnSize"
+                                       @click="btnDelete" :disabled="selectedRows.length < 1">彻底删除</el-button>
+
+                            <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" type="warning" :size="btnSize"
+                                       @click="btnRecycle" :disabled="selectedRows.length < 1">删除</el-button>
+                            <!--<el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" type="danger" :size="btnSize" @click="btnCancel" :disabled="selectedRows.length < 1">撤销</el-button>-->
 
                             <el-dropdown style="margin-left: 10px" placement="bottom" @command="handleCommand">
                                 <el-button type="warning" :size="btnSize">
@@ -81,7 +85,7 @@
                     <el-table :data="templateList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange" style="border-top:none;">
                         <el-table-column type="selection" width="50" align="center"/>
-
+                        <el-table-column align="center" label="工作流" prop="workflowId"/>
                         <el-table-column :align="getAlign(item.prop)"
                                          :show-overflow-tooltip="item.prop === 'thumbnail' ? false : true"
                                          v-for="item in headData"
@@ -114,11 +118,29 @@
 
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200" fixed="right">
                             <template slot-scope="scope">
-                                <el-button v-if="btnEnable.preview" :title="'预览'" type="primary" icon="el-icon-search" :size="btnSize" circle @click.stop.safe="btnPreview(scope.row)"></el-button>
-                                <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                                <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" title="彻底删除" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnDelete(scope.row)"></el-button>
-                                <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.PUBLISH" title="撤销" type="danger" icon="iconskip" :size="btnSize" circle @click.stop.safe="btnCancel(scope.row)"></el-button>
-                                <el-button v-if="btnEnable.delete && listQuery.status != ContentStatusEnum.RECYCLE" title="删除" type="danger" icon="el-icon-delete" :size="btnSize" circle @click.stop.safe="btnRecycle(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.update" :size="btnSize" type="primary" circle icon="el-icon-edit"
+                                           title="编辑" @click.stop.safe="btnUpdate(scope.row)"></el-button>
+
+                                <el-button v-if="btnEnable.preview" :size="btnSize" type="primary" circle icon="el-icon-search"
+                                           title="预览" @click.stop.safe="btnPreview(scope.row)"></el-button>
+
+                                <el-button v-if="btnEnable.cancel && (listQuery.status == ContentStatusEnum.PUBLISH || listQuery.status == ContentStatusEnum.VERIFY)" :size="btnSize" type="primary" circle icon="icon-resonserate"
+                                           title="撤销" @click.stop.safe="btnCancel(scope.row)"></el-button>
+
+                                <el-button v-if="btnEnable.publish && !scope.row.workflowId && listQuery.status == ContentStatusEnum.CANCEL" :size="btnSize" type="primary" circle icon="el-icon-check"
+                                           title="发布" @click.stop.safe="btnPublish(scope.row)"></el-button>
+
+                                <el-button v-if="btnEnable.verify && scope.row.workflowId && (listQuery.status == ContentStatusEnum.CANCEL || listQuery.status == ContentStatusEnum.REJECT)" :size="btnSize" type="primary" circle icon="el-icon-right"
+                                           title="送审" @click.stop.safe="btnVerify(scope.row)"></el-button>
+
+                                <el-button v-if="btnEnable.back && listQuery.status == ContentStatusEnum.RECYCLE" :size="btnSize" type="primary" circle icon="icon-chexiao1"
+                                           title="还原" @click.stop.safe="btnBack(scope.row)"></el-button>
+
+                                <el-button v-if="btnEnable.recycle && listQuery.status != ContentStatusEnum.RECYCLE" :size="btnSize" type="warning" circle icon="el-icon-delete"
+                                           title="删除" @click.stop.safe="btnRecycle(scope.row)"></el-button>
+
+                                <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" :size="btnSize" type="danger" circle icon="el-icon-delete"
+                                           title="彻底删除" @click.stop.safe="btnDelete(scope.row)"></el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -464,9 +486,12 @@
     import {
         getTemplateList,
         createOrUpdateTemplate,
-        delTemplates,
-        recycleByIds, // 删除
+        delTemplates, // 删除
+        recycleByIds, // 回收站
+        backByIds,    // 还原
         cancelByIds,  // 撤销
+        publishByIds, // 发布
+        verifyByIds,  // 送审
         updateSortNoById,
         updateFlagTopById,
         checkTitleExist,
@@ -883,10 +908,15 @@
             ]),
             btnEnable() {
                 return {
-                    preview: this.permission.template_preview,
                     create: this.permission.template_create,
                     update: this.permission.template_update,
-                    delete: this.permission.template_delete
+                    delete: this.permission.template_delete,
+                    preview: this.permission.template_preview,
+                    cancel: this.permission.template_cancel,
+                    recycle: this.permission.template_recycle,
+                    verify: this.permission.template_verify,
+                    back: this.permission.template_back,
+                    publish: this.permission.template_publish
                 };
             }
         },
@@ -1383,14 +1413,7 @@
                     this.$message.error(err);
                 });
             },
-            //预览
-            btnPreview(row) {
-                //let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
-                //this.$router.push({path: url});
-                //let url = window.location.origin + '/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
-                let url = window.location.protocol + '//' + this.domainName + '/' + row.cmsCatalogPathName + '/details/info/' + row.id + '.html';
-                window.open(url);
-            },
+            // 新增
             btnCreate(command){
                 let has = false;
                 let mcId = '';
@@ -1432,6 +1455,7 @@
                 }
 
             },
+            // 编辑
             btnUpdate(row){
                 this.resetTemplate();
                 if (row.id) {
@@ -1446,6 +1470,15 @@
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
+            // 预览
+            btnPreview(row) {
+                //let url = '/myiframe/urlPath?name=预览&src=/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
+                //this.$router.push({path: url});
+                //let url = window.location.origin + '/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
+                let url = window.location.protocol + '//' + this.domainName + '/' + row.cmsCatalogPathName + '/details/info/' + row.id + '.html';
+                window.open(url);
+            },
+            // 撤销
             btnCancel(row){
                 this.$confirm('此操作将撤销已发布信息, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
                     let ids = [];
@@ -1465,6 +1498,30 @@
                             this.$message.error(response.message)
                         }
                     });
+                });
+            },
+            // 发布
+            btnPublish(row) {
+                if (row.workflowId) {
+                    this.$message.error("有工作流不能发布");
+                    return;
+                }
+                let ids = [];
+                if (row.id) {
+                    ids.push(row.id);
+                } else {
+                    for(const deleteRow of this.selectedRows) {
+                        ids.push(deleteRow.id);
+                    }
+                }
+                publishByIds(ids).then((response)=>{
+                    if (response.status == 200 && response.data) {
+                        this.reloadList();
+                        this.$message.success("发布成功");
+                    } else {
+                        this.listLoading = false;
+                        this.$message.error(response.message)
+                    }
                 });
             },
             // 删除
@@ -1487,6 +1544,50 @@
                             this.$message.error(response.message)
                         }
                     });
+                });
+            },
+            // 还原
+            btnBack(row) {
+                let ids = [];
+                if (row.id) {
+                    ids.push(row.id);
+                } else {
+                    for(const deleteRow of this.selectedRows) {
+                        ids.push(deleteRow.id);
+                    }
+                }
+                backByIds(ids).then((response)=>{
+                    if (response.status == 200 && response.data) {
+                        this.reloadList();
+                        this.$message.success("还原成功");
+                    } else {
+                        this.listLoading = false;
+                        this.$message.error(response.message)
+                    }
+                });
+            },
+            // 送审
+            btnVerify(row) {
+                if (!row.workflowId) {
+                    this.$message.error("没有工作流不能送审");
+                    return;
+                }
+                let ids = [];
+                if (row.id) {
+                    ids.push(row.id);
+                } else {
+                    for(const deleteRow of this.selectedRows) {
+                        ids.push(deleteRow.id);
+                    }
+                }
+                verifyByIds(ids).then((response)=>{
+                    if (response.status == 200 && response.data) {
+                        this.reloadList();
+                        this.$message.success("送审成功");
+                    } else {
+                        this.listLoading = false;
+                        this.$message.error(response.message)
+                    }
                 });
             },
             // 彻底删除

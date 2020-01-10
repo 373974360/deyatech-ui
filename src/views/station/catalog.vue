@@ -573,11 +573,12 @@
                 })
             };
             const validateIndexTemplate = (rule, value, callback) => {
-                this.catalog.indexTemplate = '/';
-                if (this.selectIndexTemplate) {
-                    this.catalog.indexTemplate += this.selectIndexTemplate.join('/');
+                if (this.selectIndexTemplate && this.selectIndexTemplate.length > 0) {
+                    this.catalog.indexTemplate = '/' + this.selectIndexTemplate.join('/');
+                } else {
+                    this.catalog.indexTemplate = '';
                 }
-                if (this.catalog.indexTemplate.length > 500) {
+                if (this.catalog.indexTemplate && this.catalog.indexTemplate.length > 500) {
                     callback(new Error('模板路径过长，最多 500 个字符'))
                     this.catalog.indexTemplate = undefined;
                 } else {
@@ -585,11 +586,12 @@
                 }
             };
             const validateListTemplate = (rule, value, callback) => {
-                this.catalog.listTemplate = '/';
-                if (this.selectListTemplate) {
-                    this.catalog.listTemplate += this.selectListTemplate.join('/');
+                if (this.selectListTemplate && this.selectListTemplate.length > 0) {
+                    this.catalog.listTemplate = '/' + this.selectListTemplate.join('/');
+                } else {
+                    this.catalog.listTemplate = '';
                 }
-                if (this.catalog.listTemplate.length > 500) {
+                if (this.catalog.listTemplate && this.catalog.listTemplate.length > 500) {
                     callback(new Error('模板路径过长，最多 500 个字符'))
                     this.catalog.listTemplate = undefined;
                 } else {
@@ -809,8 +811,8 @@
                     label: 'fileName',
                     children: 'children'
                 },
-                selectIndexTemplate: undefined,
-                selectListTemplate: undefined,
+                selectIndexTemplate: [],
+                selectListTemplate: [],
                 workflowList: [],
                 modelList: [],
                 selectContentModelIds: [],
@@ -1305,8 +1307,8 @@
                 this.catalogTreePosition = [];
                 // this.selectedRows = [];
                 this.dialogVisible = false;
-                this.selectIndexTemplate = undefined;
-                this.selectListTemplate = undefined;
+                this.selectIndexTemplate = [];
+                this.selectListTemplate = [];
                 this.resetCatalog();
                 this.resetCatalogAggregation();
                 this.$refs['catalogDialogForm'].resetFields();
@@ -1506,7 +1508,6 @@
                     this.catalog.parentId = '0';
                     this.catalog.treePosition = undefined;
                 }
-                console.dir(this.catalog.treePosition);
             },
             allowHiddenChange(row) {
                 if (row) {
