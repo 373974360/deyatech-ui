@@ -1,6 +1,6 @@
 export default {
     tip: '提示',
-    title: 'Deyatech集约化管理平台',
+    title: '诉求系统',
     logoutTip: '退出系统, 是否继续?',
     submitText: '确定',
     cancelText: '取消',
@@ -66,7 +66,7 @@ export default {
     login: {
         title: '登录 ',
         loginSuccess: '登录成功',
-        info: '西安德雅通科技有限公司',
+        info: '诉求系统',
         account: '请输入用户名',
         password: '请输入密码',
         verifyCode: '请输入验证码',
