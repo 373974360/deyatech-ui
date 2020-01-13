@@ -120,6 +120,14 @@
                                 </el-upload>
                             </el-form-item>
                         </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="是否管理员" prop="thumbnailEnable">
+                                <el-select filterable v-model.trim="user.admin" style="width: 100%">
+                                    <el-option label="是" :value="1"></el-option>
+                                    <el-option label="否" :value="2"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
@@ -250,7 +258,8 @@
                     empNo: undefined,
                     account: undefined,
                     password: undefined,
-                    passwordConfirm: undefined
+                    passwordConfirm: undefined,
+                    admin: 0
                 },
                 userRules: {
                     departmentId: [
@@ -495,7 +504,8 @@
                     empNo: undefined,
                     account: undefined,
                     password: undefined,
-                    passwordConfirm: undefined
+                    passwordConfirm: undefined,
+                    admin: 0
                 }
             },
             resetUserDialog() {

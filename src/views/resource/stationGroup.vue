@@ -61,21 +61,24 @@
                         <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="300">
                             <template slot-scope="scope">
                                 <div style="padding-top: 8px;">
-                                <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                           @click.stop="btnUpdate(scope.row)"></el-button>
-                                <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                           :disabled="scope.row.enable == 1"
-                                           @click.stop="btnDelete(scope.row)"></el-button>
-                                <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
-                                           @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
-                                <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
-                                           @click.stop="btnCtrl(scope.row, 'run')"></el-button>
-                                <el-button v-show="btnEnable.setting" title="设置" type="primary" icon="el-icon-setting" :size="btnSize" circle
-                                           @click.stop="btnSetting(scope.row)"></el-button>
-                                <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="iconcustoms-clearance" :size="btnSize" circle
-                                           @click.stop="btnDomain(scope.row)"></el-button>
-                                <el-button title="关联角色" type="primary" icon="iconadd-account" :size="btnSize" circle
-                                           @click.stop="btnStationGroupRole(scope.row)"></el-button>
+                                    <el-button v-show="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
+                                               @click.stop="btnUpdate(scope.row)"></el-button>
+                                    <el-button v-show="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
+                                               :disabled="scope.row.enable == 1"
+                                               @click.stop="btnDelete(scope.row)"></el-button>
+                                    <el-button v-if="scope.row.enable == 1" title="停用" type="warning" icon="el-icon-close" :size="btnSize" circle
+                                               @click.stop="btnCtrl(scope.row, 'stop')"></el-button>
+                                    <el-button v-else-if="scope.row.enable == 0" title="启用" type="warning" icon="el-icon-caret-right" :size="btnSize" circle
+                                               @click.stop="btnCtrl(scope.row, 'run')"></el-button>
+                                    <el-button v-show="btnEnable.setting" title="设置" type="primary" icon="el-icon-setting" :size="btnSize" circle
+                                               @click.stop="btnSetting(scope.row)"></el-button>
+                                    <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="icon-earth" :size="btnSize" circle
+                                               @click.stop="btnDomain(scope.row)"></el-button>
+                                    <el-button v-show="btnEnable.user" title="关联用户" type="primary" icon="el-icon-user" :size="btnSize" circle
+                                               @click.stop="btnUser(scope.row)"></el-button>
+                                <!--<el-button title="关联角色" type="primary" icon="icon-category" :size="btnSize" circle
+                                           @click.stop="btnStationGroupRole(scope.row)"></el-button>-->
+
                                 </div>
                             </template>
                         </el-table-column>
@@ -485,6 +488,83 @@
                     <el-button :size="btnSize" @click="closeStationGroupRoleDialog">{{$t('table.cancel')}}</el-button>
                 </div>
             </el-dialog>
+
+
+            <!--关联用户-->
+            <el-dialog width="70%" :title="titleMap['associateUser']" :visible.sync="dialogStationGroupUserVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
+                <el-row :gutter="20" :span="24">
+                    <el-col :span="11">
+                        <el-row :gutter="20" :span="24" style=" padding-right: 5px;">
+                            <el-col :span="10">
+                                <el-select filterable v-model.trim="associateAdmin"
+                                           @change="associateChange" clearable
+                                           :size="btnSize" style="width: 100%">
+                                    <el-option label="是" :value="1"></el-option>
+                                    <el-option label="否" :value="2"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="14">
+                                <el-input v-model="associateUserName"
+                                          @change="associateChange" clearable
+                                          placeholder="姓名" :size="btnSize" style="width: 100%;"></el-input>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" :span="24" style=" padding-right: 5px;">
+                            <el-col :span="24">
+                                <el-cascader filterable :options="departmentCascader" :size="btnSize"
+                                             v-model.trim="associateDepartmentTreePosition"
+                                             @change="associateChange" clearable
+                                             placeholder="请选择部门" style="width: 100%"></el-cascader>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" :span="24">
+                    <el-col :span="11">
+                        <!--左侧-->
+                        <el-table :data="leftUserList"
+                                  @selection-change="leftSelectionChange"
+                                  :default-sort = "{prop: 'userTreePositionId', order: 'ascending'}"
+                                  border height="500" style="margin-bottom: 10px;">
+                            <el-table-column type="selection" width="55"/>
+                            <el-table-column prop="name" label="姓名" width="180"/>
+                            <el-table-column prop="userTreePositionName" label="部门层级" />
+                        </el-table>
+                    </el-col>
+
+                    <el-col :span="2">
+                        <div style="margin-top: 210px; margin-bottom: 10px; text-align: center;">
+                            <el-button type="primary" icon="el-icon-arrow-right" circle
+                                       @click="moveToRight"
+                                       :disabled="this.leftSelectedRows.length == 0"></el-button>
+                        </div>
+                        <div style="text-align: center;">
+                            <el-button type="primary" icon="el-icon-arrow-left" circle
+                                       @click="moveToLeft"
+                                       :disabled="this.rightSelectedRows.length == 0"></el-button>
+                        </div>
+                    </el-col>
+
+                    <el-col :span="11">
+                        <!--右侧-->
+                        <el-table :data="rightUserList"
+                                  @selection-change="rightSelectionChange"
+                                  :default-sort = "{prop: 'userTreePositionId', order: 'ascending'}"
+                                  border height="500" style="margin-bottom: 10px;">
+                            <el-table-column type="selection" width="55"/>
+                            <el-table-column prop="name" label="姓名" width="180"/>
+                            <el-table-column prop="userTreePositionName" label="部门层级" />
+                        </el-table>
+                    </el-col>
+                </el-row>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveStationGroupUser"
+                               :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeStationGroupUserDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
+
         </div>
     </basic-container>
 </template>
@@ -522,6 +602,7 @@
     import {getDepartmentCascader} from '@/api/admin/department';
     import {getAllRoleStationGroup,getStationGroupRoleList,setStationGroupRoles} from "@/api/resource/stationGroupRole";
     import {getDictionaryList} from '@/api/admin/dictionary';
+    import {getStationGroupUser, setStationGroupUsers} from "@/api/resource/stationGroupUser";
 
     export default {
         name: 'stationGroup',
@@ -831,10 +912,41 @@
                     stationGroupId: undefined
                 },
                 dialogStationGroupRoleLoading: false,
-                uploadFileTypeList: []
+                uploadFileTypeList: [],
+
+
+                // 关联用户
+                dialogStationGroupUserVisible: false,
+                dialogFormLoading: false,
+                // 左侧
+                originalLeftUserList: [],
+                leftUserList: [],
+                leftSelectedRows: [],
+                // 右侧
+                rightUserList: [],
+                rightSelectedRows: [],
+                associateAdmin: undefined,
+                associateUserName: undefined,
+                associateDepartmentTreePosition: []
             }
         },
         computed: {
+            selecteDepartmentPosition: {
+                get() {
+                    if (this.department.treePosition) {
+                        return this.department.treePosition.substr(1).split('&')
+                    }
+                },
+                set(v) {
+                    if (v.length > 0) {
+                        this.department.parentId = v[v.length - 1];
+                        this.department.treePosition = '&' + v.join('&');
+                    } else {
+                        this.department.parentId = 0;
+                        this.department.treePosition = undefined;
+                    }
+                }
+            },
             ...mapGetters([
                 'permission',
                 'titleMap',
@@ -899,6 +1011,7 @@
                     delete: this.permission.station_group_delete,
                     ctrl: this.permission.station_group_ctrl,
                     setting: this.permission.station_group_setting,
+                    user: this.permission.station_group_user,
                     domain: this.permission.station_group_domain,
                     domainCreate: this.permission.station_group_domain_create,
                     domainUpdate: this.permission.station_group_domain_update,
@@ -1729,6 +1842,136 @@
                         this.$message.error('获取字典项失败')
                     }
                 })
+            },
+
+            // 关联用户
+            btnUser(row) {
+                this.stationGroup = row;
+                this.leftSelectedRows = [];
+                this.rightSelectedRows = [];
+                this.dialogFormLoading = true;
+                getStationGroupUser(row.id).then(response => {
+                    this.leftUserList = response.data.unselectedUserList;
+                    this.rightUserList = response.data.selectedUserList;
+                    this.originalLeftUserList = deepClone(this.leftUserList);
+                    this.dialogFormLoading = false;
+                }).catch(err => {
+                    this.leftUserList = [];
+                    this.rightUserList = [];
+                })
+                this.dialogStationGroupUserVisible = true;
+            },
+            closeStationGroupUserDialog() {
+                this.dialogStationGroupUserVisible = false;
+                this.submitLoading = false;
+            },
+            doSaveStationGroupUser() {
+                this.submitLoading = true;
+                let ids = [];
+                if (this.rightUserList.length > 0) {
+                    for (let item of this.rightUserList) {
+                        ids.push(item.userId);
+                    }
+                }
+                setStationGroupUsers(this.stationGroup.id, ids).then(() => {
+                    this.closeStationGroupUserDialog();
+                    this.reloadList();
+                    this.$message.success(this.$t("table.updateSuccess"));
+                }).catch(() => {
+                    this.submitLoading = false;
+                })
+            },
+            leftSelectionChange(rows) {
+                this.leftSelectedRows = rows;
+            },
+            rightSelectionChange(rows) {
+                this.rightSelectedRows = rows;
+            },
+            // 给左侧添加
+            moveToLeft() {
+                if (this.rightSelectedRows.length > 0) {
+                    for (let item of this.rightSelectedRows) {
+                        this.leftUserList.push(item);
+                        let i = -1;
+                        if (this.rightUserList && this.rightUserList.length > 0) {
+                            for (let tag of this.rightUserList) {
+                                i++;
+                                if (tag.userId === item.userId) {
+                                    break;
+                                }
+                            }
+                            if (i > -1) {
+                                this.rightUserList.splice(i, 1)
+                            }
+                        }
+                    }
+                }
+                this.rightSelectedRows = [];
+                this.originalLeftUserList = deepClone(this.leftUserList);
+            },
+            // 给右侧添加
+            moveToRight() {
+                if (this.leftSelectedRows.length > 0) {
+                    for (let item of this.leftSelectedRows) {
+                        this.rightUserList.push(item);
+                        if (this.leftUserList && this.leftUserList.length > 0) {
+                            let i = -1;
+                            for (let tag of this.leftUserList) {
+                                i++;
+                                if (tag.userId === item.userId) {
+                                    break;
+                                }
+                            }
+                            if (i > -1) {
+                                this.leftUserList.splice(i, 1);
+                            }
+                        }
+                    }
+                }
+                this.leftSelectedRows = [];
+                this.originalLeftUserList = deepClone(this.leftUserList);
+            },
+            associateChange() {
+                this.leftUserList = this.getFilterData();
+            },
+            getFilterData() {
+                let origin = deepClone(this.originalLeftUserList);
+                let list = [];
+                for (let item of origin) {
+                    if (this.associateAdmin) {
+                        if (item.admin == this.associateAdmin) {
+                            list.push(item);
+                        }
+                    } else {
+                        list.push(item);
+                    }
+                }
+                let list2 = [];
+                for (let item of list) {
+                    if (this.associateUserName) {
+                        if (item.name.indexOf(this.associateUserName) > -1) {
+                            list2.push(item);
+                        }
+                    } else {
+                        list2.push(item);
+                    }
+                }
+                let list3 = [];
+                let departmentId = '';
+                if (this.associateDepartmentTreePosition.length > 0) {
+                    departmentId = this.associateDepartmentTreePosition[this.associateDepartmentTreePosition.length - 1];
+                }
+                console.dir(departmentId);
+                for (let item of list2) {
+                    if (departmentId) {
+                        if (item.userTreePositionId.indexOf(departmentId) > -1) {
+                            list3.push(item);
+                        }
+                    } else {
+                        list3.push(item);
+                    }
+                }
+                return list3;
             }
         }
     }

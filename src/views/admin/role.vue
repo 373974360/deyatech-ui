@@ -42,7 +42,7 @@
                         </el-tag>
                     </template>
                 </el-table-column>-->
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="400">
+                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="230">
                     <template slot-scope="scope">
                         <div style="padding-top: 8px;">
                             <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary"
@@ -51,17 +51,17 @@
 
                             <el-badge :hidden="scope.row.roleMenusCount <= 0 || !btnEnable.role_users" :value="scope.row.roleMenusCount"
                                       :max="99" style="margin-right:20px">
-                                <el-button v-if="btnEnable.role_menus" title="关联菜单" type="primary" icon="iconcaidan1"
+                                <el-button v-if="btnEnable.role_menus" title="关联菜单" type="primary" icon="el-icon-menu"
                                            :size="btnSize" circle @click.stop.safe="btnRoleMenu(scope.row)"></el-button>
                             </el-badge>
 
                             <el-badge :hidden="scope.row.roleUsersCount <= 0 || !btnEnable.role_menus" :value="scope.row.roleUsersCount"
                                       :max="99" style="margin-right:20px">
-                                <el-button v-if="btnEnable.role_users" title="关联用户" type="primary" icon="iconadd-account"
+                                <el-button v-if="btnEnable.role_users" title="关联用户" type="primary" icon="el-icon-user"
                                            :size="btnSize" circle @click.stop.safe="btnRoleUser(scope.row)"></el-button>
                             </el-badge>
 
-                            <el-badge :hidden="scope.row.stationCount <= 0 || !btnEnable.station" :value="scope.row.stationCount"
+                            <!--<el-badge :hidden="scope.row.stationCount <= 0 || !btnEnable.station" :value="scope.row.stationCount"
                                       :max="99" style="margin-right:20px">
                                 <el-button v-if="btnEnable.station" title="关联站点" type="primary" icon="iconlogistic"
                                            :size="btnSize" circle @click.stop="btnStationGroup(scope.row)"></el-button>
@@ -77,7 +77,7 @@
                                       :max="99" style="margin-right:20px">
                                 <el-button v-if="btnEnable.content" title="内容权限" type="primary" icon="iconviewlist"
                                            :size="btnSize" circle @click.stop.safe="btnContent(scope.row)"></el-button>
-                            </el-badge>
+                            </el-badge>-->
 
                             <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger"
                                        icon="el-icon-delete" :size="btnSize" circle
