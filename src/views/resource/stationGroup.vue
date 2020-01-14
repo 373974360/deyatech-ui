@@ -493,13 +493,13 @@
             <!--关联用户-->
             <el-dialog width="70%" :title="titleMap['associateUser']" :visible.sync="dialogStationGroupUserVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeStationGroupUserDialog">
-                <el-row :gutter="20" :span="24">
-                    <el-col :span="11">
+                <el-row :span="24">
+                    <el-col :span="11" style="margin-bottom: 0;">
                         <el-row :gutter="20" :span="24" style=" padding-right: 5px;">
                             <el-col :span="10">
                                 <el-select filterable v-model.trim="associateAdmin"
                                            @change="associateChange" clearable
-                                           :size="btnSize" style="width: 100%">
+                                           placeholder="管理员" :size="btnSize" style="width: 100%">
                                     <el-option label="是" :value="1"></el-option>
                                     <el-option label="否" :value="2"></el-option>
                                 </el-select>
@@ -512,21 +512,23 @@
                         </el-row>
                         <el-row :gutter="20" :span="24" style=" padding-right: 5px;">
                             <el-col :span="24">
-                                <el-cascader filterable :options="departmentCascader" :size="btnSize"
+                                <el-cascader filterable :options="departmentCascader"
                                              v-model.trim="associateDepartmentTreePosition"
                                              @change="associateChange" clearable
-                                             placeholder="请选择部门" style="width: 100%"></el-cascader>
+                                             placeholder="部门" :size="btnSize" style="width: 100%"></el-cascader>
                             </el-col>
                         </el-row>
                     </el-col>
+                    <el-col :span="2"></el-col>
+                    <el-col :span="11"><span style="display: inline-block; margin-top: 55px; font-weight: bold;">已关联用户列表</span></el-col>
                 </el-row>
-                <el-row :gutter="20" :span="24">
+                <el-row :span="24">
                     <el-col :span="11">
                         <!--左侧-->
                         <el-table :data="leftUserList"
                                   @selection-change="leftSelectionChange"
                                   :default-sort = "{prop: 'userTreePositionId', order: 'ascending'}"
-                                  border height="500" style="margin-bottom: 10px;">
+                                  border height="500" style="margin-top: 2px; margin-bottom: 10px;">
                             <el-table-column type="selection" width="55"/>
                             <el-table-column prop="name" label="姓名" width="180"/>
                             <el-table-column prop="userTreePositionName" label="部门层级" />
@@ -551,8 +553,8 @@
                         <el-table :data="rightUserList"
                                   @selection-change="rightSelectionChange"
                                   :default-sort = "{prop: 'userTreePositionId', order: 'ascending'}"
-                                  border height="500" style="margin-bottom: 10px;">
-                            <el-table-column type="selection" width="55"/>
+                                  border height="500" style="margin-top: 2px; margin-bottom: 10px;">
+                            <el-table-column type="selection" width="55" :selectable="getSelectable"/>
                             <el-table-column prop="name" label="姓名" width="180"/>
                             <el-table-column prop="userTreePositionName" label="部门层级" />
                         </el-table>
@@ -1850,7 +1852,7 @@
                 this.leftSelectedRows = [];
                 this.rightSelectedRows = [];
                 this.dialogFormLoading = true;
-                getStationGroupUser(row.id).then(response => {
+                getStationGroupUser(row.id, row.departmentId).then(response => {
                     this.leftUserList = response.data.unselectedUserList;
                     this.rightUserList = response.data.selectedUserList;
                     this.originalLeftUserList = deepClone(this.leftUserList);
@@ -1864,6 +1866,14 @@
             closeStationGroupUserDialog() {
                 this.dialogStationGroupUserVisible = false;
                 this.submitLoading = false;
+                this.originalLeftUserList = [];
+                this.leftUserList = [];
+                this.leftSelectedRows = [];
+                this.rightUserList = [];
+                this.rightSelectedRows = [];
+                this.associateAdmin = undefined;
+                this.associateUserName = undefined;
+                this.associateDepartmentTreePosition = [];
             },
             doSaveStationGroupUser() {
                 this.submitLoading = true;
@@ -1892,6 +1902,7 @@
                 if (this.rightSelectedRows.length > 0) {
                     for (let item of this.rightSelectedRows) {
                         this.leftUserList.push(item);
+                        this.originalLeftUserList.push(item);
                         let i = -1;
                         if (this.rightUserList && this.rightUserList.length > 0) {
                             for (let tag of this.rightUserList) {
@@ -1907,7 +1918,6 @@
                     }
                 }
                 this.rightSelectedRows = [];
-                this.originalLeftUserList = deepClone(this.leftUserList);
             },
             // 给右侧添加
             moveToRight() {
@@ -1926,10 +1936,21 @@
                                 this.leftUserList.splice(i, 1);
                             }
                         }
+                        if (this.originalLeftUserList && this.originalLeftUserList.length > 0) {
+                            let i = -1;
+                            for (let tag of this.originalLeftUserList) {
+                                i++;
+                                if (tag.userId === item.userId) {
+                                    break;
+                                }
+                            }
+                            if (i > -1) {
+                                this.originalLeftUserList.splice(i, 1);
+                            }
+                        }
                     }
                 }
                 this.leftSelectedRows = [];
-                this.originalLeftUserList = deepClone(this.leftUserList);
             },
             associateChange() {
                 this.leftUserList = this.getFilterData();
@@ -1972,6 +1993,10 @@
                     }
                 }
                 return list3;
+            },
+            getSelectable(row) {
+                console.log(row.selectable)
+                return row.selectable;
             }
         }
     }

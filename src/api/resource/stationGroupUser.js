@@ -1,10 +1,10 @@
 import request from '@/router/axios';
 
-export function getStationGroupUser(stationGroupId) {
+export function getStationGroupUser(stationGroupId, departmentId) {
     return request({
         url: '/manage/resource/stationGroupUser/getStationGroupUser',
         method: 'get',
-        params: {stationGroupId}
+        params: {stationGroupId, departmentId}
     })
 }
 export function setStationGroupUsers(stationGroupId, userIds){
