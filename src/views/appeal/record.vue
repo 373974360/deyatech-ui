@@ -92,7 +92,7 @@
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                                <el-button title="办理" type="success" icon="el-icon-edit-outline" :size="btnSize" circle
+                                <el-button v-if="btnEnable.handle" title="办理" type="success" icon="el-icon-edit-outline" :size="btnSize" circle
                                            @click.stop.safe="processAppeal(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                            @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -365,15 +365,16 @@
                             <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
                             <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
                             <template v-if="competentDepartment">
-                                <!--<el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>-->
+                                <el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>
                                 <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
                                 <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
+                                <el-button type="primary" @click="btnProcess(9)" :size="btnSize">督办</el-button>
                             </template>
                             <template v-if="!competentDepartment">
                                 <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
-                                <!--<el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>-->
+                                <el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>
                             </template>
-                            <!--<el-button type="primary" :size="btnSize">打印</el-button>-->
+                            <el-button type="primary" :size="btnSize">打印</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                     </el-dialog>
@@ -831,7 +832,8 @@
                     create: this.permission.record_create,
                     update: this.permission.record_update,
                     delete: this.permission.record_delete,
-                    release: this.permission.record_release
+                    release: this.permission.record_release,
+                    handle: this.permission.record_handle
                 };
             }
         },
@@ -1079,7 +1081,14 @@
                     this.processRulesType = this.processRules_5;
                     this.process.isOpen = this.record.isOpen;
                     this.process.isPublish = this.record.isPublish;
-                    this.$refs['proContent'].setUeContent("");
+                    this.process.content = this.record.content;
+                    this.process.proContent = this.record.replyContent;
+                    this.process.proTime = this.record.replyTime;
+                    if (this.process.proContent) {
+                        this.$refs['proContent'].setUeContent(this.process.proContent);
+                    } else {
+                        this.$refs['proContent'].setUeContent('');
+                    }
                 }
                 if(proType == 3){
                     this.processTitle = '发布信件';
@@ -1103,9 +1112,12 @@
                     this.process.proContent = this.record.replyContent;
                     if (this.process.content) {
                         this.$refs['processContent'].setUeContent(this.process.content);
-                        this.$refs['proContent'].setUeContent(this.process.proContent);
                     } else {
                         this.$refs['processContent'].setUeContent('');
+                    }
+                    if (this.process.proContent) {
+                        this.$refs['proContent'].setUeContent(this.process.proContent);
+                    } else {
                         this.$refs['proContent'].setUeContent('');
                     }
                 }
