@@ -365,10 +365,10 @@
                             <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
                             <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
                             <template v-if="competentDepartment">
-                                <el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>
+                                <el-button type="primary" @click="btnRepeat()" :size="btnSize">判重</el-button>
                                 <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
                                 <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
-                                <el-button type="primary" @click="btnProcess(9)" :size="btnSize">督办</el-button>
+                                <el-button type="primary" @click="btnSupervise()" :size="btnSize">督办</el-button>
                             </template>
                             <template v-if="!competentDepartment">
                                 <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
@@ -376,6 +376,35 @@
                             </template>
                             <el-button type="primary" :size="btnSize">打印</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
+                        </span>
+                    </el-dialog>
+
+
+
+                    <!--***********************************************
+                                 以下信件判重
+                    ***********************************************-->
+                    <el-dialog title="信件判重" :visible.sync="repeatDdialog"
+                               :close-on-click-modal="closeOnClickModal" @close="closeRepeatDialog" width="70%">
+                        <div class="deyatech-menu">
+                            <div class="deyatech-menu_left">
+                                <el-select v-model.trim="repeatType" :size="searchSize" @change="repeatChange" placeholder="匹配方式">
+                                    <el-option v-for="item in repeatTypeList" :label="item.label" :value="item.value"></el-option>
+                                </el-select>
+                            </div>
+                            <div class="deyatech-menu_right">
+                                <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadRepeatAppealList"></el-button>
+                            </div>
+                        </div>
+                        <el-table :data="repeatAppealList" v-loading.body="repeatListLoading" stripe border highlight-current-row
+                                  @selection-change="handleRepeatSelectionChange">
+                            <el-table-column type="selection" width="50" align="center"/>
+                            <el-table-column align="left" label="信件标题" prop="title"/>
+                            <el-table-column align="center" label="来信人" prop="userName"/>
+                        </el-table>
+                        <span slot="footer" class="dialog-footer">
+                            <el-button type="primary" :size="btnSize" @click="btnSetRepeat">置为重复件</el-button>
+                            <el-button :size="btnSize" @click="closeRepeatDialog">取消</el-button>
                         </span>
                     </el-dialog>
                 </div>
@@ -390,14 +419,16 @@
     import {
         getRecordList,
         createOrUpdateRecord,
-        delRecords
+        delRecords,
+        getCompetentDept,
+        listRepeatByRecord
     } from '@/api/appeal/record';
     import {getModelByCompetentDeptId,getModel} from '@/api/appeal/model';
     import {getPurposeAllList} from '@/api/appeal/purpose';
-    import {getCompetentDept} from '@/api/appeal/record';
     import {
         getProcessAllList,
-        createOrUpdateProcess
+        createOrUpdateProcess,
+        setRepeatProcess
     } from '@/api/appeal/process';
     import {isvalidatemobile, validateEmail, isMobile, cardid, isTelephone} from '@/util/validate';
     export default {
@@ -463,7 +494,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     },{
                         label: '已发布',
                         isPublish: 1,
@@ -471,7 +503,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     }]
                 }, {
                     label: '信件管理',
@@ -482,7 +515,8 @@
                         sqStatus: 0,
                         isBack: 0,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     },{
                         label: '退回件',
                         isPublish: undefined,
@@ -490,7 +524,8 @@
                         sqStatus: undefined,
                         isBack: 1,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     },{
                         label: '办理中',
                         isPublish: undefined,
@@ -498,7 +533,8 @@
                         sqStatus: 1,
                         isBack: 0,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     },{
                         label: '已办结',
                         isPublish: undefined,
@@ -506,18 +542,29 @@
                         sqStatus: 3,
                         isBack: 0,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     }]
                 }, {
                     label: '督查督办',
                     children: [{
+                        label: '督办件',
+                        isPublish: undefined,
+                        sqFlag: 0,
+                        sqStatus: undefined,
+                        isBack: undefined,
+                        limitFlag: undefined,
+                        alarmFlag: undefined,
+                        superviseFlag: 1
+                    }, {
                         label: '预警件',
                         isPublish: undefined,
                         sqFlag: 0,
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: 1
+                        alarmFlag: 1,
+                        superviseFlag: undefined
                     }, {
                         label: '黄牌件',
                         isPublish: undefined,
@@ -525,7 +572,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: 2
+                        alarmFlag: 2,
+                        superviseFlag: undefined
                     }, {
                         label: '红牌件',
                         isPublish: undefined,
@@ -533,7 +581,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: 3
+                        alarmFlag: 3,
+                        superviseFlag: undefined
                     }]
                 }, {
                     label: '已处理信件',
@@ -544,7 +593,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     }, {
                         label: '无效件',
                         isPublish: undefined,
@@ -552,7 +602,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     }, {
                         label: '重复件',
                         isPublish: undefined,
@@ -560,7 +611,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: undefined,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     }]
                 }, {
                     label: '延期审核',
@@ -571,7 +623,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: 1,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     }, {
                         label: '待审核',
                         isPublish: undefined,
@@ -579,7 +632,8 @@
                         sqStatus: undefined,
                         isBack: undefined,
                         limitFlag: 2,
-                        alarmFlag: undefined
+                        alarmFlag: undefined,
+                        superviseFlag: undefined
                     }]
                 }],
                 recordList: undefined,
@@ -598,7 +652,8 @@
                     sqStatus: undefined,
                     isBack: undefined,
                     limitFlag: undefined,
-                    alarmFlag: undefined
+                    alarmFlag: undefined,
+                    superviseFlag: undefined
                 },
                 recordDepartment: [],
                 recordReplyDepartment: [],
@@ -630,7 +685,8 @@
                     sqStatus: 0,
                     isBack: 0,
                     limitFlag: 0,
-                    alarmFlag: 0
+                    alarmFlag: 0,
+                    superviseFlag: 0
                 },
                 recordRules: {
                     modelId: [
@@ -815,7 +871,29 @@
                     proType: undefined
                 },
                 deptTransfer: false,
-                competentDepartment: false
+                competentDepartment: false,
+
+                //信件判重
+                repeatDdialog: false,
+                repeatListLoading: false,
+                repeatAppealList: undefined,
+                repeatSelectedRows: [],
+                repeatListQuery: {
+                    id: undefined,
+                    title: undefined,
+                    userName: undefined
+                },
+                repeatType: 'titleAndUserName',
+                repeatTypeList: [{
+                    value: 'titleAndUserName',
+                    label: '标题和来信人'
+                },{
+                    value: 'title',
+                    label: '标题'
+                },{
+                    value: 'userName',
+                    label: '来信人'
+                }]
             }
         },
         computed: {
@@ -852,6 +930,7 @@
                 this.listQuery.timeFlag = data.timeFlag;
                 this.listQuery.alarmFlag = data.alarmFlag;
                 this.listQuery.limitFlag = data.limitFlag;
+                this.listQuery.superviseFlag = data.superviseFlag;
                 this.reloadList();
             },
             modelChange(v){
@@ -1310,6 +1389,73 @@
                 this.closeProcessDialog();
                 this.submitLoading = false;
                 this.reloadList();
+            },
+            btnSupervise(){
+                this.$confirm('请确认是否督办此件！', this.$t("table.tip"), {type: 'warning'}).then(() => {
+                    this.process.proType = 9;
+                    this.process.sqId = this.record.id;
+                    createOrUpdateProcess(this.process).then(() => {
+                        this.resetProcessDialogAndList();
+                        this.$message.success("督办成功！");
+                    })
+                })
+            },
+
+            //以下信件判重
+            btnRepeat(){
+                this.repeatDdialog = true;
+                this.repeatChange(this.repeatType);
+            },
+            handleRepeatSelectionChange(rows){
+                this.repeatSelectedRows = rows;
+            },
+            reloadRepeatAppealList(){
+                this.repeatListLoading = true;
+                listRepeatByRecord(this.repeatListQuery).then(response => {
+                    this.repeatListLoading = false;
+                    this.repeatAppealList = response.data;
+                })
+            },
+            repeatChange(e){
+                this.resetRepeatListQuery();
+                this.repeatListQuery.id = this.record.id;
+                if(e === 'title'){
+                    this.repeatListQuery.title = this.record.title;
+                }
+                if(e === 'userName'){
+                    this.repeatListQuery.userName = this.record.userName;
+                }
+                if(e === 'titleAndUserName'){
+                    this.repeatListQuery.title = this.record.title;
+                    this.repeatListQuery.userName = this.record.userName;
+                }
+                this.reloadRepeatAppealList();
+            },
+            resetRepeatListQuery(){
+                this.repeatListQuery = {
+                    id: undefined,
+                    title: undefined,
+                    userName: undefined
+                };
+            },
+            closeRepeatDialog() {
+                this.repeatDdialog = false;
+                this.repeatAppealList = undefined;
+                this.repeatType = 'titleAndUserName';
+                this.resetRepeatListQuery();
+            },
+            btnSetRepeat(){
+                let ids = [];
+                this.$confirm('请确认将选中的信件置为重复件！', this.$t("table.tip"), {type: 'warning'}).then(() => {
+                    for(const deleteRow of this.repeatSelectedRows){
+                        ids.push(deleteRow.id);
+                    }
+                    this.repeatListLoading = true;
+                    setRepeatProcess(ids).then(() => {
+                        this.reloadRepeatAppealList();
+                        this.$message.success('置为重复件成功！');
+                    })
+                })
             }
         }
     }
