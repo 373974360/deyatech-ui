@@ -401,7 +401,7 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 departmentCascader: [],
-                props: { multiple: true,checkStrictly: true},
+                props: { multiple: true},
                 dayCodeOptions: [{
                     value: 'YYMM',
                     label: 'YYMM'
