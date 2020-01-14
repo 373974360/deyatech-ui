@@ -82,3 +82,10 @@ export function getCascaderAttach(query) {
         params: query
     });
 }
+export function getAppealCascader(query) {
+    return request({
+        url: '/manage/admin/department/getAppealCascader',
+        method: 'get',
+        params: query
+    });
+}

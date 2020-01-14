@@ -305,7 +305,7 @@
         createOrUpdateModel,
         delModels
     } from '@/api/appeal/model';
-    import {getDepartmentCascader} from '@/api/admin/department';
+    import {getAppealCascader} from '@/api/admin/department';
     import {listTemplateAllFiles} from '@/api/template/template';
     import {getProcessDefinitionList} from '@/api/workflow/definition';
 
@@ -490,7 +490,7 @@
             },
             getDepartmentCascader() {
                 this.submitLoading = true;
-                getDepartmentCascader().then(response => {
+                getAppealCascader({parentId:'2bf04709881845b6b0c566b124a32c35'}).then(response => {
                     this.submitLoading = false;
                     this.departmentCascader = response.data;
                 })
