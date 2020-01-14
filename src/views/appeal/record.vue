@@ -53,17 +53,17 @@
                     <el-table :data="recordList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="50" align="center"/>
-                        <el-table-column align="left" label="标题" prop="title" min-width="300px;">
+                        <el-table-column align="left" label="标题" prop="title" width="300px;">
                             <template slot-scope="scope">
                                 <nobr class="link-type" :title="scope.row.title" style="cursor:pointer" @click='processAppeal(scope.row)'>{{scope.row.title}}</nobr>
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="收件部门" prop="deptName" min-width="130px;">
+                        <el-table-column align="center" label="收件部门" prop="deptName" width="130px;">
                             <template slot-scope="scope">
                                 <nobr :title="scope.row.deptName">{{scope.row.deptName}}</nobr>
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="回复部门" prop="replyDeptName" min-width="130px;">
+                        <el-table-column align="center" label="回复部门" prop="replyDeptName" width="130px;">
                             <template slot-scope="scope">
                                 <nobr :title="scope.row.replyDeptName">{{scope.row.replyDeptName}}</nobr>
                             </template>
@@ -83,7 +83,7 @@
                                 {{scope.row.isPublish | enums('YesNoEnum')}}
                             </template>
                         </el-table-column>
-                        <el-table-column align="center" label="来信时间" prop="createTime" min-width="170px;">
+                        <el-table-column align="center" label="来信时间" prop="createTime" width="170px;">
                             <template slot-scope="scope">
                                 <nobr :title="scope.row.createTime">{{scope.row.createTime}}</nobr>
                             </template>
@@ -92,7 +92,7 @@
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                                <el-button title="办理" type="success" icon="el-icon-edit-outline" :size="btnSize" circle
+                                <el-button v-if="btnEnable.handle" title="办理" type="success" icon="el-icon-edit-outline" :size="btnSize" circle
                                            @click.stop.safe="processAppeal(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                            @click.stop.safe="btnDelete(scope.row)"></el-button>
@@ -126,7 +126,7 @@
                                 </el-col>
                                 <el-col :span="12">
                                     <el-form-item label="诉求目的" prop="purId">
-                                        <el-select filterable v-model.trim="record.purId" placeholder="请选择业务模型" style="width:100%">
+                                        <el-select filterable v-model.trim="record.purId" placeholder="请选择业务模型" style="width:100%" no-data-text="无数据">
                                             <el-option v-for="item in purposeList" :label="item.purposeName" :value="item.id"></el-option>
                                         </el-select>
                                     </el-form-item>
@@ -365,13 +365,14 @@
                             <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
                             <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
                             <template v-if="competentDepartment">
-                                <!--<el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>-->
+                                <el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>
                                 <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
                                 <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
+                                <el-button type="primary" @click="btnProcess(9)" :size="btnSize">督办</el-button>
                             </template>
                             <template v-if="!competentDepartment">
                                 <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
-                                <!--<el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>-->
+                                <el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>
                             </template>
                             <el-button type="primary" :size="btnSize">打印</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
@@ -398,8 +399,7 @@
         getProcessAllList,
         createOrUpdateProcess
     } from '@/api/appeal/process';
-    import {validateEmail, isMobile, cardid} from '@/util/validate';
-
+    import {isvalidatemobile, validateEmail, isMobile, cardid, isTelephone} from '@/util/validate';
     export default {
         name: 'record',
         components: {
@@ -421,10 +421,11 @@
                 if (!value) {
                     callback()
                 }
-                if (isMobile(value)) {
-                    callback()
+                let result = isvalidatemobile(value)
+                if (result[0]) {
+                    callback(new Error(result[1]))
                 } else {
-                    callback(new Error("手机号码不正确"))
+                    callback()
                 }
             };
             const validateMail = (rule, value, callback) => {
@@ -831,7 +832,8 @@
                     create: this.permission.record_create,
                     update: this.permission.record_update,
                     delete: this.permission.record_delete,
-                    release: this.permission.record_release
+                    release: this.permission.record_release,
+                    handle: this.permission.record_handle
                 };
             }
         },
@@ -1079,7 +1081,14 @@
                     this.processRulesType = this.processRules_5;
                     this.process.isOpen = this.record.isOpen;
                     this.process.isPublish = this.record.isPublish;
-                    this.$refs['proContent'].setUeContent("");
+                    this.process.content = this.record.content;
+                    this.process.proContent = this.record.replyContent;
+                    this.process.proTime = this.record.replyTime;
+                    if (this.process.proContent) {
+                        this.$refs['proContent'].setUeContent(this.process.proContent);
+                    } else {
+                        this.$refs['proContent'].setUeContent('');
+                    }
                 }
                 if(proType == 3){
                     this.processTitle = '发布信件';
@@ -1101,8 +1110,16 @@
                     this.process.content = this.record.content;
                     this.process.proTime = this.record.replyTime;
                     this.process.proContent = this.record.replyContent;
-                    this.$refs['processContent'].setUeContent(this.process.content);
-                    this.$refs['proContent'].setUeContent(this.process.proContent);
+                    if (this.process.content) {
+                        this.$refs['processContent'].setUeContent(this.process.content);
+                    } else {
+                        this.$refs['processContent'].setUeContent('');
+                    }
+                    if (this.process.proContent) {
+                        this.$refs['proContent'].setUeContent(this.process.proContent);
+                    } else {
+                        this.$refs['proContent'].setUeContent('');
+                    }
                 }
                 if(proType == 4){
                     this.processTitle = '退回信件';
@@ -1173,6 +1190,9 @@
                 }
                 this.process.proType = proType;
                 this.process.sqId = this.record.id;
+                this.$nextTick(() => {
+                    this.$refs['processDialogForm'].clearValidate();
+                })
             },
             doCreateProcess(){
                 this.process.proContent = this.$refs['proContent'].getUeContent();
@@ -1183,9 +1203,27 @@
                         if(Array.isArray(toDeptId)){
                             this.process.toDeptId = toDeptId[toDeptId.length-1];
                         }
+                        var msg = '成功';
+                        if (this.process.proType == 1) {
+                            msg = "转办" + msg;
+                        } else if (this.process.proType == 2) {
+                            msg = "回复" + msg;
+                        } else if (this.process.proType == 3) {
+                            msg = "发布" + msg;
+                        } else if (this.process.proType == 4) {
+                            msg = "退回" + msg;
+                        } else if (this.process.proType == 5) {
+                            msg = "判重" + msg;
+                        } else if (this.process.proType == 6) {
+                            msg = "置为无效" + msg;
+                        } else if (this.process.proType == 7) {
+                            msg = "延期" + msg;
+                        } else if (this.process.proType == 8) {
+                            msg = "不予受理" + msg;
+                        }
                         createOrUpdateProcess(this.process).then(() => {
                             this.resetProcessDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
+                            this.$message.success(msg);
                         })
                     } else {
                         return false;
