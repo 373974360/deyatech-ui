@@ -449,7 +449,8 @@
         createOrUpdateRecord,
         delRecords,
         getCompetentDept,
-        listRepeatByRecord
+        listRepeatByRecord,
+        reloadTreeData
     } from '@/api/appeal/record';
     import {getModelByCompetentDeptId,getModel} from '@/api/appeal/model';
     import {getPurposeAllList} from '@/api/appeal/purpose';
@@ -513,157 +514,7 @@
                 }
             };
             return {
-                treeData:[{
-                    label: '发布管理',
-                    children: [{
-                        label: '未发布',
-                        isPublish: 0,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    },{
-                        label: '已发布',
-                        isPublish: 1,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    }]
-                }, {
-                    label: '信件管理',
-                    children: [{
-                        label: '待处理',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: 0,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    },{
-                        label: '退回件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: 1,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    },{
-                        label: '办理中',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: 1,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    },{
-                        label: '已办结',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: 3,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    }]
-                }, {
-                    label: '督查督办',
-                    children: [{
-                        label: '督办件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: 1
-                    }, {
-                        label: '预警件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 1,
-                        superviseFlag: undefined
-                    }, {
-                        label: '黄牌件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 2,
-                        superviseFlag: undefined
-                    }, {
-                        label: '红牌件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 3,
-                        superviseFlag: undefined
-                    }]
-                }, {
-                    label: '已处理信件',
-                    children: [{
-                        label: '不予受理',
-                        isPublish: undefined,
-                        sqFlag: 2,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    }, {
-                        label: '无效件',
-                        isPublish: undefined,
-                        sqFlag: -1,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    }, {
-                        label: '重复件',
-                        isPublish: undefined,
-                        sqFlag: 1,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    }]
-                }, {
-                    label: '延期审核',
-                    children: [{
-                        label: '已审核',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: 1,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    }, {
-                        label: '待审核',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: 2,
-                        alarmFlag: undefined,
-                        superviseFlag: undefined
-                    }]
-                }],
+                treeData: undefined,
                 recordList: undefined,
                 total: undefined,
                 listLoading: true,
@@ -952,12 +803,16 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = false;
+            this.reloadTreeData();
             this.reloadList();
             this.getModelList();
             this.getPurposeList();
         },
         methods: {
             handleNodeClick(data) {
+                if (data.children && data.children.length > 0) {
+                    return;
+                }
                 this.listQuery.isPublish = data.isPublish;
                 this.listQuery.sqFlag = data.sqFlag;
                 this.listQuery.sqStatus = data.sqStatus;
@@ -1010,6 +865,11 @@
                 this.listQuery.isPublish = 0;
                 this.listQuery.flag = 0;
                 this.listQuery.userDepartmentId = this.$store.state.user.userInfo.departmentId
+            },
+            reloadTreeData(){
+                reloadTreeData({userDepartmentId:this.listQuery.userDepartmentId}).then(response => {
+                    this.treeData = response.data;
+                })
             },
             reloadList(){
                 this.listLoading = true;
@@ -1148,6 +1008,7 @@
             resetRecordDialogAndList(){
                 this.closeRecordDialog();
                 this.submitLoading = false;
+                this.reloadTreeData();
                 this.reloadList();
             },
             closeRecordDialog() {

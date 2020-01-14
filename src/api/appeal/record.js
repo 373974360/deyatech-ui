@@ -53,5 +53,13 @@ export function listRepeatByRecord(query) {
         params: query
     });
 }
+export function reloadTreeData(query) {
+    return request({
+        url: '/manage/appeal/record/reloadTreeData',
+        method: 'get',
+        params: query
+    });
+}
+
 
 
