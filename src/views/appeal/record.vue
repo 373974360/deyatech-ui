@@ -361,18 +361,33 @@
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                         <span v-else slot="footer" class="dialog-footer">
-                            <el-button v-if="competentDepartment || deptTransfer" type="primary" @click="btnProcess(1)" :size="btnSize">转办</el-button>
-                            <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
-                            <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
-                            <template v-if="competentDepartment">
-                                <el-button type="primary" @click="btnRepeat()" :size="btnSize">判重</el-button>
-                                <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
-                                <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
-                                <el-button type="primary" @click="btnSupervise()" :size="btnSize">督办</el-button>
-                            </template>
-                            <template v-if="!competentDepartment">
-                                <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
-                                <el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>
+                            <!--正常信件可操作-->
+                            <template v-if="record.sqFlag == 0">
+                                <!--当前登录用户为主管部门 或者 业务模式为部门间可以转办 则显示转办按钮-->
+                                <el-button v-if="competentDepartment || deptTransfer" type="primary" @click="btnProcess(1)" :size="btnSize">转办</el-button>
+                                <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
+                                <!--由发布权限的用户可以看到发布按钮-->
+                                <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
+                                <!--主管部门可以判重，职位无效，不予受理，督办-->
+                                <template v-if="competentDepartment">
+                                    <!--未办结-->
+                                    <template v-if="record.sqStatus < 3">
+                                        <el-button type="primary" @click="btnRepeat()" :size="btnSize">判重</el-button>
+                                        <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
+                                        <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
+                                        <!--未督办信件才可督办-->
+                                        <el-button v-if="record.superviseFlag == 0" type="primary" @click="btnSupervise()" :size="btnSize">督办</el-button>
+                                        <!--待审核的延期-->
+                                        <el-button v-if="record.limitFlag == 2" type="primary" @click="btnDelay()" :size="btnSize">延期审核</el-button>
+                                    </template>
+                                </template>
+                                <!--参与部门有 退回 和 申请延期 的功能-->
+                                <template v-if="!competentDepartment">
+                                    <!--收件部门和处理部门为同一部门时代表网民直投，不允许退回-->
+                                    <el-button v-if="record.deptId != record.proDeptId" type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
+                                    <!--信件状态为预警件，并且未申请过延期，并且信件状态未办结-->
+                                    <el-button v-if="record.alarmFlag > 0 && record.limitFlag == 0 && record.sqStatus < 3" type="primary" @click="btnProcess(7)" :size="btnSize">申请延期</el-button>
+                                </template>
                             </template>
                             <el-button type="primary" :size="btnSize">打印</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
@@ -405,6 +420,19 @@
                         <span slot="footer" class="dialog-footer">
                             <el-button type="primary" :size="btnSize" @click="btnSetRepeat">置为重复件</el-button>
                             <el-button :size="btnSize" @click="closeRepeatDialog">取消</el-button>
+                        </span>
+                    </el-dialog>
+
+                    <!--***********************************************
+                                 以下信件延期审核
+                    ***********************************************-->
+                    <el-dialog title="延期审核" :visible.sync="delayDdialog"
+                               :close-on-click-modal="closeOnClickModal" @close="closeDelayDialog" width="40%">
+                        此信件申请延期至：{{record.limitFlagTime}}
+                        <span slot="footer" class="dialog-footer">
+                            <el-button type="primary" :size="btnSize" @click="btnSetDelay(11)">同意延期</el-button>
+                            <el-button type="danger" :size="btnSize" @click="btnSetDelay(10)">不予延期</el-button>
+                            <el-button :size="btnSize" @click="closeDelayDialog">取消</el-button>
                         </span>
                     </el-dialog>
                 </div>
@@ -814,6 +842,10 @@
                     ]
                 },
                 processRules_3: {
+                    proTime: [
+                        {required: true, message: this.$t("table.pleaseSelect") + "回复时间"},
+                        {validator: validateReplyTime, trigger: 'change'}
+                    ],
                     proContent: [
                         {required: true, message: this.$t("table.pleaseInput") + "延期原因"}
                     ]
@@ -893,7 +925,10 @@
                 },{
                     value: 'userName',
                     label: '来信人'
-                }]
+                }],
+                //延期审核
+                delayDdialog: false,
+
             }
         },
         computed: {
@@ -1216,9 +1251,6 @@
                     this.processRulesType = this.processRules_6;
                     this.$refs['proContent'].setUeContent("");
                 }
-                if(proType == 5){
-                    //信件判重
-                }
                 if(proType == 6){
                     this.processTitle = '置为无效';
                     this.proTimeLabel = '处理时间';
@@ -1237,9 +1269,9 @@
                 }
                 if(proType == 7){
                     this.processTitle = '信件延期';
-                    this.proTimeLabel = '处理时间';
+                    this.proTimeLabel = '延期至';
                     this.proContentLabel = '延期原因';
-                    this.proTimeDisabled = true;
+                    this.proTimeDisabled = false;
                     this.toDeptIdDisabled = true;
                     this.isOpenDisabled = true;
                     this.isPublishDisabled = true;
@@ -1455,6 +1487,23 @@
                         this.reloadRepeatAppealList();
                         this.$message.success('置为重复件成功！');
                     })
+                })
+            },
+
+            //延期审核
+            btnDelay(){
+                this.delayDdialog = true;
+            },
+            closeDelayDialog(){
+                this.delayDdialog = false;
+            },
+            btnSetDelay(type){
+                this.process.proType = type;
+                this.process.sqId = this.record.id;
+                createOrUpdateProcess(this.process).then(() => {
+                    this.resetProcessDialogAndList();
+                    this.$message.success('审核成功！');
+                    this.closeDelayDialog();
                 })
             }
         }
