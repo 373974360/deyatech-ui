@@ -21,3 +21,10 @@ export function pageStationGroupUser(query) {
         params: query
     })
 }
+export function pageStationAssociationUser(query) {
+    return request({
+        url: '/manage/resource/stationGroupUser/pageStationAssociationUser',
+        method: 'get',
+        params: query
+    })
+}

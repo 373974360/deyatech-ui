@@ -29,23 +29,23 @@
             <el-table ref="stationUserTable" :data="stationUserList" v-loading.body="listLoading" border highlight-current-row
                       @selection-change="handleSelectionChange" @select="handleSelect" @select-all="handleSelectAll">
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="left" label="UserId" prop="userId" width="200"/>
+                <!--<el-table-column align="left" label="UserId" prop="userId" width="200"/>-->
                 <el-table-column align="left" label="姓名" prop="name" width="200"/>
                 <el-table-column align="left" label="账号" prop="account" width="200"/>
                 <el-table-column aligin="left" label="部门层级" prop="userTreePositionName"/>
                 <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="220">
                     <template slot-scope="scope">
                         <div style="padding-top: 8px;">
-                            <el-badge :hidden="scope.row.catalogCount <= 0 || !btnEnable.catalog" :value="scope.row.catalogCount"
-                                      :max="99" style="margin-right:20px">
-                                <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="el-icon-menu" :size="btnSize" circle
-                                           @click.stop.safe="btnCatalog(scope.row)"></el-button>
-                            </el-badge>
-
                             <el-badge :hidden="scope.row.roleCount <= 0 || !btnEnable.role" :value="scope.row.roleCount"
                                       :max="99" style="margin-right:20px">
                                 <el-button v-if="btnEnable.role" title="关联角色" type="primary" icon="el-icon-s-grid" :size="btnSize" circle
                                            @click.stop.safe="btnRole(scope.row)"></el-button>
+                            </el-badge>
+
+                            <el-badge :hidden="scope.row.catalogCount <= 0 || !btnEnable.catalog" :value="scope.row.catalogCount"
+                                      :max="99" style="margin-right:20px">
+                                <el-button v-if="btnEnable.catalog" title="关联栏目" type="primary" icon="el-icon-menu" :size="btnSize" circle
+                                           @click.stop.safe="btnCatalog(scope.row)"></el-button>
                             </el-badge>
 
                             <el-badge :hidden="!scope.row.authority || !btnEnable.content" :value="scope.row.authority | enums('TemplateAuthorityEnum')"
@@ -523,7 +523,7 @@
                     return;
                 }
                 this.templateAuthority = undefined;
-                getUsersAuthority(userIds).then((response)=>{
+                getUsersAuthority(this.$store.state.common.siteId, userIds).then((response)=>{
                     this.templateAuthority = response.data;
                 }).catch((err)=>{
                     this.$message.error(err);
@@ -551,7 +551,7 @@
                     this.$message.error("请选择用户");
                     return;
                 }
-                setUsersAuthority(userIds, this.templateAuthority).then((response)=>{
+                setUsersAuthority(this.$store.state.common.siteId, userIds, this.templateAuthority).then((response)=>{
                     if (response.data) {
                         this.closeContentDialog();
                         this.reloadList();

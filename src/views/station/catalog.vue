@@ -312,8 +312,10 @@
                 <el-row :gutter="20" :span="24">
                     <el-col :span="12">
                         <el-form-item label="发布机构" prop="publishOrganization">
-                            <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="publishOrganizationArray"
-                                         expand-trigger="hover" clearable @change="publishOrganizationChange" ></el-cascader>
+                            <el-cascader filterable :props="{ checkStrictly: false }" expand-trigger="hover" clearable style="width: 100%"
+                                         :options="departmentCascader"
+                                         v-model.trim="publishOrganizationArray"
+                                         @change="publishOrganizationChange"></el-cascader>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -389,9 +391,9 @@
                     <el-table ref="publisherTable" :data="userList" border v-loading.body="publisherListLoading"
                                @select-all="selectAllPublisher" @select="handleSelectionChangePublisher">
                         <el-table-column type="selection" width="50" align="center"></el-table-column>
-                        <el-table-column prop="departmentName" label="部门"></el-table-column>
-                        <el-table-column prop="name" label="姓名"></el-table-column>
-                        <el-table-column prop="account" label="登录帐户"></el-table-column>
+                        <el-table-column prop="name" label="姓名" width="180"></el-table-column>
+                        <el-table-column prop="account" label="登录帐户" width="180"></el-table-column>
+                        <el-table-column prop="userTreePositionName" label="部门层级"></el-table-column>
                     </el-table>
                     <el-pagination class="deyatech-pagination pull-right" background
                                    :current-page.sync="userListQuery.page" :page-sizes="this.$store.state.common.pageSize"
@@ -477,7 +479,7 @@
     } from '@/api/station/model';
     import {validateURL,isEnglish} from '@/util/validate';
     import {getDepartmentCascader} from '@/api/admin/department';
-    import {pageStationAssociationUser} from '@/api/resource/stationGroupRole';
+    import {pageStationAssociationUser} from '@/api/resource/stationGroupUser';
     import {getTableHeadCatalogData, getCustomizationFunctionCatalog, saveOrUpdate, removeCatalogData} from '@/api/assembly/customizationFunction'
     import {getDictionaryList, getDictionaryCascader} from '@/api/admin/dictionary';
 
@@ -850,6 +852,7 @@
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
+                    stationGroupId: this.$store.state.common.siteId,
                     name: undefined,
                     departmentId: undefined
                 },
@@ -876,6 +879,7 @@
             if (this.$store.state.common.siteId != undefined) {
                 this.listQuery.siteId = this.$store.state.common.siteId;
                 this.userListQuery.siteId = this.$store.state.common.siteId;
+                this.userListQuery.stationGroupId = this.$store.state.common.siteId;
                 this.reloadList();
                 this.getAllModel();
                 this.getCatalogCascader();
@@ -1164,6 +1168,7 @@
                     _this.catalog.siteId = _this.listQuery.siteId;
                     // 聚合栏目信息
                     if (_this.catalog.flagAggregation) {
+                        _this.catalogAggregation.publishTime = _this.selectPublishTime.join();
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
@@ -1222,6 +1227,7 @@
                     _this.catalog.children = undefined;
                     // 聚合栏目信息
                     if (_this.catalog.flagAggregation) {
+                        _this.catalogAggregation.publishTime = _this.selectPublishTime.join();
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
@@ -1459,7 +1465,7 @@
                 this.$nextTick(()=>{
                     if (this.userList) {
                         for (let r of this.userList) {
-                            if (this.currentUser && this.currentUser.id === r.id) {
+                            if (this.currentUser && this.currentUser.userId === r.userId) {
                                 this.$refs.publisherTable.toggleRowSelection(r, true);
                             } else {
                                 this.$refs.publisherTable.toggleRowSelection(r, false);
@@ -1492,7 +1498,7 @@
             },
             doSavePublisher() {
                 if (this.currentUser) {
-                    this.catalogAggregation.publisher = this.currentUser.id;
+                    this.catalogAggregation.publisher = this.currentUser.userId;
                     this.catalogAggregation.publisherName = this.currentUser.name;
                 } else {
                     this.catalogAggregation.publisher = '';
