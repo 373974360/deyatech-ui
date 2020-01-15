@@ -974,7 +974,6 @@ var ProcessDiagramGenerator = {
     var diagramInfo = $('#' + this.options.diagramInfoId)
     if (!diagramInfo) return
 
-    console.dir(flow)
     var values = {
       flow: flow.id,
       name: flow.name,

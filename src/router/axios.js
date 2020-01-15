@@ -65,7 +65,7 @@ axios.interceptors.response.use(res => {
     if (refreshToken) {
         // 刷新token
         store.dispatch('RefreshToken').then(() => {
-            console.dir("刷新token成功");
+            console.log("刷新token成功");
         });
     }
     return res.data;

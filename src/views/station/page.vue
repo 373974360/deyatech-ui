@@ -198,7 +198,6 @@
                         this.page.templatePath = undefined;
                     } else {
                         existsTemplatePath(this.page).then(response => {
-                            console.dir(response);
                             if (response && response.data) {
                                 callback(new Error(this.$t("table.pleaseSelect") + '模板地址'))
                             } else {

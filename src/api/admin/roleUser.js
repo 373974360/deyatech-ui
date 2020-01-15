@@ -58,3 +58,18 @@ export function setRoleUsers(roleId, userIds) {
         data: {roleId, userIds}
     })
 }
+
+export function setUsersRoles(userIds, roleIds) {
+    return request({
+        url: '/manage/admin/roleUser/setUsersRoles',
+        method: 'post',
+        data: {userIds, roleIds}
+    })
+}
+export function getUsersRoles(userIds) {
+    return request({
+        url: '/manage/admin/roleUser/getUsersRoles',
+        method: 'post',
+        data: {userIds}
+    })
+}

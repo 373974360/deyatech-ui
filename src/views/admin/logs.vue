@@ -69,7 +69,7 @@
                     });
                 });
                 sock.onclose = function () {
-                    console.dir("websocket已经断开连接，5秒后重新连接");
+                    console.warn("websocket已经断开连接，5秒后重新连接");
                     //断开五秒后重连
                     setTimeout(function () {
                         _this.connect();

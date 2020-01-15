@@ -115,7 +115,6 @@
         },
         filters: {},
         created() {
-            console.dir(this.userInfo);
         },
         mounted() {
             listenfullscreen(this.setScreen);

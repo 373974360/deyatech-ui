@@ -61,7 +61,8 @@
                                            :size="btnSize" circle @click.stop.safe="btnRoleUser(scope.row)"></el-button>
                             </el-badge>
 
-                            <!--<el-badge :hidden="scope.row.stationCount <= 0 || !btnEnable.station" :value="scope.row.stationCount"
+                            <!--
+                            <el-badge :hidden="scope.row.stationCount <= 0 || !btnEnable.station" :value="scope.row.stationCount"
                                       :max="99" style="margin-right:20px">
                                 <el-button v-if="btnEnable.station" title="关联站点" type="primary" icon="iconlogistic"
                                            :size="btnSize" circle @click.stop="btnStationGroup(scope.row)"></el-button>

@@ -376,7 +376,6 @@
             },
             doDelete(ids, flag) {
                 this.listLoading = true;
-                console.dir(JSON.stringify(ids));
                 delTemplates(JSON.stringify(ids)).then(() => {
                     if (flag) {
                         this.closeResourceManagementDialog();

@@ -311,7 +311,6 @@
                 this.group.calendarTime = '00:00';
                 this.group.calendarType = 1;
                 this.group.calendarWorkday = [];
-                console.dir(this.group);
             },
             changeCalendarType(e){
                 if(e==1){
@@ -427,7 +426,6 @@
                 });
             },
             doUpdate(){
-                console.dir(this.group);
                 this.$refs['groupDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;

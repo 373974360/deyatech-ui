@@ -14,3 +14,10 @@ export function setStationGroupUsers(stationGroupId, userIds){
         data: {stationGroupId, userIds}
     })
 }
+export function pageStationGroupUser(query) {
+    return request({
+        url: '/manage/resource/stationGroupUser/pageStationGroupUser',
+        method: 'get',
+        params: query
+    })
+}

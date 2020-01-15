@@ -1392,7 +1392,6 @@
                 }
             },
             handleModifyImagesSuccess(res) {
-                console.dir(res);
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
                     this.liveModifyImage.url = res.data.url;
                     this.$message.success('上传成功！');
@@ -1658,7 +1657,6 @@
             handleNotLiveImageSuccess(res) {
                 if (res.status === 200 && res.data.state === 'SUCCESS') {
                     let item = res.data.customData;
-                    console.dir(item);
                     let newItem = {};
                     newItem.name = item.name;
                     newItem.url = item.url;

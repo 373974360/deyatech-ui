@@ -74,8 +74,13 @@
                                                @click.stop="btnSetting(scope.row)"></el-button>
                                     <el-button v-show="btnEnable.domain" title="域名" type="primary" icon="icon-earth" :size="btnSize" circle
                                                @click.stop="btnDomain(scope.row)"></el-button>
-                                    <el-button v-show="btnEnable.user" title="关联用户" type="primary" icon="el-icon-user" :size="btnSize" circle
-                                               @click.stop="btnUser(scope.row)"></el-button>
+                                    <el-badge :hidden="scope.row.userCount <= 0 || !btnEnable.user" :value="scope.row.userCount"
+                                              :max="99" style="margin-left:10px;">
+                                        <el-button v-show="btnEnable.user" title="关联用户" type="primary" icon="el-icon-user" :size="btnSize" circle
+                                                   @click.stop="btnUser(scope.row)"></el-button>
+                                    </el-badge>
+
+
                                 <!--<el-button title="关联角色" type="primary" icon="icon-category" :size="btnSize" circle
                                            @click.stop="btnStationGroupRole(scope.row)"></el-button>-->
 
@@ -499,9 +504,9 @@
                             <el-col :span="10">
                                 <el-select filterable v-model.trim="associateAdmin"
                                            @change="associateChange" clearable
-                                           placeholder="管理员" :size="btnSize" style="width: 100%">
-                                    <el-option label="是" :value="1"></el-option>
-                                    <el-option label="否" :value="2"></el-option>
+                                           placeholder="类型" :size="btnSize" style="width: 100%">
+                                    <el-option label="管理员" :value="1"></el-option>
+                                    <el-option label="普通用户" :value="2"></el-option>
                                 </el-select>
                             </el-col>
                             <el-col :span="14">
@@ -520,7 +525,9 @@
                         </el-row>
                     </el-col>
                     <el-col :span="2"></el-col>
-                    <el-col :span="11"><span style="display: inline-block; margin-top: 55px; font-weight: bold;">已关联用户列表</span></el-col>
+                    <el-col :span="11">
+                        <span style="display: inline-block; margin-top: 55px; font-weight: bold;">已关联用户列表 <span style="color: #fab6b6;margin-left: 10px;">{{rightUserList.length}}个</span></span>
+                    </el-col>
                 </el-row>
                 <el-row :span="24">
                     <el-col :span="11">
@@ -528,7 +535,7 @@
                         <el-table :data="leftUserList"
                                   @selection-change="leftSelectionChange"
                                   :default-sort = "{prop: 'userTreePositionId', order: 'ascending'}"
-                                  border height="500" style="margin-top: 2px; margin-bottom: 10px;">
+                                  border height="500" style="margin-top: 5px; margin-bottom: 10px;">
                             <el-table-column type="selection" width="55"/>
                             <el-table-column prop="name" label="姓名" width="180"/>
                             <el-table-column prop="userTreePositionName" label="部门层级" />
@@ -553,7 +560,7 @@
                         <el-table :data="rightUserList"
                                   @selection-change="rightSelectionChange"
                                   :default-sort = "{prop: 'userTreePositionId', order: 'ascending'}"
-                                  border height="500" style="margin-top: 2px; margin-bottom: 10px;">
+                                  border height="500" style="margin-top: 5px; margin-bottom: 10px;">
                             <el-table-column type="selection" width="55" :selectable="getSelectable"/>
                             <el-table-column prop="name" label="姓名" width="180"/>
                             <el-table-column prop="userTreePositionName" label="部门层级" />
@@ -1152,7 +1159,6 @@
                 } else {
                     this.stationGroup.stationGroupClassificationTreePosition = '&' + this.stationGroup.stationGroupClassificationId;
                 }
-                console.log(this.stationGroup.stationGroupClassificationTreePosition);
                 this.stationGroup.departmentTreePosition += '&' + this.stationGroup.departmentId;
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -1982,7 +1988,6 @@
                 if (this.associateDepartmentTreePosition.length > 0) {
                     departmentId = this.associateDepartmentTreePosition[this.associateDepartmentTreePosition.length - 1];
                 }
-                console.dir(departmentId);
                 for (let item of list2) {
                     if (departmentId) {
                         if (item.userTreePositionId.indexOf(departmentId) > -1) {
@@ -1995,7 +2000,6 @@
                 return list3;
             },
             getSelectable(row) {
-                console.log(row.selectable)
                 return row.selectable;
             }
         }
