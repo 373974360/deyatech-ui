@@ -303,9 +303,9 @@
     import {
         getModelList,
         createOrUpdateModel,
-        delModels
+        delModels,
+        getDepartmentTreeBySiteId
     } from '@/api/appeal/model';
-    import {getAppealCascader} from '@/api/admin/department';
     import {listTemplateAllFiles} from '@/api/template/template';
     import {getProcessDefinitionList} from '@/api/workflow/definition';
 
@@ -490,7 +490,7 @@
             },
             getDepartmentCascader() {
                 this.submitLoading = true;
-                getAppealCascader({parentId:'2bf04709881845b6b0c566b124a32c35'}).then(response => {
+                getDepartmentTreeBySiteId({siteId:this.$store.state.common.siteId,layer:2}).then(response => {
                     this.submitLoading = false;
                     this.departmentCascader = response.data;
                 })
