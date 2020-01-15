@@ -54,3 +54,18 @@ export function getModelByCompetentDeptId(query) {
         params: query
     });
 }
+export function countModelByDepartmentId(departmentIds) {
+    const data = {departmentIds};
+    return request({
+        url: '/manage/appeal/model/countModelByDepartmentId',
+        method: 'post',
+        data
+    });
+}
+export function getDepartmentTreeBySiteId(query) {
+    return request({
+        url: '/manage/appeal/model/getDepartmentTreeBySiteId',
+        method: 'get',
+        params: query
+    });
+}
