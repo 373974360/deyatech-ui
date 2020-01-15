@@ -62,3 +62,10 @@ export function countModelByDepartmentId(departmentIds) {
         data
     });
 }
+export function getDepartmentTreeBySiteId(query) {
+    return request({
+        url: '/manage/appeal/model/getDepartmentTreeBySiteId',
+        method: 'get',
+        params: query
+    });
+}

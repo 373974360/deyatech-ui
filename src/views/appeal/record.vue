@@ -361,21 +361,78 @@
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                         <span v-else slot="footer" class="dialog-footer">
-                            <el-button v-if="competentDepartment || deptTransfer" type="primary" @click="btnProcess(1)" :size="btnSize">转办</el-button>
-                            <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
-                            <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
-                            <template v-if="competentDepartment">
-                                <el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>
-                                <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
-                                <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
-                                <el-button type="primary" @click="btnProcess(9)" :size="btnSize">督办</el-button>
-                            </template>
-                            <template v-if="!competentDepartment">
-                                <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
-                                <el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>
+                            <!--正常信件可操作-->
+                            <template v-if="record.sqFlag == 0">
+                                <!--当前登录用户为主管部门 或者 业务模式为部门间可以转办 则显示转办按钮-->
+                                <el-button v-if="competentDepartment || deptTransfer" type="primary" @click="btnProcess(1)" :size="btnSize">转办</el-button>
+                                <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
+                                <!--由发布权限的用户可以看到发布按钮-->
+                                <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
+                                <!--主管部门可以判重，职位无效，不予受理，督办-->
+                                <template v-if="competentDepartment">
+                                    <!--未办结-->
+                                    <template v-if="record.sqStatus < 3">
+                                        <el-button type="primary" @click="btnRepeat()" :size="btnSize">判重</el-button>
+                                        <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
+                                        <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
+                                        <!--未督办信件才可督办-->
+                                        <el-button v-if="record.superviseFlag == 0" type="primary" @click="btnSupervise()" :size="btnSize">督办</el-button>
+                                        <!--待审核的延期-->
+                                        <el-button v-if="record.limitFlag == 2" type="primary" @click="btnDelay()" :size="btnSize">延期审核</el-button>
+                                    </template>
+                                </template>
+                                <!--参与部门有 退回 和 申请延期 的功能-->
+                                <template v-if="!competentDepartment">
+                                    <!--收件部门和处理部门为同一部门时代表网民直投，不允许退回-->
+                                    <el-button v-if="record.deptId != record.proDeptId" type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
+                                    <!--信件状态为预警件，并且未申请过延期，并且信件状态未办结-->
+                                    <el-button v-if="record.alarmFlag > 0 && record.limitFlag == 0 && record.sqStatus < 3" type="primary" @click="btnProcess(7)" :size="btnSize">申请延期</el-button>
+                                </template>
                             </template>
                             <el-button type="primary" :size="btnSize">打印</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
+                        </span>
+                    </el-dialog>
+
+
+
+                    <!--***********************************************
+                                 以下信件判重
+                    ***********************************************-->
+                    <el-dialog title="信件判重" :visible.sync="repeatDdialog"
+                               :close-on-click-modal="closeOnClickModal" @close="closeRepeatDialog" width="70%">
+                        <div class="deyatech-menu">
+                            <div class="deyatech-menu_left">
+                                <el-select v-model.trim="repeatType" :size="searchSize" @change="repeatChange" placeholder="匹配方式">
+                                    <el-option v-for="item in repeatTypeList" :label="item.label" :value="item.value"></el-option>
+                                </el-select>
+                            </div>
+                            <div class="deyatech-menu_right">
+                                <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadRepeatAppealList"></el-button>
+                            </div>
+                        </div>
+                        <el-table :data="repeatAppealList" v-loading.body="repeatListLoading" stripe border highlight-current-row
+                                  @selection-change="handleRepeatSelectionChange">
+                            <el-table-column type="selection" width="50" align="center"/>
+                            <el-table-column align="left" label="信件标题" prop="title"/>
+                            <el-table-column align="center" label="来信人" prop="userName"/>
+                        </el-table>
+                        <span slot="footer" class="dialog-footer">
+                            <el-button type="primary" :size="btnSize" @click="btnSetRepeat">置为重复件</el-button>
+                            <el-button :size="btnSize" @click="closeRepeatDialog">取消</el-button>
+                        </span>
+                    </el-dialog>
+
+                    <!--***********************************************
+                                 以下信件延期审核
+                    ***********************************************-->
+                    <el-dialog title="延期审核" :visible.sync="delayDdialog"
+                               :close-on-click-modal="closeOnClickModal" @close="closeDelayDialog" width="40%">
+                        此信件申请延期至：{{record.limitFlagTime}}
+                        <span slot="footer" class="dialog-footer">
+                            <el-button type="primary" :size="btnSize" @click="btnSetDelay(11)">同意延期</el-button>
+                            <el-button type="danger" :size="btnSize" @click="btnSetDelay(10)">不予延期</el-button>
+                            <el-button :size="btnSize" @click="closeDelayDialog">取消</el-button>
                         </span>
                     </el-dialog>
                 </div>
@@ -390,14 +447,17 @@
     import {
         getRecordList,
         createOrUpdateRecord,
-        delRecords
+        delRecords,
+        getCompetentDept,
+        listRepeatByRecord,
+        reloadTreeData
     } from '@/api/appeal/record';
     import {getModelByCompetentDeptId,getModel} from '@/api/appeal/model';
     import {getPurposeAllList} from '@/api/appeal/purpose';
-    import {getCompetentDept} from '@/api/appeal/record';
     import {
         getProcessAllList,
-        createOrUpdateProcess
+        createOrUpdateProcess,
+        setRepeatProcess
     } from '@/api/appeal/process';
     import {isvalidatemobile, validateEmail, isMobile, cardid, isTelephone} from '@/util/validate';
     export default {
@@ -454,134 +514,7 @@
                 }
             };
             return {
-                treeData:[{
-                    label: '发布管理',
-                    children: [{
-                        label: '未发布',
-                        isPublish: 0,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '已发布',
-                        isPublish: 1,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }]
-                }, {
-                    label: '信件管理',
-                    children: [{
-                        label: '待处理',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: 0,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '退回件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: 1,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '办理中',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: 1,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '已办结',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: 3,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }]
-                }, {
-                    label: '督查督办',
-                    children: [{
-                        label: '预警件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 1
-                    }, {
-                        label: '黄牌件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 2
-                    }, {
-                        label: '红牌件',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 3
-                    }]
-                }, {
-                    label: '已处理信件',
-                    children: [{
-                        label: '不予受理',
-                        isPublish: undefined,
-                        sqFlag: 2,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }, {
-                        label: '无效件',
-                        isPublish: undefined,
-                        sqFlag: -1,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }, {
-                        label: '重复件',
-                        isPublish: undefined,
-                        sqFlag: 1,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }]
-                }, {
-                    label: '延期审核',
-                    children: [{
-                        label: '已审核',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: 1,
-                        alarmFlag: undefined
-                    }, {
-                        label: '待审核',
-                        isPublish: undefined,
-                        sqFlag: 0,
-                        sqStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: 2,
-                        alarmFlag: undefined
-                    }]
-                }],
+                treeData: undefined,
                 recordList: undefined,
                 total: undefined,
                 listLoading: true,
@@ -598,7 +531,8 @@
                     sqStatus: undefined,
                     isBack: undefined,
                     limitFlag: undefined,
-                    alarmFlag: undefined
+                    alarmFlag: undefined,
+                    superviseFlag: undefined
                 },
                 recordDepartment: [],
                 recordReplyDepartment: [],
@@ -630,7 +564,8 @@
                     sqStatus: 0,
                     isBack: 0,
                     limitFlag: 0,
-                    alarmFlag: 0
+                    alarmFlag: 0,
+                    superviseFlag: 0
                 },
                 recordRules: {
                     modelId: [
@@ -758,6 +693,10 @@
                     ]
                 },
                 processRules_3: {
+                    proTime: [
+                        {required: true, message: this.$t("table.pleaseSelect") + "回复时间"},
+                        {validator: validateReplyTime, trigger: 'change'}
+                    ],
                     proContent: [
                         {required: true, message: this.$t("table.pleaseInput") + "延期原因"}
                     ]
@@ -815,7 +754,32 @@
                     proType: undefined
                 },
                 deptTransfer: false,
-                competentDepartment: false
+                competentDepartment: false,
+
+                //信件判重
+                repeatDdialog: false,
+                repeatListLoading: false,
+                repeatAppealList: undefined,
+                repeatSelectedRows: [],
+                repeatListQuery: {
+                    id: undefined,
+                    title: undefined,
+                    userName: undefined
+                },
+                repeatType: 'titleAndUserName',
+                repeatTypeList: [{
+                    value: 'titleAndUserName',
+                    label: '标题和来信人'
+                },{
+                    value: 'title',
+                    label: '标题'
+                },{
+                    value: 'userName',
+                    label: '来信人'
+                }],
+                //延期审核
+                delayDdialog: false,
+
             }
         },
         computed: {
@@ -839,12 +803,16 @@
         },
         created(){
             this.$store.state.common.selectSiteDisplay = false;
+            this.reloadTreeData();
             this.reloadList();
             this.getModelList();
             this.getPurposeList();
         },
         methods: {
             handleNodeClick(data) {
+                if (data.children && data.children.length > 0) {
+                    return;
+                }
                 this.listQuery.isPublish = data.isPublish;
                 this.listQuery.sqFlag = data.sqFlag;
                 this.listQuery.sqStatus = data.sqStatus;
@@ -852,6 +820,7 @@
                 this.listQuery.timeFlag = data.timeFlag;
                 this.listQuery.alarmFlag = data.alarmFlag;
                 this.listQuery.limitFlag = data.limitFlag;
+                this.listQuery.superviseFlag = data.superviseFlag;
                 this.reloadList();
             },
             modelChange(v){
@@ -896,6 +865,11 @@
                 this.listQuery.isPublish = 0;
                 this.listQuery.flag = 0;
                 this.listQuery.userDepartmentId = this.$store.state.user.userInfo.departmentId
+            },
+            reloadTreeData(){
+                reloadTreeData({userDepartmentId:this.listQuery.userDepartmentId}).then(response => {
+                    this.treeData = response.data;
+                })
             },
             reloadList(){
                 this.listLoading = true;
@@ -1034,6 +1008,7 @@
             resetRecordDialogAndList(){
                 this.closeRecordDialog();
                 this.submitLoading = false;
+                this.reloadTreeData();
                 this.reloadList();
             },
             closeRecordDialog() {
@@ -1137,9 +1112,6 @@
                     this.processRulesType = this.processRules_6;
                     this.$refs['proContent'].setUeContent("");
                 }
-                if(proType == 5){
-                    //信件判重
-                }
                 if(proType == 6){
                     this.processTitle = '置为无效';
                     this.proTimeLabel = '处理时间';
@@ -1158,9 +1130,9 @@
                 }
                 if(proType == 7){
                     this.processTitle = '信件延期';
-                    this.proTimeLabel = '处理时间';
+                    this.proTimeLabel = '延期至';
                     this.proContentLabel = '延期原因';
-                    this.proTimeDisabled = true;
+                    this.proTimeDisabled = false;
                     this.toDeptIdDisabled = true;
                     this.isOpenDisabled = true;
                     this.isPublishDisabled = true;
@@ -1310,6 +1282,90 @@
                 this.closeProcessDialog();
                 this.submitLoading = false;
                 this.reloadList();
+            },
+            btnSupervise(){
+                this.$confirm('请确认是否督办此件！', this.$t("table.tip"), {type: 'warning'}).then(() => {
+                    this.process.proType = 9;
+                    this.process.sqId = this.record.id;
+                    createOrUpdateProcess(this.process).then(() => {
+                        this.resetProcessDialogAndList();
+                        this.$message.success("督办成功！");
+                    })
+                })
+            },
+
+            //以下信件判重
+            btnRepeat(){
+                this.repeatDdialog = true;
+                this.repeatChange(this.repeatType);
+            },
+            handleRepeatSelectionChange(rows){
+                this.repeatSelectedRows = rows;
+            },
+            reloadRepeatAppealList(){
+                this.repeatListLoading = true;
+                listRepeatByRecord(this.repeatListQuery).then(response => {
+                    this.repeatListLoading = false;
+                    this.repeatAppealList = response.data;
+                })
+            },
+            repeatChange(e){
+                this.resetRepeatListQuery();
+                this.repeatListQuery.id = this.record.id;
+                if(e === 'title'){
+                    this.repeatListQuery.title = this.record.title;
+                }
+                if(e === 'userName'){
+                    this.repeatListQuery.userName = this.record.userName;
+                }
+                if(e === 'titleAndUserName'){
+                    this.repeatListQuery.title = this.record.title;
+                    this.repeatListQuery.userName = this.record.userName;
+                }
+                this.reloadRepeatAppealList();
+            },
+            resetRepeatListQuery(){
+                this.repeatListQuery = {
+                    id: undefined,
+                    title: undefined,
+                    userName: undefined
+                };
+            },
+            closeRepeatDialog() {
+                this.repeatDdialog = false;
+                this.repeatAppealList = undefined;
+                this.repeatType = 'titleAndUserName';
+                this.resetRepeatListQuery();
+            },
+            btnSetRepeat(){
+                let ids = [];
+                this.$confirm('请确认将选中的信件置为重复件！', this.$t("table.tip"), {type: 'warning'}).then(() => {
+                    for(const deleteRow of this.repeatSelectedRows){
+                        ids.push(deleteRow.id);
+                    }
+                    this.repeatListLoading = true;
+                    setRepeatProcess(ids).then(() => {
+                        this.reloadRepeatAppealList();
+                        this.$message.success('置为重复件成功！');
+                    })
+                })
+            },
+
+            //延期审核
+            btnDelay(){
+                this.delayDdialog = true;
+            },
+            closeDelayDialog(){
+                this.delayDdialog = false;
+            },
+            btnSetDelay(type){
+                this.process.proType = type;
+                this.process.sqId = this.record.id;
+                createOrUpdateProcess(this.process).then(() => {
+                    this.resetProcessDialogAndList();
+                    this.$message.success('审核成功！');
+                    this.closeDelayDialog();
+                })
             }
         }
     }

@@ -46,5 +46,20 @@ export function getCompetentDept(query) {
         params: query
     });
 }
+export function listRepeatByRecord(query) {
+    return request({
+        url: '/manage/appeal/record/listRepeatByRecord',
+        method: 'get',
+        params: query
+    });
+}
+export function reloadTreeData(query) {
+    return request({
+        url: '/manage/appeal/record/reloadTreeData',
+        method: 'get',
+        params: query
+    });
+}
+
 
 

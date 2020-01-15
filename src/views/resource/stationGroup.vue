@@ -113,7 +113,7 @@
                             <el-form-item label="部门" prop="departmentId">
                                 <el-cascader filterable :options="departmentCascader"
                                              v-model.trim="formDepartmentTreePosition"
-                                             placeholder="请选择部门" style="width: 100%;"></el-cascader>
+                                             placeholder="请选择部门" style="width: 100%;" change-on-select show-all-levels expand-trigger="click"></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>

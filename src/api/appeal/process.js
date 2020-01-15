@@ -46,5 +46,13 @@ export function getProcessAllList(query) {
         params: query
     });
 }
+export function setRepeatProcess(ids) {
+    const data = {ids};
+    return request({
+        url: '/manage/appeal/process/setRepeatProcess',
+        method: 'post',
+        data
+    })
+}
 
 

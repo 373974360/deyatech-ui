@@ -303,9 +303,9 @@
     import {
         getModelList,
         createOrUpdateModel,
-        delModels
+        delModels,
+        getDepartmentTreeBySiteId
     } from '@/api/appeal/model';
-    import {getDepartmentCascader} from '@/api/admin/department';
     import {listTemplateAllFiles} from '@/api/template/template';
     import {getProcessDefinitionList} from '@/api/workflow/definition';
 
@@ -401,7 +401,7 @@
                 dialogTitle: undefined,
                 submitLoading: false,
                 departmentCascader: [],
-                props: { multiple: true,checkStrictly: true},
+                props: { multiple: true},
                 dayCodeOptions: [{
                     value: 'YYMM',
                     label: 'YYMM'
@@ -490,7 +490,7 @@
             },
             getDepartmentCascader() {
                 this.submitLoading = true;
-                getDepartmentCascader().then(response => {
+                getDepartmentTreeBySiteId({siteId:this.$store.state.common.siteId,layer:2}).then(response => {
                     this.submitLoading = false;
                     this.departmentCascader = response.data;
                 })
