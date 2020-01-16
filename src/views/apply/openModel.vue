@@ -8,18 +8,18 @@
                     <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1 || usageCount > 0">{{$t('table.delete')}}</el-button>
 
                     <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.modelName" maxlength="100" clearable style="width: 200px;margin-left: 10px;margin-right:10px;"></el-input>
-                    <el-select :size="searchSize" v-model="listQuery.autoPublish" placeholder="自动发布" clearable style="width: 100px;">
+                    <el-select :size="searchSize" v-model="listQuery.autoPublish" placeholder="自动发布" clearable style="width: 100px;margin-right:10px;">
                         <el-option :value="1" label="是"></el-option>
                         <el-option :value="0" label="否"></el-option>
                     </el-select>
-                    <el-select :size="searchSize" v-model="listQuery.busType" placeholder="业务模型" clearable style="width: 100px;margin-left: 10px;margin-right:10px;">
+                    <!--<el-select :size="searchSize" v-model="listQuery.busType" placeholder="业务模型" clearable style="width: 100px;margin-left: 10px;margin-right:10px;">
                         <el-option :value="1" label="转发"></el-option>
                         <el-option :value="2" label="直投"></el-option>
                     </el-select>
-                    <el-select :size="searchSize" v-model="listQuery.deptTransfer" placeholder="部门间转办" clearable style="width: 100px;margin-right:10px;">
+                    <el-select :size="searchSize" v-model="listQuery.deptTransfer" placeholder="部门间转办" clearable style="width: 100px;">
                         <el-option :value="1" label="是"></el-option>
                         <el-option :value="0" label="否"></el-option>
-                    </el-select>
+                    </el-select>-->
                     <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
                     <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
                 </div>
@@ -39,7 +39,7 @@
                         {{scope.row.autoPublish | enums('YesNoEnum')}}
                     </template>
                 </el-table-column>
-                <el-table-column align="center" label="业务模式" prop="busType" width="90">
+                <!--<el-table-column align="center" label="业务模式" prop="busType" width="90">
                     <template slot-scope="scope">
                         <span v-if="scope.row.busType == 1">
                             转发
@@ -54,7 +54,7 @@
                         {{scope.row.deptTransfer | enums('YesNoEnum')}}
                     </template>
                 </el-table-column>
-                <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                             {{scope.row.enable | enums('EnableEnum')}}
@@ -86,13 +86,11 @@
                 <el-form ref="modelDialogForm" class="deyatech-form" :model="model" label-position="right"
                          label-width="100px" :rules="modelRules">
                     <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
+                        <el-col :span="12">
                             <el-form-item label="业务名称" prop="modelName">
                                 <el-input v-model.trim="model.modelName" maxlength="100"></el-input>
                             </el-form-item>
                         </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
                         <el-col :span="6">
                             <el-form-item label="参与人员" prop="participant">
                                 <el-radio-group v-model.trim="model.participant">
@@ -106,21 +104,6 @@
                                 <el-switch
                                     v-model.trim="model.autoPublish"
                                     :active-value=1 :inactive-value=0>
-                                </el-switch>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="业务模式" prop="busType">
-                                <el-radio-group v-model.trim="model.busType">
-                                    <el-radio :label="1">转发</el-radio>
-                                    <el-radio :label="2">直投</el-radio>
-                                </el-radio-group>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="部门间转办" prop="deptTransfer">
-                                <el-switch
-                                    v-model.trim="model.deptTransfer" :active-value=1 :inactive-value=0>
                                 </el-switch>
                             </el-form-item>
                         </el-col>
@@ -301,11 +284,11 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getModelList,
-        createOrUpdateModel,
-        delModels
-    } from '@/api/assembly/applyOpenModel';
-    import {getDepartmentCascader} from '@/api/admin/department';
+        getOpenModelList,
+        createOrUpdateOpenModel,
+        delOpenModels,
+        getDepartmentTreeBySiteId
+    } from '@/api/apply/openModel';
     import {listTemplateAllFiles} from '@/api/template/template';
     import {getProcessDefinitionList} from '@/api/workflow/definition';
 
@@ -451,9 +434,9 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.model_create,
-                    update: this.permission.model_update,
-                    delete: this.permission.model_delete
+                    create: this.permission.openModel_create,
+                    update: this.permission.openModel_update,
+                    delete: this.permission.openModel_delete
                 };
             }
         },
@@ -490,7 +473,7 @@
             },
             getDepartmentCascader() {
                 this.submitLoading = true;
-                getDepartmentCascader().then(response => {
+                getDepartmentTreeBySiteId({siteId:this.$store.state.common.siteId,layer:2}).then(response => {
                     this.submitLoading = false;
                     this.departmentCascader = response.data;
                 })
@@ -504,7 +487,7 @@
             reloadList(){
                 this.listLoading = true;
                 this.modelList = undefined;
-                getModelList(this.listQuery).then(response => {
+                getOpenModelList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.modelList = response.data.records;
                     this.total = response.data.total;
@@ -598,7 +581,7 @@
                         if(this.model.printTemplet != undefined){
                             this.model.printTemplet = "/" + this.model.printTemplet.join("/");
                         }
-                        createOrUpdateModel(this.model).then(() => {
+                        createOrUpdateOpenModel(this.model).then(() => {
                             this.resetModelDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
@@ -629,7 +612,7 @@
                         if(this.model.printTemplet != undefined){
                             this.model.printTemplet = "/" + this.model.printTemplet.join("/");
                         }
-                        createOrUpdateModel(this.model).then(() => {
+                        createOrUpdateOpenModel(this.model).then(() => {
                             this.resetModelDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
@@ -640,7 +623,7 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delModels(ids).then(() => {
+                delOpenModels(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })

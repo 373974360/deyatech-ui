@@ -85,8 +85,8 @@
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                            @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                                <el-button title="办理" type="success" icon="el-icon-edit-outline" :size="btnSize" circle
-                                           @click.stop.safe="processAppeal(scope.row)"></el-button>
+                                <el-button v-if="btnEnable.handle" title="办理" type="success" icon="el-icon-edit-outline" :size="btnSize" circle
+                                           @click.stop.safe="processApply(scope.row)"></el-button>
                                 <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                            @click.stop.safe="btnDelete(scope.row)"></el-button>
                             </template>
@@ -231,12 +231,14 @@
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
-                                <el-col :span="8">
-                                    <el-form-item label="是否申请减免费用" prop="isDerate">
-                                        <el-switch
-                                            v-model.trim="applyOpenRecord.isDerate"
-                                            :active-value=1 :inactive-value=0>
-                                        </el-switch>
+                                <el-col :span="24">
+                                    <el-form-item label="获取信息方式" prop="offerType">
+                                        <el-radio-group v-model="applyOpenRecord.offerType">
+                                            <el-radio :label="1">电子邮箱</el-radio>
+                                            <el-radio :label="2">邮寄</el-radio>
+                                            <el-radio :label="3">传真</el-radio>
+                                            <el-radio :label="4">自行领取</el-radio>
+                                        </el-radio-group>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
@@ -338,34 +340,7 @@
                                     </tr>
                                 </table>
                             </el-collapse-item>
-                            <el-collapse-item title="处理记录" name="3">
-                                <el-table :data="processList" stripe border highlight-current-row
-                                          @selection-change="handleProcessSelectionChange">
-                                    <el-table-column type="selection" width="50" align="center"/>
-                                    <el-table-column align="center" label="处理部门" prop="proDeptName"/>
-                                    <el-table-column align="center" label="处理类型" prop="proType">
-                                        <template slot-scope="scope">
-                                            {{scope.row.proType | enums('AppealProcessStatusEnum')}}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column align="center" label="移交部门" prop="toDeptName"/>
-                                    <el-table-column align="center" label="处理时间" prop="createTime" width="200"/>
-                                    <el-table-column align="center" label="处理人" prop="createUserName" width="100"/>
-                                    <el-table-column type="expand">
-                                        <template slot-scope="props">
-                                            <table class="appeal_table">
-                                                <tr>
-                                                    <th>处理意见:</th>
-                                                    <td>
-                                                        <span v-html="props.row.proContent"></span>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
-                            </el-collapse-item>
-                            <el-collapse-item title="回复内容" name="4" :hidden="replyContentDisabled">
+                            <el-collapse-item title="回复内容" name="3" :hidden="replyContentDisabled">
                                 <table class="appeal_table">
                                     <tr>
                                         <th>回复时间:</th>
@@ -381,76 +356,34 @@
                                     </tr>
                                 </table>
                             </el-collapse-item>
-                            <el-collapse-item :title="processTitle" name="5" :hidden="processDisabled">
-                                <el-form ref="processDialogForm" class="deyatech-form" :model="process" label-position="right"
+                            <el-collapse-item :title="processTitle" name="4" :hidden="processDisabled">
+                                <el-form ref="processDialogForm" class="deyatech-form" :model="applyOpenRecord" label-position="right"
                                          label-width="100px" :rules="processRulesType">
-                                    <el-row :gutter="20" :span="24">
-                                        <el-col :span="24">
-                                            <el-form-item label="来信内容" prop="content" :hidden="contentDisabled">
-                                                <editor v-model.trim="process.content" :config="editorConfig" :default-msg="process.content" ref="processContent" id="processContent_index"></editor>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
-                                    <el-row :gutter="20" :span="24">
-                                        <el-col :span="12">
-                                            <el-form-item :label="proTimeLabel" prop="proTime" :hidden="proTimeDisabled">
-                                                <el-date-picker
-                                                    style="width:100%;"
-                                                    v-model.trim="process.proTime"
-                                                    type="datetime"
-                                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                                    placeholder="选择时间" onchange="proTimeChange">
-                                                </el-date-picker>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
-                                    <el-row :gutter="20" :span="24">
-                                        <el-col :span="12">
-                                            <el-form-item label="移交部门" prop="toDeptId" :hidden="toDeptIdDisabled">
-                                                <el-cascader filterable style="width: 100%" :options="departmentCascader" v-model.trim="process.toDeptId"
-                                                             expand-trigger="hover" ></el-cascader>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
-                                    <el-row :gutter="20" :span="24">
-                                        <el-col :span="12">
-                                            <el-form-item label="是否发布" prop="isPublish" :hidden="isPublishDisabled">
-                                                <el-switch
-                                                    v-model.trim="process.isPublish"
-                                                    :active-value=1 :inactive-value=0>
-                                                </el-switch>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
-                                    <el-row :gutter="20" :span="24">
-                                        <el-col :span="24">
-                                            <el-form-item :label="proContentLabel" prop="proContent" :hidden="proContentDisabled">
-                                                <editor v-model.trim="process.proContent" :config="editorConfig" :default-msg="process.proContent" ref="proContent" id="proContent_index"></editor>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
+
                                 </el-form>
                             </el-collapse-item>
                         </el-collapse>
-                        <span v-if="process.proType != undefined" slot="footer" class="dialog-footer">
+                        <span v-if="proType != undefined" slot="footer" class="dialog-footer">
                             <el-button type="primary" :size="btnSize" @click="doCreateProcess">确定</el-button>
                             <el-button :size="btnSize" @click="backProcessDialog">返回</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                         <span v-else slot="footer" class="dialog-footer">
-                            <el-button v-if="competentDepartment || deptTransfer" type="primary" @click="btnProcess(1)" :size="btnSize">转办</el-button>
-                            <el-button type="primary" @click="btnProcess(2)" :size="btnSize">回复</el-button>
-                            <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(3)" :size="btnSize">发布</el-button>
-                            <template v-if="competentDepartment">
-                                <!--<el-button type="primary" @click="btnProcess(5)" :size="btnSize">判重</el-button>-->
-                                <el-button type="primary" @click="btnProcess(6)" :size="btnSize">置为无效</el-button>
-                                <el-button type="primary" @click="btnProcess(8)" :size="btnSize">不予受理</el-button>
+                             <!--正常信件可操作-->
+                            <template v-if="applyOpenRecord.applyFlag == 0">
+                                <el-button type="primary" @click="btnProcess(1)" :size="btnSize">回复</el-button>
+                                <el-button v-if="btnEnable.release" type="primary" @click="btnProcess(2)" :size="btnSize">发布</el-button>
+                                <template v-if="competentDepartment">
+                                    <!--未办结-->
+                                    <template v-if="applyOpenRecord.applyStatus < 3">
+                                        <!--未督办信件才可督办-->
+                                        <el-button v-if="applyOpenRecord.superviseFlag == 0" type="primary" @click="updateStatus(1)" :size="btnSize">督办</el-button>
+                                        <el-button type="primary" @click="updateStatus(2)" :size="btnSize">置为无效</el-button>
+                                        <el-button type="primary" @click="updateStatus(3)" :size="btnSize">不予受理</el-button>
+                                    </template>
+                                </template>
                             </template>
-                            <template v-if="!competentDepartment">
-                                <el-button type="primary" @click="btnProcess(4)" :size="btnSize">退回</el-button>
-                                <!--<el-button type="primary" @click="btnProcess(7)" :size="btnSize">延期</el-button>-->
-                            </template>
-                            <!--<el-button type="primary" :size="btnSize">打印</el-button>-->
+                            <el-button type="primary" :size="btnSize">打印</el-button>
                             <el-button :size="btnSize" @click="closeProcessDialog">取消</el-button>
                         </span>
                     </el-dialog>
@@ -466,17 +399,14 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getApplyOpenRecordList,
-        createOrUpdateApplyOpenRecord,
-        delApplyOpenRecords,
-        getCompetentDept
-    } from '@/api/assembly/applyOpenRecord';
+        getOpenRecordList,
+        createOrUpdateOpenRecord,
+        delOpenRecords,
+        getCompetentDept,
+        reloadTreeData
+    } from '@/api/apply/openRecord';
     import {getDepartmentCascader} from '@/api/admin/department';
-    import {
-        getProcessAllList,
-        createOrUpdateApplyOpenProcess
-    } from '@/api/assembly/applyOpenProcess';
-    import {getModelByCompetentDeptId,getModel} from '@/api/assembly/applyOpenModel';
+    import {getOpenModelByCompetentDeptId,getOpenModel} from '@/api/apply/openModel';
     import {isvalidatemobile, validateEmail, cardid, isZipCode, isTelephone, isFax} from '@/util/validate';
 
     export default {
@@ -537,134 +467,7 @@
                 }
             };
             return {
-                treeData:[{
-                    label: '发布管理',
-                    children: [{
-                        label: '未发布',
-                        isPublish: 0,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '已发布',
-                        isPublish: 1,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }]
-                }, {
-                    label: '信件管理',
-                    children: [{
-                        label: '待处理',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: 0,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '退回件',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: 1,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '办理中',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: 1,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    },{
-                        label: '已办结',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: 3,
-                        isBack: 0,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }]
-                }, {
-                    label: '督查督办',
-                    children: [{
-                        label: '预警件',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 1
-                    }, {
-                        label: '黄牌件',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 2
-                    }, {
-                        label: '红牌件',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: 3
-                    }]
-                }, {
-                    label: '已处理信件',
-                    children: [{
-                        label: '不予受理',
-                        isPublish: undefined,
-                        applyFlag: 2,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }, {
-                        label: '无效件',
-                        isPublish: undefined,
-                        applyFlag: -1,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }, {
-                        label: '重复件',
-                        isPublish: undefined,
-                        applyFlag: 1,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: undefined,
-                        alarmFlag: undefined
-                    }]
-                }, {
-                    label: '延期审核',
-                    children: [{
-                        label: '已审核',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: 1,
-                        alarmFlag: undefined
-                    }, {
-                        label: '待审核',
-                        isPublish: undefined,
-                        applyFlag: 0,
-                        applyStatus: undefined,
-                        isBack: undefined,
-                        limitFlag: 2,
-                        alarmFlag: undefined
-                    }]
-                }],
+                treeData:[],
                 applyOpenRecordList: undefined,
                 total: undefined,
                 listLoading: true,
@@ -678,9 +481,8 @@
                     isPublish: undefined,
                     applyFlag: 0,
                     applyStatus: undefined,
-                    isBack: undefined,
-                    limitFlag: undefined,
-                    alarmFlag: undefined
+                    alarmFlag: undefined,
+                    superviseFlag: undefined
                 },
                 pickerOptions: {
                     shortcuts: [{
@@ -732,8 +534,8 @@
                     postcode: undefined,
                     content: undefined,
                     description: undefined,
-                    isDerate: 0,
                     getMethod: 1,
+                    offerType: 1,
                     isOther: 1,
                     isPublish: 0,
                     deptId: undefined,
@@ -745,24 +547,7 @@
                     alarmFlag: 0,
                     applyStatus: 0,
                     applyFlag: 0,
-                    isBack: 0,
-                    limitFlag: 0,
-                    limitFlagTime: undefined
-                },
-                process: {
-                    id: undefined,
-                    sqId: undefined,
-                    proType: undefined,
-                    proContent: undefined,
-                    proDeptId: undefined,
-                    toDeptId: undefined,
-                    proTime: undefined,
-                    isOpen: undefined,
-                    isPublish: undefined,
-                    title: undefined,
-                    content: undefined,
-                    reasonsTime: undefined,
-                    reasonsStatus: undefined
+                    superviseFlag: 0
                 },
                 applyOpenRecordRules:{
                     modelId: [
@@ -806,28 +591,9 @@
                         ]
                     ]
                 },
-                processList: undefined,
-                selecteProcessdRows: [],
-                dialogProcessVisible: false,
                 activeName: '1',
-                replyContentDisabled: true,
                 processDisabled: true,
-                processTitle: '信件办理',
-                process: {
-                    id: undefined,
-                    sqId: undefined,
-                    proType: undefined,
-                    proContent: undefined,
-                    proDeptId: undefined,
-                    toDeptId: undefined,
-                    proTime: undefined,
-                    isOpen: undefined,
-                    isPublish: undefined,
-                    title: undefined,
-                    content: undefined,
-                    reasonsTime: undefined,
-                    reasonsStatus: undefined
-                },
+                replyContentDisabled: true,
                 proTimeLabel: '',
                 proContentLabel: '',
                 processRules_1: {
@@ -892,14 +658,10 @@
                 reasonsTimeDisabled: true,
                 reasonsStatusDisabled: true,
                 processRulesType: {},
-                appealDelay: 0,
-                proCessListQuery: {
-                    sqId: undefined,
-                    proType: undefined
-                },
-                deptTransfer: false,
-                competentDepartment: false
-
+                competentDepartment: false,
+                proType:undefined,
+                dialogProcessVisible:false,
+                processTitle: undefined
             }
         },
         computed: {
@@ -913,15 +675,17 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.applyopen_create,
-                    update: this.permission.applyopen_update,
-                    delete: this.permission.applyopen_delete,
-                    release: this.permission.applyopen_release
+                    create: this.permission.applyOpen_create,
+                    update: this.permission.applyOpen_update,
+                    delete: this.permission.applyOpen_delete,
+                    release: this.permission.applyOpen_release,
+                    handle: this.permission.applyOpen_handle
                 };
             }
         },
         created(){
             this.$store.state.common.selectSiteDisplay = false;
+            this.reloadTreeData();
             this.reloadList();
             this.getModelList();
         },
@@ -930,27 +694,22 @@
                 this.listQuery.isPublish = data.isPublish;
                 this.listQuery.applyFlag = data.applyFlag;
                 this.listQuery.applyStatus = data.applyStatus;
-                this.listQuery.isBack = data.isBack;
-                this.listQuery.timeFlag = data.timeFlag;
                 this.listQuery.alarmFlag = data.alarmFlag;
                 this.listQuery.limitFlag = data.limitFlag;
+                this.listQuery.superviseFlag = data.superviseFlag;
                 this.reloadList();
             },
             getModelById(id){
-                this.deptTransfer = false;
                 this.competentDepartment = false;
-                getModel(id).then(response => {
+                getOpenModel(id).then(response => {
                     if(response.data.competentDept.indexOf(this.$store.state.user.userInfo.departmentId)>=0){
                         this.competentDepartment = true;
-                    }
-                    if(response.data.deptTransfer == 1){
-                        this.deptTransfer = true;
                     }
                 })
             },
             getModelList(){
                 this.modelList = [];
-                getModelByCompetentDeptId({departmentId: this.$store.state.user.userInfo.departmentId}).then(response => {
+                getOpenModelByCompetentDeptId({departmentId: this.$store.state.user.userInfo.departmentId}).then(response => {
                     this.modelList = response.data;
                 })
             },
@@ -965,6 +724,11 @@
                 this.listQuery.timeFrame = undefined;
                 this.listQuery.modelId = undefined;
             },
+            reloadTreeData(){
+                reloadTreeData({userDepartmentId:this.listQuery.userDepartmentId}).then(response => {
+                    this.treeData = response.data;
+                })
+            },
             reloadList(){
                 this.listLoading = true;
                 this.applyOpenRecordList = undefined;
@@ -975,7 +739,7 @@
                 }else{
                     this.listQuery.timeFrame = undefined;
                 }
-                getApplyOpenRecordList(this.listQuery).then(response => {
+                getOpenRecordList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.applyOpenRecordList = response.data.records;
                     this.total = response.data.total;
@@ -1029,9 +793,10 @@
                 this.$refs['applyOpenRecordDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateApplyOpenRecord(this.applyOpenRecord).then(() => {
+                        createOrUpdateOpenRecord(this.applyOpenRecord).then(() => {
                             this.resetApplyOpenRecordDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
+                            this.reloadTreeData();
                         })
                     } else {
                         return false;
@@ -1044,9 +809,10 @@
                 this.$refs['applyOpenRecordDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateApplyOpenRecord(this.applyOpenRecord).then(() => {
+                        createOrUpdateOpenRecord(this.applyOpenRecord).then(() => {
                             this.resetApplyOpenRecordDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
+                            this.reloadTreeData();
                         })
                     } else {
                         return false;
@@ -1055,8 +821,9 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delApplyOpenRecords(ids).then(() => {
+                delOpenRecords(ids).then(() => {
                     this.reloadList();
+                    this.reloadTreeData();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
@@ -1111,247 +878,69 @@
                 this.resetApplyOpenRecord();
                 this.$refs['applyOpenRecordDialogForm'].resetFields();
             },
+
+
             //***********************************************
             //             以下信件办理
             //***********************************************
-            btnProcess(proType){
-                this.resetProcess();
-                this.processDisabled = false;
-                this.activeName = '5';
-                this.process.proType = undefined;
+            updateStatus(proType){
+                let msg = "";
                 if(proType == 1){
-                    this.processTitle = '信件转办';
-                    this.proTimeLabel = '转办时间';
-                    this.proContentLabel = '转办意见';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = false;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_4;
-                    this.$refs['proContent'].setUeContent("");
+                    msg = "请确认是否督办此件！";
+                    this.applyOpenRecord.superviseFlag = 1;
                 }
                 if(proType == 2){
-                    this.processTitle = '回复信件';
-                    this.proTimeLabel = '回复时间';
-                    this.proContentLabel = '回复内容';
-                    this.proTimeDisabled = false;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_5;
-                    this.process.isPublish = this.applyOpenRecord.isPublish;
-                    this.$refs['proContent'].setUeContent("");
+                    msg = "请确认是否将此件置为无效件！";
+                    this.applyOpenRecord.applyFlag = -1;
                 }
                 if(proType == 3){
-                    this.processTitle = '发布信件';
-                    this.proTimeLabel = '回复时间';
-                    this.proContentLabel = '回复内容';
-                    this.proTimeDisabled = false;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = false;
-                    this.isPublishDisabled = false;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = false;
-                    this.contentDisabled = false;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_7;
-                    this.process.isPublish = 1;
-                    this.process.content = this.applyOpenRecord.content;
-                    this.process.proTime = this.applyOpenRecord.replyTime;
-                    this.process.proContent = this.applyOpenRecord.replyContent;
-                    if (this.process.proContent) {
-                        this.$refs['processContent'].setUeContent(this.process.content);
-                        this.$refs['proContent'].setUeContent(this.process.proContent);
-                    } else {
-                        this.$refs['processContent'].setUeContent('');
-                        this.$refs['proContent'].setUeContent('');
-                    }
+                    msg = "请确认是否不予受理此件！";
+                    this.applyOpenRecord.applyFlag = 2;
                 }
-                if(proType == 4){
-                    this.processTitle = '退回信件';
-                    this.proTimeLabel = '退回时间';
-                    this.proContentLabel = '退回原因';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_6;
-                    this.$refs['proContent'].setUeContent("");
-                }
-                if(proType == 5){
-                    //信件判重
-                }
-                if(proType == 6){
-                    this.processTitle = '置为无效';
-                    this.proTimeLabel = '处理时间';
-                    this.proContentLabel = '处理意见';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_2;
-                    this.$refs['proContent'].setUeContent("");
-                }
-                if(proType == 7){
-                    this.processTitle = '信件延期';
-                    this.proTimeLabel = '处理时间';
-                    this.proContentLabel = '延期原因';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = false;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_3;
-                    this.$refs['proContent'].setUeContent("");
-                }
-                if(proType == 8){
-                    this.processTitle = '不予受理';
-                    this.proTimeLabel = '处理时间';
-                    this.proContentLabel = '处理意见';
-                    this.proTimeDisabled = true;
-                    this.toDeptIdDisabled = true;
-                    this.isOpenDisabled = true;
-                    this.isPublishDisabled = true;
-                    this.proContentDisabled = false;
-                    this.titleDisabled = true;
-                    this.contentDisabled = true;
-                    this.reasonsTimeDisabled = true;
-                    this.reasonsStatusDisabled = true;
-                    this.processRulesType = this.processRules_2;
-                    this.$refs['proContent'].setUeContent("");
-                }
-                this.process.proType = proType;
-                this.process.sqId = this.applyOpenRecord.id;
-                this.$nextTick(() => {
-                    this.$refs['processDialogForm'].clearValidate();
+                this.$confirm(msg, this.$t("table.tip"), {type: 'warning'}).then(() => {
+                    createOrUpdateOpenRecord(this.applyOpenRecord).then(() => {
+                        this.closeProcessDialog();
+                        this.$message.success("操作成功！");
+                        this.reloadTreeData();
+                    })
+                })
+            },
+            btnProcess(proType){
+                this.$confirm('请确认是否督办此件！', this.$t("table.tip"), {type: 'warning'}).then(() => {
+                    this.applyOpenRecord.superviseFlag = 1;
+                    createOrUpdateOpenRecord(this.applyOpenRecord).then(() => {
+                        this.closeProcessDialog();
+                        this.$message.success("督办成功！");
+                        this.reloadTreeData();
+                    })
                 })
             },
             doCreateProcess(){
-                console.log(this.process.proTime);
-                this.process.proContent = this.$refs['proContent'].getUeContent();
-                this.process.content = this.$refs['processContent'].getUeContent();
-                this.$refs['processDialogForm'].validate(valid => {
-                    if(valid) {
-                        const toDeptId = this.process.toDeptId;
-                        if(Array.isArray(toDeptId)){
-                            this.process.toDeptId = toDeptId[toDeptId.length-1];
-                        }
-                        createOrUpdateApplyOpenProcess(this.process).then(() => {
-                            this.resetProcessDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
-                        })
-                    } else {
-                        return false;
-                    }
-                });
+
             },
-            handleProcessSelectionChange(rows){
-                this.selecteProcessdRows = rows;
-            },
-            getProcessDelayList(id){
-                this.resetProCessListQuery();
-                this.proCessListQuery.sqId = id;
-                this.appealDelay = 0;
-                getProcessAllList(this.proCessListQuery).then(response => {
-                    if(response.data != undefined && response.data.length > 0 && response.data[0].reasonsStatus == undefined){
-                        this.appealDelay = 1;
-                    }
-                })
-            },
-            getProcessList(id){
-                this.processList = [];
-                this.resetProCessListQuery();
-                this.proCessListQuery.sqId = id;
-                getProcessAllList(this.proCessListQuery).then(response => {
-                    this.processList = response.data;
-                })
-            },
-            processAppeal(row){
+            processApply(row){
                 this.resetApplyOpenRecord();
-                this.resetProcess();
                 if (row.id) {
                     this.applyOpenRecord = deepClone(row);
                 } else {
                     this.applyOpenRecord = deepClone(this.selectedRows[0]);
                 }
-                this.getModelById(this.applyOpenRecord.modelId);
                 this.dialogProcessVisible = true;
                 if(this.applyOpenRecord.applyStatus == 3){
                     this.replyContentDisabled = false;
                 }
-                this.getProcessDelayList(this.applyOpenRecord.id);
-                this.getProcessList(this.applyOpenRecord.id);
+                this.getModelById(this.applyOpenRecord.modelId);
                 this.getDepartmentCascader(this.applyOpenRecord.modelId);
             },
-            resetProCessListQuery(){
-                this.proCessListQuery = {
-                    sqId: undefined,
-                    proType: undefined
-                }
-            },
-            resetProcess(){
-                this.process = {
-                    id: undefined,
-                    sqId: undefined,
-                    proType: undefined,
-                    proContent: undefined,
-                    proDeptId: undefined,
-                    toDeptId: undefined,
-                    proTime: undefined,
-                    isOpen: undefined,
-                    isPublish: undefined,
-                    title: undefined,
-                    content: undefined,
-                    reasonsTime: undefined,
-                    reasonsStatus: undefined
-                }
-            },
             backProcessDialog(){
-                this.process.proType = undefined;
-                this.processDisabled = true;
-                this.activeName = '3';
             },
             closeProcessDialog() {
                 this.resetApplyOpenRecord();
-                this.resetProcess();
-                this.dialogProcessVisible = false;
                 this.activeName = '1';
-                this.processDisabled = true;
                 this.replyContentDisabled = true;
+                this.dialogProcessVisible = false;
                 this.processRulesType = {};
-            },
-            resetProcessDialogAndList(){
-                this.closeProcessDialog();
-                this.submitLoading = false;
                 this.reloadList();
-            },
-            proTimeChange(v) {
-                console.log(v);
             }
         }
     }
