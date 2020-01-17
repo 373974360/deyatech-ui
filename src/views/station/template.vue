@@ -61,14 +61,35 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
 
-                            <el-input :size="searchSize" placeholder="标题、作者、权重、时间" v-model.trim="listQuery.title" style="width: 300px;margin-left: 10px;margin-right:10px;"></el-input>
-                            <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
-                            <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
+                            <el-input v-model.trim="listQuery.title"
+                                      placeholder="标题" :size="searchSize" maxlength="100"
+                                      style="width: 200px;margin-left: 10px;margin-right:10px;"></el-input>
+
+                            <el-select v-model.trim="listQuery.contentModelId"
+                                       style="width: 200px;" placeholder="模型" filterable  :size="searchSize">
+                                <el-option v-for="item in allModelList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                            </el-select>
+
+                            <inputDepartment v-model.trim="listQuery.source"
+                                             :showSize="searchSize"
+                                             showPlaceholder="来源" style="width: 200px; margin-left: 10px; margin-right:10px;"></inputDepartment>
+
+                            <el-date-picker v-model.trim="publishTimeArray" :size="searchSize" type="datetimerange"
+                                            @change="publishTimeChange"
+                                            start-placeholder="开始日期"
+                                            end-placeholder="结束日期"
+                                            value-format="yyyy-MM-dd HH:mm:ss"
+                                            :default-time="['00:00:00', '23:59:59']"
+                                            style="width: 340px; margin-right:10px;"></el-date-picker>
+
+                            <el-button type="primary" icon="el-icon-search" :size="searchSize"
+                                       @click="searchReloadList">{{$t('table.search')}}</el-button>
+
+                            <el-button icon="el-icon-delete" :size="searchSize"
+                                       @click="resetSearch">{{$t('table.clear')}}</el-button>
                         </div>
 
                     </div>
-
-
 
 
                     <div class="my-tabls">
@@ -85,7 +106,6 @@
                     <el-table :data="templateList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange" style="border-top:none;">
                         <el-table-column type="selection" width="50" align="center"/>
-                        <el-table-column align="center" label="工作流" prop="workflowId"/>
                         <el-table-column :align="getAlign(item.prop)"
                                          :show-overflow-tooltip="item.prop === 'thumbnail' ? false : true"
                                          v-for="item in headData"
@@ -94,7 +114,7 @@
                                          :min-width="item.prop === 'title' ? 440: ''"
                                          :width="getHeadWidth(item.prop)">
                         <template slot-scope="scope">
-                            <span v-if="item.prop == 'title'" class="link-type" @click='btnUpdate(scope.row)'>{{scope.row.title}}</span>
+                            <span v-if="item.prop == 'title'" class="link-type" @click='btnUpdate(scope.row)'><span v-if="scope.row.linkedOriginType == 1" style="color: #409EFF;">原</span><span v-if="scope.row.linkedOriginType == 2" style="color: #E6A23C;">聚</span><span v-if="scope.row.linkedOriginType == 3" style="color: #E6A23C;">投</span><span v-if="scope.row.linkedOriginType == 4" style="color: #E6A23C;">引</span>&nbsp;{{scope.row.title}}</span>
                             <el-input-number v-else-if="item.prop == 'sortNo'" v-model.trim="scope.row.sortNo" controls-position="right" :precision="0" :step="1" :min="1" :max="9999" size="small" style="width:100px;" @change="sortNoChange(scope.row)"></el-input-number>
                             <el-checkbox v-else-if="item.prop == 'flagTop'" v-model="scope.row.flagTop" @change="flagTopChange(scope.row)"/>
                             <span v-else-if="item.prop == 'flagExternal'">{{scope.row.flagExternal | enums('YesNoEnum')}}</span>
@@ -116,31 +136,42 @@
                     </el-table-column>
 
 
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="200" fixed="right">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="left" width="200" fixed="right">
                             <template slot-scope="scope">
-                                <el-button v-if="btnEnable.update" :size="btnSize" type="primary" circle icon="el-icon-edit"
-                                           title="编辑" @click.stop.safe="btnUpdate(scope.row)"></el-button>
-
                                 <el-button v-if="btnEnable.preview" :size="btnSize" type="primary" circle icon="el-icon-search"
                                            title="预览" @click.stop.safe="btnPreview(scope.row)"></el-button>
+                                <div v-if="scope.row.linkedOriginType != 1" style="display: inline-block; margin-left: 10px;">
+                                    <el-button v-if="btnEnable.preview" :size="btnSize" type="primary" circle icon="el-icon-link"
+                                               title="解除" @click.stop.safe="removeAggregationRelation(scope.row)"></el-button>
+                                </div>
+                                <div v-if="scope.row.linkedOriginType == 1" style="display: inline-block; margin-left: 10px;">
+                                    <el-button v-if="btnEnable.update" :size="btnSize" type="primary" circle icon="el-icon-edit"
+                                               title="编辑" @click.stop.safe="btnUpdate(scope.row)"></el-button>
 
-                                <el-button v-if="btnEnable.cancel && (listQuery.status == ContentStatusEnum.PUBLISH || listQuery.status == ContentStatusEnum.VERIFY)" :size="btnSize" type="primary" circle icon="icon-resonserate"
-                                           title="撤销" @click.stop.safe="btnCancel(scope.row)"></el-button>
+                                    <el-button v-if="btnEnable.cancel && (listQuery.status == ContentStatusEnum.PUBLISH || listQuery.status == ContentStatusEnum.VERIFY)"
+                                               :size="btnSize" type="primary" circle icon="icon-resonserate"
+                                               title="撤销" @click.stop.safe="btnCancel(scope.row)"></el-button>
 
-                                <el-button v-if="btnEnable.publish && !scope.row.workflowId && listQuery.status == ContentStatusEnum.CANCEL" :size="btnSize" type="primary" circle icon="el-icon-check"
-                                           title="发布" @click.stop.safe="btnPublish(scope.row)"></el-button>
+                                    <el-button v-if="btnEnable.publish && !scope.row.workflowId && listQuery.status == ContentStatusEnum.CANCEL"
+                                               :size="btnSize" type="primary" circle icon="el-icon-check"
+                                               title="发布" @click.stop.safe="btnPublish(scope.row)"></el-button>
 
-                                <el-button v-if="btnEnable.verify && scope.row.workflowId && (listQuery.status == ContentStatusEnum.CANCEL || listQuery.status == ContentStatusEnum.REJECT)" :size="btnSize" type="primary" circle icon="el-icon-right"
-                                           title="送审" @click.stop.safe="btnVerify(scope.row)"></el-button>
+                                    <el-button v-if="btnEnable.verify && scope.row.workflowId && (listQuery.status == ContentStatusEnum.CANCEL || listQuery.status == ContentStatusEnum.REJECT)"
+                                               :size="btnSize" type="primary" circle icon="el-icon-right"
+                                               title="送审" @click.stop.safe="btnVerify(scope.row)"></el-button>
 
-                                <el-button v-if="btnEnable.back && listQuery.status == ContentStatusEnum.RECYCLE" :size="btnSize" type="primary" circle icon="icon-chexiao1"
-                                           title="还原" @click.stop.safe="btnBack(scope.row)"></el-button>
+                                    <el-button v-if="btnEnable.back && listQuery.status == ContentStatusEnum.RECYCLE"
+                                               :size="btnSize" type="primary" circle icon="icon-chexiao1"
+                                               title="还原" @click.stop.safe="btnBack(scope.row)"></el-button>
 
-                                <el-button v-if="btnEnable.recycle && listQuery.status != ContentStatusEnum.RECYCLE" :size="btnSize" type="warning" circle icon="el-icon-delete"
-                                           title="删除" @click.stop.safe="btnRecycle(scope.row)"></el-button>
+                                    <el-button v-if="btnEnable.recycle && listQuery.status != ContentStatusEnum.RECYCLE"
+                                               :size="btnSize" type="warning" circle icon="el-icon-delete"
+                                               title="删除" @click.stop.safe="btnRecycle(scope.row)"></el-button>
 
-                                <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" :size="btnSize" type="danger" circle icon="el-icon-delete"
-                                           title="彻底删除" @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                    <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE"
+                                               :size="btnSize" type="danger" circle icon="el-icon-delete"
+                                               title="彻底删除" @click.stop.safe="btnDelete(scope.row)"></el-button>
+                                </div>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -520,6 +551,7 @@
     import {getTableHeadContentDataAlias, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
     import {getUploadFileTypeAndSize} from '@/api/resource/setting';
     import {getDomainNameBySiteId} from '@/api/resource/domain';
+    import {removeAggregationRelation} from '@/api/station/catalogTemplate';
 
     export default {
         name: 'template',
@@ -583,13 +615,18 @@
                 templateList: undefined,
                 total: undefined,
                 listLoading: true,
+                publishTimeArray: [],
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     title: undefined,
                     siteId: this.$store.state.common.siteId,
                     cmsCatalogId: undefined,
-                    status: undefined // 已发布
+                    status: undefined,
+                    contentModelId: undefined,
+                    source: undefined,
+                    startTime: undefined,
+                    endTime: undefined
                 },
                 template: {
                     id: undefined,
@@ -1477,6 +1514,15 @@
                 //let url = window.location.origin + '/manage/cms/info/' + this.$store.state.common.siteId + '?namePath=' + row.cmsCatalogPathName + '/details/info/' + row.id;
                 let url = window.location.protocol + '//' + this.domainName + '/' + row.cmsCatalogPathName + '/details/info/' + row.id + '.html';
                 window.open(url);
+            },
+            // 解除
+            removeAggregationRelation(row) {
+                this.$confirm('此操作将解除聚合关系, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
+                    removeAggregationRelation(row.id, row.linkedCatalogId).then(response=>{
+                        this.reloadList();
+                        this.$message.success("解除成功");
+                    });
+                });
             },
             // 撤销
             btnCancel(row){
@@ -2575,6 +2621,15 @@
                 });
                 sockJS.onclose = function () {
                     console.log("连接已关闭 "+new Date());
+                }
+            },
+            publishTimeChange(v) {
+                if (v.length > 0) {
+                    this.listQuery.startTime = v[0].substring(0, v[0].length - 3);
+                    this.listQuery.endTime = v[1].substring(0, v[1].length - 3);
+                } else {
+                    this.listQuery.startTime = '';
+                    this.listQuery.endTime = '';
                 }
             }
         }

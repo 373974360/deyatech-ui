@@ -2,11 +2,13 @@
     <el-cascader filterable ref="cstmInputDepartmentDascader" :options="departmentCascader" v-model="departmentValue"
                  :props="{ checkStrictly: true }"
                  :show-all-levels="showAllLevels"
+                 :size="showSize"
                  :debounce="500" style="width: 100%"
                  :before-filter="beforeFilterDepartment"
                  @blur="blurDepartment"
                  @focus="focusDepartment"
                  @change="changeDepartment"
+                 :placeholder="showPlaceholder"
     ></el-cascader>
 </template>
 
@@ -21,6 +23,14 @@
             showAllLevels: {
                 type: Boolean,
                 default: false
+            },
+            showSize: {
+                type: String,
+                default: 'medium'
+            },
+            showPlaceholder: {
+                type: String,
+                default: ''
             }
         },
         data() {
