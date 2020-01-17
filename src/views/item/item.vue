@@ -46,6 +46,7 @@
                 </el-table-column>
                 <el-table-column align="center" label="事项简称" prop="shortName"/>
                 <el-table-column align="center" label="事项编码" prop="code"/>
+                <el-table-column align="center" label="限号量" prop="limitNumber"/>
                 <el-table-column align="center" label="是否第三方事项" prop="remoteEnable">
                     <template slot-scope="scope">
                         {{Number(scope.row.remoteEnable) | enums('YesNoEnum')}}
@@ -103,6 +104,13 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
+                            <el-form-item label="限量号" prop="limitNumber">
+                                <el-input v-model="item.limitNumber"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="24">
                             <el-form-item label="是否第三方事项" prop="remoteEnable" label-width="130px">
                                 <el-switch v-model="item.remoteEnable"
                                            :active-value="this.yesEnum.code"
@@ -284,6 +292,10 @@
                         {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '事项编码'},
                         {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'},
                         {validator: validateWhiteSpace, trigger: 'blur'}
+                    ],
+                    limitNumber: [
+                        {required: true, whiteSpace: true, message: this.$t("table.pleaseInput") + '事项编码'},
+                        {min: 4, max: 4, message: '', trigger: 'blur'}
                     ],
                     remoteEnable: [
                         {required: true, message: this.$t("table.pleaseInput") + '是否第三方'}
