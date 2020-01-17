@@ -40,4 +40,11 @@ export function getCatalogTemplateList(query) {
     });
 }
 
+export function removeAggregationRelation(templateId, linkedCatalogId) {
+    return request({
+        url: '/manage/station/catalogTemplate/removeAggregationRelation',
+        method: 'get',
+        params: {templateId, linkedCatalogId}
+    });
+}
 

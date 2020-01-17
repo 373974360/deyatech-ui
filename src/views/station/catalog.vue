@@ -295,12 +295,11 @@
                                 style="width: 100%"
                                 placeholder="请选择栏目"
                                 clearable
-                                collapse-tags
                                 expand-trigger="hover"
                                 :options="catalogCascader"
                                 v-model.trim="selectCatalogIds"
                                 :props="{ multiple: true, checkStrictly: true }">
-                            </el-cascader>
+                            </el-cascader><!--collapse-tags-->
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -637,14 +636,6 @@
                     } else {
                         callback()
                     }
-                }
-            };
-            const validatePublishTime = (rule, value, callback) => {
-                if (this.selectPublishTime.length == 0) {
-                    callback(new Error('请选择发布时间段'))
-                } else {
-                    this.catalogAggregation.publishTime = this.selectPublishTime.join();
-                    callback()
                 }
             };
             return {
@@ -1168,7 +1159,11 @@
                     _this.catalog.siteId = _this.listQuery.siteId;
                     // 聚合栏目信息
                     if (_this.catalog.flagAggregation) {
-                        _this.catalogAggregation.publishTime = _this.selectPublishTime.join();
+                        if (_this.selectPublishTime && _this.selectPublishTime.length > 0) {
+                            _this.catalogAggregation.publishTime = _this.selectPublishTime.join(',');
+                        } else {
+                            _this.catalogAggregation.publishTime = '';
+                        }
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
@@ -1227,11 +1222,16 @@
                     _this.catalog.children = undefined;
                     // 聚合栏目信息
                     if (_this.catalog.flagAggregation) {
-                        _this.catalogAggregation.publishTime = _this.selectPublishTime.join();
+                        if (_this.selectPublishTime && _this.selectPublishTime.length > 0) {
+                            _this.catalogAggregation.publishTime = _this.selectPublishTime.join(',');
+                        } else {
+                            _this.catalogAggregation.publishTime = '';
+                        }
                         _this.catalogAggregation.keyword = _this.dynamicTags.join();
                         _this.catalog.catalogAggregationInfo = JSON.stringify(_this.catalogAggregation);
                     }
                     _this.submitLoading = true;
+                    console.dir(_this.catalog);
                     createOrUpdateCatalog(_this.catalog).then(() => {
                         _this.lastExpanded = _this.catalog.treePosition;
                         _this.resetCatalogDialogAndList();
@@ -1417,7 +1417,7 @@
                 if (v && v.length > 0) {
                     this.catalogAggregation.publishOrganization = v[v.length-1];
                 } else {
-                    this.catalogAggregation.publishOrganization = undefined;
+                    this.catalogAggregation.publishOrganization = '';
                 }
             },
 
@@ -1426,7 +1426,7 @@
                 this.currentUser = undefined;
                 if (this.catalogAggregation.publisher) {
                     this.currentUser = {
-                        id: this.catalogAggregation.publisher,
+                        userId: this.catalogAggregation.publisher,
                         name: this.catalogAggregation.publisherName
                     }
                 }
