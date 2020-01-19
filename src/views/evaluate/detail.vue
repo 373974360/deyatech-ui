@@ -4,7 +4,7 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select :size="searchSize" v-model="listQuery.levelCode" clearable :placeholder="$t('table.pleaseSelect') + '评价等级'">
+                        <el-select :size="searchSize" v-model="levelCodeArr" clearable multiple :placeholder="$t('table.pleaseSelect') + '评价等级'">
                             <el-option
                                 v-for="item in loadEnum('EvaluationLevelEnum')"
                                 :key="item.code"
@@ -116,8 +116,14 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item v-if="deptFilterVisible">
+                    <el-form-item>
                         <el-input clearable :size="searchSize" :placeholder="$t('table.pleaseInput') + '部门名称'" v-model="listQuery.proDepartment" style="width: 187px"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select :size="searchSize" v-model="listQuery.ext" clearable :placeholder="$t('table.pleaseSelect') + '是否文字评价'">
+                            <el-option label="是" :value="1"></el-option>
+                            <el-option label="否" :value="0"></el-option>
+                        </el-select>
                     </el-form-item>
 <!--                    <el-form-item >
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
@@ -515,7 +521,8 @@
                     anonymityFlag: undefined,
                     publicFlag: undefined,
                     evaluationTimeStart: undefined,
-                    evaluationTimeEnd: undefined
+                    evaluationTimeEnd: undefined,
+                    ext: undefined
                 },
                 detail: {
                     id: undefined,
@@ -616,6 +623,7 @@
                 submitLoading: false,
                 departmentList: [], //TODO  阿里提供接口查询
                 submitTimeRange: [],
+                levelCodeArr: [],
                 levelParseInt: {},
                 dialogVisibleDetails: false,
                 recordsList: [],
@@ -679,6 +687,8 @@
                 this.listQuery.publicFlag = undefined;
                 this.listQuery.evaluationTimeStart = undefined;
                 this.listQuery.evaluationTimeEnd = undefined;
+                this.listQuery.ext = undefined;
+                this.levelCodeArr = [];
                 this.submitTimeRange = [];
             },
             searchReloadList() {
@@ -688,6 +698,7 @@
                 this.listLoading = true;
                 this.detailList = undefined;
                 this.total = undefined;
+                this.listQuery.levelCode = this.levelCodeArr.join();
                 getDetailList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.detailList = response.data.records;
