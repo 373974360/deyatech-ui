@@ -555,6 +555,9 @@
             // 督查处所有数据，市级按部门，其他按区县
             if (this.userInfo.loginName.includes('duchachu') || this.userInfo.loginName === 'hcp_admin') {
                 this.reloadList();
+            } else if (this.userInfo.type === 'auth:org:manage' && this.userInfo.orgId.length === 6) {
+                this.listQuery.organizationalCode = this.userInfo.orgId + '000000';
+                this.reloadList();
             } else {
                 getOrgDetail(this.userInfo.orgId).then(res => {
                     let areaCode = res.data.regionCode ? res.data.regionCode : res.data.autoCode;
