@@ -16,14 +16,6 @@ export function createOrUpdateTemplate(templateVo){
     })
 }
 
-export function delTemplate(id) {
-    const data = {id};
-    return request({
-        url: '/manage/station/template/removeByTemplate',
-        method: 'post',
-        data
-    })
-}
 export function delTemplates(ids) {
     const data = {ids};
     return request({

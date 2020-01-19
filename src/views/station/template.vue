@@ -37,8 +37,8 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
 
-                            <el-button v-if="btnEnable.update" type="primary" :size="btnSize"
-                                       @click="btnUpdate" :disabled="selectedRows.length != 1">编辑</el-button>
+                            <!--<el-button v-if="btnEnable.update" type="primary" :size="btnSize"
+                                       @click="btnUpdate" :disabled="selectedRows.length != 1">编辑</el-button>-->
 
                             <el-button v-if="btnEnable.delete && listQuery.status == ContentStatusEnum.RECYCLE" type="danger" :size="btnSize"
                                        @click="btnDelete" :disabled="selectedRows.length < 1">彻底删除</el-button>
@@ -75,11 +75,11 @@
                                              showPlaceholder="来源" style="width: 200px; margin-left: 10px; margin-right:10px;"></inputDepartment>
 
                             <el-date-picker v-model.trim="publishTimeArray" :size="searchSize" type="datetimerange"
-                                            @change="publishTimeChange"
+                                            @change="queryPublishTimeChange"
                                             start-placeholder="开始日期"
                                             end-placeholder="结束日期"
-                                            value-format="yyyy-MM-dd HH:mm:ss"
-                                            :default-time="['00:00:00', '23:59:59']"
+                                            value-format="yyyy-MM-dd HH:mm"
+                                            format="yyyy-MM-dd HH:mm"
                                             style="width: 340px; margin-right:10px;"></el-date-picker>
 
                             <el-button type="primary" icon="el-icon-search" :size="searchSize"
@@ -136,7 +136,7 @@
                     </el-table-column>
 
 
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="left" width="200" fixed="right">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" fixed="right" align="center" width="200">
                             <template slot-scope="scope">
                                 <el-button v-if="btnEnable.preview" :size="btnSize" type="primary" circle icon="el-icon-search"
                                            title="预览" @click.stop.safe="btnPreview(scope.row)"></el-button>
@@ -198,7 +198,7 @@
                                     v-for="(item, itemIndex) in row">
                                 <el-form-item :label="item.name"
                                               :prop="item.briefName"
-                                              :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == 0) ? templateRules.resource_content : loadRules(item)"
+                                              :rules="(item.briefName === 'resource_content' && formList[flagExternalIndex].pageModel['flag_external'] == 0) ? templateRules.resource_content : loadRules(item, form.pageModel)"
                                               :style="(item.briefName === 'resource_summary' || item.briefName === 'keyword_') ? 'margin-bottom: 0' : ''">
 
                                     <!-- 输入框 -->
@@ -359,7 +359,8 @@
                                     <!-- 日期 -->
                                     <el-date-picker v-else-if="item.controlType === 'dateElement'"
                                                     v-model.trim="form.pageModel[item.briefName]"
-                                                    value-format="yyyy-MM-dd" type="date"
+                                                    value-format="yyyy-MM-dd"
+                                                    type="date"
                                                     placeholder="请选择日期"></el-date-picker>
 
                                     <!-- 时间 -->
@@ -371,7 +372,9 @@
                                     <!-- 时间戳 -->
                                     <el-date-picker v-else-if="item.controlType === 'datetimeElement'"
                                                     v-model.trim="form.pageModel[item.briefName]"
-                                                    value-format="yyyy-MM-dd HH:mm:ss" type="datetime"
+                                                    value-format="yyyy-MM-dd HH:mm:ss"
+                                                    format="yyyy-MM-dd HH:mm"
+                                                    type="datetime"
                                                     placeholder="请选择时间"></el-date-picker>
 
                                     <!-- 富文本 -->
@@ -386,6 +389,11 @@
 
                                     <span v-else>{{item.controlType}}</span>
 
+                                    <el-checkbox v-if="item.briefName === 'resource_publication_date' && !template.workflowId"
+                                                 v-model="form.pageModel['timing_']"
+                                                 :true-label="1"
+                                                 :false-label="0"
+                                                 style="margin-left: 10px;">定时发布</el-checkbox>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -409,11 +417,13 @@
                                 <el-form-item style="margin-bottom: 0"><el-button @click="extractKeyword" :size="btnSize">提取关键字</el-button></el-form-item>
                             </el-col>
                         </el-row>
+
                         <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
                             <el-col :span="24">
                                 <el-form-item style="margin-bottom: 0"><el-image style="width: 100px; height: 100px; cursor: pointer;" v-for="url in contentPicArray" :key="url" :src="url" @click="selectImg(url)"></el-image></el-form-item>
                             </el-col>
                         </el-row>
+
                         <el-row :span="24" v-if="isShowRow(row, 'thumbnail_')" style="margin: 0; padding: 0;">
                             <el-col :span="24">
                                 <el-form-item style="margin-bottom: 0"><el-button @click="getContentThumb" :size="btnSize">提取正文图片</el-button></el-form-item>
@@ -1054,7 +1064,7 @@
                     return [];
             },
             // 加载规则
-            loadRules(item) {
+            loadRules(item, pageModel) {
                 let rules = [];
                 // 必须检查
                 if (item.required && item.required == true) {
@@ -1090,7 +1100,8 @@
                                 callback(new Error('请输入中文'));
                             }
                         }
-                    } else if (item.checkModel === 'mail') {
+                    }
+                    else if (item.checkModel === 'mail') {
                         rule.validator = (rule, value, callback) => {
                             if (!value) {
                                 callback()
@@ -1107,7 +1118,8 @@
                                 callback(new Error("请输入正确的邮箱地址"))
                             }
                         }
-                    } else if (item.checkModel === 'int') {
+                    }
+                    else if (item.checkModel === 'int') {
                         rule.validator = (rule, value, callback) => {
                             if (!value) {
                                 callback()
@@ -1124,7 +1136,8 @@
                                 callback(new Error('请输入整数'));
                             }
                         };
-                    } else if (item.checkModel === 'positiveInteger') {
+                    }
+                    else if (item.checkModel === 'positiveInteger') {
                         rule.validator = (rule, value, callback) => {
                             if (!value) {
                                 callback()
@@ -1142,7 +1155,8 @@
                                 callback();
                             }
                         };
-                    } else if (item.checkModel === 'english') {
+                    }
+                    else if (item.checkModel === 'english') {
                         rule.validator = (rule, value, callback) => {
                             if (!value) {
                                 callback()
@@ -1159,7 +1173,8 @@
                                 callback(new Error('请输入英文字母'));
                             }
                         };
-                    } else if (item.checkModel === 'float') {
+                    }
+                    else if (item.checkModel === 'float') {
                         rule.validator = (rule, value, callback) => {
                             if (!value) {
                                 callback()
@@ -1176,7 +1191,8 @@
                                 callback(new Error('请输入浮点数'));
                             }
                         }
-                    } else if (item.checkModel === 'url') {
+                    }
+                    else if (item.checkModel === 'url') {
                         rule.validator = (rule, value, callback) => {
                             if (!value) {
                                 callback()
@@ -1193,7 +1209,8 @@
                                 callback(new Error('URL格式错误'))
                             }
                         }
-                    } else if (item.checkModel === 'lessThanNow') {
+                    }
+                    else if (item.checkModel === 'lessThanNow') {
                         rule.validator = (rule, value, callback) => {
                             let now = this.getNowString(value.length);
                             if (value > now) {
@@ -1202,7 +1219,31 @@
                                 callback();
                             }
                         };
-                    } else {
+                    }
+                    else if (item.checkModel === 'publicationDate') {
+                        let timing = pageModel['timing_'];
+                        // 定时发布
+                        if (timing == 1) {
+                            rule.validator = (rule, value, callback) => {
+                                let now = this.getNowString(value.length);
+                                if (value <= now) {
+                                    callback(new Error('必须大于当前时间'));
+                                } else {
+                                    callback();
+                                }
+                            };
+                        } else {
+                            rule.validator = (rule, value, callback) => {
+                                let now = this.getNowString(value.length);
+                                if (value > now) {
+                                    callback(new Error('必须小于当前时间'));
+                                } else {
+                                    callback();
+                                }
+                            };
+                        }
+                    }
+                    else {
                         rule.validator = (rule, value, callback) => {
                             // let msg = this.checkDataLength(rule.field, value);
                             // if (msg) {
@@ -1490,7 +1531,6 @@
                     this.contentPicArray = [];
                     this.loadForm(command, undefined);
                 }
-
             },
             // 编辑
             btnUpdate(row){
@@ -1518,7 +1558,15 @@
             // 解除
             removeAggregationRelation(row) {
                 this.$confirm('此操作将解除聚合关系, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
-                    removeAggregationRelation(row.id, row.linkedCatalogId).then(response=>{
+                    let ids = [];
+                    if (row.id) {
+                        ids.push(row.id + ',' + row.linkedCatalogId);
+                    } else {
+                        for(const r of this.selectedRows) {
+                            ids.push(r.id + ',' + r.linkedCatalogId);
+                        }
+                    }
+                    removeAggregationRelation(ids).then(response=>{
                         this.reloadList();
                         this.$message.success("解除成功");
                     });
@@ -1531,8 +1579,8 @@
                     if (row.id) {
                         ids.push(row.id);
                     } else {
-                        for(const deleteRow of this.selectedRows) {
-                            ids.push(deleteRow.id);
+                        for(const r of this.selectedRows) {
+                            ids.push(r.id);
                         }
                     }
                     cancelByIds(ids).then((response)=>{
@@ -1556,8 +1604,8 @@
                 if (row.id) {
                     ids.push(row.id);
                 } else {
-                    for(const deleteRow of this.selectedRows) {
-                        ids.push(deleteRow.id);
+                    for(const r of this.selectedRows) {
+                        ids.push(r.id);
                     }
                 }
                 publishByIds(ids).then((response)=>{
@@ -1577,8 +1625,8 @@
                     if (row.id) {
                         ids.push(row.id);
                     } else {
-                        for(const deleteRow of this.selectedRows) {
-                            ids.push(deleteRow.id);
+                        for(const r of this.selectedRows) {
+                            ids.push(r.id);
                         }
                     }
                     recycleByIds(ids).then((response)=>{
@@ -1598,8 +1646,8 @@
                 if (row.id) {
                     ids.push(row.id);
                 } else {
-                    for(const deleteRow of this.selectedRows) {
-                        ids.push(deleteRow.id);
+                    for(const r of this.selectedRows) {
+                        ids.push(r.id);
                     }
                 }
                 backByIds(ids).then((response)=>{
@@ -1622,8 +1670,8 @@
                 if (row.id) {
                     ids.push(row.id);
                 } else {
-                    for(const deleteRow of this.selectedRows) {
-                        ids.push(deleteRow.id);
+                    for(const r of this.selectedRows) {
+                        ids.push(r.id);
                     }
                 }
                 verifyByIds(ids).then((response)=>{
@@ -1707,6 +1755,9 @@
                                 dest = dest.substr(0, dest.length -1);
                             }
                             _this.template[dest] = pageModel[base];
+                            if (base === 'resource_publication_date') {
+                                _this.template['timing'] = pageModel['timing_'];
+                            }
                         }
                         // 保存元数据字段
                         for (let meta of _this.metaFields) {
@@ -1760,6 +1811,7 @@
                     _this.template.contentMapStr = JSON.stringify(content);
                     _this.template.metadataCollectionVo = undefined;
                     _this.template.content = undefined;
+                    console.log('timing = ' + _this.template['timing']);
                     _this.submitLoading = true;
                     if (_this.template.id) {
                         createOrUpdateTemplate(_this.template).then(() => {
@@ -2623,10 +2675,10 @@
                     console.log("连接已关闭 "+new Date());
                 }
             },
-            publishTimeChange(v) {
+            queryPublishTimeChange(v) {
                 if (v.length > 0) {
-                    this.listQuery.startTime = v[0].substring(0, v[0].length - 3);
-                    this.listQuery.endTime = v[1].substring(0, v[1].length - 3);
+                    this.listQuery.startTime = v[0];
+                    this.listQuery.endTime = v[1];
                 } else {
                     this.listQuery.startTime = '';
                     this.listQuery.endTime = '';
