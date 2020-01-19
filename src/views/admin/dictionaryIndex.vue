@@ -123,7 +123,7 @@
                         </template>
                     </el-table-tree-column>
                     <!--<el-table-column align="center" label="中文名称" prop="codeText"/>-->
-                    <el-table-column align="left" label="英文代码" prop="code"/>
+                    <el-table-column align="left" label="代码" prop="code"/>
                     <el-table-column align="left" label="索引" prop="indexId"/>
                     <el-table-column align="center" label="是否可编辑" prop="editable">
                         <template slot-scope="scope">
@@ -180,7 +180,7 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="英文代码" prop="code">
+                            <el-form-item label="代码" prop="code">
                                 <el-input v-model.trim="dictionary.code"></el-input>
                             </el-form-item>
                         </el-col>
@@ -306,8 +306,7 @@
                         {required: true, message: this.$t("table.pleaseInput") + '索引关键字'}
                     ],
                     code: [
-                        {required: true, message: this.$t("table.pleaseInput") + '英文代码'},
-                        {validator: validateCode,message:'请输入小写英文字母(可用下划线分隔)',trigger:'blur'}
+                        {required: true, message: this.$t("table.pleaseInput") + '代码'}
                     ],
                     codeText: [
                         {required: true, message: this.$t("table.pleaseInput") + '中文名称'}

@@ -39,5 +39,12 @@ export function getOpenReplyTemplateList(query) {
         params: query
     });
 }
+export function getOpenReplyTemplateAllList(query) {
+    return request({
+        url: '/manage/apply/openReplyTemplate/listByOpenReplyTemplate',
+        method: 'get',
+        params: query
+    });
+}
 
 

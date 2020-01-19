@@ -213,31 +213,18 @@
                             </el-row>
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
-                                    <el-form-item label="用途描述" prop="description">
-                                        <editor v-model.trim="applyOpenRecord.description" :config="editorConfig" :default-msg="applyOpenRecord.description" ref="description" id="description_index"></editor>
-                                    </el-form-item>
-                                </el-col>
-                            </el-row>
-                            <el-row :gutter="20" :span="24">
-                                <el-col :span="24">
-                                    <el-form-item label="获取信息方式" prop="getMethod">
-                                        <el-radio-group v-model="applyOpenRecord.getMethod">
-                                            <el-radio :label="1">电子邮箱</el-radio>
-                                            <el-radio :label="2">邮寄</el-radio>
-                                            <el-radio :label="3">传真</el-radio>
-                                            <el-radio :label="4">自行领取</el-radio>
+                                    <el-form-item label="信息指定提供方式" prop="offerType">
+                                        <el-radio-group v-model="applyOpenRecord.offerType">
+                                            <el-radio v-for="item in dicts['offer_type']" :label="item.code">{{item.value}}</el-radio>
                                         </el-radio-group>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                             <el-row :gutter="20" :span="24">
                                 <el-col :span="24">
-                                    <el-form-item label="获取信息方式" prop="offerType">
-                                        <el-radio-group v-model="applyOpenRecord.offerType">
-                                            <el-radio :label="1">电子邮箱</el-radio>
-                                            <el-radio :label="2">邮寄</el-radio>
-                                            <el-radio :label="3">传真</el-radio>
-                                            <el-radio :label="4">自行领取</el-radio>
+                                    <el-form-item label="信息获取方式" prop="getMethod">
+                                        <el-radio-group v-model="applyOpenRecord.getMethod">
+                                            <el-radio v-for="item in dicts['get_method']" :label="item.code">{{item.value}}</el-radio>
                                         </el-radio-group>
                                     </el-form-item>
                                 </el-col>
@@ -319,23 +306,15 @@
                                         <td colspan="3" v-html="applyOpenRecord.content"></td>
                                     </tr>
                                     <tr>
-                                        <th>用途描述:</th>
-                                        <td colspan="3" v-html="applyOpenRecord.description"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>申请减免费用:</th>
-                                        <td>
-                                            <span v-if="applyOpenRecord.isDerate == 1">是</span>
-                                            <span v-if="applyOpenRecord.isDerate == 2">否</span>
+                                        <th>指定提供方式:</th>
+                                        <td colspan="3">
+                                            {{applyOpenRecord.offerType+"" | dicts('offer_type')}}
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>信息获取方式:</th>
                                         <td colspan="3">
-                                            <span v-if="applyOpenRecord.isOther == 1">电子邮箱</span>
-                                            <span v-if="applyOpenRecord.isOther == 2">邮寄</span>
-                                            <span v-if="applyOpenRecord.isOther == 3">传真</span>
-                                            <span v-if="applyOpenRecord.isOther == 4">自行领取</span>
+                                            {{applyOpenRecord.getMethod+"" | dicts('get_method')}}
                                         </td>
                                     </tr>
                                 </table>
@@ -359,7 +338,48 @@
                             <el-collapse-item :title="processTitle" name="4" :hidden="processDisabled">
                                 <el-form ref="processDialogForm" class="deyatech-form" :model="applyOpenRecord" label-position="right"
                                          label-width="100px" :rules="processRulesType">
-
+                                    <el-row :gutter="20" :span="24">
+                                        <el-col :span="24">
+                                            <el-form-item label="所需内容描述" prop="content" :hidden="contentDisabled">
+                                                <editor v-model.trim="applyOpenRecord.content" :config="editorConfig" :default-msg="applyOpenRecord.content" ref="rcontent" id="rcontent_index"></editor>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row :gutter="20" :span="24">
+                                        <el-col :span="12">
+                                            <el-form-item label="回复时间" prop="replyTime">
+                                                <el-date-picker
+                                                    style="width:100%;"
+                                                    v-model.trim="applyOpenRecord.replyTime"
+                                                    type="datetime"
+                                                    value-format="yyyy-MM-dd HH:mm:ss"
+                                                    :picker-options="pickerOptionsTime"
+                                                    placeholder="选择时间">
+                                                </el-date-picker>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row :gutter="20" :span="24">
+                                        <el-col :span="24">
+                                            <el-form-item label="回复模板" prop="replyTemplate">
+                                                <el-select v-model="replyTemplate" @change="setTemplateContent" placeholder="请选择">
+                                                    <el-option
+                                                        v-for="item in replyTemplateList"
+                                                        :key="item.id"
+                                                        :label="item.title"
+                                                        :value="item.content">
+                                                    </el-option>
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row :gutter="20" :span="24">
+                                        <el-col :span="24">
+                                            <el-form-item label="回复内容" prop="replyContent">
+                                                <editor v-model.trim="applyOpenRecord.replyContent" :config="editorConfig" :default-msg="applyOpenRecord.replyContent" ref="replyContent" id="replyContent_index"></editor>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
                                 </el-form>
                             </el-collapse-item>
                         </el-collapse>
@@ -408,6 +428,7 @@
     import {getDepartmentCascader} from '@/api/admin/department';
     import {getOpenModelByCompetentDeptId,getOpenModel} from '@/api/apply/openModel';
     import {isvalidatemobile, validateEmail, cardid, isZipCode, isTelephone, isFax} from '@/util/validate';
+    import {getOpenReplyTemplateAllList} from '@/api/apply/openReplyTemplate';
 
     export default {
         name: 'applyOpenRecord',
@@ -534,9 +555,8 @@
                     postcode: undefined,
                     content: undefined,
                     description: undefined,
-                    getMethod: 1,
-                    offerType: 1,
-                    isOther: 1,
+                    getMethod: "1",
+                    offerType: "1",
                     isPublish: 0,
                     deptId: undefined,
                     proDeptId: undefined,
@@ -591,77 +611,43 @@
                         ]
                     ]
                 },
+                pickerOptionsTime: {
+                    disabledDate(time) {
+                        return time.getTime() < Date.now();
+                    },
+                },
                 activeName: '1',
-                processDisabled: true,
-                replyContentDisabled: true,
                 proTimeLabel: '',
                 proContentLabel: '',
                 processRules_1: {
-                    proTime: [
-                        {required: true, message: this.$t("table.pleaseSelect") + "受理时间"}
-                    ],
-                    proContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + "受理意见"}
-                    ]
-                },
-                processRules_2: {
-                    proContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + "处理意见"}
-                    ]
-                },
-                processRules_3: {
-                    proContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + "延期原因"}
-                    ]
-                },
-                processRules_4: {
-                    toDeptId: [
-                        {required: true, message: this.$t("table.pleaseSelect") + "移交部门"}
-                    ],
-                    proContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + "转办意见"}
-                    ]
-                },
-                processRules_5: {
-                    proTime: [
+                    replyTime: [
                         {required: true, message: this.$t("table.pleaseSelect") + "回复时间"}
                     ],
-                    proContent: [
+                    replyContent: [
                         {required: true, message: this.$t("table.pleaseInput") + "回复内容"}
                     ]
                 },
-                processRules_6: {
-                    proContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + "退回原因"}
-                    ]
-                },
-                processRules_7: {
-                    title: [
-                        {required: true, message: this.$t("table.pleaseInput") + "信件标题"}
-                    ],
+                processRules_2: {
                     content: [
-                        {required: true, message: this.$t("table.pleaseInput") + "来信内容"}
+                        {required: true, message: this.$t("table.pleaseInput") + "所需内容描述"}
                     ],
-                    proTime: [
+                    replyTime: [
                         {required: true, message: this.$t("table.pleaseSelect") + "回复时间"}
                     ],
-                    proContent: [
-                        {required: true, message: this.$t("table.pleaseInput") + "退回原因"}
-                    ],
+                    replyContent: [
+                        {required: true, message: this.$t("table.pleaseInput") + "回复内容"}
+                    ]
                 },
-                proTimeDisabled: true,
-                toDeptIdDisabled: true,
-                isPublishDisabled: true,
-                proContentDisabled: true,
-                titleDisabled: true,
+                processDisabled: true,
                 contentDisabled: true,
-                reasonsTimeDisabled: true,
-                reasonsStatusDisabled: true,
                 processRulesType: {},
                 competentDepartment: false,
                 proType:undefined,
-                dialogProcessVisible:false,
-                processTitle: undefined
+                replyContentDisabled: true,
+                dialogProcessVisible: false,
+                processTitle: undefined,
+                replyTemplate: undefined,
+                replyTemplateList: []
             }
         },
         computed: {
@@ -669,6 +655,7 @@
                 'permission',
                 'titleMap',
                 'enums',
+                'dicts',
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
@@ -691,6 +678,9 @@
         },
         methods: {
             handleNodeClick(data) {
+                if (data.children && data.children.length > 0) {
+                    return;
+                }
                 this.listQuery.isPublish = data.isPublish;
                 this.listQuery.applyFlag = data.applyFlag;
                 this.listQuery.applyStatus = data.applyStatus;
@@ -723,6 +713,12 @@
                 this.listQuery.ysqCode = undefined;
                 this.listQuery.timeFrame = undefined;
                 this.listQuery.modelId = undefined;
+            },
+            getOpenReplyTemplateList(){
+                this.replyTemplateList = [];
+                getOpenReplyTemplateAllList(this.listQuery).then(response => {
+                    this.replyTemplateList = response.data;
+                })
             },
             reloadTreeData(){
                 reloadTreeData({userDepartmentId:this.listQuery.userDepartmentId}).then(response => {
@@ -850,9 +846,8 @@
                     postcode: undefined,
                     content: undefined,
                     description: undefined,
-                    isDerate: 0,
-                    getMethod: 1,
-                    isOther: 1,
+                    getMethod: "1",
+                    offerType: "1",
                     isPublish: 0,
                     deptId: undefined,
                     proDeptId: undefined,
@@ -863,9 +858,7 @@
                     alarmFlag: 0,
                     applyStatus: 0,
                     applyFlag: 0,
-                    isBack: 0,
-                    limitFlag: 0,
-                    limitFlagTime: undefined
+                    superviseFlag: 0
                 }
             },
             resetApplyOpenRecordDialogAndList(){
@@ -906,17 +899,52 @@
                 })
             },
             btnProcess(proType){
-                this.$confirm('请确认是否督办此件！', this.$t("table.tip"), {type: 'warning'}).then(() => {
-                    this.applyOpenRecord.superviseFlag = 1;
-                    createOrUpdateOpenRecord(this.applyOpenRecord).then(() => {
-                        this.closeProcessDialog();
-                        this.$message.success("督办成功！");
-                        this.reloadTreeData();
-                    })
-                })
+                this.proType = proType;
+                this.processDisabled = false;
+                this.activeName = '4';
+                if(proType == 1){
+                    this.contentDisabled = true;
+                    this.processTitle = '回复';
+                    if (this.applyOpenRecord.replyContent) {
+                        this.$refs['replyContent'].setUeContent(this.applyOpenRecord.replyContent);
+                    } else {
+                        this.$refs['replyContent'].setUeContent('');
+                    }
+                    this.processRulesType = this.processRules_1;
+                }
+                if(proType == 2){
+                    this.contentDisabled = false;
+                    this.processTitle = '发布';
+                    this.applyOpenRecord.isPublish = 1;
+                    if (this.applyOpenRecord.replyContent) {
+                        this.$refs['replyContent'].setUeContent(this.applyOpenRecord.replyContent);
+                    } else {
+                        this.$refs['replyContent'].setUeContent('');
+                    }
+                    if (this.applyOpenRecord.content) {
+                        this.$refs['rcontent'].setUeContent(this.applyOpenRecord.content);
+                    } else {
+                        this.$refs['rcontent'].setUeContent('');
+                    }
+                    this.processRulesType = this.processRules_2;
+                }
+                this.applyOpenRecord.replyDeptId = this.$store.state.user.userInfo.departmentId;
+                this.applyOpenRecord.applyStatus = 3;
             },
             doCreateProcess(){
-
+                this.applyOpenRecord.replyContent = this.$refs['replyContent'].getUeContent();
+                this.applyOpenRecord.content = this.$refs['rcontent'].getUeContent();
+                this.$refs['processDialogForm'].validate(valid => {
+                    if(valid) {
+                        createOrUpdateOpenRecord(this.applyOpenRecord).then(() => {
+                            this.closeProcessDialog();
+                            this.$message.success("操作成功！");
+                            this.reloadTreeData();
+                        })
+                    } else {
+                        return false;
+                    }
+                });
             },
             processApply(row){
                 this.resetApplyOpenRecord();
@@ -931,16 +959,37 @@
                 }
                 this.getModelById(this.applyOpenRecord.modelId);
                 this.getDepartmentCascader(this.applyOpenRecord.modelId);
+                this.getOpenReplyTemplateList();
             },
             backProcessDialog(){
+                this.proType = undefined;
+                this.processDisabled = true;
+                this.activeName = '1';
             },
             closeProcessDialog() {
                 this.resetApplyOpenRecord();
+                this.proType = undefined;
                 this.activeName = '1';
-                this.replyContentDisabled = true;
                 this.dialogProcessVisible = false;
+                this.replyContentDisabled = true;
+                this.processDisabled = true;
                 this.processRulesType = {};
+                this.replyTemplate = undefined;
                 this.reloadList();
+            },
+            setTemplateContent(v){
+                v = v.replace("${userName}",this.applyOpenRecord.name);
+                v = v.replace("${title}",this.applyOpenRecord.content);
+                v = v.replace("${deptName}",this.$store.state.user.userInfo.departmentName);
+                var date = new Date();
+                var year = date.getFullYear();
+                var month = this.padaDate(date.getMonth()+1);
+                var day = this.padaDate(date.getDate());
+                v = v.replace("${date}",year+'年'+month+'月'+day+'日');
+                this.$refs['replyContent'].setUeContent(v);
+            },
+            padaDate(value){
+                return value<10 ? '0'+value : value;
             }
         }
     }

@@ -1,7 +1,7 @@
 <template>
     <basic-container>
         <el-row :span="24">
-            <el-col :span="3">
+            <el-col :span="4">
                 <div class="classificationTree">
                     <!--左侧树-->
                     <el-tree
@@ -14,7 +14,7 @@
                     </el-tree>
                 </div>
             </el-col>
-            <el-col :span="21">
+            <el-col :span="20">
                 <div class="deyatech-container pull-auto">
                     <div class="deyatech-menu">
                         <div class="deyatech-menu_left">
@@ -914,6 +914,7 @@
                 if (this.record.replyTreePosition) this.recordReplyDepartment = this.record.replyTreePosition.substring(1).split('&');
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
+                this.$refs['content'].setUeContent(this.record.content);
                 this.getDepartmentCascader(this.record.modelId);
             },
             btnDelete(row){
