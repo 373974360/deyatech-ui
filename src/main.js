@@ -17,7 +17,6 @@ import * as filters from './filters' // 全局filter
 import basicContainer from './components/basicContainer'
 import iconSelect from './components/iconSelect'
 import messageTemplate from './components/messageTemplate'
-
 import VueClipboard from 'vue-clipboard2'
 
 Vue.use(VueClipboard)
