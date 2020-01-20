@@ -1,230 +1,123 @@
 <template>
     <basic-container>
         <div class="deyatech-container pull-auto">
-            <div class="deyatech-header">
-                <el-form :inline="true" ref="searchForm">
-                    <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.name"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="reloadList">{{$t('table.search')}}</el-button>
-                        <el-button icon="el-icon-delete" :size="searchSize" @click="resetSearch">{{$t('table.clear')}}</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
-            <div class="deyatech-menu">
-                <div class="deyatech-menu_left">
-                    <el-button v-if="btnEnable.create" type="primary" :size="btnSize" @click="btnCreate">{{$t('table.create')}}</el-button>
-                    <el-button v-if="btnEnable.update" type="primary" :size="btnSize" @click="btnUpdate" :disabled="selectedRows.length != 1">{{$t('table.update')}}</el-button>
-                    <el-button v-if="btnEnable.delete" type="danger" :size="btnSize" @click="btnDelete" :disabled="selectedRows.length < 1">{{$t('table.delete')}}</el-button>
-                </div>
-                <div class="deyatech-menu_right">
-                    <!--<el-button type="primary" icon="el-icon-edit" :size="btnSize" circle @click="btnUpdate"></el-button>
-                    <el-button type="danger" icon="el-icon-delete" :size="btnSize" circle @click="btnDelete"></el-button>-->
-                    <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
-                </div>
-            </div>
-            <el-table :data="templateAccessList" v-loading.body="listLoading" stripe border highlight-current-row
-                      @selection-change="handleSelectionChange">
-                <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="内容ID" prop="infoId"/>
-                <el-table-column align="center" label="栏目ID" prop="catId"/>
-                <el-table-column align="center" label="内容标题" prop="infoTitle"/>
-                <el-table-column align="center" label="访问者IP" prop="accessIp"/>
-                <el-table-column align="center" label="URL" prop="accessUrl"/>
-                <el-table-column align="center" label="时间" prop="accessTime"/>
-                <el-table-column align="center" label="日期" prop="accessDay"/>
-                <el-table-column align="center" label="月份" prop="accessMonth"/>
-                <el-table-column align="center" label="年份" prop="accessYear"/>
-                <el-table-column align="center" label="访问域名" prop="siteDomain"/>
-                <el-table-column align="center" label="站点ID" prop="siteId"/>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
-                    <template slot-scope="scope">
-                        <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
-                            {{scope.row.enable | enums('EnableEnum')}}
-                        </el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
-                    <template slot-scope="scope">
-                        <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
-                                   @click.stop.safe="btnUpdate(scope.row)"></el-button>
-                        <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
-                                   @click.stop.safe="btnDelete(scope.row)"></el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
-            <el-pagination class="deyatech-pagination pull-right" background
-                           :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
-                           :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
-                           @size-change="handleSizeChange" @current-change="handleCurrentChange">
-            </el-pagination>
+            <el-row :span="24">
+                <el-col :span="4">
+                    <div class="catalog-left-Tree" ref="leftTree" v-loading.body="listLoading">
+                        <div class="left-tree-title">栏目列表</div>
+                        <el-tree
+                            ref="catalogTree"
+                            :data="catalogList"
+                            :props="defaultTreeProps"
+                            node-key="id"
+                            highlight-current
+                            :default-expand-all="false"
+                            :expand-on-click-node="false"
+                            @node-click="handleNoteClick">
+                        </el-tree>
+                    </div>
+                </el-col>
+                <el-col :span="20">
+                    <div class="deyatech-menu">
+                        <div class="deyatech-menu_left">
+                            <el-date-picker
+                                v-model.trim="timeFrame"
+                                type="daterange"
+                                align="right"
+                                unlink-panels
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                                :picker-options="pickerOptions"
+                                value-format="yyyy-MM-dd">
+                            </el-date-picker>
 
-
-            <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeTemplateAccessDialog">
-                <el-form ref="templateAccessDialogForm" class="deyatech-form" :model="templateAccess" label-position="right"
-                         label-width="80px" :rules="templateAccessRules">
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="内容ID" prop="infoId">
-                                <el-input v-model.trim="templateAccess.infoId"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="栏目ID" prop="catId">
-                                <el-input v-model.trim="templateAccess.catId"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="内容标题" prop="infoTitle">
-                                <el-input v-model.trim="templateAccess.infoTitle"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="访问者IP" prop="accessIp">
-                                <el-input v-model.trim="templateAccess.accessIp"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="URL" prop="accessUrl">
-                                <el-input v-model.trim="templateAccess.accessUrl"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="时间" prop="accessTime">
-                                <el-input v-model.trim="templateAccess.accessTime"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="日期" prop="accessDay">
-                                <el-input v-model.trim="templateAccess.accessDay"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="月份" prop="accessMonth">
-                                <el-input v-model.trim="templateAccess.accessMonth"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="年份" prop="accessYear">
-                                <el-input v-model.trim="templateAccess.accessYear"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="访问域名" prop="siteDomain">
-                                <el-input v-model.trim="templateAccess.siteDomain"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="12">
-                            <el-form-item label="站点ID" prop="siteId">
-                                <el-input v-model.trim="templateAccess.siteId"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" :span="24">
-                        <el-col :span="24">
-                            <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="templateAccess.remark" :rows="3"/>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form>
-                <span slot="footer" class="dialog-footer">
-                    <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeTemplateAccessDialog">{{$t('table.cancel')}}</el-button>
-                </span>
-            </el-dialog>
+                            <el-radio-group :size="btnSize" v-model="accessType" style="margin-left: 10px;">
+                                <el-radio-button :label="1">按栏目排行</el-radio-button>
+                                <el-radio-button :label="3">按信息排行</el-radio-button>
+                            </el-radio-group>
+                            <el-button type="primary" :size="btnSize" style="margin-left: 10px;" @click="reloadList">统计</el-button>
+                        </div>
+                    </div>
+                    <el-table :data="accessDataList" v-loading.body="listLoading" stripe border highlight-current-row
+                              @selection-change="handleSelectionChange">
+                        <el-table-column align="left" label="栏目名称" prop="catalogName"/>
+                        <el-table-column align="left" label="浏览量" prop="count"/>
+                    </el-table>
+                    <el-pagination class="deyatech-pagination pull-right" background
+                                   :current-page.sync="templateAccess.page" :page-sizes="this.$store.state.common.pageSize"
+                                   :page-size="templateAccess.size" :layout="this.$store.state.common.pageLayout" :total="total"
+                                   @size-change="handleSizeChange" @current-change="handleCurrentChange">
+                    </el-pagination>
+                </el-col>
+            </el-row>
         </div>
     </basic-container>
 </template>
-
-
 <script>
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getTemplateAccessList,
-        createOrUpdateTemplateAccess,
-        delTemplateAccesss
+        getCatalogTree
+    } from '@/api/station/catalog';
+    import {
+        getTemplateAccessList
     } from '@/api/statistics/templateAccess';
 
     export default {
-        name: 'templateAccess',
+        name: 'createHtml',
         data() {
             return {
-                templateAccessList: undefined,
+                accessDataList: undefined,
                 total: undefined,
                 listLoading: true,
-                listQuery: {
+                treeHeight: 0,
+                listLoading: false,
+                templateAccess: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    name: undefined
-                },
-                templateAccess: {
-                    id: undefined,
-                    infoId: undefined,
+                    siteId: this.$store.state.common.siteId,
                     catId: undefined,
-                    infoTitle: undefined,
-                    accessIp: undefined,
-                    accessUrl: undefined,
-                    accessTime: undefined,
-                    accessDay: undefined,
-                    accessMonth: undefined,
-                    accessYear: undefined,
-                    siteDomain: undefined,
-                    siteId: undefined
+                    startTime: undefined,
+                    endTime: undefined
                 },
-                templateAccessRules: {
-                    infoId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '内容ID'}
-                    ],
-                    catId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '栏目ID'}
-                    ],
-                    infoTitle: [
-                        {required: true, message: this.$t("table.pleaseInput") + '内容标题'}
-                    ],
-                    accessIp: [
-                        {required: true, message: this.$t("table.pleaseInput") + '访问者IP'}
-                    ],
-                    accessUrl: [
-                        {required: true, message: this.$t("table.pleaseInput") + 'URL'}
-                    ],
-                    accessTime: [
-                        {required: true, message: this.$t("table.pleaseInput") + '时间'}
-                    ],
-                    accessDay: [
-                        {required: true, message: this.$t("table.pleaseInput") + '日期'}
-                    ],
-                    accessMonth: [
-                        {required: true, message: this.$t("table.pleaseInput") + '月份'}
-                    ],
-                    accessYear: [
-                        {required: true, message: this.$t("table.pleaseInput") + '年份'}
-                    ],
-                    siteDomain: [
-                        {required: true, message: this.$t("table.pleaseInput") + '访问域名'}
-                    ],
-                    siteId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '站点ID'}
-                    ]
+                catalogList: [],
+                defaultTreeProps: {
+                    children: 'children',
+                    label: 'name',
+                    isLeaf: 'leaf'
                 },
                 selectedRows: [],
-                dialogVisible: false,
-                dialogTitle: undefined,
-                submitLoading: false
+                pickerOptions: {
+                    shortcuts: [{
+                        text: '最近一周',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近一个月',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近三个月',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }]
+                },
+                accessType: 1,
+                templateAccessList:undefined,
+                timeFrame: ''
             }
         },
         computed: {
@@ -235,34 +128,26 @@
                 'closeOnClickModal',
                 'searchSize',
                 'btnSize'
-            ]),
-            btnEnable() {
-                return {
-                    create: this.permission.templateAccess_create,
-                    update: this.permission.templateAccess_update,
-                    delete: this.permission.templateAccess_delete
-                };
-            }
+            ])
         },
         created(){
-            this.reloadList();
+            console.log("siteId: " + this.$store.state.common.siteId);
+            this.$store.state.common.selectSiteDisplay = true;
+            if(this.$store.state.common.siteId != undefined){
+                // 获取栏目
+                this.getCatalogTree();
+            }
         },
         methods: {
-            resetSearch(){
-                this.listQuery.name = undefined;
-            },
-            reloadList(){
+            getCatalogTree(){
                 this.listLoading = true;
-                this.templateAccessList = undefined;
-                this.total = undefined;
-                getTemplateAccessList(this.listQuery).then(response => {
+                getCatalogTree(this.templateAccess).then(response => {
+                    this.catalogList = response.data;
                     this.listLoading = false;
-                    this.templateAccessList = response.data.records;
-                    this.total = response.data.total;
                 })
             },
             handleSizeChange(val){
-                this.listQuery.size = val;
+                this.templateAccess.size = val;
                 this.reloadList();
             },
             handleCurrentChange(val){
@@ -272,98 +157,29 @@
             handleSelectionChange(rows){
                 this.selectedRows = rows;
             },
-            btnCreate(){
-                this.resetTemplateAccess();
-                this.dialogTitle = 'create';
-                this.dialogVisible = true;
-            },
-            btnUpdate(row){
-                this.resetTemplateAccess();
-                if (row.id) {
-                    this.templateAccess = deepClone(row);
-                } else {
-                    this.templateAccess = deepClone(this.selectedRows[0]);
-                }
-                this.dialogTitle = 'update';
-                this.dialogVisible = true;
-            },
-            btnDelete(row){
-                let ids = [];
-                if (row.id) {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        ids.push(row.id);
-                        this.doDelete(ids);
-                    })
-                } else {
-                    this.$confirm(this.$t("table.deleteConfirm"), this.$t("table.tip"), {type: 'error'}).then(() => {
-                        for(const deleteRow of this.selectedRows){
-                            ids.push(deleteRow.id);
-                        }
-                        this.doDelete(ids);
-                    })
-                }
-            },
-            doCreate(){
-                this.$refs['templateAccessDialogForm'].validate(valid => {
-                    if(valid) {
-                        this.submitLoading = true;
-                        createOrUpdateTemplateAccess(this.templateAccess).then(() => {
-                            this.resetTemplateAccessDialogAndList();
-                            this.$message.success(this.$t("table.createSuccess"));
-                        })
-                    } else {
-                        return false;
-                    }
-                });
-            },
-            doUpdate(){
-                this.$refs['templateAccessDialogForm'].validate(valid => {
-                    if(valid) {
-                        this.submitLoading = true;
-                        createOrUpdateTemplateAccess(this.templateAccess).then(() => {
-                            this.resetTemplateAccessDialogAndList();
-                            this.$message.success(this.$t("table.updateSuccess"));
-                        })
-                    } else {
-                        return false;
-                    }
-                })
-            },
-            doDelete(ids){
-                this.listLoading = true;
-                delTemplateAccesss(ids).then(() => {
-                    this.reloadList();
-                    this.$message.success(this.$t("table.deleteSuccess"));
-                })
-            },
-            resetTemplateAccess(){
-                this.templateAccess = {
-                    id: undefined,
-                    infoId: undefined,
-                    catId: undefined,
-                    infoTitle: undefined,
-                    accessIp: undefined,
-                    accessUrl: undefined,
-                    accessTime: undefined,
-                    accessDay: undefined,
-                    accessMonth: undefined,
-                    accessYear: undefined,
-                    siteDomain: undefined,
-                    siteId: undefined
-                }
-            },
-            resetTemplateAccessDialogAndList(){
-                this.closeTemplateAccessDialog();
-                this.submitLoading = false;
+            handleNoteClick(data) {
+                this.templateAccess.catId = data.id;
                 this.reloadList();
             },
-            closeTemplateAccessDialog() {
-                this.dialogVisible = false;
-                this.resetTemplateAccess();
-                this.$refs['templateAccessDialogForm'].resetFields();
+            reloadList(){
+                this.templateAccess.startTime = this.timeFrame[0];
+                this.templateAccess.endTime = this.timeFrame[1];
+                getTemplateAccessList(this.templateAccess).then(response => {
+                    this.listLoading = false;
+                    this.accessDataList = response.data.records;
+                    this.total = response.data.total;
+                })
             }
         }
     }
 </script>
-
-
+<style>
+    .left-tree-title {
+        color: #909399;
+        font-weight: bold;
+        font-size: 14px;
+        text-align: center;
+        border-bottom: 1px solid #EBEEF5;
+        padding: 14px 0px;
+    }
+</style>
