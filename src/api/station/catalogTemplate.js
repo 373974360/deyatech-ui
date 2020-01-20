@@ -40,12 +40,28 @@ export function getCatalogTemplateList(query) {
     });
 }
 
-export function removeAggregationRelation(compositeIds) {
-    const data = {compositeIds};
+export function removeRelation(compositeIds, originType) {
+    const data = {compositeIds, originType};
     return request({
-        url: '/manage/station/catalogTemplate/removeAggregationRelation',
+        url: '/manage/station/catalogTemplate/removeRelation',
         method: 'post',
         data
     });
 }
 
+export function getDeliverCatalog(templateId) {
+    return request({
+        url: '/manage/station/catalogTemplate/getDeliverCatalog',
+        method: 'get',
+        params: {templateId}
+    });
+}
+
+export function setDeliverCatalogs(templateId, catalogIds) {
+    const data = {templateId, catalogIds};
+    return request({
+        url: '/manage/station/catalogTemplate/setDeliverCatalogs',
+        method: 'post',
+        data
+    });
+}
