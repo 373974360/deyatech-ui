@@ -136,15 +136,24 @@
                     </el-table-column>
 
 
-                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" fixed="right" align="center" width="200">
+                        <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" fixed="right" align="center" width="250">
                             <template slot-scope="scope">
+
                                 <el-button v-if="btnEnable.preview" :size="btnSize" type="primary" circle icon="el-icon-search"
                                            title="预览" @click.stop.safe="btnPreview(scope.row)"></el-button>
+
+
+
                                 <div v-if="scope.row.linkedOriginType != 1" style="display: inline-block; margin-left: 10px;">
-                                    <el-button v-if="btnEnable.preview" :size="btnSize" type="primary" circle icon="el-icon-link"
-                                               title="解除" @click.stop.safe="removeAggregationRelation(scope.row)"></el-button>
+                                    <el-button v-if="btnEnable.remove" :size="btnSize" type="primary" circle icon="el-icon-link"
+                                               title="解除" @click.stop.safe="btnRemoveRelation(scope.row)"></el-button>
                                 </div>
+
                                 <div v-if="scope.row.linkedOriginType == 1" style="display: inline-block; margin-left: 10px;">
+                                    <el-button v-if="btnEnable.deliver && listQuery.status == ContentStatusEnum.PUBLISH"
+                                               :size="btnSize" type="primary" circle icon="el-icon-position"
+                                               title="投递" @click.stop.safe="btnDeliverRelation(scope.row)"></el-button>
+
                                     <el-button v-if="btnEnable.update" :size="btnSize" type="primary" circle icon="el-icon-edit"
                                                title="编辑" @click.stop.safe="btnUpdate(scope.row)"></el-button>
 
@@ -484,6 +493,8 @@
                 </span>
             </el-dialog>
 
+
+
             <el-dialog title="发布静态页进度" :visible.sync="proGressStaticDialogVisible" :close-on-click-modal="closeOnClickModal" >
                 <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressStaticPercentage" status="success"></el-progress>
                 <el-row :gutter="20" :span="24" style="margin-top:20px;">
@@ -499,6 +510,8 @@
                 </el-row>
             </el-dialog>
 
+
+
             <el-dialog title="生成索引进度" :visible.sync="proGressIndexDialogVisible" :close-on-click-modal="closeOnClickModal" >
                 <el-progress :text-inside="true" :stroke-width="24" :percentage="proGressIndexPercentage" status="success"></el-progress>
                 <el-row :gutter="20" :span="24" style="margin-top:20px;">
@@ -513,6 +526,28 @@
                     </el-col>
                 </el-row>
             </el-dialog>
+
+
+
+            <!--内容投递-->
+            <el-dialog title="内容投递" :visible.sync="dialogCatalogVisible" :close-on-click-modal="closeOnClickModal" @close="closeCatalogDialog">
+                <div style="width: 80%; margin-left: 100px; height: 500px; overflow-y: scroll;">
+                    <el-tree ref="catalogTree"
+                             :data="catalogTree"
+                             show-checkbox
+                             node-key="id"
+                             :props="defaultTreeProps"
+                             :default-expand-all="true"
+                             :expand-on-click-node="false"
+                             @check="catalogTreeChecked" :check-strictly="true"></el-tree>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" :size="btnSize" @click="doSaveDeliverCatalog" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
+                    <el-button :size="btnSize" @click="closeCatalogDialog">{{$t('table.cancel')}}</el-button>
+                </div>
+            </el-dialog>
+
+
         </div>
     </basic-container>
 </template>
@@ -549,6 +584,7 @@
         setSortNoMaterial
     } from "@/api/station/material";
     import {
+        getCatalogTreeBySiteIds,
         getUserCatalogTree
     } from '@/api/station/catalog';
     import {
@@ -561,7 +597,8 @@
     import {getTableHeadContentDataAlias, getCustomizationFunctionContent, saveOrUpdate, removeContentData} from '@/api/assembly/customizationFunction'
     import {getUploadFileTypeAndSize} from '@/api/resource/setting';
     import {getDomainNameBySiteId} from '@/api/resource/domain';
-    import {removeAggregationRelation} from '@/api/station/catalogTemplate';
+    import {getDeliverCatalog, setDeliverCatalogs, removeRelation} from '@/api/station/catalogTemplate';
+    import {getNodeData, getParentKeys, getChildrenKeys} from "@/util/treeUtils";
 
     export default {
         name: 'template',
@@ -912,6 +949,17 @@
                 proGressIndexCurNo: 0,
                 proGressIndexCurTitle: '',
 
+                // 内容投递
+                catalogTree: [],
+                dialogCatalogVisible: false,
+                defaultTreeProps: {
+                    children: 'children',
+                    label: 'name',
+                    isLeaf: 'leaf'
+                },
+                deliverCatalogList:[],
+                currentRow: undefined,
+
                 picArray:[],
                 domainName: ''
             }
@@ -963,7 +1011,9 @@
                     recycle: this.permission.template_recycle,
                     verify: this.permission.template_verify,
                     back: this.permission.template_back,
-                    publish: this.permission.template_publish
+                    publish: this.permission.template_publish,
+                    deliver: this.permission.template_deliver,
+                    remove: this.permission.template_remove
                 };
             }
         },
@@ -1001,6 +1051,7 @@
                 this.getAllModelBySiteId();
                 // 获取栏目
                 this.getCatalogTree();
+                this.getSiteCatalogTree();
                 // 获取站点上传路径
                 this.getSiteUploadPath();
                 // 获取元数据集
@@ -1555,18 +1606,40 @@
                 let url = window.location.protocol + '//' + this.domainName + '/' + row.cmsCatalogPathName + '/details/info/' + row.id + '.html';
                 window.open(url);
             },
+            // 投递
+            btnDeliverRelation(row) {
+                this.currentRow = row;
+                this.dialogCatalogVisible = true;
+                this.deliverCatalogList = [];
+                getDeliverCatalog(row.id).then(response => {
+                    this.deliverCatalogList = response.data;
+                    this.checkDeliverCatalog();
+                });
+            },
+            checkDeliverCatalog() {
+                this.$nextTick(()=>{
+                    // 选中已分配的栏目
+                    if (this.deliverCatalogList && this.deliverCatalogList.length > 0) {
+                        for (let catalogId of this.deliverCatalogList) {
+                            this.$refs['catalogTree'].setChecked(catalogId, true, false);
+                        }
+                    } else {
+                        this.$refs['catalogTree'].setCheckedKeys([]);
+                    }
+                });
+            },
             // 解除
-            removeAggregationRelation(row) {
-                this.$confirm('此操作将解除聚合关系, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
+            btnRemoveRelation(row) {
+                this.$confirm('此操作将解除关系, 是否继续？', this.$t("table.tip"), {type: 'error'}).then(() => {
                     let ids = [];
                     if (row.id) {
-                        ids.push(row.id + ',' + row.linkedCatalogId);
+                        ids.push(row.id + '_' + row.linkedCatalogId);
                     } else {
                         for(const r of this.selectedRows) {
-                            ids.push(r.id + ',' + r.linkedCatalogId);
+                            ids.push(r.id + '_' + r.linkedCatalogId);
                         }
                     }
-                    removeAggregationRelation(ids).then(response=>{
+                    removeRelation(ids, row.linkedOriginType).then(response=>{
                         this.reloadList();
                         this.$message.success("解除成功");
                     });
@@ -2683,7 +2756,81 @@
                     this.listQuery.startTime = '';
                     this.listQuery.endTime = '';
                 }
+            },
+
+            // 投递
+            closeCatalogDialog() {
+                this.currentRow = undefined;
+                this.submitLoading = false;
+                this.deliverCatalogList = [];
+                this.$refs['catalogTree'].setCheckedKeys([])
+                this.dialogCatalogVisible = false;
+            },
+            doSaveDeliverCatalog() {
+                let catalogIds = this.$refs['catalogTree'].getCheckedKeys(false);
+                this.submitLoading = true;
+                setDeliverCatalogs(this.currentRow.id, catalogIds).then(() => {
+                    this.closeCatalogDialog();
+                    this.reloadList();
+                    this.$message.success("投递成功");
+                }).catch(() => {
+                    this.$message.error("投递失败")
+                    this.submitLoading = false;
+                })
+            },
+            getSiteCatalogTree() {
+                let siteIds = [];
+                siteIds.push(this.$store.state.common.siteId);
+                getCatalogTreeBySiteIds(siteIds).then(response => {
+                    this.catalogTree = response.data;
+                });
+            },
+            catalogTreeChecked(node, tree) {
+                let checkedKeys = tree.checkedKeys;
+                // // 选中时
+                // if (checkedKeys.includes(node.id)) {
+                //     // 选中父结点
+                //     checkedKeys.push.apply(checkedKeys, getParentKeys(node, this.catalogTree));
+                //     // 选中子节点
+                //     checkedKeys.push.apply(checkedKeys, getChildrenKeys(node))
+                //
+                //     // 取消时
+                // } else {
+                //     // 取消子节点
+                //     for (let key of getChildrenKeys(node)) {
+                //         if (checkedKeys.includes(key)) {
+                //             // 删除选中
+                //             checkedKeys.splice(checkedKeys.indexOf(key), 1);
+                //         }
+                //     }
+                //     // 取消父结点(没有子节点选中时)
+                //     if (node.parentId !== '0') {
+                //         let parent = getNodeData(this.catalogTree, 'id', node.parentId);
+                //         checkedKeys = this.dealParentNode(parent, checkedKeys);
+                //     }
+                // }
+                this.$refs['catalogTree'].setCheckedKeys(checkedKeys)
             }
+            // dealParentNode(node, checkedKeys) {
+            //     if (checkedKeys.includes(node.id)) {
+            //         let childrenKeys = getChildrenKeys(node);
+            //         let isChecked = false;
+            //         for (let key of childrenKeys) {
+            //             if (checkedKeys.includes(key)) {
+            //                 isChecked = true;
+            //                 break;
+            //             }
+            //         }
+            //         if (!isChecked) {
+            //             checkedKeys.splice(checkedKeys.indexOf(node.id), 1);
+            //             if (node.parentId !== '0') {
+            //                 let parent = getNodeData(this.catalogTree, 'id', node.parentId);
+            //                 checkedKeys = this.dealParentNode(parent, checkedKeys);
+            //             }
+            //         }
+            //     }
+            //     return checkedKeys;
+            // }
         }
     }
 </script>
