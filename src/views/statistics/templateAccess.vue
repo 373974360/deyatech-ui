@@ -32,16 +32,17 @@
                                 value-format="yyyy-MM-dd">
                             </el-date-picker>
 
-                            <el-radio-group :size="btnSize" v-model="accessType" style="margin-left: 10px;">
+                            <el-radio-group :size="btnSize" v-model="templateAccess.accessType" style="margin-left: 10px;" @change="handleAccessTypeClick">
                                 <el-radio-button :label="1">按栏目排行</el-radio-button>
-                                <el-radio-button :label="3">按信息排行</el-radio-button>
+                                <el-radio-button :label="2">按信息排行</el-radio-button>
                             </el-radio-group>
                             <el-button type="primary" :size="btnSize" style="margin-left: 10px;" @click="reloadList">统计</el-button>
                         </div>
                     </div>
                     <el-table :data="accessDataList" v-loading.body="listLoading" stripe border highlight-current-row
                               @selection-change="handleSelectionChange">
-                        <el-table-column align="left" label="栏目名称" prop="catalogName"/>
+                        <el-table-column v-if="templateAccess.accessType == 1" align="left" label="栏目名称" prop="catalogName"/>
+                        <el-table-column v-if="templateAccess.accessType == 2" align="left" label="信息标题" prop="infoTitle"/>
                         <el-table-column align="left" label="浏览量" prop="count"/>
                     </el-table>
                     <el-pagination class="deyatech-pagination pull-right" background
@@ -77,6 +78,7 @@
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
+                    accessType: 1,
                     catId: undefined,
                     startTime: undefined,
                     endTime: undefined
@@ -115,9 +117,10 @@
                         }
                     }]
                 },
-                accessType: 1,
                 templateAccessList:undefined,
-                timeFrame: ''
+                timeFrame: '',
+                catalogNameHidden: false,
+                infoTitleHidden: true
             }
         },
         computed: {
@@ -159,6 +162,9 @@
             },
             handleNoteClick(data) {
                 this.templateAccess.catId = data.id;
+                this.reloadList();
+            },
+            handleAccessTypeClick() {
                 this.reloadList();
             },
             reloadList(){
