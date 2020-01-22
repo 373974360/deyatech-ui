@@ -121,3 +121,11 @@ export function getUserStationCascader(query) {
         params: query
     });
 }
+
+export function getStationDepartmentTree(id) {
+    return request({
+        url: '/manage/resource/stationGroup/getStationDepartmentTree',
+        method: 'get',
+        params: {id}
+    });
+}

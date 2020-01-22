@@ -109,13 +109,6 @@
                                              placeholder="请选择分类" style="width: 100%;" ></el-cascader>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="部门" prop="departmentId">
-                                <el-cascader filterable :options="departmentCascader"
-                                             v-model.trim="formDepartmentTreePosition"
-                                             placeholder="请选择部门" style="width: 100%;" change-on-select show-all-levels expand-trigger="click"></el-cascader>
-                            </el-form-item>
-                        </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
@@ -126,6 +119,22 @@
                         <el-col :span="12">
                             <el-form-item label="英文名称" prop="englishName">
                                 <el-input v-model.trim="stationGroup.englishName" maxlength="30"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="管理机构" prop="departmentId">
+                                <el-cascader filterable :options="departmentCascader"
+                                             v-model.trim="departmentGetSet"
+                                             placeholder="请选择管理机构" style="width: 100%;" change-on-select show-all-levels expand-trigger="click"></el-cascader>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="包含范围" prop="rangeDepartmentId">
+                                <el-cascader filterable :options="departmentCascader"
+                                             v-model.trim="rangeGetSet"
+                                             placeholder="请选择包含范围" style="width: 100%;" change-on-select show-all-levels expand-trigger="click"></el-cascader>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -563,6 +572,11 @@
                                   border height="500" style="margin-top: 5px; margin-bottom: 10px;">
                             <el-table-column type="selection" width="55" :selectable="getSelectable"/>
                             <el-table-column prop="name" label="姓名" width="180"/>
+                            <el-table-column prop="type" label="站点管理员" width="200">
+                                <template slot-scope="scope">
+                                    <el-checkbox v-model="scope.row.type" :true-label="1" :false-label="2"/>
+                                </template>
+                            </el-table-column>
                             <el-table-column prop="userTreePositionName" label="部门层级" />
                         </el-table>
                     </el-col>
@@ -745,6 +759,8 @@
                     stationGroupClassificationTreePosition: undefined,
                     departmentId: undefined,
                     departmentTreePosition: undefined,
+                    rangeDepartmentId: undefined,
+                    rangeDepartmentTreePosition: undefined,
                     siteCode: undefined,
                     icpCode: undefined,
                     policeCode: undefined
@@ -754,7 +770,10 @@
                         {required: true, message: this.$t("table.pleaseSelect") + '分类'}
                     ],
                     departmentId: [
-                        {required: true, message: this.$t("table.pleaseSelect") + '部门'}
+                        {required: true, message: this.$t("table.pleaseSelect") + '管理部门'}
+                    ],
+                    rangeDepartmentId: [
+                        {required: true, message: this.$t("table.pleaseSelect") + '包含范围'}
                     ],
                     name: [
                         {required: true, message: this.$t("table.pleaseInput") + '名称'},
@@ -997,7 +1016,7 @@
                     }
                 }
             },
-            formDepartmentTreePosition: {
+            departmentGetSet: {
                 get() {
                     if (this.stationGroup.departmentTreePosition) {
                         return this.stationGroup.departmentTreePosition.substr(1).split('&')
@@ -1010,6 +1029,22 @@
                     } else {
                         this.stationGroup.departmentId = undefined;
                         this.stationGroup.departmentTreePosition = undefined;
+                    }
+                }
+            },
+            rangeGetSet: {
+                get() {
+                    if (this.stationGroup.rangeDepartmentTreePosition) {
+                        return this.stationGroup.rangeDepartmentTreePosition.substr(1).split('&')
+                    }
+                },
+                set(v) {
+                    if (v && v.length > 0) {
+                        this.stationGroup.rangeDepartmentId = v[v.length - 1];
+                        this.stationGroup.rangeDepartmentTreePosition = '&' + v.join('&');
+                    } else {
+                        this.stationGroup.rangeDepartmentId = undefined;
+                        this.stationGroup.rangeDepartmentTreePosition = undefined;
                     }
                 }
             },
@@ -1159,7 +1194,16 @@
                 } else {
                     this.stationGroup.stationGroupClassificationTreePosition = '&' + this.stationGroup.stationGroupClassificationId;
                 }
-                this.stationGroup.departmentTreePosition += '&' + this.stationGroup.departmentId;
+                if (this.stationGroup.departmentTreePosition) {
+                    this.stationGroup.departmentTreePosition += '&' + this.stationGroup.departmentId;
+                } else {
+                    this.stationGroup.departmentTreePosition = '&' + this.stationGroup.departmentId;
+                }
+                if (this.stationGroup.rangeDepartmentTreePosition) {
+                    this.stationGroup.rangeDepartmentTreePosition += '&' + this.stationGroup.rangeDepartmentId;
+                } else {
+                    this.stationGroup.rangeDepartmentTreePosition = '&' + this.stationGroup.rangeDepartmentId;
+                }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
             },
@@ -1294,6 +1338,8 @@
                 this.stationGroup.stationGroupClassificationTreePosition = undefined;
                 this.stationGroup.departmentId = undefined;
                 this.stationGroup.departmentTreePosition = undefined;
+                this.stationGroup.rangeDepartmentId = undefined;
+                this.stationGroup.rangeDepartmentTreePosition = undefined;
                 this.stationGroup.siteCode = undefined;
                 this.stationGroup.icpCode = undefined;
                 this.stationGroup.policeCode = undefined;
@@ -1306,7 +1352,8 @@
             closeStationGroupDialog() {
                 this.dialogVisible = false;
                 this.resetStationGroup();
-                this.formDepartmentTreePosition = [];
+                this.departmentGetSet = [];
+                this.rangeGetSet = [];
                 this.stationGroupClassificationTreePosition = [];
                 this.$refs['stationGroupDialogForm'].resetFields();
             },
@@ -1854,7 +1901,7 @@
 
             // 关联用户
             btnUser(row) {
-                this.stationGroup = row;
+                this.stationGroup = deepClone(row);
                 this.leftSelectedRows = [];
                 this.rightSelectedRows = [];
                 this.dialogFormLoading = true;
@@ -1882,13 +1929,13 @@
                 this.associateDepartmentTreePosition = [];
             },
             doSaveStationGroupUser() {
-                this.submitLoading = true;
                 let ids = [];
                 if (this.rightUserList.length > 0) {
                     for (let item of this.rightUserList) {
-                        ids.push(item.userId);
+                        ids.push(item.userId+'_'+item.type);
                     }
                 }
+                this.submitLoading = true;
                 setStationGroupUsers(this.stationGroup.id, ids).then(() => {
                     this.closeStationGroupUserDialog();
                     this.reloadList();
@@ -1909,6 +1956,7 @@
                     for (let item of this.rightSelectedRows) {
                         this.leftUserList.push(item);
                         this.originalLeftUserList.push(item);
+                        // 删除右侧
                         let i = -1;
                         if (this.rightUserList && this.rightUserList.length > 0) {
                             for (let tag of this.rightUserList) {
@@ -1929,7 +1977,9 @@
             moveToRight() {
                 if (this.leftSelectedRows.length > 0) {
                     for (let item of this.leftSelectedRows) {
+                        item.type = 2;// 未选中
                         this.rightUserList.push(item);
+                        // 删除左侧
                         if (this.leftUserList && this.leftUserList.length > 0) {
                             let i = -1;
                             for (let tag of this.leftUserList) {

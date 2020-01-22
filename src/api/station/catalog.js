@@ -61,6 +61,20 @@ export function getUserCatalogTree(query) {
         params: query
     });
 }
+export function getUserCatalogTreeByUserId(query) {
+    return request({
+        url: '/manage/station/catalog/getUserCatalogTreeByUserId',
+        method: 'get',
+        params: query
+    });
+}
+export function getDepartmentCatalogTreeByDepartmentId(query) {
+    return request({
+        url: '/manage/station/catalog/getDepartmentCatalogTreeByDepartmentId',
+        method: 'get',
+        params: query
+    });
+}
 export function getCatalogCascader(query) {
     return request({
         url: '/manage/station/catalog/getCascader',

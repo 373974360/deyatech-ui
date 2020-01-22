@@ -259,7 +259,7 @@
                     account: undefined,
                     password: undefined,
                     passwordConfirm: undefined,
-                    admin: 0
+                    admin: 2 // 普通用户
                 },
                 userRules: {
                     departmentId: [
@@ -505,7 +505,7 @@
                     account: undefined,
                     password: undefined,
                     passwordConfirm: undefined,
-                    admin: 0
+                    admin: 2 //普通用户
                 }
             },
             resetUserDialog() {

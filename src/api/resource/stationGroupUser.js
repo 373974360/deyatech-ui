@@ -28,3 +28,11 @@ export function pageStationAssociationUser(query) {
         params: query
     })
 }
+
+export function getUserTreeBySiteId(siteId) {
+    return request({
+        url: '/manage/resource/stationGroupUser/getUserTreeBySiteId',
+        method: 'get',
+        params: {siteId}
+    })
+}
