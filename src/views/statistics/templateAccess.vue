@@ -43,7 +43,8 @@
                               @selection-change="handleSelectionChange">
                         <el-table-column v-if="templateAccess.accessType == 1" align="left" label="栏目名称" prop="catalogName"/>
                         <el-table-column v-if="templateAccess.accessType == 2" align="left" label="信息标题" prop="infoTitle"/>
-                        <el-table-column align="left" label="浏览量" prop="count"/>
+                        <el-table-column align="left" label="PV" prop="pvCount"/>
+                        <el-table-column align="left" label="UV" prop="uvCount"/>
                     </el-table>
                     <el-pagination class="deyatech-pagination pull-right" background
                                    :current-page.sync="templateAccess.page" :page-sizes="this.$store.state.common.pageSize"
@@ -139,9 +140,20 @@
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
                 this.getCatalogTree();
+                this.setCurrDate();
             }
         },
         methods: {
+            setCurrDate(){
+                let nowDate = new Date();
+                let date = {
+                    year: nowDate.getFullYear(),
+                    month: nowDate.getMonth() + 1,
+                    date: nowDate.getDate(),
+                }
+                this.timeFrame = [date.year + '-' + 0 + date.month + '-01',date.year + '-' + 0 + date.month + '-' + 0 + date.date];
+                this.reloadList();
+            },
             getCatalogTree(){
                 this.listLoading = true;
                 getCatalogTree(this.templateAccess).then(response => {
@@ -168,8 +180,8 @@
                 this.reloadList();
             },
             reloadList(){
-                this.templateAccess.startTime = this.timeFrame[0];
-                this.templateAccess.endTime = this.timeFrame[1];
+                this.templateAccess.startTime = this.timeFrame[0]+" 00:00:00";
+                this.templateAccess.endTime = this.timeFrame[1]+" 23:59:59";
                 getTemplateAccessList(this.templateAccess).then(response => {
                     this.listLoading = false;
                     this.accessDataList = response.data.records;
@@ -180,6 +192,22 @@
     }
 </script>
 <style>
+    .catalog-left-Tree {
+        border:1px solid #eceef5;
+        overflow: auto;
+        margin-right:10px;
+        padding: 14px;
+        height: 600px;
+    }
+    .catalog-left-Tree .el-tree {
+        display: inline-block;
+        margin: 10px;
+        min-width: 50%;
+    }
+    .catalog-left-Tree::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
     .left-tree-title {
         color: #909399;
         font-weight: bold;
