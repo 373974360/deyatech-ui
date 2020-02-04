@@ -59,3 +59,11 @@ export function getUsersByWindowAndDepartment(query) {
     });
 }
 
+export function getAllUser(query) {
+    return request({
+        url: '/manage/admin/user/listByUser',
+        method: 'get',
+        params: query
+    });
+}
+

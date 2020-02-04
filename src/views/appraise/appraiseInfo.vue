@@ -4,7 +4,24 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-input :size="searchSize" :placeholder="$t('table.searchName')" v-model.trim="listQuery.windowName"></el-input>
+                        <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '评价对象'" v-model.trim="listQuery.userId" clearable>
+                            <el-option
+                                v-for="item in userList"
+                                :key="item.id"
+                                :label="item.name"
+                                :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '评价等级'" v-model.trim="listQuery.level" clearable>
+                            <el-option
+                                v-for="item in loadEnum('EvaluationLevelEnum')"
+                                :key="item.code"
+                                :label="item.value"
+                                :value="item.code">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-search" :size="searchSize" @click="searchReloadList">{{$t('table.search')}}</el-button>
@@ -24,27 +41,32 @@
                     <el-button icon="el-icon-refresh" :size="btnSize" circle @click="reloadList"></el-button>
                 </div>
             </div>
-            <el-table :data="workInputList" v-loading.body="listLoading" stripe border highlight-current-row
+            <el-table :data="appraiseInfoList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
-                <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="窗口名称" prop="windowName"/>
-                <el-table-column align="center" label="办件量" prop="count"/>
-                <el-table-column align="center" label="办件时间" prop="inputTime"/>
-                <el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
+<!--                <el-table-column type="selection" width="50" align="center"/>-->
+                <el-table-column align="center" label="系统用户" prop="userName"/>
+                <el-table-column align="center" label="评价等级" prop="level">
+                    <template slot-scope="scope">
+                        {{scope.row.level | enums('EvaluationLevelEnum')}}
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" label="文字评价" prop="words"/>
+                <el-table-column align="center" label="评价时间" prop="submitTime"/>
+                <!--<el-table-column prop="enable" :label="$t('table.enable')" align="center" width="90">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.enable | enums('EnableEnum') | statusFilter">
                             {{scope.row.enable | enums('EnableEnum')}}
                         </el-tag>
                     </template>
-                </el-table-column>
-                <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                </el-table-column>-->
+                <!--<el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
                     <template slot-scope="scope">
                         <el-button v-if="btnEnable.update" :title="$t('table.update')" type="primary" icon="el-icon-edit" :size="btnSize" circle
                                    @click.stop.safe="btnUpdate(scope.row)"></el-button>
                         <el-button v-if="btnEnable.delete" :title="$t('table.delete')" type="danger" icon="el-icon-delete" :size="btnSize" circle
                                    @click.stop.safe="btnDelete(scope.row)"></el-button>
                     </template>
-                </el-table-column>
+                </el-table-column>-->
             </el-table>
             <el-pagination class="deyatech-pagination pull-right" background
                            :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
@@ -54,38 +76,37 @@
 
 
             <el-dialog :title="titleMap[dialogTitle]" :visible.sync="dialogVisible"
-                       :close-on-click-modal="closeOnClickModal" @close="closeWorkInputDialog">
-                <el-form ref="workInputDialogForm" class="deyatech-form" :model="workInput" label-position="right"
-                         label-width="80px" :rules="workInputRules">
+                       :close-on-click-modal="closeOnClickModal" @close="closeAppraiseInfoDialog">
+                <el-form ref="appraiseInfoDialogForm" class="deyatech-form" :model="appraiseInfo" label-position="right"
+                         label-width="80px" :rules="appraiseInfoRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="窗口名称" prop="windowName">
-                                <el-input v-model.trim="workInput.windowName"></el-input>
+                            <el-form-item label="系统用户id" prop="userId">
+                                <el-input v-model.trim="appraiseInfo.userId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="办件量" prop="count">
-                                <el-input v-model.trim="workInput.count"></el-input>
+                            <el-form-item label="评价等级" prop="level">
+                                <el-input v-model.trim="appraiseInfo.level"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="办件时间" prop="inputTime">
-                                <!--<el-input v-model="workInput.inputTime"></el-input>-->
-                                <el-date-picker
-                                    v-model="workInput.inputTime"
-                                    type="datetime"
-                                    placeholder="选择日期时间"
-                                    value-format="yyyy-MM-dd HH:mm:ss">
-                                </el-date-picker>
+                            <el-form-item label="文字评价" prop="words">
+                                <el-input v-model.trim="appraiseInfo.words"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="评价时间" prop="submitTime">
+                                <el-input v-model.trim="appraiseInfo.submitTime"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
-                                <el-input type="textarea" v-model.trim="workInput.remark" :rows="3"/>
+                                <el-input type="textarea" v-model.trim="appraiseInfo.remark" :rows="3"/>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -93,7 +114,7 @@
                 <span slot="footer" class="dialog-footer">
                     <el-button v-if="dialogTitle=='create'" type="primary" :size="btnSize" @click="doCreate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
                     <el-button v-else type="primary" :size="btnSize" @click="doUpdate" :loading="submitLoading">{{$t('table.confirm')}}</el-button>
-                    <el-button :size="btnSize" @click="closeWorkInputDialog">{{$t('table.cancel')}}</el-button>
+                    <el-button :size="btnSize" @click="closeAppraiseInfoDialog">{{$t('table.cancel')}}</el-button>
                 </span>
             </el-dialog>
         </div>
@@ -105,76 +126,52 @@
     import {mapGetters} from 'vuex';
     import {deepClone} from '@/util/util';
     import {
-        getWorkInputList,
-        createOrUpdateWorkInput,
-        delWorkInputs
-    } from '@/api/number/workInput';
-    import {isStartOrEndWithWhiteSpace} from "@/util/validate";
+        getAppraiseInfoList,
+        createOrUpdateAppraiseInfo,
+        delAppraiseInfos
+    } from '@/api/appraise/appraiseInfo';
+    import {getAllUser} from '@/api/admin/user';
+    import {getStore} from '@/util/store';
 
     export default {
-        name: 'workInput',
+        name: 'appraiseInfo',
         data() {
-            const isWhiteSpace = (rule, value, callback) => {
-                //console.log('value', value)
-                if (isStartOrEndWithWhiteSpace(value)) {
-                    callback(new Error('输入空白字符无效'));
-                } else {
-                    callback();
-                }
-            };
-            const isInteger = (rule, value, callback) => {
-                //console.log('value', value)
-                if (!value) {
-                    return callback(new Error('输入不可以为空'));
-                }
-                setTimeout(() => {
-                    if (!Number(value)) {
-                        callback(new Error('请输入正整数'));
-                    } else {
-                        const re = /^[0-9]*[1-9][0-9]*$/;
-                        const rsCheck = re.test(value);
-                        if (!rsCheck) {
-                            callback(new Error('请输入正整数'));
-                        } else if(value > 1000000) {
-                            callback(new Error('超出范围(0-1000000)，请重新输入'));
-                        } else {
-                            callback();
-                        }
-                    }
-                }, 0);
-            };
             return {
-                workInputList: undefined,
+                appraiseInfoList: undefined,
                 total: undefined,
                 listLoading: true,
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    windowName: undefined
+                    userId: undefined,
+                    level: undefined,
                 },
-                workInput: {
+                appraiseInfo: {
                     id: undefined,
-                    windowName: undefined,
-                    count: undefined,
-                    inputTime: undefined
+                    userId: undefined,
+                    level: undefined,
+                    words: undefined,
+                    submitTime: undefined
                 },
-                workInputRules: {
-                    windowName: [
-                        {required: true, message: this.$t("table.pleaseInput") + '窗口名称'},
-                        {validator: isWhiteSpace, trigger: 'blur'},
-                        {max: 50, message: '最多 50 个字符', trigger: 'blur'}
+                appraiseInfoRules: {
+                    userId: [
+                        {required: true, message: this.$t("table.pleaseInput") + '系统用户id'}
                     ],
-                    count: [
-                        {validator: isInteger, trigger: 'blur'}
+                    level: [
+                        {required: true, message: this.$t("table.pleaseInput") + '评价等级'}
                     ],
-                    inputTime: [
-                        {required: true, message: this.$t("table.pleaseInput") + '办件时间'}
+                    words: [
+                        {required: true, message: this.$t("table.pleaseInput") + '文字评价'}
+                    ],
+                    submitTime: [
+                        {required: true, message: this.$t("table.pleaseInput") + '评价时间'}
                     ]
                 },
                 selectedRows: [],
                 dialogVisible: false,
                 dialogTitle: undefined,
-                submitLoading: false
+                submitLoading: false,
+                userList: [],
             }
         },
         computed: {
@@ -188,30 +185,40 @@
             ]),
             btnEnable() {
                 return {
-                    create: this.permission.workInput_create,
-                    update: this.permission.workInput_update,
-                    delete: this.permission.workInput_delete
+                    create: this.permission.appraiseInfo_create,
+                    update: this.permission.appraiseInfo_update,
+                    delete: this.permission.appraiseInfo_delete
                 };
             }
         },
         created(){
+            this.getAllUser();
             this.reloadList();
         },
         methods: {
-            resetSearch(){
-                this.listQuery.windowName = undefined;
+            getAllUser(){
+                this.userList = [];
+                getAllUser().then(response => {
+                    this.userList = response.data;
+                })
             },
-            searchReloadList(){
-                this.listQuery.page = 1;
-                this.reloadList();
+            loadEnum(name) {
+                return getStore({name: 'enums'})[name]
+            },
+            searchReloadList() {
+                this.handleCurrentChange(1);
+            },
+            resetSearch(){
+                this.listQuery.userId = undefined;
+                this.listQuery.level = undefined;
             },
             reloadList(){
                 this.listLoading = true;
-                this.workInputList = undefined;
+                this.appraiseInfoList = undefined;
                 this.total = undefined;
-                getWorkInputList(this.listQuery).then(response => {
+                getAppraiseInfoList(this.listQuery).then(response => {
                     this.listLoading = false;
-                    this.workInputList = response.data.records;
+                    this.appraiseInfoList = response.data.records;
                     this.total = response.data.total;
                 })
             },
@@ -227,16 +234,16 @@
                 this.selectedRows = rows;
             },
             btnCreate(){
-                this.resetWorkInput();
+                this.resetAppraiseInfo();
                 this.dialogTitle = 'create';
                 this.dialogVisible = true;
             },
             btnUpdate(row){
-                this.resetWorkInput();
+                this.resetAppraiseInfo();
                 if (row.id) {
-                    this.workInput = deepClone(row);
+                    this.appraiseInfo = deepClone(row);
                 } else {
-                    this.workInput = deepClone(this.selectedRows[0]);
+                    this.appraiseInfo = deepClone(this.selectedRows[0]);
                 }
                 this.dialogTitle = 'update';
                 this.dialogVisible = true;
@@ -258,11 +265,11 @@
                 }
             },
             doCreate(){
-                this.$refs['workInputDialogForm'].validate(valid => {
+                this.$refs['appraiseInfoDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateWorkInput(this.workInput).then(() => {
-                            this.resetWorkInputDialogAndList();
+                        createOrUpdateAppraiseInfo(this.appraiseInfo).then(() => {
+                            this.resetAppraiseInfoDialogAndList();
                             this.$message.success(this.$t("table.createSuccess"));
                         })
                     } else {
@@ -271,11 +278,11 @@
                 });
             },
             doUpdate(){
-                this.$refs['workInputDialogForm'].validate(valid => {
+                this.$refs['appraiseInfoDialogForm'].validate(valid => {
                     if(valid) {
                         this.submitLoading = true;
-                        createOrUpdateWorkInput(this.workInput).then(() => {
-                            this.resetWorkInputDialogAndList();
+                        createOrUpdateAppraiseInfo(this.appraiseInfo).then(() => {
+                            this.resetAppraiseInfoDialogAndList();
                             this.$message.success(this.$t("table.updateSuccess"));
                         })
                     } else {
@@ -285,28 +292,29 @@
             },
             doDelete(ids){
                 this.listLoading = true;
-                delWorkInputs(ids).then(() => {
+                delAppraiseInfos(ids).then(() => {
                     this.reloadList();
                     this.$message.success(this.$t("table.deleteSuccess"));
                 })
             },
-            resetWorkInput(){
-                this.workInput = {
+            resetAppraiseInfo(){
+                this.appraiseInfo = {
                     id: undefined,
-                    windowName: undefined,
-                    count: undefined,
-                    inputTime: undefined
+                    userId: undefined,
+                    level: undefined,
+                    words: undefined,
+                    submitTime: undefined
                 }
             },
-            resetWorkInputDialogAndList(){
-                this.closeWorkInputDialog();
+            resetAppraiseInfoDialogAndList(){
+                this.closeAppraiseInfoDialog();
                 this.submitLoading = false;
                 this.reloadList();
             },
-            closeWorkInputDialog() {
+            closeAppraiseInfoDialog() {
                 this.dialogVisible = false;
-                this.resetWorkInput();
-                this.$refs['workInputDialogForm'].resetFields();
+                this.resetAppraiseInfo();
+                this.$refs['appraiseInfoDialogForm'].resetFields();
             }
         }
     }
