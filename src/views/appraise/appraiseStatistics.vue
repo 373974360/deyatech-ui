@@ -23,33 +23,22 @@
                     </el-form-item>
                 </el-form>
             </div>
-
-<!--            <div class="row">-->
-                <!--<div class="filter-container"></div>
-                <div class="className">
-                    <div class="class-item" id="levelCountByUser"></div>
-                </div>-->
-                <div class="className" id="countByTime"></div>
-<!--            </div>-->
+            <div class="className" id="countByTime"></div>
             <div class="splitBar"></div>
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '评价对象'" v-model.trim="listQuery.userId" clearable>
-                            <el-option
-                                v-for="item in userList"
-                                :key="item.id"
-                                :label="item.name"
-                                :value="item.id">
-                            </el-option>
-                        </el-select>
+                        <el-cascader :size="searchSize" :placeholder="$t('table.pleaseSelect') + '进驻部门'"
+                                     :options="garrisonDepartmentCascader" @change="handleGarrisonDepartmentChange"
+                                     :show-all-levels="false" expand-trigger="hover" clearable ref="deptCascader"
+                                     change-on-select></el-cascader>
                     </el-form-item>
                     <el-form-item>
-                        <el-button :size="searchSize" type="primary" icon="el-icon-search" @click="showEvaluateLevelCountByUser">查询</el-button>
+                        <el-button :size="searchSize" type="primary" icon="el-icon-search" @click="showEvaluateLevelCountByDept">查询</el-button>
                     </el-form-item>
                 </el-form>
             </div>
-            <div class="className" id="levelCountByUser"></div>
+            <div class="className" id="levelCountByDept"></div>
         </div>
     </basic-container>
 </template>
@@ -66,15 +55,15 @@
     require('echarts/lib/component/visualMap');
     require('echarts/lib/component/dataZoom');
     import {mapGetters} from 'vuex';
-    import {getAllUser} from '@/api/admin/user';
-    import {queryEvaluateCountByTime, queryEvaluateLevelCountByUser} from '@/api/appraise/appraiseInfo';
+    import {getGarrisonDepartmentCascader} from '@/api/appraise/garrisonDepartment';
+    import {queryEvaluateCountByTime, queryEvaluateLevelCountByDept} from '@/api/appraise/appraiseInfo';
 
     export default {
         name: 'statistics',
         data() {
             return {
-                userList: [],
-                levelCountByUserList: [
+                garrisonDepartmentCascader: [],
+                levelCountByDeptList: [
                     {name: '非常不满意', value: 0},
                     {name: '不满意', value: 0},
                     {name: '基本满意', value: 0},
@@ -89,7 +78,7 @@
                 verySatisfiedTotals: [],
                 satisfactionRates: [],
                 listQuery: {
-                    userId: undefined,
+                    garrisonDepartmentId: undefined,
                     evaluationTimeStart: undefined,
                     evaluationTimeEnd: undefined
                 },
@@ -105,19 +94,25 @@
             ])
         },
         created() {
-            this.getAllUser();
+            this.getGarrisonDepartmentCascader();
             this.getToday();
         },
         mounted() {
             this.showEvaluateCountByTime();
-            this.initEvaluateLevelCountByUser();
+            this.initEvaluateLevelCountByDept();
         },
         methods: {
-            getAllUser(){
-                this.userList = [];
-                getAllUser().then(response => {
-                    this.userList = response.data;
+            getGarrisonDepartmentCascader(){
+                getGarrisonDepartmentCascader().then(response => {
+                    this.garrisonDepartmentCascader = response.data;
                 })
+            },
+            handleGarrisonDepartmentChange(val) {
+                if (val.length > 0) {
+                    this.listQuery.garrisonDepartmentId = val[val.length - 1]
+                } else {
+                    this.listQuery.garrisonDepartmentId = undefined
+                }
             },
             submitTimeRangeChange(submitTimeRange) {
                 if (submitTimeRange && submitTimeRange.length > 0) {
@@ -128,28 +123,28 @@
                     this.listQuery.evaluationTimeEnd = undefined;
                 }
             },
-            showEvaluateLevelCountByUser() {
-                this.queryEvaluateLevelCountByUser().then(() => {
-                    this.initEvaluateLevelCountByUser();
+            showEvaluateLevelCountByDept() {
+                this.queryEvaluateLevelCountByDept().then(() => {
+                    this.initEvaluateLevelCountByDept();
                 });
             },
-            queryEvaluateLevelCountByUser() {
+            queryEvaluateLevelCountByDept() {
                 return new Promise((resolve, reject) => {
-                    if (!this.listQuery.userId) {
-                        this.$message.error('请选择评价对象');
+                    if (!this.listQuery.garrisonDepartmentId) {
+                        this.$message.error('请选择进驻部门');
                         resolve();
                         return;
                     }
-                    const query = {userId: this.listQuery.userId};
-                    queryEvaluateLevelCountByUser(query).then(response => {
+                    const query = {garrisonDepartmentId: this.listQuery.garrisonDepartmentId};
+                    queryEvaluateLevelCountByDept(query).then(response => {
                         if (response.status === 200) {
-                            let levelCountByUser = response.data;
-                            this.levelCountByUserList = [];
-                            this.levelCountByUserList.push({name: '非常不满意', value: levelCountByUser.veryDissatisfiedTotal});
-                            this.levelCountByUserList.push({name: '不满意', value: levelCountByUser.dissatisfiedTotal});
-                            this.levelCountByUserList.push({name: '基本满意', value: levelCountByUser.basicSatisfiedTotal});
-                            this.levelCountByUserList.push({name: '满意', value: levelCountByUser.satisfiedTotal});
-                            this.levelCountByUserList.push({name: '非常满意', value: levelCountByUser.verySatisfiedTotal});
+                            let levelCountByDept = response.data;
+                            this.levelCountByDeptList = [];
+                            this.levelCountByDeptList.push({name: '非常不满意', value: levelCountByDept.veryDissatisfiedTotal});
+                            this.levelCountByDeptList.push({name: '不满意', value: levelCountByDept.dissatisfiedTotal});
+                            this.levelCountByDeptList.push({name: '基本满意', value: levelCountByDept.basicSatisfiedTotal});
+                            this.levelCountByDeptList.push({name: '满意', value: levelCountByDept.satisfiedTotal});
+                            this.levelCountByDeptList.push({name: '非常满意', value: levelCountByDept.verySatisfiedTotal});
                             resolve();
                         } else {
                             this.$message.error('数据加载失败')
@@ -160,11 +155,11 @@
                     });
                 })
             },
-            initEvaluateLevelCountByUser() {
-                const e = echarts.init(document.getElementById('levelCountByUser'));
+            initEvaluateLevelCountByDept() {
+                const e = echarts.init(document.getElementById('levelCountByDept'));
                 e.setOption({
                     title : {
-                        text: '个人评价情况',
+                        text: '进驻部门评价情况',
                         x:'center'
                     },
                     tooltip : {
@@ -182,7 +177,7 @@
                             type: 'pie',
                             radius : '50%',
                             center: ['50%', '50%'],
-                            data: this.levelCountByUserList,
+                            data: this.levelCountByDeptList,
                             itemStyle: {
                                 emphasis: {
                                     shadowBlur: 10,

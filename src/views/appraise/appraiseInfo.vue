@@ -4,14 +4,10 @@
             <div class="deyatech-header">
                 <el-form :inline="true" ref="searchForm">
                     <el-form-item>
-                        <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '评价对象'" v-model.trim="listQuery.userId" clearable>
-                            <el-option
-                                v-for="item in userList"
-                                :key="item.id"
-                                :label="item.name"
-                                :value="item.id">
-                            </el-option>
-                        </el-select>
+                        <el-cascader :size="searchSize" :placeholder="$t('table.pleaseSelect') + '进驻部门'"
+                                     :options="garrisonDepartmentCascader" @change="handleGarrisonDepartmentChange"
+                                     :show-all-levels="false" expand-trigger="hover" clearable ref="deptCascader"
+                                     change-on-select></el-cascader>
                     </el-form-item>
                     <el-form-item>
                         <el-select :size="searchSize" :placeholder="$t('table.pleaseSelect') + '评价等级'" v-model.trim="listQuery.level" clearable>
@@ -44,7 +40,7 @@
             <el-table :data="appraiseInfoList" v-loading.body="listLoading" stripe border highlight-current-row
                       @selection-change="handleSelectionChange">
 <!--                <el-table-column type="selection" width="50" align="center"/>-->
-                <el-table-column align="center" label="系统用户" prop="userName"/>
+                <el-table-column align="center" label="进驻部门" prop="garrisonDepartmentName"/>
                 <el-table-column align="center" label="评价等级" prop="level">
                     <template slot-scope="scope">
                         {{scope.row.level | enums('EvaluationLevelEnum')}}
@@ -81,8 +77,8 @@
                          label-width="80px" :rules="appraiseInfoRules">
                     <el-row :gutter="20" :span="24">
                         <el-col :span="12">
-                            <el-form-item label="系统用户id" prop="userId">
-                                <el-input v-model.trim="appraiseInfo.userId"></el-input>
+                            <el-form-item label="进驻部门id" prop="garrisonDepartmentId">
+                                <el-input v-model.trim="appraiseInfo.garrisonDepartmentId"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -130,7 +126,7 @@
         createOrUpdateAppraiseInfo,
         delAppraiseInfos
     } from '@/api/appraise/appraiseInfo';
-    import {getAllUser} from '@/api/admin/user';
+    import {getGarrisonDepartmentCascader} from '@/api/appraise/garrisonDepartment';
     import {getStore} from '@/util/store';
 
     export default {
@@ -143,19 +139,19 @@
                 listQuery: {
                     page: this.$store.state.common.page,
                     size: this.$store.state.common.size,
-                    userId: undefined,
+                    garrisonDepartmentId: undefined,
                     level: undefined,
                 },
                 appraiseInfo: {
                     id: undefined,
-                    userId: undefined,
+                    garrisonDepartmentId: undefined,
                     level: undefined,
                     words: undefined,
                     submitTime: undefined
                 },
                 appraiseInfoRules: {
-                    userId: [
-                        {required: true, message: this.$t("table.pleaseInput") + '系统用户id'}
+                    garrisonDepartmentId: [
+                        {required: true, message: this.$t("table.pleaseInput") + '进驻部门id'}
                     ],
                     level: [
                         {required: true, message: this.$t("table.pleaseInput") + '评价等级'}
@@ -171,7 +167,7 @@
                 dialogVisible: false,
                 dialogTitle: undefined,
                 submitLoading: false,
-                userList: [],
+                garrisonDepartmentCascader: [],
             }
         },
         computed: {
@@ -192,15 +188,21 @@
             }
         },
         created(){
-            this.getAllUser();
+            this.getGarrisonDepartmentCascader();
             this.reloadList();
         },
         methods: {
-            getAllUser(){
-                this.userList = [];
-                getAllUser().then(response => {
-                    this.userList = response.data;
+            getGarrisonDepartmentCascader(){
+                getGarrisonDepartmentCascader().then(response => {
+                    this.garrisonDepartmentCascader = response.data;
                 })
+            },
+            handleGarrisonDepartmentChange(val) {
+                if (val.length > 0) {
+                    this.listQuery.garrisonDepartmentId = val[val.length - 1]
+                } else {
+                    this.listQuery.garrisonDepartmentId = undefined
+                }
             },
             loadEnum(name) {
                 return getStore({name: 'enums'})[name]
@@ -209,7 +211,10 @@
                 this.handleCurrentChange(1);
             },
             resetSearch(){
-                this.listQuery.userId = undefined;
+                let obj = {};
+                obj.stopPropagation = () =>{};
+                this.$refs['deptCascader'].clearValue(obj);
+                this.listQuery.garrisonDepartmentId = undefined;
                 this.listQuery.level = undefined;
             },
             reloadList(){
@@ -300,7 +305,7 @@
             resetAppraiseInfo(){
                 this.appraiseInfo = {
                     id: undefined,
-                    userId: undefined,
+                    garrisonDepartmentId: undefined,
                     level: undefined,
                     words: undefined,
                     submitTime: undefined

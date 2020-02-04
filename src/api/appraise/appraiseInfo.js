@@ -49,9 +49,9 @@ export function queryEvaluateCountByTime(query) {
     });
 }
 
-export function queryEvaluateLevelCountByUser(query) {
+export function queryEvaluateLevelCountByDept(query) {
     return request({
-        url: '/manage/appraise/appraiseInfo/queryEvaluateLevelCountByUser',
+        url: '/manage/appraise/appraiseInfo/queryEvaluateLevelCountByDept',
         method: 'get',
         params: query
     });
