@@ -6,3 +6,10 @@ export function getDepartmentUserTreeDataList(query) {
         params: query
     })
 }
+export function getUserCatalogDataList(query) {
+    return request({
+        url: '/manage/statistics/userData/getUserCatalogDataList',
+        method: 'get',
+        params: query
+    })
+}
