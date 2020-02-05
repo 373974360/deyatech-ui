@@ -31,7 +31,7 @@
 
             <el-table :data="departmentUserTreeDataList" v-loading.body="listLoading" stripe border highlight-current-row
                       v-if="tableReset" max-height="500">
-                <el-table-tree-column fixed :expand-all="false" :indent-size="20"
+                <el-table-tree-column fixed :expand-all="true" :indent-size="20"
                                       child-key="children" levelKey="level" treeKey="value" parentKey="parentId" prop="label" label="名称" >
                 </el-table-tree-column>
                 <el-table-column align="center" label="总发稿量" prop="total" width="200"/>
@@ -50,11 +50,27 @@
             </el-table>
 
 
-            <el-dialog width="70%" :title="'用户栏目数据'" :visible.sync="dialogUserCatalogDataVisible"
+            <el-dialog :fullscreen="true" :title="'用户栏目数据'" :visible.sync="dialogUserCatalogDataVisible"
                        :close-on-click-modal="closeOnClickModal" @close="closeUserCatalogDataDialog">
-                <el-table :data="userCatalogDataList" v-loading.body="listLoading" stripe border highlight-current-row>
-                    <el-table-column type="selection" width="50" align="center"/>
+                <el-row :gutter="20" :span="24">
+                    <el-col :span="24">
+                        <div id="catalogChart" style="width: 100%; height: 600px; margin-left: -100px"></div>
+                    </el-col>
+                </el-row>
+                <el-table :data="userCatalogDataList" v-loading.body="listLoadingCatalog" stripe border highlight-current-row
+                          v-if="tableResetCatalog" max-height="500">
+                    <el-table-tree-column fixed :expand-all="true" :indent-size="20"
+                                          child-key="children" levelKey="level" treeKey="value" parentKey="parentId" prop="label" label="名称" >
+                    </el-table-tree-column>
+                    <el-table-column align="center" label="总发稿量" prop="totalShow" width="200"/>
+                    <el-table-column align="center" label="已发布" prop="publishShow" width="200"/>
+                    <el-table-column align="center" label="待审" prop="verifyShow" width="200"/>
+                    <el-table-column align="center" label="采纳率" prop="adoptRateShow" width="200"/>
+                    <el-table-column align="center" label="日平均发稿量" prop="dayAverageShow" width="200"/>
+                    <el-table-column align="center" label="周平均发稿量" prop="weekAverageShow" width="200"/>
+                    <el-table-column align="center" label="月平均发稿量" prop="monthAverageShow" width="200"/>
                 </el-table>
+
             </el-dialog>
 
         </div>
@@ -66,7 +82,7 @@
     // import {deepClone, setExpanded} from '@/util/util';
     import echarts from 'echarts'
     import '../../../node_modules/echarts/map/js/china.js'
-    import {getDepartmentUserTreeDataList} from "@/api/statistics/userData";
+    import {getDepartmentUserTreeDataList, getUserCatalogDataList} from "@/api/statistics/userData";
 
 
     export default {
@@ -83,10 +99,13 @@
                 userList: [],
                 timeValue: [],
                 userCatalogDataList: [],
+                catalogList: [],
                 dialogUserCatalogDataVisible: false,
                 listLoading: false,
+                listLoadingCatalog: false,
                 lastExpanded: undefined,
-                tableReset: false
+                tableReset: false,
+                tableResetCatalog: false
             }
         },
         computed: {
@@ -120,7 +139,7 @@
                     this.departmentUserTreeDataList = response.data.tree;
                     this.userList = response.data.users;
                     this.$nextTick(() => {
-                        this.showGraphic();
+                        this.showUserGraphic();
                         this.tableReset = true
                     })
                     this.listLoading = false;
@@ -132,7 +151,7 @@
                 this.listQuery.startTime = undefined;
                 this.listQuery.endTime = undefined;
             },
-            showGraphic() {
+            showUserGraphic() {
                 var xAxisData = [];
                 var totalData = [];
                 var publishData = [];
@@ -217,25 +236,115 @@
                     ]
                 });
             },
+
+            btnCatalog(row) {
+                if (!row.userId) {
+                    this.$message.error("只能查看用户的栏目");
+                    return;
+                }
+                this.listQuery.userId = row.userId;
+                this.listLoadingCatalog = true;
+                getUserCatalogDataList(this.listQuery).then(response => {
+                    this.tableResetCatalog = false;
+                    this.userCatalogDataList = response.data.tree;
+                    this.catalogList = response.data.catalogs;
+                    this.$nextTick(() => {
+                        this.showCatalogGraphic();
+                        this.tableResetCatalog = true
+                    })
+                    this.listLoadingCatalog = false;
+                });
+                this.dialogUserCatalogDataVisible = true;
+            },
             closeUserCatalogDataDialog() {
+                this.listQuery.userId = undefined;
                 this.dialogUserCatalogDataVisible = false;
             },
-            btnCatalog(row) {
-
-            },
-            closeUserCatalogDataDialog() {
-
+            showCatalogGraphic() {
+                var xAxisData = [];
+                var totalData = [];
+                var publishData = [];
+                var verifyData = [];
+                var dayAverage = [];
+                var weekAverage = [];
+                var monthAverage = [];
+                for (let catalog of this.catalogList) {
+                    xAxisData.push(catalog.catalogName);
+                    totalData.push(catalog.total);
+                    publishData.push(catalog.publish);
+                    verifyData.push(catalog.verify);
+                    dayAverage.push(catalog.dayAverage);
+                    weekAverage.push(catalog.weekAverage);
+                    monthAverage.push(catalog.monthAverage);
+                }
+                let catalogChart = echarts.init(document.getElementById('catalogChart'));
+                catalogChart.setOption({
+                    title: {
+                        text: ''
+                    },
+                    legend: {
+                        data: ['待审核', '已发布', '发稿总量', '平均日发稿量', '平均周发稿量', '平均月发稿量']
+                    },
+                    toolbox: {
+                        // y: 'bottom',
+                        feature: {
+                            magicType: {
+                                type: ['stack', 'tiled']
+                            },
+                            dataView: {},
+                            saveAsImage: {
+                                pixelRatio: 2
+                            }
+                        }
+                    },
+                    tooltip: {},
+                    xAxis: {
+                        data: xAxisData,
+                        splitLine: {
+                            show: true
+                        }
+                    },
+                    yAxis: {
+                    },
+                    dataZoom: [
+                        {
+                            type: 'inside'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '待审核',
+                            type: 'bar',
+                            data: verifyData
+                        },
+                        {
+                            name: '已发布',
+                            type: 'bar',
+                            data: publishData
+                        },
+                        {
+                            name: '发稿总量',
+                            type: 'bar',
+                            data: totalData
+                        },
+                        {
+                            name: '平均日发稿量',
+                            type: 'bar',
+                            data: dayAverage
+                        },
+                        {
+                            name: '平均周发稿量',
+                            type: 'bar',
+                            data: weekAverage
+                        },
+                        {
+                            name: '平均月发稿量',
+                            type: 'bar',
+                            data: monthAverage
+                        }
+                    ]
+                });
             }
-
-
-
-
-
-
-
-
-
-
         }
     }
 </script>
