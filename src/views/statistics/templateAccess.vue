@@ -135,7 +135,6 @@
             ])
         },
         created(){
-            console.log("siteId: " + this.$store.state.common.siteId);
             this.$store.state.common.selectSiteDisplay = true;
             if(this.$store.state.common.siteId != undefined){
                 // 获取栏目
