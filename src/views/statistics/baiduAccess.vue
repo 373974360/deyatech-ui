@@ -389,6 +389,7 @@
         name: 'baiduAccess',
         data() {
             return {
+                siteId:undefined,
                 //今日流量
                 outlineData: undefined,
                 outlineListLoading: true,
@@ -458,8 +459,12 @@
             ])
         },
         created(){
-            this.getOutline();
-            this.reloadData();
+            this.$store.state.common.selectSiteDisplay = true;
+            if (this.$store.state.common.siteId) {
+                this.siteId = this.$store.state.common.siteId;
+                this.getOutline();
+                this.reloadData();
+            }
         },
         methods: {
             reloadData(){
@@ -473,14 +478,14 @@
                 this.getDistrictRpt();
             },
             getOutline(){
-                getOutline().then(response => {
+                getOutline({siteId:this.siteId}).then(response => {
                     this.outlineListLoading = false;
                     let data = JSON.parse(response.data)
                     this.outlineData = data.body.data[0].result.items;
                 })
             },
             getTimeTrendRpt(){
-                getTimeTrendRpt().then(response => {
+                getTimeTrendRpt({siteId:this.siteId}).then(response => {
                     let data = JSON.parse(response.data)
                     this.timeTrendRptData = data.body.data[0].result;
                     // 基于准备好的dom，初始化echarts实例
@@ -522,35 +527,35 @@
                 })
             },
             getWord(){
-                getWord().then(response => {
+                getWord({siteId:this.siteId}).then(response => {
                     this.wordListLoading = false;
                     let data = JSON.parse(response.data)
                     this.wordData = data.body.data[0].result.items;
                 })
             },
             getSourceSite(){
-                getSourceSite().then(response => {
+                getSourceSite({siteId:this.siteId}).then(response => {
                     this.sourceSiteListLoading = false;
                     let data = JSON.parse(response.data)
                     this.sourceSiteData = data.body.data[0].result.items;
                 })
             },
             getLandingPage(){
-                getLandingPage().then(response => {
+                getLandingPage({siteId:this.siteId}).then(response => {
                     this.landingPageListLoading = false;
                     let data = JSON.parse(response.data)
                     this.landingPageData = data.body.data[0].result.items;
                 })
             },
             getVisitPage(){
-                getVisitPage().then(response => {
+                getVisitPage({siteId:this.siteId}).then(response => {
                     this.visitPageListLoading = false;
                     let data = JSON.parse(response.data)
                     this.visitPageData = data.body.data[0].result.items;
                 })
             },
             getVisitorType(){
-                getVisitorType().then(response => {
+                getVisitorType({siteId:this.siteId}).then(response => {
                     this.visitorTypeListLoading = false;
                     let data = JSON.parse(response.data)
                     this.oldVisitor = data.body.data[0].result.oldVisitor;
@@ -558,7 +563,7 @@
                 })
             },
             getVisitorType(){
-                getVisitorType().then(response => {
+                getVisitorType({siteId:this.siteId}).then(response => {
                     this.visitorTypeListLoading = false;
                     let data = JSON.parse(response.data)
                     this.oldVisitor = data.body.data[0].result.oldVisitor;
@@ -566,7 +571,7 @@
                 })
             },
             getAge(){
-                getAge().then(response => {
+                getAge({siteId:this.siteId}).then(response => {
                     console.log(response.data);
                     let data = JSON.parse(response.data)
                     this.ageData = data.body.data[0].result;
@@ -615,7 +620,7 @@
                 })
             },
             getDistrictRpt(){
-                getDistrictRpt().then(response => {
+                getDistrictRpt({siteId:this.siteId}).then(response => {
                     let data = JSON.parse(response.data)
                     this.districtRptData = data.body.data[0].result;
                     let mydata = [];

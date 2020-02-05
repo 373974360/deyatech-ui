@@ -359,6 +359,13 @@
                         </el-col>
                     </el-row>
                     <el-row :gutter="20" :span="24">
+                        <el-col :span="12">
+                            <el-form-item label="百度统计站点ID" prop="baiduSiteId">
+                                <el-input v-model.trim="setting.baiduSiteId"></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" :span="24">
                         <el-col :span="24">
                             <el-form-item :label="$t('table.remark')">
                                 <el-input type="textarea" v-model.trim="setting.remark" :rows="3" maxlength="400"/>
@@ -816,7 +823,8 @@
                     watermarkPointSize: undefined,
                     watermarkFillColor: '#409EFF',
                     watermarkPosition: undefined,
-                    icoUrl: undefined
+                    icoUrl: undefined,
+                    baiduSiteId: undefined
                 },
                 settingRules: {
                     stationGroupId: [
