@@ -29,7 +29,8 @@
                                 start-placeholder="开始日期"
                                 end-placeholder="结束日期"
                                 :picker-options="pickerOptions"
-                                value-format="yyyy-MM-dd">
+                                value-format="yyyy-MM-dd"
+                                :size="btnSize">
                             </el-date-picker>
 
                             <el-radio-group :size="btnSize" v-model="templateAccess.accessType" style="margin-left: 10px;" @change="handleAccessTypeClick">
@@ -80,7 +81,7 @@
                     size: this.$store.state.common.size,
                     siteId: this.$store.state.common.siteId,
                     accessType: 1,
-                    catId: undefined,
+                    catId: 0,
                     startTime: undefined,
                     endTime: undefined
                 },
