@@ -231,11 +231,11 @@
                                         <td>{{record.modelName}}</td>
                                         <th>发布状态:</th>
                                         <td>
-                                            {{record.isPublish | enums('AppealStatusEnum')}}
+                                            {{record.isPublish | enums('YesNoEnum')}}
                                         </td>
                                         <th>公开意愿:</th>
                                         <td>
-                                            {{record.isOpen | enums('AppealStatusEnum')}}
+                                            {{record.isOpen | enums('YesNoEnum')}}
                                         </td>
                                     </tr>
                                     <tr>
