@@ -40,13 +40,18 @@
                     </div>
                     <el-table :data="catalogDataList" v-loading.body="listLoading" stripe border highlight-current-row>
                         <el-table-column type="selection" width="50" align="center"/>
-                        <el-table-column align="center" label="栏目名称" prop="catName"/>
-                        <el-table-column align="center" label="发稿总量" prop="count"/>
-                        <el-table-column align="center" label="发布量" prop="pubCount"/>
-                        <el-table-column align="center" label="采用率" prop="rate"/>
-                        <el-table-column align="center" label="日平均发稿量" prop="averageDay"/>
-                        <el-table-column align="center" label="周平均发稿量" prop="averageWeek"/>
-                        <el-table-column align="center" label="月平均发稿量" prop="averageMonth"/>
+                        <el-table-column align="left" label="栏目名称" width="120" prop="catName"/>
+                        <el-table-column align="right" label="发稿总量" width="90" prop="count"/>
+                        <el-table-column align="right" label="发布量" width="70" prop="pubCount"/>
+                        <el-table-column align="right" label="采用率" width="70" prop="rate"/>
+                        <el-table-column align="right" label="日平均发稿量" width="110" prop="averageDay"/>
+                        <el-table-column align="right" label="周平均发稿量" width="110" prop="averageWeek"/>
+                        <el-table-column align="right" label="月平均发稿量" width="110" prop="averageMonth"/>
+                        <el-table-column align="left" label="保障单位" prop="deptName">
+                            <template slot-scope="scope">
+                                <nobr :title="scope.row.deptName">{{scope.row.deptName}}</nobr>
+                            </template>
+                        </el-table-column>
                     </el-table>
                     <div style="margin-top:20px">
                         <div id="myChart" :style="{width: '100%', height: '400px'}"></div>

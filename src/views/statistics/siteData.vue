@@ -25,13 +25,13 @@
             </div>
             <el-table :data="siteDataList" v-loading.body="listLoading" stripe border highlight-current-row>
                 <el-table-column type="selection" width="50" align="center"/>
-                <el-table-column align="center" label="站点名称" prop="siteName"/>
-                <el-table-column align="center" label="发稿总量" prop="count"/>
-                <el-table-column align="center" label="发布量" prop="pubCount"/>
-                <el-table-column align="center" label="采用率" prop="rate"/>
-                <el-table-column align="center" label="日平均发稿量" prop="averageDay"/>
-                <el-table-column align="center" label="周平均发稿量" prop="averageWeek"/>
-                <el-table-column align="center" label="月平均发稿量" prop="averageMonth"/>
+                <el-table-column align="left" label="站点名称" prop="siteName"/>
+                <el-table-column align="right" label="发稿总量" width="100" prop="count"/>
+                <el-table-column align="right" label="发布量" width="80" prop="pubCount"/>
+                <el-table-column align="right" label="采用率" width="80" prop="rate"/>
+                <el-table-column align="right" label="日平均发稿量" width="120" prop="averageDay"/>
+                <el-table-column align="right" label="周平均发稿量" width="120" prop="averageWeek"/>
+                <el-table-column align="right" label="月平均发稿量" width="120" prop="averageMonth"/>
             </el-table>
             <div style="margin-top:20px">
                 <div id="myChart" :style="{width: '100%', height: '400px'}"></div>
