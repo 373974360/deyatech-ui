@@ -378,12 +378,15 @@
                 }
                 this.listLoading = true;
                 this.pageList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 getPageList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.pageList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             reloadPageTypeTree(){
                 this.treeLoading = true;

@@ -203,12 +203,15 @@
             reloadList() {
                 this.listLoading = true;
                 this.dictionaryList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 getDictionaryList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.dictionaryList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val) {
                 this.listQuery.size = val;

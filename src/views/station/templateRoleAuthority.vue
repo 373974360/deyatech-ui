@@ -154,12 +154,15 @@
             reloadList(){
                 this.listLoading = true;
                 this.templateRoleAuthorityList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 getTemplateRoleAuthorityList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.templateRoleAuthorityList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;

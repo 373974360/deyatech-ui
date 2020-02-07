@@ -504,12 +504,15 @@
             reloadList(){
                 this.listLoading = true;
                 this.modelList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 getModelList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.modelList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;

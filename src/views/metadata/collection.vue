@@ -576,7 +576,7 @@
             reloadList(){
                 this.listLoading = true;
                 this.metadataCollectionList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 getMetadataCollectionList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.metadataCollectionList = response.data.records;
@@ -601,7 +601,10 @@
                             });
                         }
                     }
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             getDataType () {
                 findDataType().then(response => {
