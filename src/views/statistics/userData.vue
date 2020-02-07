@@ -57,7 +57,7 @@
                         <div id="catalogChart" style="width: 100%; height: 600px; margin-left: -100px"></div>
                     </el-col>
                 </el-row>
-                <el-table :data="userCatalogDataList" v-loading.body="listLoadingCatalog" stripe border highlight-current-row
+                <el-table :data="catalogDataList" v-loading.body="listLoadingCatalog" stripe border highlight-current-row
                           v-if="tableResetCatalog" max-height="500">
                     <el-table-tree-column fixed :expand-all="true" :indent-size="20"
                                           child-key="children" levelKey="level" treeKey="value" parentKey="parentId" prop="label" label="名称" >
@@ -69,8 +69,29 @@
                     <el-table-column align="center" label="日平均发稿量" prop="dayAverageShow" width="200"/>
                     <el-table-column align="center" label="周平均发稿量" prop="weekAverageShow" width="200"/>
                     <el-table-column align="center" label="月平均发稿量" prop="monthAverageShow" width="200"/>
+                    <el-table-column prop="enable" class-name="status-col" :label="$t('table.operation')" align="center" width="100">
+                        <template slot-scope="scope">
+                            <el-button v-if="scope.row.catalogId" :title="'内容'" type="primary" icon="el-icon-s-data" :size="btnSize" circle
+                                       @click.stop.safe="btnTemplate(scope.row)"></el-button>
+                        </template>
+                    </el-table-column>
                 </el-table>
 
+            </el-dialog>
+
+            <el-dialog :title="'用户栏目内容数据'" :visible.sync="dialogTemplateDataVisible"
+                       :close-on-click-modal="closeOnClickModal" @close="closeTemplateDataDialog">
+                <el-table :data="templateList" v-loading.body="templateListLoading" stripe border highlight-current-row>
+                    <el-table-column align="center" label="栏目" prop="catalogName"/>
+                    <el-table-column align="center" label="标题" prop="title"/>
+                    <el-table-column align="center" label="发布时间" prop="publishTime"/>
+                    <el-table-column align="center" label="入库时间" prop="createTime"/>
+                </el-table>
+                <el-pagination class="deyatech-pagination pull-right" background
+                               :current-page.sync="listQuery.page" :page-sizes="this.$store.state.common.pageSize"
+                               :page-size="listQuery.size" :layout="this.$store.state.common.pageLayout" :total="total"
+                               @size-change="handleSizeChange" @current-change="handleCurrentChange">
+                </el-pagination>
             </el-dialog>
 
         </div>
@@ -82,7 +103,7 @@
     // import {deepClone, setExpanded} from '@/util/util';
     import echarts from 'echarts'
     import '../../../node_modules/echarts/map/js/china.js'
-    import {getDepartmentUserTreeDataList, getUserCatalogDataList} from "@/api/statistics/userData";
+    import {getDepartmentUserData, getUserCatalogData, getUserCatalogTemplateData} from "@/api/statistics/userData";
 
 
     export default {
@@ -91,21 +112,28 @@
             return {
                 listQuery: {
                     siteId: this.$store.state.common.siteId,
-                    userId: undefined,
+                    page: this.$store.state.common.page,
+                    size: this.$store.state.common.size,
                     startTime: undefined,
-                    endTime: undefined
+                    endTime: undefined,
+                    userId: undefined,
+                    catalogId: undefined
                 },
                 departmentUserTreeDataList: [],
                 userList: [],
                 timeValue: [],
-                userCatalogDataList: [],
+                catalogDataList: [],
                 catalogList: [],
                 dialogUserCatalogDataVisible: false,
                 listLoading: false,
                 listLoadingCatalog: false,
                 lastExpanded: undefined,
                 tableReset: false,
-                tableResetCatalog: false
+                tableResetCatalog: false,
+                dialogTemplateDataVisible: false,
+                templateList: [],
+                total: undefined,
+                templateListLoading: false
             }
         },
         computed: {
@@ -134,7 +162,7 @@
             },
             reloadList() {
                 this.listLoading = true;
-                getDepartmentUserTreeDataList(this.listQuery).then(response => {
+                getDepartmentUserData(this.listQuery).then(response => {
                     this.tableReset = false;
                     this.departmentUserTreeDataList = response.data.tree;
                     this.userList = response.data.users;
@@ -147,9 +175,10 @@
             },
             resetSearch() {
                 this.timeValue = [];
-                this.listQuery.userId = undefined;
                 this.listQuery.startTime = undefined;
                 this.listQuery.endTime = undefined;
+                this.listQuery.userId = undefined;
+                this.listQuery.catalogId = undefined;
             },
             showUserGraphic() {
                 var xAxisData = [];
@@ -244,9 +273,9 @@
                 }
                 this.listQuery.userId = row.userId;
                 this.listLoadingCatalog = true;
-                getUserCatalogDataList(this.listQuery).then(response => {
+                getUserCatalogData(this.listQuery).then(response => {
                     this.tableResetCatalog = false;
-                    this.userCatalogDataList = response.data.tree;
+                    this.catalogDataList = response.data.tree;
                     this.catalogList = response.data.catalogs;
                     this.$nextTick(() => {
                         this.showCatalogGraphic();
@@ -257,8 +286,9 @@
                 this.dialogUserCatalogDataVisible = true;
             },
             closeUserCatalogDataDialog() {
-                this.listQuery.userId = undefined;
                 this.dialogUserCatalogDataVisible = false;
+                this.listQuery.userId = undefined;
+                this.listQuery.catalogId = undefined;
             },
             showCatalogGraphic() {
                 var xAxisData = [];
@@ -344,6 +374,38 @@
                         }
                     ]
                 });
+            },
+
+            btnTemplate(row) {
+                this.listQuery.catalogId = row.catalogId;
+                this.dialogTemplateDataVisible = true;
+                this.reloadTemplateList();
+            },
+            reloadTemplateList() {
+                this.templateListLoading = true;
+                this.templateList = [];
+                getUserCatalogTemplateData(this.listQuery).then(response => {
+                    this.templateListLoading = false;
+                    this.templateList = response.data.records;
+                    this.total = response.data.total;
+                }).catch(() => {
+                    this.templateListLoading = false;
+                    this.total = undefined;
+                });
+            },
+            closeTemplateDataDialog() {
+                this.listQuery.catalogId = undefined;
+                this.dialogTemplateDataVisible = false;
+                this.templateList = [];
+                this.total = undefined;
+            },
+            handleSizeChange(val){
+                this.listQuery.size = val;
+                this.reloadTemplateList();
+            },
+            handleCurrentChange(val){
+                this.listQuery.page = val;
+                this.reloadTemplateList();
             }
         }
     }

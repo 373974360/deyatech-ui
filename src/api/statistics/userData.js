@@ -1,14 +1,21 @@
 import request from '@/router/axios';
-export function getDepartmentUserTreeDataList(query) {
+export function getDepartmentUserData(query) {
     return request({
-        url: '/manage/statistics/userData/getDepartmentUserTreeDataList',
+        url: '/manage/statistics/userData/getDepartmentUserData',
         method: 'get',
         params: query
     })
 }
-export function getUserCatalogDataList(query) {
+export function getUserCatalogData(query) {
     return request({
-        url: '/manage/statistics/userData/getUserCatalogDataList',
+        url: '/manage/statistics/userData/getUserCatalogData',
+        method: 'get',
+        params: query
+    })
+}
+export function getUserCatalogTemplateData(query) {
+    return request({
+        url: '/manage/statistics/userData/getUserCatalogTemplateData',
         method: 'get',
         params: query
     })
