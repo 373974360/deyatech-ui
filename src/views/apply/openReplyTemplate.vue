@@ -185,12 +185,15 @@
             reloadList(){
                 this.listLoading = true;
                 this.openReplyTemplateList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 getOpenReplyTemplateList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.openReplyTemplateList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;

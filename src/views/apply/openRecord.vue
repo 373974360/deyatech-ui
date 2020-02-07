@@ -728,7 +728,7 @@
             reloadList(){
                 this.listLoading = true;
                 this.applyOpenRecordList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 let times = this.timeFrame;
                 if(times != undefined){
                     this.listQuery.timeFrame = times[0]+","+times[1];
@@ -739,7 +739,10 @@
                     this.listLoading = false;
                     this.applyOpenRecordList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;

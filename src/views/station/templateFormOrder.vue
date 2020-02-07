@@ -176,12 +176,15 @@
             reloadList(){
                 this.listLoading = true;
                 this.templateFormOrderList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 getTemplateFormOrderList(this.listQuery).then(response => {
                     this.listLoading = false;
                     this.templateFormOrderList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;

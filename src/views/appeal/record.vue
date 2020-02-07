@@ -26,8 +26,11 @@
                             <el-select filterable :size="searchSize" v-model.trim="listQuery.modelId" clearable placeholder="业务模型" style="width:120px;">
                                 <el-option v-for="item in modelList" :label="item.modelName" :value="item.id"></el-option>
                             </el-select>
-                            <el-select filterable :size="searchSize" v-model.trim="listQuery.purId" clearable placeholder="诉求目的" style="width:100px;margin-left: 10px;margin-right:10px;">
+                            <el-select filterable :size="searchSize" v-model.trim="listQuery.purId" clearable placeholder="诉求目的" style="width:100px;margin-left: 10px;">
                                 <el-option v-for="item in purposeList" :label="item.purposeName" :value="item.id"></el-option>
+                            </el-select>
+                            <el-select filterable :size="searchSize" v-model.trim="listQuery.isOpen" clearable placeholder="是否公开" style="width:100px;margin-left: 10px;margin-right:10px;">
+                                <el-option v-for="item in isOpen" :label="item.name" :value="item.id"></el-option>
                             </el-select>
                             <el-date-picker
                                 :size="searchSize"
@@ -228,11 +231,11 @@
                                         <td>{{record.modelName}}</td>
                                         <th>发布状态:</th>
                                         <td>
-                                            {{record.isPublish | enums('AppealStatusEnum')}}
+                                            {{record.isPublish | enums('YesNoEnum')}}
                                         </td>
                                         <th>公开意愿:</th>
                                         <td>
-                                            {{record.isOpen | enums('AppealStatusEnum')}}
+                                            {{record.isOpen | enums('YesNoEnum')}}
                                         </td>
                                     </tr>
                                     <tr>
@@ -532,7 +535,8 @@
                     isBack: undefined,
                     limitFlag: undefined,
                     alarmFlag: undefined,
-                    superviseFlag: undefined
+                    superviseFlag: undefined,
+                    isOpen: undefined
                 },
                 recordDepartment: [],
                 recordReplyDepartment: [],
@@ -605,6 +609,13 @@
                 submitLoading: false,
                 modelList: [],
                 purposeList: [],
+                isOpen: [{
+                    id: '1',
+                    name: '公开'
+                },{
+                    id: '0',
+                    name: '不公开'
+                }],
                 departmentCascader: [],
                 editorConfig: {
                     initialFrameWidth: '100%',
@@ -874,7 +885,7 @@
             reloadList(){
                 this.listLoading = true;
                 this.recordList = undefined;
-                this.total = undefined;
+                //this.total = undefined;
                 let times = this.timeFrame;
                 if(times != undefined){
                     this.listQuery.timeFrame = times[0]+","+times[1];
@@ -885,7 +896,10 @@
                     this.listLoading = false;
                     this.recordList = response.data.records;
                     this.total = response.data.total;
-                })
+                }).catch(()=>{
+                    this.listLoading = false;
+                    this.total = 0;
+                });
             },
             handleSizeChange(val){
                 this.listQuery.size = val;
